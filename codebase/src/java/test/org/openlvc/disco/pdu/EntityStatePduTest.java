@@ -17,7 +17,6 @@
  */
 package org.openlvc.disco.pdu;
 
-import org.openlvc.disco.pdu.EntityStatePDU;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -72,7 +71,6 @@ public class EntityStatePduTest
 	@Test
 	public void testEntityStatePdu()
 	{
-		new EntityStatePDU();
 	}
 
 	

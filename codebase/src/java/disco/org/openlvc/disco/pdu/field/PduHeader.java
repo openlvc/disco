@@ -15,14 +15,9 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu.field;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Log4jConfiguration;
-
-public class Main
+public class PduHeader
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -31,37 +26,53 @@ public class Main
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private PduVersion version;
+	private short exerciseId;
+	private PduType pduType;
+	private ProtocolFamily family;
+	private long timestamp;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public PduHeader()
+	{
+		this( PduVersion.Version6, (short)0, PduType.Other, ProtocolFamily.Other, 0 );
+	}
+	
+	public PduHeader( PduVersion version,
+	                  short exerciseId, 
+	                  PduType pduType,
+	                  ProtocolFamily family,
+	                  long timestamp )
+	{
+		this.version = version;
+		this.exerciseId = exerciseId;
+		this.pduType = pduType;
+		this.family = family;
+		this.timestamp = timestamp;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run()
-	{
-		////////////////////////////////////////////////////////////
-		// initialize the logging and tell it what args we loaded //
-		////////////////////////////////////////////////////////////
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
-		logConfiguration.activateConfiguration();
-		Logger logger = LogManager.getFormatterLogger( "disco" );
-		logger.info( "      Welcome to Open LVC Disco" );
-		logger.info( "        .___.__                     " );
-		logger.info( "      __| _/|__| ______ ____  ____  " );
-		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
-		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
-		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
-		logger.info( "         \\/         \\/     \\/       " );
-		logger.info( "Version: "+DiscoConfiguration.getVersion() );
-	}
+
+	public PduVersion getVersion() { return this.version; }
+	public void setVersion( PduVersion version ) { this.version = version; }
+	
+	public PduType getPDUType() { return this.pduType; }
+	public void setPDUType( PduType type ) { this.pduType = type; }
+	
+	public short getExerciseId() { return this.exerciseId; }
+	public void setExerciseId( short id ) { this.exerciseId = id; }
+	
+	public ProtocolFamily getProtocolFamily() { return this.family; }
+	public void setProtocolFamily( ProtocolFamily family ) { this.family = family; }
+	
+	public long getTimestamp() { return this.timestamp; }
+	public void setTimestamp( long timestamp ) { this.timestamp = timestamp; }
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
-	{
-		new Main().run();
-	}
 }

@@ -17,12 +17,13 @@
  */
 package org.openlvc.disco;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Log4jConfiguration;
+import org.openlvc.disco.pdu.PDU;
 
-public class Main
+/**
+ * A PduSource is the place that PDU's will emerge from as they are received or read from
+ * a {@link IProvider}. 
+ */
+public class PduSource
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -31,37 +32,45 @@ public class Main
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private IProvider provider;
+	private IPduReceiver receiver;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	protected PduSource( IProvider provider )
+	{
+		this.provider = provider;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run()
+
+	public void setReceiver( IPduReceiver receiver )
 	{
-		////////////////////////////////////////////////////////////
-		// initialize the logging and tell it what args we loaded //
-		////////////////////////////////////////////////////////////
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
-		logConfiguration.activateConfiguration();
-		Logger logger = LogManager.getFormatterLogger( "disco" );
-		logger.info( "      Welcome to Open LVC Disco" );
-		logger.info( "        .___.__                     " );
-		logger.info( "      __| _/|__| ______ ____  ____  " );
-		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
-		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
-		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
-		logger.info( "         \\/         \\/     \\/       " );
-		logger.info( "Version: "+DiscoConfiguration.getVersion() );
+		this.receiver = receiver;
+	}
+	
+	/**
+	 * The following has been received from the {@link IProvider} for processing.
+	 */
+	public void queueForInjest( byte[] array )
+	{
+		
+	}
+
+	/**
+	 * The given {@link PDU} has been injested and is ready for processing, queue
+	 * it up to be sent to the receive in a dedicated thread so that we are not chewing
+	 * up injest resources.
+	 */
+	public void queueForProcess( PDU pdu )
+	{
+		
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
-	{
-		new Main().run();
-	}
 }

@@ -15,53 +15,63 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu.field;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Log4jConfiguration;
-
-public class Main
+public enum ProtocolFamily
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	Other        ( (short)0 ),
+	Entity       ( (short)1 ),
+	Warfare      ( (short)2 ),
+	Logistics    ( (short)3 ),
+	Radio        ( (short)4 ),
+	SimManagement( (short)5 ),
+	Emission     ( (short)6 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private ProtocolFamily( short value )
+	{
+		this.value = value;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run()
+	public short value()
 	{
-		////////////////////////////////////////////////////////////
-		// initialize the logging and tell it what args we loaded //
-		////////////////////////////////////////////////////////////
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
-		logConfiguration.activateConfiguration();
-		Logger logger = LogManager.getFormatterLogger( "disco" );
-		logger.info( "      Welcome to Open LVC Disco" );
-		logger.info( "        .___.__                     " );
-		logger.info( "      __| _/|__| ______ ____  ____  " );
-		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
-		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
-		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
-		logger.info( "         \\/         \\/     \\/       " );
-		logger.info( "Version: "+DiscoConfiguration.getVersion() );
+		return this.value;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
+	public static ProtocolFamily fromValue( short value )
 	{
-		new Main().run();
+		if( value == Entity.value )
+			return Entity;
+		else if( value == Warfare.value )
+			return Warfare;
+		else if( value == Radio.value )
+			return Radio;
+		else if( value == Emission.value )
+			return Emission;
+		else if( value == SimManagement.value )
+			return SimManagement;
+		else if( value == Logistics.value )
+			return Logistics;
+		else if( value == Other.value )
+			return Other;
+		else
+			throw new IllegalArgumentException( value+" is not a valid value for ProtocolFamily" );
 	}
+	
 }

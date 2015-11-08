@@ -15,53 +15,71 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.configuration;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Log4jConfiguration;
+import java.net.InetAddress;
 
-public class Main
+import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.utils.NetworkUtils;
+
+public class UdpProviderConfig
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	// Keys for properties file
+	private static final String PROP_ADDRESS = "disco.provider.udp.address";
+	private static final String PROP_PORT = "disco.provider.udp.port";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private InetAddress address;
+	private int port;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public UdpProviderConfig()
+	{
+		this.address = NetworkUtils.getByName( System.getProperty(PROP_ADDRESS,"127.0.0.1") );
+		this.port = Integer.parseInt( System.getProperty(PROP_PORT,"3000") );
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run()
+
+	public InetAddress getAddress()
 	{
-		////////////////////////////////////////////////////////////
-		// initialize the logging and tell it what args we loaded //
-		////////////////////////////////////////////////////////////
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
-		logConfiguration.activateConfiguration();
-		Logger logger = LogManager.getFormatterLogger( "disco" );
-		logger.info( "      Welcome to Open LVC Disco" );
-		logger.info( "        .___.__                     " );
-		logger.info( "      __| _/|__| ______ ____  ____  " );
-		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
-		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
-		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
-		logger.info( "         \\/         \\/     \\/       " );
-		logger.info( "Version: "+DiscoConfiguration.getVersion() );
+		return this.address;
+	}
+	
+	public void setAddress( InetAddress address )
+	{
+		this.address = address;
 	}
 
+	/**
+	 * This can be a domain name or an actual IP address, or alternatively it can be one
+	 * of the special symbols accepted by {@link NetworkUtils#getByName(String)}.
+	 */
+	public void setAddress( String address ) throws DiscoException
+	{
+		this.address = NetworkUtils.getByName( address );
+	}
+	
+	public int getPort()
+	{
+		return this.port;
+	}
+	
+	public void setPort( int port )
+	{
+		this.port = port;
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
-	{
-		new Main().run();
-	}
 }

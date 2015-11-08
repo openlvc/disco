@@ -17,12 +17,9 @@
  */
 package org.openlvc.disco;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Log4jConfiguration;
+import org.openlvc.disco.pdu.PDU;
 
-public class Main
+public class PduSink
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -31,37 +28,26 @@ public class Main
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private IProvider provider;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	protected PduSink( IProvider provider )
+	{
+		this.provider = provider;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run()
+
+	public void send( PDU pdu )
 	{
-		////////////////////////////////////////////////////////////
-		// initialize the logging and tell it what args we loaded //
-		////////////////////////////////////////////////////////////
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
-		logConfiguration.activateConfiguration();
-		Logger logger = LogManager.getFormatterLogger( "disco" );
-		logger.info( "      Welcome to Open LVC Disco" );
-		logger.info( "        .___.__                     " );
-		logger.info( "      __| _/|__| ______ ____  ____  " );
-		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
-		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
-		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
-		logger.info( "         \\/         \\/     \\/       " );
-		logger.info( "Version: "+DiscoConfiguration.getVersion() );
+		
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
-	{
-		new Main().run();
-	}
 }

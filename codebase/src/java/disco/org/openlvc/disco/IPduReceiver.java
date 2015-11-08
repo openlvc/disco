@@ -15,31 +15,23 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.pdu;
+package org.openlvc.disco;
 
-public class EntityStatePDU
+import org.openlvc.disco.pdu.PDU;
+
+/**
+ * Application classes implement this interface if they want to receive PDU data from
+ * a {@link PduSource}.
+ */
+public interface IPduReceiver
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 
 	//----------------------------------------------------------
-	//                   INSTANCE VARIABLES
-	//----------------------------------------------------------
-
-	//----------------------------------------------------------
-	//                      CONSTRUCTORS
-	//----------------------------------------------------------
-
-	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////// Accessor and Mutator Methods ///////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-
-	//----------------------------------------------------------
-	//                     STATIC METHODS
-	//----------------------------------------------------------
+	public void receiver( PDU pdu );
+	
 }

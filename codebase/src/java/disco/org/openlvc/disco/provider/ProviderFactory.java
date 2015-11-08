@@ -15,14 +15,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.provider;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Log4jConfiguration;
+import org.openlvc.disco.IProvider;
+import org.openlvc.disco.provider.udp.UdpProvider;
 
-public class Main
+public class ProviderFactory
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -39,29 +37,20 @@ public class Main
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run()
-	{
-		////////////////////////////////////////////////////////////
-		// initialize the logging and tell it what args we loaded //
-		////////////////////////////////////////////////////////////
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
-		logConfiguration.activateConfiguration();
-		Logger logger = LogManager.getFormatterLogger( "disco" );
-		logger.info( "      Welcome to Open LVC Disco" );
-		logger.info( "        .___.__                     " );
-		logger.info( "      __| _/|__| ______ ____  ____  " );
-		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
-		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
-		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
-		logger.info( "         \\/         \\/     \\/       " );
-		logger.info( "Version: "+DiscoConfiguration.getVersion() );
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
+	public static IProvider getProvider( String name )
 	{
-		new Main().run();
+		name = name.trim();
+		if( name.equalsIgnoreCase("network.udp") )
+			return new UdpProvider();
+		else if( name.equalsIgnoreCase("file") )
+			throw new IllegalArgumentException( "Provider is not supported: "+name );
+		else if( name.equalsIgnoreCase("network.tcp") )
+			throw new IllegalArgumentException( "Provider is not supported: "+name );
+		else
+			throw new IllegalArgumentException( "Provider is not supported: "+name );
 	}
 }

@@ -17,12 +17,15 @@
  */
 package org.openlvc.disco;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Log4jConfiguration;
+import org.openlvc.disco.testapp.TestReceiver;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-public class Main
+@Test(groups={"lifecycle"})
+public class LifecycleTest
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -39,29 +42,44 @@ public class Main
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run()
+
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Test Class Setup/Tear Down   //////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+	@BeforeClass(alwaysRun=true)
+	public void beforeClass()
 	{
-		////////////////////////////////////////////////////////////
-		// initialize the logging and tell it what args we loaded //
-		////////////////////////////////////////////////////////////
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
-		logConfiguration.activateConfiguration();
-		Logger logger = LogManager.getFormatterLogger( "disco" );
-		logger.info( "      Welcome to Open LVC Disco" );
-		logger.info( "        .___.__                     " );
-		logger.info( "      __| _/|__| ______ ____  ____  " );
-		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
-		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
-		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
-		logger.info( "         \\/         \\/     \\/       " );
-		logger.info( "Version: "+DiscoConfiguration.getVersion() );
+	}
+	
+	@BeforeMethod(alwaysRun=true)
+	public void beforeMethod()
+	{
+	}
+
+	@AfterMethod(alwaysRun=true)
+	public void afterMethod()
+	{
+	}
+	
+	@AfterClass(alwaysRun=true)
+	public void afterClass()
+	{
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////
+	/// PDU Testing Methods   /////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+	@Test
+	public void testEntityStatePdu()
+	{
+		TestReceiver receiver = new TestReceiver();
+		OpsCenter opscenter = new OpsCenter();
+		opscenter.setReceiver( receiver );
+		opscenter.open();
+		opscenter.close();
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
-	{
-		new Main().run();
-	}
 }

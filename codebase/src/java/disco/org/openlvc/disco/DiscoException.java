@@ -17,16 +17,12 @@
  */
 package org.openlvc.disco;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Log4jConfiguration;
-
-public class Main
+public class DiscoException extends RuntimeException
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static final long serialVersionUID = 3112252018924L;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -35,33 +31,44 @@ public class Main
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	/**
+	 * Just create an empty exception
+	 */
+	public DiscoException()
+	{
+		super();
+	}
+
+	/**
+	 * @param message The message to create the exception with
+	 */
+	public DiscoException( String message )
+	{
+		super( message );
+	}
+
+	/**
+	 * @param cause The cause of the exception
+	 */
+	public DiscoException( Throwable cause )
+	{
+		super( cause );
+	}
+
+	/**
+	 * @param message The message to create the exception with
+	 * @param cause The cause of the exception
+	 */
+	public DiscoException( String message, Throwable cause )
+	{
+		super( message, cause );
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run()
-	{
-		////////////////////////////////////////////////////////////
-		// initialize the logging and tell it what args we loaded //
-		////////////////////////////////////////////////////////////
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
-		logConfiguration.activateConfiguration();
-		Logger logger = LogManager.getFormatterLogger( "disco" );
-		logger.info( "      Welcome to Open LVC Disco" );
-		logger.info( "        .___.__                     " );
-		logger.info( "      __| _/|__| ______ ____  ____  " );
-		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
-		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
-		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
-		logger.info( "         \\/         \\/     \\/       " );
-		logger.info( "Version: "+DiscoConfiguration.getVersion() );
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
-	{
-		new Main().run();
-	}
 }

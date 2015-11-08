@@ -15,12 +15,9 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.configuration;
+package org.openlvc.disco.pdu.entity;
 
-import java.net.URL;
-import java.util.Properties;
-
-public class Configuration
+public class EntityStatePdu
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -45,34 +42,4 @@ public class Configuration
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// System Properties    ///////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/**
-	 * Load the properties file "build.properties" into the system properties and return
-	 * the value of the value of "${build.version} (build ${build.number})"
-	 */
-	public static String getVersion()
-	{
-		Properties properties = new Properties();
-		if( System.getProperty("build.version") == null )
-		{
-			try
-			{
-				URL url = ClassLoader.getSystemResource( "build.properties" );
-				properties.load( url.openStream() );
-			}
-			catch( Exception e )
-			{
-				// do nothing, not much we can do
-			}
-		}
-		
-		// Get the build number
-		String buildVersion = properties.getProperty( "build.version", "unknown" );
-		String buildNumber = properties.getProperty( "build.number", "unknown" );
-		return buildVersion + " (build "+buildNumber+")";
-	}
-
 }

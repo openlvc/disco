@@ -1,0 +1,86 @@
+/*
+ *   Copyright 2015 Open LVC Project.
+ *
+ *   This file is part of Open LVC Disco.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
+package org.openlvc.disco.configuration;
+
+import java.net.URL;
+import java.util.Properties;
+
+public class DiscoConfiguration
+{
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final String PROP_PROVIDER = "disco.provider";
+
+	//----------------------------------------------------------
+	//                   INSTANCE VARIABLES
+	//----------------------------------------------------------
+
+	//----------------------------------------------------------
+	//                      CONSTRUCTORS
+	//----------------------------------------------------------
+	public DiscoConfiguration()
+	{
+	}
+
+	//----------------------------------------------------------
+	//                    INSTANCE METHODS
+	//----------------------------------------------------------
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Provider Properties   //////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public String getProvider()
+	{
+		return System.getProperty( PROP_PROVIDER, "network.udp" );
+	}
+	
+	//----------------------------------------------------------
+	//                     STATIC METHODS
+	//----------------------------------------------------------
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// System Properties    ///////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Load the properties file "build.properties" into the system properties and return
+	 * the value of the value of "${build.version} (build ${build.number})"
+	 */
+	public static String getVersion()
+	{
+		Properties properties = new Properties();
+		if( System.getProperty("build.version") == null )
+		{
+			try
+			{
+				URL url = ClassLoader.getSystemResource( "build.properties" );
+				properties.load( url.openStream() );
+			}
+			catch( Exception e )
+			{
+				// do nothing, not much we can do
+			}
+		}
+		
+		// Get the build number
+		String buildVersion = properties.getProperty( "build.version", "unknown" );
+		String buildNumber = properties.getProperty( "build.number", "unknown" );
+		return buildVersion + " (build "+buildNumber+")";
+	}
+
+}

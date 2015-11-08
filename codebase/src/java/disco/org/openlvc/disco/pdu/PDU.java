@@ -15,14 +15,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Log4jConfiguration;
+import org.openlvc.disco.pdu.field.PduHeader;
+import org.openlvc.disco.pdu.field.PduType;
 
-public class Main
+public abstract class PDU
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -31,37 +29,60 @@ public class Main
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	protected PduHeader header;
+	protected long received;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	protected PDU( PduHeader header )
+	{
+		this.header = header;
+		this.received = System.currentTimeMillis();
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run()
+	/**
+	 * Each PDU has a specific type, as enumerated in {@link PduType}. 
+	 */
+	public final PduType getType()
 	{
-		////////////////////////////////////////////////////////////
-		// initialize the logging and tell it what args we loaded //
-		////////////////////////////////////////////////////////////
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
-		logConfiguration.activateConfiguration();
-		Logger logger = LogManager.getFormatterLogger( "disco" );
-		logger.info( "      Welcome to Open LVC Disco" );
-		logger.info( "        .___.__                     " );
-		logger.info( "      __| _/|__| ______ ____  ____  " );
-		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
-		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
-		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
-		logger.info( "         \\/         \\/     \\/       " );
-		logger.info( "Version: "+DiscoConfiguration.getVersion() );
+		if( header == null )
+			throw new IllegalStateException( "The PDU does not contain a header" );
+		
+		return header.getPDUType();
 	}
+
+	public PduHeader getHeader()
+	{
+		return header;
+	}
+	
+	public void setHeader( PduHeader header )
+	{
+		this.header = header;
+	}
+	
+	public long getReceived()
+	{
+		return received;
+	}
+	
+	public void setReceived( long received )
+	{
+		this.received = received;
+	}
+	
+	/**
+	 * Returns the length of this PDU's content section in bytes
+	 * 
+	 * @return An int value representing the length of this PDU's content section in bytes
+	 */
+	public abstract int getContentLength();
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
-	{
-		new Main().run();
-	}
 }
