@@ -1,0 +1,58 @@
+
+              Apache Log4j 2.4.1 RELEASE NOTES
+
+The Apache Log4j 2 team is pleased to announce the Log4j 2.4.1 release!
+
+Apache log4j is a well known framework for logging application behavior. Log4j 2 is an upgrade to
+Log4j that provides significant improvements over its predecessor, Log4j 1.x, and provides
+many other modern features such as support for Markers, property substitution using Lookups, and asynchronous
+Loggers. In addition, Log4j 2 will not lose events while reconfiguring.
+
+This is the ninth GA release. It contains several bugfixes and new features.
+Log4j 2 requires a minimum of Java 7.
+
+GA Release 2.4.1
+
+Changes in this version include:
+
+New features:
+o LOG4J2-1129:  Allow PatternLayout to select a pattern to use based on some selection criteria. 
+o LOG4J2-1145:  Add %equals to PatternLayout to test and replace patterns with strings. 
+o LOG4J2-1147:  Add %equalsIgnoreCase to PatternLayout to test and replace patterns with strings. 
+o LOG4J2-1146:  Add %notEmpty to PatternLayout to avoid output of patterns where all variables are empty. 
+o LOG4J2-1020:  Add possibility to set shutdown timeout on AsyncAppender. 
+
+Fixed Bugs:
+o LOG4J2-1153:  Fixed NullPointerException when only root logger is defined (and no named loggers) in configuration properties file. 
+o LOG4J2-1140:  Fixed bug where headers were not being written to first file with RollingFileAppender. 
+o LOG4J2-1149:  Fixed bug where PatternLayout predefined date pattern with time zone always renders default date format. 
+o LOG4J2-1050:  Fixed Log4jLookup. 
+o LOG4J2-1142:  Fix potential memory leak in web applications by using a straight ThreadLocal field instead of subclassing ThreadLocal. 
+o LOG4J2-1135:  Compression on rollover was broken: log file was renamed to .zip but not compressed. 
+o LOG4J2-1127:  log4j2.xml cannot be parsed on Oracle Weblogic 12c. 
+o LOG4J2-1132:  Do not use MongoDB driver 2.13.3 deprecated methods. 
+o LOG4J2-1144:  Add %markerSimpleName in pattern layout should evaluate to marker name (not toString()). 
+o LOG4J2-1126:  Web site corrections and updates. 
+
+Changes:
+o LOG4J2-1151:  Performance improvement: backport Java 8 fast ISO-8859-1 String to byte[] encoder to AbstractStringLayout. 
+o LOG4J2-935:  Performance improvement when converting Strings to byte[] arrays. 
+o LOG4J2-1040:  Update MongoDB driver from 2.13.3 to 3.0.4. 
+o LOG4J2-1128:  Reuse StringBuilder to improve performance for String-based layouts: CSV, GELF, HTML, RFC524, Syslog. 
+o LOG4J2-1131:  Update mongo-java-driver from 2.13.2 to 2.13.3. 
+o LOG4J2-1138:  Do not use Jackson deprecated methods. 
+o LOG4J2-1139:  Update Jackson from 2.6.1 to 2.6.2. 
+o LOG4J2-1150:  Update kafka-clients from 0.8.2.1 to 0.8.2.2. 
+
+
+Apache Log4j 2.4.1 requires a minimum of Java 7 to build and run. Log4j 2.4 and greater requires Java 7,
+version 2.3 required Java 6.
+
+Basic compatibility with Log4j 1.x is provided through the log4j-1.2-api component, however it does not implement some of the
+very implementation specific classes and methods. The package names and Maven groupId have been changed to
+org.apache.logging.log4j to avoid any conflicts with log4j 1.x.
+
+For complete information on Apache Log4j 2, including instructions on how to submit bug reports,
+patches, or suggestions for improvement, see the Apache Apache Log4j 2 website:
+
+http://logging.apache.org/log4j/2.x/

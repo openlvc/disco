@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="codebase/src/java/disco"/>
+	<classpathentry kind="src" path="codebase/src/java/test"/>
+	<classpathentry kind="lib" path="codebase/lib/log4j/apache-log4j-2.4.1-bin/log4j-api-2.4.1.jar"/>
+	<classpathentry kind="lib" path="codebase/lib/testng/testng-6.8/testng-6.8.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="codebase/lib/log4j/apache-log4j-2.4.1-bin/log4j-core-2.4.1.jar"/>
+	<classpathentry kind="lib" path="codebase/resources/jars/disco.jar"/>
+	<classpathentry kind="output" path="eclipse-build/classes"/>
+</classpath>

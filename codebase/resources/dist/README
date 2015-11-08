@@ -1,0 +1,20 @@
+Distribution Resources
+------------------------
+When building distribution packages, there is a lot more than just
+compiled code that needs to be incldued. These directories exist as
+a place to store distribution-specific resources.
+
+By convention, there are two types of directories here:
+
+  * "common"   -- Contents copied into every distribution
+  * "distname" -- Directory names to match distribution and
+                  contains resources specific to a distribution
+
+For example, you might see a set of sub-directories like so:
+
+  dist/
+    common/        -- Common resources
+	retail/        -- Resources for a standard Retail dist
+	enterprise/    -- Resources for an unlicensed Enterprise dist
+
+

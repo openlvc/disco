@@ -1,0 +1,259 @@
+<?xml version="1.0"?>
+<!--
+             This project is using the Portico Build System
+             https://github.com/timpokorny/build-skeleton
+
+                    .___.__                     
+                  __| _/|__| ______ ____  ____  
+                 / __ | |  |/  ___// ___\/  _ \ 
+                / /_/ | |  |\___ \\  \__(  <_> )
+                \____ | |__/____  >\___  >____/ 
+                     \/         \/     \/       
+
+         File: profiles/java.xml
+      Purpose: The common java profile defining compile, test, jar
+               and sandbox tasks. As Java is cross platform, it is
+               possible to combine most of this work under a single
+               file. However, split it out into several smaller
+               distribution-specific files if you must.
+-->
+<project name="java">
+
+	<!-- ================================================================================= -->
+	<!--                                 General Settings                                  -->
+	<!-- ================================================================================= -->
+	<description>
+		Java build profile for main source modules
+	</description>
+
+	<!-- ==== Basic Properties ==== -->
+	<property name="java.src.dir"             location="${src.dir}/java"/>
+	<property name="java.build.dir"           location="${build.dir}/java"/>
+	<property name="resources.jars.dir"       location="${resources.dir}/jars"/>
+
+	<!-- ==== Source Related Properties ==== -->
+	<property name="disco.src.dir"          location="${java.src.dir}/disco"/>
+	<property name="disco.build.dir"        location="${java.build.dir}/disco"/>
+	<property name="disco.classes.dir"      location="${disco.build.dir}/classes"/>
+
+	<!-- ==== Test Related Properties ==== -->
+	<property name="test.src.dir"             location="${java.src.dir}/test"/>
+	<property name="test.build.dir"           location="${java.build.dir}/test"/>
+	<property name="test.classes.dir"         location="${test.build.dir}/classes"/>
+	<property name="test.reports.dir"         location="${test.build.dir}/reports"/>
+
+	<property name="test.loglevel"            value="OFF"/>
+	<property name="test.fileLogLevel"        value="OFF"/>
+
+	<!-- ==== Javadoc Related Properties ==== -->
+	<property name="javadoc.oracle"           value="http://docs.oracle.com/javase/8/docs/api/"/>
+	<property name="javadoc.copyright"        value="Copyright Open LVC ${YEAR}."/>
+	<property name="javadoc.window"           value="${build.shortname} [${build.version} build] Javadoc"/>
+	<!-- defaults used by the macro -->
+	<property name="javadoc.windowtitle"      value="Disco [${build.version} build]"/>
+	<property name="javadoc.header"           value="${javadoc.windowtitle}"/>
+	<property name="javadoc.footer"           value="${javadoc.windowtitle}"/>
+
+	<!-- =========================================================== -->
+	<!--                     Project Libraries                       -->
+	<!-- =========================================================== -->
+	<!-- ==== Library Path Definitions ==== -->
+	<!-- These properties are set so that any information relating to a specific path
+	     for a library can be changed in a single spot. The properties should be used
+	     when defining paths and the like later in the build file -->
+	<property name="testng.dir"            location="${lib.dir}/testng/testng-6.8"/>
+	<property name="log4j.dir"             location="${lib.dir}/log4j/apache-log4j-2.4.1-bin"/>
+
+	<!-- Classpaths for individual libraries -->
+	<path id="lib.testng.classpath">
+		<fileset dir="${testng.dir}" includes="**/*.jar"/>
+	</path>
+
+	<path id="lib.log4j.classpath">
+		<fileset dir="${log4j.dir}" includes="**/*.jar"/>
+	</path>
+
+	<!-- ========================== -->
+	<!-- Classpath Set Declarations -->
+	<!-- ========================== -->
+	<path id="compile.classpath">
+		<path refid="lib.log4j.classpath"/>
+	</path>
+
+	<path id="test.classpath">
+		<path refid="compile.classpath"/>
+		<path refid="lib.testng.classpath"/>
+		<pathelement path="${disco.classes.dir}"/>
+		<pathelement path="${test.classes.dir}"/>
+		<pathelement path="${resources.dir}/jars/disco.jar"/>
+		<pathelement path="${resources.dir}/testdata"/>
+	</path>
+
+	<!-- generate the classpath for the manifest -->
+	<manifestclasspath property="disco.manifest.classpath" jarfile="${lib.dir}/disco.jar">
+		<classpath refid="compile.classpath"/>
+	</manifestclasspath>
+
+	<!-- ================================================================================= -->
+	<!--                                   Clean Targets                                   -->
+	<!-- ================================================================================= -->
+	<target name="clean" extensionOf="master.clean">
+		<delete dir="${java.build.dir}"/>
+		<delete dir="logs"/>
+	</target>
+
+	<!-- ================================================================================= -->
+	<!--                                  Compile Targets                                  -->
+	<!-- ================================================================================= -->
+	<!--
+	     Local compilation extension point for all Java targets. Each Java compilation target
+	     should declare itself an extension of this point to link into the main build.
+	-->
+	<extension-point name="compile"
+	                 extensionOf="master.compile"
+	                 description="Compile the main projection and test modules"/>
+
+	<!-- compile the main production code -->
+	<target name="compile.disco" extensionOf="compile">
+		<java-compile srcdir="${disco.src.dir}"
+		              outdir="${disco.classes.dir}"
+		              classpath="compile.classpath"/>
+	</target>
+
+	<!-- compile the test suite code -->
+	<target name="compile.tests" extensionOf="compile" depends="compile.disco">
+		<java-compile srcdir="${test.src.dir}"
+		              outdir="${test.classes.dir}"
+		              classpath="test.classpath"/>
+	</target>
+
+	<!-- ================================================================================= -->
+	<!--                                  Testing Targets                                  -->
+	<!-- ================================================================================= -->
+	<!--
+	     The parent testing target that will invoke the various Java testing suites
+	-->
+	<target name="test"
+	        extensionOf="master.test"
+	        depends="test.disco"/>
+
+	<!-- Run the core DIsco test suite -->
+	<target name="test.disco" depends="compile.tests">
+		<java-test suite="org/openlvc/disco"
+		           classdir="${test.classes.dir}"
+		           outdir="${test.reports.dir}"
+		           classpath="test.classpath">
+			<jvmarg value="-Dtest.loglevel=${test.loglevel}"/>
+			<jvmarg value="-Dtest.fileLogLevel=${test.fileLogLevel}"/>
+			<jvmarg value="-Dtest.root.dir=${test.root.dir}"/>
+	     </java-test>
+	</target>
+
+	<!-- ================================================================================= -->
+	<!--                                  Sandbox Targets                                  -->
+	<!-- ================================================================================= -->
+	<!--
+	     The main sandbox preparation target. This will aggregate together all the various
+	     required artefacts scattered around the build environment into the structure that
+	     should be present when installed on a users system (relative to the sandbox dir).
+	-->
+	<target name="sandbox" extensionOf="master.sandbox" depends="compile,jars">
+		<!-- create the required directories -->
+		<mkdir dir="${dist.dir}"/>
+		<mkdir dir="${sandbox.dir}"/>
+
+		<!-- copy across the dependant libraries -->
+		<mkdir dir="${sandbox.dir}/lib"/>
+		<copy todir="${sandbox.dir}/lib">
+			<fileset dir="${lib.dir}">
+				<include name="log4j/**/*"/>
+			</fileset>
+		</copy>
+
+		<!-- copy across the resources -->
+		<copy todir="${sandbox.dir}">
+			<fileset dir="${resources.dist.dir}/common" includes="**/*"/>
+		</copy>
+
+		<!-- chmod anything in a bin directory -->
+		<chmod dir="${sandbox.dir}" perm="777" includes="bin/**/*.sh"/>
+
+		<!-- More stuff specific to Disco -->
+		<mkdir dir="${sandbox.dir}/logs"/>
+
+		<!-- Run platform specific fixes such as fixing crlf for Windows bound files! -->
+
+	</target>
+
+	<!-- ==================================== -->
+	<!--           Jar File Targets           -->
+	<!-- ==================================== -->
+	<!--
+	     Add an extension point that all jar file generation targets can tack on to. If there
+	     is only a single jar file, this is somewhat redundant, but leaving for common structure
+	     across builds for other projects as well.
+	-->
+	<extension-point name="jars"/>
+
+	<!-- build the main disco jar file -->
+	<target name="jar.disco" extensionOf="jars" depends="compile">
+		<!-- construct the main collector jar file -->
+		<jar destfile="${sandbox.dir}/lib/disco.jar">
+			<!-- collector code -->
+			<fileset dir="${disco.classes.dir}" includes="**/*.class"/>
+
+			<!-- internal jar resources -->
+			<fileset dir="${resources.jars.dir}/disco.jar" includes="**/*"/>
+
+			<!-- license -->
+			<fileset dir="${basedir}" includes="LICENSE.disco"/>
+
+			<!-- build.properties file for version information -->
+			<fileset dir="${basedir}" includes="build.properties"/>
+
+			<!-- MANIFEST -->
+			<manifest>
+				<attribute name="Product"          value="Open LVC Disco"/>
+				<attribute name="Product-Version"  value="${build.version}"/>
+				<attribute name="Built-By"         value="Open LVC"/>
+				<attribute name="Built-Date"       value="${TODAY}"/>
+				<attribute name="Main-Class"       value="org.openlvc.disco.Main"/>
+				<attribute name="Class-Path"       value="../ ${disco.manifest.classpath}"/>
+				<section name="org/openlvc/disco">
+					<attribute name="Implementation-Title" value="org.openlvc.disco"/>
+					<attribute name="Implementation-Version" value="${build.version} (build ${build.number}) ${TODAY}"/>
+					<attribute name="Implementation-Vendor" value="Open LVC"/>
+				</section>
+			</manifest>
+		</jar>
+	</target>
+
+	<!-- ================================================================================= -->
+	<!--                             Release Generation Targets                            -->
+	<!-- ================================================================================= -->
+	<!--
+	     The parent release target. This will run a clean and then compile all code, run all
+	     tests, generate a sandbox and place all additional release artefacts (such as javadoc)
+	     in with it in preparation for release.
+	-->
+	<target name="release"
+	        extensionOf="master.release"
+	        depends="clean,test,sandbox,javadoc"/>
+
+	<!-- Generate the javadocs and place them in the sandbox. We only do this for a release
+	     build because of the amount of time it takes -->
+	<target name="javadoc" depends="sandbox" if="build.release">
+		<!-- Make room in the sandbox for the javadoc. Create a property for shortcut purposes -->
+		<property name="javadoc.dir" value="${sandbox.dir}/documentation/javadoc"/>
+		<mkdir dir="${javadoc.dir}"/>
+
+		<echo>Generating Open LVC Disco Javadoc</echo>
+		<java-javadoc outdir="${javadoc.dir}"
+		              packages="org.openlvc.disco"
+		              sourcepath="${disco.src.dir}"
+		              classpath="compile.classpath"
+		              windowtitle="Open LVC Disco - Javadoc"
+		              header="Open LVC Disco"/>
+	</target>
+
+</project>

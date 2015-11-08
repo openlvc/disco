@@ -1,0 +1,26 @@
+# *
+.DS_Store
+
+# /
+/MacOSX
+/eclipse-build
+/(*
+/cpp-*
+
+# /.settings/
+/.settings/org.eclipse.mylyn.tasks.ui.prefs
+/.settings/org.eclipse.wst.validation.prefs
+
+# /codebase/
+/codebase/local.properties
+/codebase/build
+/codebase/logs
+/codebase/dist
+/codebase/savedata
+
+# /codebase/documentation/
+/codebase/documentation/javadoc
+
+# /codebase/lib/clover/
+/codebase/lib/clover/clover.license
+/build/

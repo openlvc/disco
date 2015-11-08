@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+             This project is using the Portico Build System
+             https://github.com/timpokorny/build-skeleton
+
+                    .___.__                     
+                  __| _/|__| ______ ____  ____  
+                 / __ | |  |/  ___// ___\/  _ \ 
+                / /_/ | |  |\___ \\  \__(  <_> )
+                \____ | |__/____  >\___  >____/ 
+                     \/         \/     \/       
+
+         File: profiles/linux/installer.xml
+      Purpose: Defines tasks to build the linux installation packages.
+-->
+<project name="installer.linux">
+
+	<!-- ================================================================================= -->
+	<!--                                 General Settings                                  -->
+	<!-- ================================================================================= -->
+	<description>
+		Generic Zip-File "installer" generator.
+	</description>
+
+	<!-- ================================================================================= -->
+	<!--                             Installer Creation Targets                            -->
+	<!-- ================================================================================= -->
+	<target name="installer" extensionOf="master.installer">
+	</target>
+
+</project>
+

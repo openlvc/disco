@@ -1,0 +1,376 @@
+<?xml version="1.0"?>
+<!--
+             This project is using the Portico Build System
+             https://github.com/timpokorny/build-skeleton
+
+                    .___.__                     
+                  __| _/|__| ______ ____  ____  
+                 / __ | |  |/  ___// ___\/  _ \ 
+                / /_/ | |  |\___ \\  \__(  <_> )
+                \____ | |__/____  >\___  >____/ 
+                     \/         \/     \/       
+
+         File: profiles/system.macros.xml
+      Purpose: This file contains a set of common macros used across
+               most projects this system has been designed for.
+-->
+<project name="macros">
+
+	<!-- ================================================================================= -->
+	<!--                                 General Settings                                  -->
+	<!-- ================================================================================= -->
+	<description>
+		Set of common macros that can be used in any of the project build profiles.
+	</description>
+
+	<!-- ================================================================================= -->
+	<!--                               Macro: java-compile                                 -->
+	<!-- ================================================================================= -->
+	<!--
+	     Macro for compiling Java source code in the provided directory, placing
+	     the generates class files in the out directory.
+	     
+	     This calls the standard Ant <javac> task. If you wish to provide more
+	     configuration options, you can pass any child-elements that task will
+	     take by including them as child elements of this macro.
+	     
+	     Usage Example:
+	     <jcompile srcdir="${java.src.dir}"
+	               outdir="${java.build.dir}/classes"
+	               classpath="classpath.reference">
+	        <javac-specific-children> **optional
+	     </jcompile>
+	     
+	     Additional Relevant Ant Properties:
+ 	      * (optional) java.compiler.source = Source compatibility level to pass to javac
+ 	      * (optional) java.compiler.target = Specific Java version to generate class files for	     
+	-->
+	<macrodef name="java-compile" description="Compile java source code with default properties">
+		<!-- Attributes -->
+		<attribute name="srcdir"    description="Location of the source code to compile"/>
+		<attribute name="outdir"    description="Location to place the compiled code"/>
+		<attribute name="classpath" description="The classpath reference used during compilation"/>
+
+		<!-- Child Elements -->
+		<element name="body"
+		         implicit="yes"
+		         optional="yes"
+		         description="Child elements to pass to the body of the javac task"/>
+
+		<!-- Task Definition -->
+		<sequential>
+			<!-- make sure the directory exists -->
+			<mkdir dir="@{outdir}"/>
+
+			<!-- do the compile -->
+			<javac srcdir="@{srcdir}"
+			       destdir="@{outdir}"
+			       classpathref="@{classpath}"
+			       debug="true"
+			       debuglevel="lines,vars,source"
+			       source="${java.compiler.source}"
+			       target="${java.compiler.target}"
+			       includeAntRuntime="false">
+				<body/>
+			</javac>
+		</sequential>
+	</macrodef>
+
+	<!-- ================================================================================= -->
+	<!--                                 Macro: java-test                                  -->
+	<!-- ================================================================================= -->
+	<!-- bring in the testng task -->
+	<taskdef resource="testngtasks" classpath="${lib.dir}/testng/testng-6.8/testng-6.8.jar"/>
+	
+	<!-- Define a default value for the TestNG groups that will control what test groups
+	     are and are not executed. By default, we provide "", which will run all tests. If
+	     this property is provided on the command line, this declaration will NOT override it -->
+	<property name="test.groups" value=""/>
+
+	<!--
+	     Macro for executing a TestNG test suite. The suite attribute allows you
+	     to define the name of the suite. This is appended to various search and
+	     output folders, keeping artefacts from different test suites separate.
+	     Providing a suite name is optional, wih a default of "" used in absence.
+	     
+	     The macro seaches for all test classes in "classdir/suite-name". A Test
+	     class is one whose name ends in "Test". It will also look for a class in
+	     the root package for the suite called "TestSetup" and include it.
+
+	     This calls the standard <testng> task. If you wish to provide more
+	     configuration options, you can pass any valid child-elements that task 
+	     takes by including them as child elements of this macro.
+
+	     Usage Example:
+	     <java-test suite="TestSuiteOne"                    ** optional
+	                classdir="${java.test.build.dir}"
+	                outdir="${java.test.reports.dir}"
+	                classpath="classpath.reference"
+	                groups="testng,group,names">            ** optional, defaults to all
+	        <jvmarg value="-Dtest.suite=@{suite}"/>         ** provided by default
+	        <other-testng-specific-children>                ** optional
+	     </java-test>
+	-->
+	<macrodef name="java-test" description="Runs TestNG on a set of test classes">
+		<!-- Attributes -->
+		<attribute name="suite"     description="Name of test suite" default=""/>
+		<attribute name="classdir"  description="Path to the compiled test code (excluding suite)"/>
+		<attribute name="outdir"    description="The ouptut directory (also see suite attribute)"/>
+		<attribute name="classpath" description="The classpath reference for running the tests"/>
+		<attribute name="groups"    description="The specific test groups to run" default="${test.groups}"/>
+
+		<!-- Child Elements -->
+		<element name="body"
+		         implicit="yes"
+		         optional="yes"
+		         description="Child elements pass to the body of the testng task"/>
+		
+		<!-- Task Definition -->
+		<sequential>
+			<echo>===============================================</echo>
+			<echo>   Executing Test Suite: @{suite}</echo>
+			<echo>===============================================</echo>
+	
+			<!-- make sure the dir to hold the reports is created -->
+			<mkdir dir="@{outdir}/@{suite}"/>
+	
+			<!-- remove the old log directories -->
+			<delete dir="logs/@{suite}"/>
+	
+			<!-- run a suite of tests from a given directory -->
+			<testng classpathref="@{classpath}"
+			        outputDir="@{outdir}/@{suite}"
+			        failureProperty="java.test.failed"
+			        listener="SimpleTestLogger"
+			        haltonfailure="false"
+			        haltonskipped="false"
+			        groups="@{groups}">
+				<classfileset dir="@{classdir}">
+					<include name="CommonSetup.class"/>
+					<include name="@{suite}/TestSetup.class"/>
+					<include name="@{suite}/**/*Test.class"/>
+				</classfileset>
+				<jvmarg value="-Dtest.suite=@{suite}"/>
+				<body/>
+			</testng>
+			
+			<!-- check the result -->
+			<fail if="java.test.failed" message="Unit test failure in test suite (@{suite})"/>
+		</sequential>
+	</macrodef>
+
+	<!-- ================================================================================= -->
+	<!--                                Macro: java-javadoc                                -->
+	<!-- ================================================================================= -->
+	<!--
+	     Macro for generating javadocs for the identified packages and placing the
+	     results in the out directory. This will apply a common set of defaults on
+	     all Javadoc runs.
+	     
+	     This calls the standard Ant <javadoc> task. By default it leans on some
+	     system properties (below) unless overridden.
+	     
+	     Usage Example:
+	     <java-javadoc outdir="${javadoc.dir}/hla13"
+	                   packages=""
+	                   sourcepath="${portico.src.dir}"
+	                   classpath="compile.classpath"/>
+	     
+	     Additional Relevant Ant Properties:
+	      * (optional) Defaults to value of ${javadoc.windowtitle}
+	      * (optional) Defaults to value of ${javadoc.header}
+	      * (optional) Defaults to value of ${javadoc.footer}
+	-->
+	<macrodef name="java-javadoc" description="Generate Javadocs with common settings">
+		<!-- Attributes -->
+		<attribute name="outdir"      description="The directory to place the javadoc in"/>
+		<attribute name="packages"    description="Name of the packages to generate javadoc for"/>
+		<attribute name="sourcepath"  description="Directory where the source is located"/>
+		<attribute name="classpath"   description="Reference to the classpath for compiled code"/>
+		<attribute name="windowtitle" default="${javadoc.windowtitle}"/>
+		<attribute name="header"      default="${javadoc.header}"/>
+		<attribute name="footer"      default="${javadoc.footer}"/>
+		
+		<!-- Task Definition -->
+		<sequential>
+			<!-- make sure the directory exists -->
+			<mkdir dir="@{outdir}"/>
+
+			<javadoc destdir="@{outdir}"
+			        packagenames="@{packages}"
+			        sourcepath="@{sourcepath}"
+			        link="${javadoc.oracle}"
+			        use="true"
+			        version="true"
+			        breakiterator="true"
+			        windowtitle="@{windowtitle}"
+			        header="@{header}"
+			        footer="@{footer}"
+			        additionalparam="-quiet">
+				<classpath refid="@{classpath}"/>
+			</javadoc>
+		</sequential>
+	</macrodef>
+
+	<!-- ================================================================================= -->
+	<!--                               Macro: cppunit-report                               -->
+	<!-- ================================================================================= -->
+	<!--
+	     Macro for generating HTML reports from a CppUnit XML output file. This
+	     macro will *fail the build* if any of the unit tests failed during the
+	     testing run.
+	     
+	     Usage Example:
+	     <cppunit-report result="${testrun.result}"
+	                     xmlfile="${testrun.results.file}"
+	                     xslfile="${testrun.results.stylesheet}"
+	                     outfile="${testrun.complete.dir}"/>
+	-->
+	<macrodef name="cppunit-report" description="Generate a HTML result from CppUnit output file">
+		<!-- Attributes -->
+		<attribute name="result"   description="result value of the test run to check for success"/>
+		<attribute name="xmlfile"  description="results xml file generated by CppUnit"/>
+		<attribute name="xslfile"  description="stylesheet to generate test report with"/>
+		<attribute name="outfile"  description="the report file to generate"/>
+
+		<!-- Task Definition -->
+		<sequential>
+			<xslt style="@{xslfile}" in="@{xmlfile}" out="@{outfile}"/>
+		
+			<!-- fail the build if any of the tests were a failure -->
+			<if>
+				<equals arg1="@{result}" arg2="0"/>
+				<then>
+					<echo>Unit Tests PASSED</echo>
+					<echo>(see report in @{outfile} for details)</echo>
+				</then>
+				<else>
+					<echo>Some Unit Tests FAILED</echo>
+					<echo>(see report in @{outfile} for details)</echo>
+					<fail message="Unit Test Failure, see @{outfile} for details"/>
+				</else>
+			</if>
+		</sequential>
+	</macrodef>
+
+	<!-- ================================================================================= -->
+	<!--                                Macro: symlink-dylib                               -->
+	<!-- ================================================================================= -->
+	<!--
+	     Portico uses JNI to bridge between the Java and C++ interfaces. Due to a particular
+	     quirk in the way that Mac OS X and JNI works, we must create both a dylib and a jnilib
+	     file. One is loaded by standard Mac applications to load the C++ interface and this
+	     allows calls to flow from C++ to Java. For callbacks to happen (calls to flow from Java
+	     back to C++) we need a jnilib file. Creating a symlink from the dylib to a file with
+	     the jnilib extension seems to work. No idea why, but it does. This task makes it easy.
+	     It will create a relative link so that the files can be moved around (rather than one
+	     with an absolute location that would pin the link to the location it was in when created.
+	     
+	     Usage example:
+	     <symlink-dylib directory="[directory]" name="libRTI-NG"/>
+
+		 This will CD into the directory and execute a "ln -sf ./libRTI-NG.dylib ./libRTI-NG.jnilib"
+	-->
+	<macrodef name="symlink-dylib"
+	          description="Creates relative symlink from dylib to jnilib of the same name">
+		<!-- Attriutes -->
+		<attribute name="directory" description="Directory to create symlink from"/>
+		<attribute name="name" description="Name of dylib (no extension) to create jnilib link for"/>
+		
+		<!-- Task Definition -->
+		<sequential>
+			<!-- If the file exists, create the link - otherwise print a message and skip -->
+			<if>
+				<resourceexists><file file="@{directory}/@{name}.dylib"/></resourceexists>
+				<then>
+					<!-- File exists, so create the link -->
+					<exec executable="ln" dir="@{directory}" failonerror="@{failonerror}">
+						<arg line="-sf ./@{name}.dylib ./@{name}.jnilib"/>
+					</exec> 
+					<echo message=" (@{name}.dylib) Linked to @{directory}/@{name}.jnilib"/>
+				</then>
+				<else>
+					<!-- File does not exist, do don't create the link -->
+					<echo message=" (@{name}.dylib) Skipping - doesn't exist"/>
+				</else>
+			</if>
+		</sequential>
+	</macrodef>
+
+	<!-- ================================================================================= -->
+	<!--                              Macro: nsis-installer                                -->
+	<!-- ================================================================================= -->
+	<!-- bring in the nsis ant task (it currently lives in the support/ant-optional dir) -->
+	<taskdef name="nsis" classname="com.danielreese.nsisant.Task"/>
+
+	<!--
+	     This macro will run the Nullsoft Installer Ant task, appropriately configured to
+		 reference the local NSIS executables, and generate an installer using the provided
+		 script.
+		 
+		 All child tags are passed directly to the <nsis> task.
+	     
+	     Usage example:
+	     <nsis-installer script="path/to/nsis/script"/>
+	-->
+	<macrodef name="nsis-installer" description="General a windows installer using NSIS">
+		<!-- Attributes and Child Elements -->
+		<attribute name="script" description="The NSIS installer script to use"/>
+		<element name="body" implicit="yes" optional="yes"/>
+
+		<!-- Task Definition -->
+		<sequential>
+			<nsis script="@{script}" verbosity="1" path="system/nsis/">
+				<body/>
+			</nsis>
+		</sequential>
+	</macrodef>
+
+
+	<!-- ================================================================================= -->
+	<!--                              Macro: npm                                -->
+	<!-- ================================================================================= -->
+	<macrodef name="npm" description="Run the Node Package Manager">
+		<!-- Attributes and Child Elements -->
+		<attribute name="command" description="The command to run"/>       <!-- required -->
+		<attribute name="dir"     description="The directory to execute from"   default="."/>
+		<attribute name="log"     description="The file to pipe logging to"     default="npm.log"/>
+		<attribute name="verbose" description="True will pipe output to stdout" default="false"/>
+
+		<sequential>
+			<echo>[npm] running: npm @{command}</echo>
+
+			<local name="exe"/>
+			<if>
+				<isset property="platform.windows"/>
+				<then><property name="exe" value="npm.cmd"/></then> <!-- Windows -->
+				<else><property name="exe" value="npm"/></else>     <!-- Not Windows -->
+			</if>
+
+			<if>
+				<equals arg1="@{verbose}" arg2="true"/>
+				<!-- Output (alllll of it) will appear on stdout -->
+				<then>
+					<exec executable="${exe}"
+					      dir="@{dir}"
+					      searchpath="true"
+					      failonerror="true">
+						<arg line="@{command}"/>
+					</exec>
+				</then>
+				<!-- Otherwise, redirect output to a file -->
+				<else>
+					<exec executable="${exe}"
+					      dir="@{dir}"
+					      searchpath="true"
+					      failonerror="true"
+					      output="@{log}">
+						<arg line="@{command}"/>
+					</exec>
+				</else>
+			</if>
+		</sequential>
+	</macrodef>
+
+
+</project>
