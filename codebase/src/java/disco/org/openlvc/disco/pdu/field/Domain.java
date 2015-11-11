@@ -15,33 +15,59 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.provider.udp;
+package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.IProvider;
+import org.openlvc.disco.pdu.DisSizes;
 
-public class UdpProvider implements IProvider
+public enum Domain
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	Other     ( (short)0 ),
+	Land      ( (short)1 ),
+	Air       ( (short)2 ),
+	Surface   ( (short)3 ),
+	Subsurface( (short)4 ),
+	Space     ( (short)5 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private Domain( short value )
+	{
+		this.value = value;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////// Accessor and Mutator Methods ///////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+	public short value()
+	{
+		return this.value;
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static int getByteLength()
+	{
+		return DisSizes.UI8_SIZE;
+	}
+
+	public static Domain fromValue( short value )
+	{
+		for( Domain domain : values() )
+		{
+			if( domain.value == value )
+				return domain;
+		}
+		
+		throw new IllegalArgumentException( value+" not a valid Domain" );
+	}
 }

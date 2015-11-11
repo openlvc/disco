@@ -19,73 +19,18 @@ package org.openlvc.disco.pdu;
 
 import java.io.IOException;
 
-import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.pdu.record.PduHeader;
-
-public abstract class PDU
+/**
+ * An interface that represents a serialisable component of a PDU
+ */
+public interface IPduComponent
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 
 	//----------------------------------------------------------
-	//                   INSTANCE VARIABLES
-	//----------------------------------------------------------
-	protected PduHeader header;
-	protected long received;
-
-	//----------------------------------------------------------
-	//                      CONSTRUCTORS
-	//----------------------------------------------------------
-	protected PDU( PduHeader header )
-	{
-		this.header = header;
-		this.received = System.currentTimeMillis();
-	}
-
-	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	/**
-	 * Each PDU has a specific type, as enumerated in {@link PduType}. 
-	 */
-	public final PduType getType()
-	{
-		if( header == null )
-			throw new IllegalStateException( "The PDU does not contain a header" );
-		
-		return header.getPduType();
-	}
-
-	/**
-	 * Return this given PDU as one of the subtypes. Will throw a `ClassCastException` if
-	 * this PDU is not of the specified type.
-	 */
-	public <T extends PDU> T as( Class<T> type )
-	{
-		return type.cast( this );
-	}
-
-	public PduHeader getHeader()
-	{
-		return header;
-	}
-	
-	public void setHeader( PduHeader header )
-	{
-		this.header = header;
-	}
-	
-	public long getReceived()
-	{
-		return received;
-	}
-	
-	public void setReceived( long received )
-	{
-		this.received = received;
-	}
-
 	/**
 	 * Reads new field values for the PDU Component from the provided DISInputStream replacing any 
 	 * existing field values before the method was called.
@@ -110,15 +55,11 @@ public abstract class PDU
 	 * @throws IOException Thrown if there was an error writing to the provided DISOutputStream
 	 */
 	public abstract void to( DisOutputStream dos ) throws IOException;
-
+	
 	/**
-	 * Returns the length of this PDU's content section in bytes
+	 * Returns the length of this IPDUComponent in bytes
 	 * 
-	 * @return An int value representing the length of this PDU's content section in bytes
+	 * @return an int value representing the length of this IPDUComponent in bytes
 	 */
-	public abstract int getContentLength();
-
-	//----------------------------------------------------------
-	//                     STATIC METHODS
-	//----------------------------------------------------------
+	public abstract int getByteLength();
 }

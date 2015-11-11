@@ -15,7 +15,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.pdu.field;
+package org.openlvc.disco.pdu.record;
+
+import java.io.IOException;
+
+import org.openlvc.disco.pdu.DisInputStream;
+import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.PduVersion;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 
 public class PduHeader
 {
@@ -57,11 +64,32 @@ public class PduHeader
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	public void from( DisInputStream dis ) throws IOException
+	{
+		this.version = PduVersion.fromValue( dis.readUI8() );
+		this.exerciseId = dis.readUI8();
+		this.pduType = PduType.fromValue( dis.readUI8() );
+		this.family = ProtocolFamily.fromValue( dis.readUI8() );
+		this.timestamp = dis.readUI32();
+		
+		dis.readUI16(); // Length
+		dis.readUI16(); // padding bytes
+	}
+
+	@Override
+	public String toString()
+	{
+		return "("+version+") "+family+"/"+pduType+", ExerciseID="+exerciseId;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 	public PduVersion getVersion() { return this.version; }
 	public void setVersion( PduVersion version ) { this.version = version; }
 	
-	public PduType getPDUType() { return this.pduType; }
-	public void setPDUType( PduType type ) { this.pduType = type; }
+	public PduType getPduType() { return this.pduType; }
+	public void setPduType( PduType type ) { this.pduType = type; }
 	
 	public short getExerciseId() { return this.exerciseId; }
 	public void setExerciseId( short id ) { this.exerciseId = id; }

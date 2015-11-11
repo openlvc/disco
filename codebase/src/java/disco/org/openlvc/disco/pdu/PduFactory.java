@@ -17,6 +17,10 @@
  */
 package org.openlvc.disco.pdu;
 
+import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.record.PduHeader;
+
 /**
  * Methods to help quickly create certain types of PDU's, or to create PDUs from an
  * incoming stream/source.
@@ -42,10 +46,15 @@ public class PduFactory
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static PDU from( byte[] bytes )
+	public static PDU create( PduHeader header )
 	{
-		
-		
-		return null;
+		switch( header.getPduType() )
+		{
+			case EntityState:
+				return new EntityStatePdu( header );
+			default:
+				throw new DiscoException( "PDU Type not currently supported: "+header.getPduType() );
+		}
 	}
+	
 }

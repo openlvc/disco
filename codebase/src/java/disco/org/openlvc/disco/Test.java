@@ -17,10 +17,12 @@
  */
 package org.openlvc.disco;
 
-import org.apache.logging.log4j.Logger;
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.PduType;
 
-public class PduSink
+public class Test implements IPduReceiver
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,28 +31,45 @@ public class PduSink
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Logger logger;
-	private IDatasource provider;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduSink( OpsCenter opscenter, IDatasource provider )
-	{
-		this.logger = opscenter.getLogger();
-		this.provider = provider;
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	public void send( PDU pdu )
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
+	public void receiver( PDU pdu )
 	{
-		
+		if( pdu.getType() == PduType.EntityState )
+		{
+			EntityStatePdu espdu = pdu.as( EntityStatePdu.class );
+			System.out.println( "Received ESPDU for "+espdu.getEntityMarking() );
+		}
+		else
+		{
+			System.out.println( "Received "+pdu.getType() );
+		}
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static void main( String[] args ) throws Exception
+	{
+		DiscoConfiguration configuration = new DiscoConfiguration();
+		configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
+		configuration.getNetworkConfiguration().setNetworkInterface( "LINK_LOCAL" );
+
+		Test test = new Test();
+		OpsCenter opscenter = new OpsCenter( configuration );
+		opscenter.setReceiver( test );
+		opscenter.open();
+		//opscenter.close();
+	}
 }

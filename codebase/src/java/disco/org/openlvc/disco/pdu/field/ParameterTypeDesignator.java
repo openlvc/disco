@@ -15,42 +15,54 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.provider;
+package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.IProvider;
-import org.openlvc.disco.provider.udp.UdpProvider;
+import org.openlvc.disco.pdu.DisSizes;
 
-public class ProviderFactory
+public enum ParameterTypeDesignator
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	ArticulatedPart( (short)0 ),
+	AttachedPart( (short)1 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private ParameterTypeDesignator( short value )
+	{
+		this.value = value;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	public short value()
+	{
+		return this.value;
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static IProvider getProvider( String name )
+	public static int getByteLength()
 	{
-		name = name.trim();
-		if( name.equalsIgnoreCase("network.udp") )
-			return new UdpProvider();
-		else if( name.equalsIgnoreCase("file") )
-			throw new IllegalArgumentException( "Provider is not supported: "+name );
-		else if( name.equalsIgnoreCase("network.tcp") )
-			throw new IllegalArgumentException( "Provider is not supported: "+name );
+		return DisSizes.UI8_SIZE;
+	}
+
+	public static ParameterTypeDesignator fromValue( short value )
+	{
+		if( value == ArticulatedPart.value )
+			return ArticulatedPart;
+		else if( value == AttachedPart.value )
+			return AttachedPart;
 		else
-			throw new IllegalArgumentException( "Provider is not supported: "+name );
+			throw new IllegalArgumentException( value+" is not a valid ParameterTypeDesignator" );
 	}
 }

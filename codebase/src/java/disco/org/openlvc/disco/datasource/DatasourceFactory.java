@@ -15,12 +15,16 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.datasource;
 
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.IDatasource;
+import org.openlvc.disco.datasource.udp.UdpDatasource;
 
-public class PduSink
+/**
+ * Registry for {@link IDatasource} implementations. Pass the symbol name to
+ * {@link #getDatasource(String)} and get back your provider!
+ */
+public class DatasourceFactory
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,28 +33,25 @@ public class PduSink
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Logger logger;
-	private IDatasource provider;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduSink( OpsCenter opscenter, IDatasource provider )
-	{
-		this.logger = opscenter.getLogger();
-		this.provider = provider;
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	public void send( PDU pdu )
-	{
-		
-	}
-
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static IDatasource getDatasource( String name ) throws IllegalArgumentException
+	{
+		name = name.trim();
+		if( name.equalsIgnoreCase("network.udp") )
+			return new UdpDatasource();
+		else
+			throw new IllegalArgumentException( "Datasource name not known: "+name );
+	}
+
 }

@@ -15,42 +15,55 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu.field;
 
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.DisSizes;
 
-public class PduSink
+public enum ForceId
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	Other   ( (short)0 ),
+	Friendly( (short)1 ),
+	Opposing( (short)2 ),
+	Neutral ( (short)3 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Logger logger;
-	private IDatasource provider;
+	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduSink( OpsCenter opscenter, IDatasource provider )
+	private ForceId( short value )
 	{
-		this.logger = opscenter.getLogger();
-		this.provider = provider;
+		this.value = value;
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	public void send( PDU pdu )
+	public short value()
 	{
-		
+		return this.value;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static int getByteLength()
+	{
+		return DisSizes.UI8_SIZE;
+	}
+
+	public static ForceId fromValue( short value )
+	{
+		if( value == Friendly.value ) return Friendly;
+		if( value == Opposing.value ) return Opposing;
+		if( value == Other.value ) return Other;
+		if( value == Neutral.value ) return Neutral;
+		else throw new IllegalArgumentException( value+" is not a valid ForceId" );
+	}
 }

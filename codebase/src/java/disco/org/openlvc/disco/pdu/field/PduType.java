@@ -17,13 +17,16 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
+
 public enum PduType
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
 	Other             ( (short)0 ),
-	EntityState       ( (short)1 ),
+	EntityState       ( (short)1, EntityStatePdu.class ),
 	Fire              ( (short)2 ),
 	Detonation        ( (short)3 ),
 	Collision         ( (short)4 ),
@@ -82,6 +85,7 @@ public enum PduType
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private short value;
+	private Class<? extends PDU> type;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -89,6 +93,12 @@ public enum PduType
 	private PduType( short value )
 	{
 		this.value = value;
+	}
+	
+	private PduType( short value, Class<? extends PDU> type )
+	{
+		this.value = value;
+		this.type = type;
 	}
 
 	//----------------------------------------------------------
@@ -99,10 +109,18 @@ public enum PduType
 		return this.value;
 	}
 
+	/**
+	 * Returns the class that implements this PDU, or null if there is none.
+	 */
+	public Class<? extends PDU> getImplementationClass()
+	{
+		return this.type;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public PduType fromValue( short value )
+	public static PduType fromValue( short value )
 	{
 		if( value == EntityState.value )
 			return EntityState;

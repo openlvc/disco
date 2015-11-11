@@ -15,42 +15,65 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu;
 
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.pdu.PDU;
+import java.util.Collection;
 
-public class PduSink
+/**
+ * A Utility class that provides size constants and functions relating to the DIS specification.
+ */
+public class DisSizes
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-
+	// SIZES (specified in bytes)
+	public static final int UI8_SIZE = 1;
+	public static final int UI16_SIZE = 2;
+	public static final int UI32_SIZE = 4;
+	public static final int UI64_SIZE = 8;
+	public static final int FLOAT32_SIZE = 4;
+	public static final int FLOAT64_SIZE = 8;
+	
+	// MAXIMUM VALUES
+	public static final short UI8_MAX_VALUE = 0xFF; 
+	public static final int   UI16_MAX_VALUE = 0xFFFF;
+	public static final long  UI32_MAX_VALUE = 0xFFFFFFFFl;
+	
+	/**
+	 * The maximum value that can fit into the PDU Header's length field (specified in bytes). 
+	 */
+	public static final int PDU_MAX_SIZE = UI16_MAX_VALUE;
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Logger logger;
-	private IDatasource provider;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduSink( OpsCenter opscenter, IDatasource provider )
-	{
-		this.logger = opscenter.getLogger();
-		this.provider = provider;
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	public void send( PDU pdu )
-	{
-		
-	}
-
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	/**
+	 * Returns the size, in bytes, of the the specified collection of DIS <code>IPDUComponent</code>s
+	 * 
+	 * @param collection The collection to calculate the size of
+	 * 
+	 * @return An int representing the size, in bytes, of the specified collection
+	 */
+	public static int getByteLengthOfCollection( Collection<? extends IPduComponent> collection )
+	{
+		int size = 0;
+		
+		for ( IPduComponent component : collection )
+			size += component.getByteLength();
+			
+		return size;
+	}
 }

@@ -70,13 +70,26 @@ public class LifecycleTest
 	/// PDU Testing Methods   /////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
 	@Test
-	public void testEntityStatePdu()
+	public void testLifecycle()
 	{
-		TestReceiver receiver = new TestReceiver();
-		OpsCenter opscenter = new OpsCenter();
-		opscenter.setReceiver( receiver );
-		opscenter.open();
-		opscenter.close();
+		// SpecialProvider provider = new SpecialProvider();
+		// OpsCenter opscenter = new OpsCenter();
+		// opscenter.setProvider( provider );
+		// opscenter.setReceiver( receiver );
+
+		try
+		{
+    		TestReceiver receiver = new TestReceiver();
+    		OpsCenter opscenter = new OpsCenter();
+    		opscenter.setReceiver( receiver );
+    		opscenter.open();
+    		opscenter.close();
+		}
+		catch( Exception e )
+		{
+			e.printStackTrace( );
+			throw e;
+		}
 	}
 
 	//----------------------------------------------------------

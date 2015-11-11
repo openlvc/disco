@@ -22,7 +22,7 @@ package org.openlvc.disco;
  * from and sent to. Whether that is a network connection, file, database or what does
  * not matter.
  */
-public interface IProvider
+public interface IDatasource
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -31,5 +31,24 @@ public interface IProvider
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+
+	public String getName();
+
+	/**
+	 * Configure the provider as it is being deployed into the given {@link OpsCenter}.
+	 */
+	public void configure( OpsCenter opscenter ) throws DiscoException;
+	
+	/**
+	 * Open a connection to this provider and start it receiving.
+	 * 
+	 * This method cannot block.
+	 */
+	public void open() throws DiscoException;
+
+	/**
+	 * Close out the connection to this provider.
+	 */
+	public void close() throws DiscoException;
 
 }

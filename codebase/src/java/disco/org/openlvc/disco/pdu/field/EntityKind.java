@@ -15,42 +15,63 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu.field;
 
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.DisSizes;
 
-public class PduSink
+public enum EntityKind
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	Other            ( (short)0 ),
+	Platform         ( (short)1 ),
+	Munition         ( (short)2 ),
+	Lifeform         ( (short)3 ),
+	Environmental    ( (short)4 ),
+	CulturalFeature  ( (short)5 ),
+	Supply           ( (short)6 ),
+	Radio            ( (short)7 ),
+	Expandable       ( (short)8 ),
+	SensorEmitter    ( (short)9 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Logger logger;
-	private IDatasource provider;
+	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduSink( OpsCenter opscenter, IDatasource provider )
+	private EntityKind( short value )
 	{
-		this.logger = opscenter.getLogger();
-		this.provider = provider;
+		this.value = value;
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	public void send( PDU pdu )
+	public short value()
 	{
-		
+		return this.value;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static int getByteLength()
+	{
+		return DisSizes.UI8_SIZE;
+	}
+
+	public static EntityKind fromValue( short value )
+	{
+		for( EntityKind kind : values() )
+		{
+			if( kind.value == value )
+				return kind;
+		}
+		
+		throw new IllegalArgumentException( value+" not a valid EntityKind" );
+	}
 }

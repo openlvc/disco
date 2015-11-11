@@ -15,42 +15,64 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu.field;
 
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.DisSizes;
 
-public class PduSink
+public enum DeadReckoningAlgorithm
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	Other ( (short)0 ),
+	Static( (short)1 ),
+	FPW   ( (short)2 ),
+	RPW   ( (short)3 ),
+	RVW   ( (short)4 ),
+	FVW   ( (short)5 ),
+	FPB   ( (short)6 ),
+	RPB   ( (short)7 ),
+	RVB   ( (short)8 ),
+	FVB   ( (short)9 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Logger logger;
-	private IDatasource provider;
+	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduSink( OpsCenter opscenter, IDatasource provider )
+	private DeadReckoningAlgorithm( short value )
 	{
-		this.logger = opscenter.getLogger();
-		this.provider = provider;
+		this.value = value;
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	public void send( PDU pdu )
+	public short value()
 	{
-		
+		return this.value;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static int getByteLength()
+	{
+		return DisSizes.UI8_SIZE;
+	}
+
+	public static DeadReckoningAlgorithm fromValue( short value )
+	{
+		for( DeadReckoningAlgorithm algo : values() )
+		{
+			if( algo.value == value )
+				return algo;
+		}
+		
+		throw new IllegalArgumentException( value+" not a valid Dead Reckoning Algorithm" );
+	}
+
 }

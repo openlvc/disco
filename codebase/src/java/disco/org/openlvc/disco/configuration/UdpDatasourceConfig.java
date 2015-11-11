@@ -18,32 +18,38 @@
 package org.openlvc.disco.configuration;
 
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.UnknownHostException;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.utils.NetworkUtils;
 
-public class UdpProviderConfig
+public class UdpDatasourceConfig
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 	// Keys for properties file
+	private static final String PROP_INTERFACE = "disco.provider.udp.interface";
 	private static final String PROP_ADDRESS = "disco.provider.udp.address";
 	private static final String PROP_PORT = "disco.provider.udp.port";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private NetworkInterface networkInterface;
 	private InetAddress address;
 	private int port;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public UdpProviderConfig()
+	public UdpDatasourceConfig()
 	{
-		this.address = NetworkUtils.getByName( System.getProperty(PROP_ADDRESS,"127.0.0.1") );
-		this.port = Integer.parseInt( System.getProperty(PROP_PORT,"3000") );
+		// lazy-load all of these from system properties unless they are set separately
+		this.address = null;
+		this.port = -1;
+		this.networkInterface = null;
 	}
 
 	//----------------------------------------------------------
@@ -52,6 +58,22 @@ public class UdpProviderConfig
 
 	public InetAddress getAddress()
 	{
+		if( this.address == null )
+		{
+			String prop = System.getProperty( PROP_ADDRESS, "BROADCAST" );
+			if( prop.equals("BROADCAST") )
+			{
+				// Get Network Interface to determine local address
+				NetworkInterface nic = getNetworkInterface();
+				this.address = nic.getInterfaceAddresses().get(0).getAddress();
+			}
+			else
+			{
+				// It if an address, get it directly
+				this.address = NetworkUtils.getAddress( prop );
+			}
+		}
+		
 		return this.address;
 	}
 	
@@ -66,11 +88,21 @@ public class UdpProviderConfig
 	 */
 	public void setAddress( String address ) throws DiscoException
 	{
-		this.address = NetworkUtils.getByName( address );
+		try
+		{
+			this.address = InetAddress.getByName( address );
+		}
+		catch( UnknownHostException uhe )
+		{
+			throw new DiscoException( "Could not find address: "+address );
+		}
 	}
 	
 	public int getPort()
 	{
+		if( this.port == -1 )
+			this.port = Integer.parseInt( System.getProperty(PROP_PORT,"3000") );
+
 		return this.port;
 	}
 	
@@ -79,6 +111,28 @@ public class UdpProviderConfig
 		this.port = port;
 	}
 	
+	public NetworkInterface getNetworkInterface()
+	{
+		if( this.networkInterface == null )
+		{
+			// have they provided a specific nic?
+			String prop = System.getProperty( PROP_INTERFACE, "SITE_LOCAL" );
+			this.networkInterface = NetworkUtils.getNetworkInterface( prop );
+		}
+
+		return this.networkInterface;
+	}
+	
+	public void setNetworkInterface( NetworkInterface networkInterface )
+	{
+		this.networkInterface = networkInterface;
+	}
+	
+	public void setNetworkInterface( String name )
+	{
+		this.networkInterface = NetworkUtils.getNetworkInterface( name );
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

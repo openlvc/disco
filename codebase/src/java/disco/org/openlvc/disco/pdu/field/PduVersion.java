@@ -55,7 +55,7 @@ public enum PduVersion
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public PduVersion fromValue( short value )
+	public static PduVersion fromValue( short value )
 	{
 		if( value == 7 )
 			return Version7;
