@@ -15,68 +15,58 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.DisSizes;
 
-public class Test implements IPduReceiver
+public enum MajorModulationType
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	Other( 0 ),
+	Amplitude( 1 ),
+	AmplitudeAndAngle( 2 ),
+	Angle( 3 ),
+	Combination( 4 ),
+	Pulse( 5 ),
+	Unmodulated( 6 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-
+	private int value;
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private MajorModulationType( int value )
+	{
+		this.value = value;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void receiver( PDU pdu )
+	public int value()
 	{
-		int espdu_count = 0;
-
-		switch( pdu.getType() )
-		{
-			case EntityState:
-				espdu_count++;
-				if( espdu_count % 25 == 0 )
-					System.out.println( "EntityState ("+espdu_count+")" );
-				break;
-			case Fire:
-				System.out.println( "Fire!" );
-				break;
-			case Detonation:
-				System.out.println( "Detonation!" );
-				break;
-			default:
-				break;
-		}
+		return this.value;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
+	public static int getByteLength()
 	{
-		DiscoConfiguration configuration = new DiscoConfiguration();
-		configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
-		configuration.getNetworkConfiguration().setNetworkInterface( "LINK_LOCAL" );
-
-		Test test = new Test();
-		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setReceiver( test );
-		opscenter.open();
-		//opscenter.close();
+		return DisSizes.UI16_SIZE;
 	}
+	
+	public static MajorModulationType fromValue( int value )
+	{
+		for( MajorModulationType type : values() )
+			if( type.value == value )
+				return type;
+		
+		throw new IllegalArgumentException( value+" is not a valid value for MajorModulationType" );
+	}
+
 }

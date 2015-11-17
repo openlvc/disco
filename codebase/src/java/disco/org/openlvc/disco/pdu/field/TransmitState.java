@@ -15,68 +15,57 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.DisSizes;
 
-public class Test implements IPduReceiver
+public enum TransmitState
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	Off                 ( (short)0 ),
+	OnButNotTransmitting( (short)0 ),
+	OnAndTransmitting   ( (short)0 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private TransmitState( short value )
+	{
+		this.value = value;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void receiver( PDU pdu )
+	public short value()
 	{
-		int espdu_count = 0;
-
-		switch( pdu.getType() )
-		{
-			case EntityState:
-				espdu_count++;
-				if( espdu_count % 25 == 0 )
-					System.out.println( "EntityState ("+espdu_count+")" );
-				break;
-			case Fire:
-				System.out.println( "Fire!" );
-				break;
-			case Detonation:
-				System.out.println( "Detonation!" );
-				break;
-			default:
-				break;
-		}
+		return this.value;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
+	public static int getByteLength()
 	{
-		DiscoConfiguration configuration = new DiscoConfiguration();
-		configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
-		configuration.getNetworkConfiguration().setNetworkInterface( "LINK_LOCAL" );
-
-		Test test = new Test();
-		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setReceiver( test );
-		opscenter.open();
-		//opscenter.close();
+		return DisSizes.UI8_SIZE;
+	}
+	
+	public static TransmitState fromValue( short value )
+	{
+		if( value == OnButNotTransmitting.value )
+			return OnButNotTransmitting;
+		else if( value == OnAndTransmitting.value )
+			return OnAndTransmitting;
+		else if( value == Off.value )
+			return Off;
+		
+		throw new IllegalArgumentException( value+" is not a valid value for TransmitterState" );
 	}
 }

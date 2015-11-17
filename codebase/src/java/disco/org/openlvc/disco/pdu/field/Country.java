@@ -316,7 +316,7 @@ public enum Country
 		return DisSizes.UI16_SIZE;
 	}
 
-	public static Country fromValue( short value )
+	public static Country fromValue( int value )
 	{
 		if( value == UnitedStates.value ) return UnitedStates;
 		else if( value == UnitedKingdom.value ) return UnitedKingdom;

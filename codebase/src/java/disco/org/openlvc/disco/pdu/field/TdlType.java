@@ -15,68 +15,64 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.DisSizes;
 
-public class Test implements IPduReceiver
+/**
+ * This field shall specify the TDL Type as a 16-bit enumeration field when the 
+ * encoding class is the raw binary, audio, application - specific, or database 
+ * index representation of a TDL Message. When the data field is not 
+ * representing a TDL Message, this field shall be set to zero (see Section 9 
+ * in EBV-DOC for enumeration of the TDL Type field).
+ * 
+ * @see "Section 9 in EBV-DOC"
+ */
+public enum TdlType
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	Other        ( 0 ),
+	AbbreviatedC2( 15 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private int value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private TdlType( int value )
+	{
+		this.value = value;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void receiver( PDU pdu )
+	public int value()
 	{
-		int espdu_count = 0;
-
-		switch( pdu.getType() )
-		{
-			case EntityState:
-				espdu_count++;
-				if( espdu_count % 25 == 0 )
-					System.out.println( "EntityState ("+espdu_count+")" );
-				break;
-			case Fire:
-				System.out.println( "Fire!" );
-				break;
-			case Detonation:
-				System.out.println( "Detonation!" );
-				break;
-			default:
-				break;
-		}
+		return this.value;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
+	public static int getByteLength()
 	{
-		DiscoConfiguration configuration = new DiscoConfiguration();
-		configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
-		configuration.getNetworkConfiguration().setNetworkInterface( "LINK_LOCAL" );
+		return DisSizes.UI8_SIZE;
+	}
 
-		Test test = new Test();
-		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setReceiver( test );
-		opscenter.open();
-		//opscenter.close();
+	public static TdlType fromValue( int value )
+	{
+		for( TdlType type : values() )
+		{
+			if( type.value == value )
+				return type;
+		}
+		
+		throw new IllegalArgumentException( value+" not a valid TDLType" );
 	}
 }

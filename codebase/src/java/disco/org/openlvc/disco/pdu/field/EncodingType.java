@@ -15,68 +15,67 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.DisSizes;
 
-public class Test implements IPduReceiver
+/**
+ * The fourteen least significant bits of the encoding scheme shall represent 
+ * encoding type when the encoding class is encoded audio.
+ * 
+ * The valid values of encoding type are enumerated in Section 9 of EBV-DOC.
+ * 
+ * @see "Section 9 of EBV-DOC"
+ */
+public enum EncodingType
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	Mulaw8( (short)1 ),
+	CVSD  ( (short)2 ),
+	ADPCM ( (short)3 ),
+	PCM16 ( (short)4 ),
+	PCM8  ( (short)5 ),
+	VQ    ( (short)6 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private EncodingType( short value )
+	{
+		this.value = value;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void receiver( PDU pdu )
+	public short value()
 	{
-		int espdu_count = 0;
-
-		switch( pdu.getType() )
-		{
-			case EntityState:
-				espdu_count++;
-				if( espdu_count % 25 == 0 )
-					System.out.println( "EntityState ("+espdu_count+")" );
-				break;
-			case Fire:
-				System.out.println( "Fire!" );
-				break;
-			case Detonation:
-				System.out.println( "Detonation!" );
-				break;
-			default:
-				break;
-		}
+		return this.value;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
+	public static int getByteLength()
 	{
-		DiscoConfiguration configuration = new DiscoConfiguration();
-		configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
-		configuration.getNetworkConfiguration().setNetworkInterface( "LINK_LOCAL" );
+		return DisSizes.UI8_SIZE;
+	}
 
-		Test test = new Test();
-		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setReceiver( test );
-		opscenter.open();
-		//opscenter.close();
+	public static EncodingType fromValue( short value )
+	{
+		for( EncodingType type : values() )
+		{
+			if( type.value == value )
+				return type;
+		}
+		
+		throw new IllegalArgumentException( value+" not a valid EncodingType" );
 	}
 }

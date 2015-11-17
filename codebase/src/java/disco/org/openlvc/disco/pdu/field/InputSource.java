@@ -15,68 +15,61 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.DisSizes;
 
-public class Test implements IPduReceiver
+public enum InputSource
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
-
+	Other            ( (short)0 ),
+	Pilot            ( (short)1 ),
+	Copilot          ( (short)2 ),
+	FirstOfficer     ( (short)3 ),
+	Driver           ( (short)4 ),
+	Loader           ( (short)5 ),
+	Gunner           ( (short)6 ),
+	Commander        ( (short)7 ),
+	DigitalDataDevice( (short)8 ),
+	Intercom         ( (short)9 );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private InputSource( short value )
+	{
+		this.value = value;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void receiver( PDU pdu )
+	public short value()
 	{
-		int espdu_count = 0;
-
-		switch( pdu.getType() )
-		{
-			case EntityState:
-				espdu_count++;
-				if( espdu_count % 25 == 0 )
-					System.out.println( "EntityState ("+espdu_count+")" );
-				break;
-			case Fire:
-				System.out.println( "Fire!" );
-				break;
-			case Detonation:
-				System.out.println( "Detonation!" );
-				break;
-			default:
-				break;
-		}
+		return this.value();
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
+	public static int getByteLength()
 	{
-		DiscoConfiguration configuration = new DiscoConfiguration();
-		configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
-		configuration.getNetworkConfiguration().setNetworkInterface( "LINK_LOCAL" );
-
-		Test test = new Test();
-		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setReceiver( test );
-		opscenter.open();
-		//opscenter.close();
+		return DisSizes.UI8_SIZE;
+	}
+	
+	public static InputSource fromValue( short value )
+	{
+		for( InputSource source : values() )
+			if( source.value == value )
+				return source;
+				
+		throw new IllegalArgumentException( value+" is not a valid value for InputSource" );
 	}
 }
