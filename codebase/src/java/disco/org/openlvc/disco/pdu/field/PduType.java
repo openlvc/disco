@@ -19,6 +19,11 @@ package org.openlvc.disco.pdu.field;
 
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.radio.ReceiverPdu;
+import org.openlvc.disco.pdu.radio.SignalPdu;
+import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disco.pdu.warfare.DetonationPdu;
+import org.openlvc.disco.pdu.warfare.FirePdu;
 
 public enum PduType
 {
@@ -27,8 +32,8 @@ public enum PduType
 	//----------------------------------------------------------
 	Other             ( (short)0 ),
 	EntityState       ( (short)1, EntityStatePdu.class ),
-	Fire              ( (short)2 ),
-	Detonation        ( (short)3 ),
+	Fire              ( (short)2, FirePdu.class ),
+	Detonation        ( (short)3, DetonationPdu.class ),
 	Collision         ( (short)4 ),
 	ServiceRequest    ( (short)5 ),
 	ResupplyOffer     ( (short)6 ),
@@ -50,36 +55,61 @@ public enum PduType
 	Comment           ( (short)22 ),
 	Emission          ( (short)23 ),
 	Designator        ( (short)24 ),
-	Transmitter       ( (short)25 ),
-	Signal            ( (short)26 ),
-	Receiver          ( (short)27 ),
+	Transmitter       ( (short)25, TransmitterPdu.class ),
+	Signal            ( (short)26, SignalPdu.class ),
+	Receiver          ( (short)27, ReceiverPdu.class ),
+	IFF               ( (short)28 ),
+	UnderwaterAcoustic( (short)29 ),
+	SupplementalEmmission( (short)30 ), // ?
 	
-	AnnounceObject      ( (short)129 ),
-	DeleteObject        ( (short)130 ),
-	DescribeApplication ( (short)131 ),
-	DescribeEvent       ( (short)132 ),
-	DescribeObject      ( (short)133 ),
-	RequestEvent        ( (short)134 ),
-	RequestObject       ( (short)135 ),
-
-	TimeSpacePositionFI ( (short)140 ),
-	AppearanceFI        ( (short)141 ),
-	ArticulatedPartsFI  ( (short)142 ),
-	FireFI              ( (short)143 ),
-	DetonationFI        ( (short)144 ),
-
-	PointObjectState           ( (short)150 ),
-	LinearObjectState          ( (short)151 ),
-	ArealObjectState           ( (short)152 ),
-	Environment                ( (short)153 ),
-	TransferControlRequest     ( (short)155 ),
-	TransferControl            ( (short)156 ),
-	TransferControlAcknowledge ( (short)157 ),
-
-	IntercomControl     ( (short)160 ),
-	IntercomSignal      ( (short)161 ),
-
-	Aggregate           ( (short)170 );
+	IntercomSignal    ( (short)31 ),
+	IntercomControl   ( (short)32 ),
+	
+	AggregateSate     ( (short)33 ),
+	IsGroupOf         ( (short)34 ),
+	
+	TransferOwnership ( (short)35 ),
+	IsPartOf          ( (short)36 ),
+	
+	MinefieldState    ( (short)37 ),
+	MinefieldQuery    ( (short)38 ),
+	MinefieldData     ( (short)39 ),
+	MinefieldRspNACK  ( (short)40 ),
+	
+	EnvironmentalProc ( (short)41 ),
+	GriddedData       ( (short)42 ),
+	PointObjectState  ( (short)43 ),
+	LinearObjectState ( (short)44 ),
+	ArealObjectState  ( (short)45 ),
+	
+	TSPI              ( (short)46 ),
+	Appearance        ( (short)47 ),
+	ArticulatedParts  ( (short)48 ),
+	
+	LEFire            ( (short)49 ),
+	LEDetonation      ( (short)50 ),
+	CreateEntity_R    ( (short)51 ),
+	RemoveEntity_R    ( (short)52 ),
+	StartResume_R     ( (short)53 ),
+	StopFreeze_R      ( (short)54 ),
+	Acknowledge_R     ( (short)55 ),
+	ActionRequest_R   ( (short)56 ),
+	ActionResponse_R  ( (short)57 ),
+	DataQuery_R       ( (short)58 ),
+	SetData_R         ( (short)59 ),
+	Data_R            ( (short)60 ),
+	EventReport_R     ( (short)61 ),
+	Comment_R         ( (short)62 ),
+	Record_R          ( (short)63 ),
+	SetRecord_R       ( (short)64 ),
+	RecordQuery_R     ( (short)65 ),
+	CollisionElastic  ( (short)66 ),
+	EntityStateUpdate ( (short)67 ),
+	DirectedEnergyFire( (short)68 ),
+	EntityDamageStatus( (short)69 ),
+	InfoOpsAction     ( (short)70 ),
+	InfoOpsReport     ( (short)71 ),
+	Attribute         ( (short)72 );
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES

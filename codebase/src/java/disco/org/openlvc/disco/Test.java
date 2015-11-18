@@ -41,24 +41,44 @@ public class Test implements IPduReceiver
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	private int espdu_count = 0;
+	private int fire_count = 0;
+	private int det_count = 0;
+	private int transmitter_count = 0;
+	private int receiver_count = 0;
+	private int signal_count = 0;
+
 	@Override
 	public void receiver( PDU pdu )
 	{
-		int espdu_count = 0;
 
 		switch( pdu.getType() )
 		{
 			case EntityState:
 				espdu_count++;
-				if( espdu_count % 25 == 0 )
+				if( (espdu_count % 1000) == 0 )
 					System.out.println( "EntityState ("+espdu_count+")" );
 				break;
 			case Fire:
-				System.out.println( "Fire!" );
+				fire_count++;
+				System.out.println( "Fire ("+fire_count+")" );
 				break;
 			case Detonation:
-				System.out.println( "Detonation!" );
+				det_count++;
+				System.out.println( "Detonation ("+det_count+")" );
 				break;
+			case Transmitter:
+				transmitter_count++;
+				if( (transmitter_count % 10) == 0 )
+					System.out.println( "Transmitter ("+transmitter_count+")" );
+			case Receiver:
+				receiver_count++;
+				if( (receiver_count % 10) == 0 )
+					System.out.println( "Receiver ("+receiver_count+")" );
+			case Signal:
+				signal_count++;
+				if( (signal_count % 10) == 0 )
+					System.out.println( "Signal ("+signal_count+")" );
 			default:
 				break;
 		}

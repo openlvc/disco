@@ -37,7 +37,8 @@ public enum CryptoSystem
 	KY58        ( 2 ),
 	NSVE        ( 3 ),
 	WSVE        ( 4 ),
-	SincgarsIcom( 5 );
+	SincgarsIcom( 5 ),
+	Invalid     ( Integer.MAX_VALUE );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -76,6 +77,7 @@ public enum CryptoSystem
 				return crypto;
 		}
 		
-		throw new IllegalArgumentException( value+" not a valid CryptoSystem" );
+		return Invalid;
+		//throw new IllegalArgumentException( value+" not a valid CryptoSystem" );
 	}
 }

@@ -25,8 +25,8 @@ public enum TransmitState
 	//                        VALUES
 	//----------------------------------------------------------
 	Off                 ( (short)0 ),
-	OnButNotTransmitting( (short)0 ),
-	OnAndTransmitting   ( (short)0 );
+	OnButNotTransmitting( (short)1 ),
+	OnAndTransmitting   ( (short)2 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES

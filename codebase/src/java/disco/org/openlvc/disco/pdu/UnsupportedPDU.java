@@ -15,55 +15,62 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.pdu.field;
+package org.openlvc.disco.pdu;
 
-import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.DiscoException;
 
-public enum ParameterTypeDesignator
+public class UnsupportedPDU extends DiscoException
 {
 	//----------------------------------------------------------
-	//                        VALUES
+	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	ArticulatedPart( (short)0 ),
-	AttachedPart( (short)1 ),
-	Invalid( Short.MAX_VALUE );
+	private static final long serialVersionUID = 3112252018924L;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private ParameterTypeDesignator( short value )
+	/**
+	 * Just create an empty exception
+	 */
+	public UnsupportedPDU()
 	{
-		this.value = value;
+		super();
+	}
+
+	/**
+	 * @param message The message to create the exception with
+	 */
+	public UnsupportedPDU( String message )
+	{
+		super( message );
+	}
+
+	/**
+	 * @param cause The cause of the exception
+	 */
+	public UnsupportedPDU( Throwable cause )
+	{
+		super( cause );
+	}
+
+	/**
+	 * @param message The message to create the exception with
+	 * @param cause The cause of the exception
+	 */
+	public UnsupportedPDU( String message, Throwable cause )
+	{
+		super( message, cause );
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public short value()
-	{
-		return this.value;
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static int getByteLength()
-	{
-		return DisSizes.UI8_SIZE;
-	}
-
-	public static ParameterTypeDesignator fromValue( short value )
-	{
-		if( value == ArticulatedPart.value )
-			return ArticulatedPart;
-		else if( value == AttachedPart.value )
-			return AttachedPart;
-		else
-			return Invalid;
-	}
 }

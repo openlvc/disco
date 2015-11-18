@@ -19,7 +19,12 @@ package org.openlvc.disco.pdu;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.radio.ReceiverPdu;
+import org.openlvc.disco.pdu.radio.SignalPdu;
+import org.openlvc.disco.pdu.radio.TransmitterPdu;
 import org.openlvc.disco.pdu.record.PduHeader;
+import org.openlvc.disco.pdu.warfare.DetonationPdu;
+import org.openlvc.disco.pdu.warfare.FirePdu;
 
 /**
  * Methods to help quickly create certain types of PDU's, or to create PDUs from an
@@ -52,8 +57,18 @@ public class PduFactory
 		{
 			case EntityState:
 				return new EntityStatePdu( header );
+			case Fire:
+				return new FirePdu( header );
+			case Detonation:
+				return new DetonationPdu( header );
+			case Transmitter:
+				return new TransmitterPdu( header );
+			case Signal:
+				return new SignalPdu( header );
+			case Receiver:
+				return new ReceiverPdu( header );
 			default:
-				throw new DiscoException( "PDU Type not currently supported: "+header.getPduType() );
+				throw new UnsupportedPDU( "PDU Type not currently supported: "+header.getPduType() );
 		}
 	}
 	

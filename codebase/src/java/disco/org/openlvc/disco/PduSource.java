@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.PduFactory;
+import org.openlvc.disco.pdu.UnsupportedPDU;
 import org.openlvc.disco.pdu.record.PduHeader;
 
 /**
@@ -168,10 +169,16 @@ public class PduSource implements RejectedExecutionHandler
 			// TODO Implement
 			
 			// 3. Turn the bytes into a PDU
-			PDU pdu = PduFactory.create( header );
+			PDU pdu = null;
 			try
 			{
+				pdu = PduFactory.create( header );
 				pdu.from( instream );
+			}
+			catch( UnsupportedPDU up )
+			{
+				logger.warn( "Received unsupported PDU Type: "+up.getMessage() );
+				return;
 			}
 			catch( IOException ioex )
 			{
