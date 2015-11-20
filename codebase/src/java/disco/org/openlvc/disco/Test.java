@@ -19,6 +19,7 @@ package org.openlvc.disco;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.warfare.DetonationPdu;
 
 public class Test implements IPduReceiver
 {
@@ -55,9 +56,9 @@ public class Test implements IPduReceiver
 		switch( pdu.getType() )
 		{
 			case EntityState:
-				espdu_count++;
-				if( (espdu_count % 1000) == 0 )
-					System.out.println( "EntityState ("+espdu_count+")" );
+//				espdu_count++;
+//				if( (espdu_count % 1000) == 0 )
+//					System.out.println( "EntityState ("+espdu_count+")" );
 				break;
 			case Fire:
 				fire_count++;
@@ -66,19 +67,26 @@ public class Test implements IPduReceiver
 			case Detonation:
 				det_count++;
 				System.out.println( "Detonation ("+det_count+")" );
+				DetonationPdu det = (DetonationPdu)pdu;
+				System.out.println( "x: "+det.getLocationInEntityCoordinates().getX()+
+				                    ", y: "+det.getLocationInEntityCoordinates().getY()+
+				                    ", z: "+det.getLocationInEntityCoordinates().getZ() );
 				break;
 			case Transmitter:
-				transmitter_count++;
-				if( (transmitter_count % 10) == 0 )
-					System.out.println( "Transmitter ("+transmitter_count+")" );
+//				transmitter_count++;
+//				if( (transmitter_count % 10) == 0 )
+//					System.out.println( "Transmitter ("+transmitter_count+")" );
+				break;
 			case Receiver:
-				receiver_count++;
-				if( (receiver_count % 10) == 0 )
-					System.out.println( "Receiver ("+receiver_count+")" );
+//				receiver_count++;
+//				if( (receiver_count % 10) == 0 )
+//					System.out.println( "Receiver ("+receiver_count+")" );
+				break;
 			case Signal:
-				signal_count++;
-				if( (signal_count % 10) == 0 )
-					System.out.println( "Signal ("+signal_count+")" );
+//				signal_count++;
+//				if( (signal_count % 10) == 0 )
+//					System.out.println( "Signal ("+signal_count+")" );
+				break;
 			default:
 				break;
 		}
@@ -90,7 +98,8 @@ public class Test implements IPduReceiver
 	public static void main( String[] args ) throws Exception
 	{
 		DiscoConfiguration configuration = new DiscoConfiguration();
-		configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
+		//configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
+		configuration.getNetworkConfiguration().setPort( 3000 );
 		configuration.getNetworkConfiguration().setNetworkInterface( "LINK_LOCAL" );
 
 		Test test = new Test();

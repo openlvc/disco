@@ -177,7 +177,7 @@ public class PduSource implements RejectedExecutionHandler
 			}
 			catch( UnsupportedPDU up )
 			{
-				logger.warn( "Received unsupported PDU Type: "+up.getMessage() );
+				logger.trace( "Received unsupported PDU Type: "+up.getMessage() );
 				return;
 			}
 			catch( IOException ioex )

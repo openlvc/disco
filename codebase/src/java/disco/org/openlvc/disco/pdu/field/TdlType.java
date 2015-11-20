@@ -33,8 +33,22 @@ public enum TdlType
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	Other        ( 0 ),
-	AbbreviatedC2( 15 );
+	Other         ( 0 ),
+	AbbreviatedC2 ( 15 ),
+	AIS           ( 67 ),
+	AIM_120       ( 68 ),
+	GC3           ( 99 ),
+	Link16        ( 100 ),
+	Link16EDR     ( 101 ),
+	JTIDS         ( 102 ),
+	Link22        ( 103 ),
+	AFIWC_IADS    ( 104 ),
+	F22_IFDL      ( 105 ),
+	LBandSATCOM   ( 106 ),
+	TSAFCommsLink ( 107 ) ,
+	Enhanced_SINCGARS( 108 ),
+	F35MADL       ( 109 ),
+	CursorOnTarget( 110 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES

@@ -30,7 +30,8 @@ public enum MajorModulationType
 	Angle( 3 ),
 	Combination( 4 ),
 	Pulse( 5 ),
-	Unmodulated( 6 );
+	Unmodulated( 6 ),
+	CPSM( 7 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES

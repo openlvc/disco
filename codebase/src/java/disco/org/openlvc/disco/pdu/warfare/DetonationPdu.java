@@ -203,6 +203,66 @@ public class DetonationPdu extends PDU
 		this.eventID = eventID;
 	}
 
+	public VectorRecord getVelocity()
+	{
+		return velocity;
+	}
+
+	public void setVelocity( VectorRecord velocity )
+	{
+		this.velocity = velocity;
+	}
+
+	public WorldCoordinate getLocationInWorld()
+	{
+		return locationInWorld;
+	}
+
+	public void setLocationInWorld( WorldCoordinate locationInWorld )
+	{
+		this.locationInWorld = locationInWorld;
+	}
+
+	public BurstDescriptor getBurstDescriptor()
+	{
+		return burstDescriptor;
+	}
+
+	public void setBurstDescriptor( BurstDescriptor burstDescriptor )
+	{
+		this.burstDescriptor = burstDescriptor;
+	}
+
+	public EntityCoordinate getLocationInEntityCoordinates()
+	{
+		return locationInEntityCoordinates;
+	}
+
+	public void setLocationInEntityCoordinates( EntityCoordinate locationInEntityCoordinates )
+	{
+		this.locationInEntityCoordinates = locationInEntityCoordinates;
+	}
+
+	public DetonationResult getDetonationResult()
+	{
+		return detonationResult;
+	}
+
+	public void setDetonationResult( DetonationResult detonationResult )
+	{
+		this.detonationResult = detonationResult;
+	}
+
+	public List<ArticulationParameter> getArticulationParameters()
+	{
+		return articulationParameters;
+	}
+
+	public void setArticulationParameter( List<ArticulationParameter> articulationParameters )
+	{
+		this.articulationParameters = articulationParameters;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
