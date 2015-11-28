@@ -15,12 +15,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.utils;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.pdu.PDU;
-
-public class Test implements IPduReceiver
+/**
+ * Utility class representing Lat, Lon, Altitude.
+ */
+public class LLA
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,10 +29,27 @@ public class Test implements IPduReceiver
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-
+	private double lat;
+	private double lon;
+	private double alt;
+	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public LLA()
+	{
+		this.lat = 0.0;
+		this.lon = 0.0;
+		this.alt = 0.0;
+	}
+
+	public LLA( double lat, double lon, double alt )
+	{
+		this();
+		this.lat = lat;
+		this.lon = lon;
+		this.alt = alt;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
@@ -41,67 +58,56 @@ public class Test implements IPduReceiver
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	private int espdu_count = 0;
-	private int fire_count = 0;
-	private int det_count = 0;
-	private int transmitter_count = 0;
-	private int receiver_count = 0;
-	private int signal_count = 0;
-
-	@Override
-	public void receiver( PDU pdu )
+	public double getLatitude()
 	{
-
-		switch( pdu.getType() )
-		{
-			case EntityState:
-				espdu_count++;
-				if( (espdu_count % 1000) == 0 )
-					System.out.println( "EntityState ("+espdu_count+")" );
-				break;
-			case Fire:
-				fire_count++;
-				if( (fire_count % 10) == 0 )
-					System.out.println( "Fire ("+espdu_count+")" );
-				break;
-			case Detonation:
-				det_count++;
-				System.out.println( "Detonation ("+det_count+")" );
-				break;
-			case Transmitter:
-				transmitter_count++;
-				if( (transmitter_count % 10) == 0 )
-					System.out.println( "Transmitter ("+transmitter_count+")" );
-				break;
-			case Receiver:
-				receiver_count++;
-				if( (receiver_count % 10) == 0 )
-					System.out.println( "Receiver ("+receiver_count+")" );
-				break;
-			case Signal:
-				signal_count++;
-				if( (signal_count % 10) == 0 )
-					System.out.println( "Signal ("+signal_count+")" );
-				break;
-			default:
-				break;
-		}
+		return this.lat;
+	}
+	
+	public double getLongitude()
+	{
+		return this.lon;
+	}
+	
+	public double getAltitude()
+	{
+		return this.alt;
 	}
 
+	public void setLatitude( double lat )
+	{
+		if( lat > 90.0 || lat < -90.0 )
+			throw new IllegalArgumentException( lat+" not a valid latitude. Must be between +-90" );
+	}
+	
+	public void setLongitude( double lon )
+	{
+		if( lon > 180.0 || lon < -180.0 )
+			throw new IllegalArgumentException( lon+" not a valid latitude. Must be between +-180" );
+	}
+	
+	public void setAltitude( double alt )
+	{
+		this.alt = alt;
+	}
+	
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		if( lat >= 0.0 )
+			builder.append( lat+"N" );
+		else
+			builder.append( (lat*-1.0)+"S" );
+		
+		if( lon >= 0.0 )
+			builder.append( ", "+lon+"E" );
+		else
+			builder.append( ", "+(lon*-1.0)+"W" );
+		
+		builder.append( ", "+alt );
+		return builder.toString();
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
-	{
-		DiscoConfiguration configuration = new DiscoConfiguration();
-		//configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
-		configuration.getNetworkConfiguration().setPort( 3000 );
-		configuration.getNetworkConfiguration().setNetworkInterface( "LINK_LOCAL" );
-
-		Test test = new Test();
-		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setReceiver( test );
-		opscenter.open();
-		//opscenter.close();
-	}
 }

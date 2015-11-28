@@ -15,16 +15,20 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.utils;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.record.WorldCoordinate;
 
-public class Test implements IPduReceiver
+public class CoordinateUtils
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	// WGS84 ellipsoid constants
+	private static final double a = 6378137; // radius
+	private static final double e = 8.1819190842622e-2;  // eccentricity
+	private static final double asq = Math.pow(a,2);
+	private static final double esq = Math.pow(e,2);
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -41,67 +45,47 @@ public class Test implements IPduReceiver
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	private int espdu_count = 0;
-	private int fire_count = 0;
-	private int det_count = 0;
-	private int transmitter_count = 0;
-	private int receiver_count = 0;
-	private int signal_count = 0;
-
-	@Override
-	public void receiver( PDU pdu )
-	{
-
-		switch( pdu.getType() )
-		{
-			case EntityState:
-				espdu_count++;
-				if( (espdu_count % 1000) == 0 )
-					System.out.println( "EntityState ("+espdu_count+")" );
-				break;
-			case Fire:
-				fire_count++;
-				if( (fire_count % 10) == 0 )
-					System.out.println( "Fire ("+espdu_count+")" );
-				break;
-			case Detonation:
-				det_count++;
-				System.out.println( "Detonation ("+det_count+")" );
-				break;
-			case Transmitter:
-				transmitter_count++;
-				if( (transmitter_count % 10) == 0 )
-					System.out.println( "Transmitter ("+transmitter_count+")" );
-				break;
-			case Receiver:
-				receiver_count++;
-				if( (receiver_count % 10) == 0 )
-					System.out.println( "Receiver ("+receiver_count+")" );
-				break;
-			case Signal:
-				signal_count++;
-				if( (signal_count % 10) == 0 )
-					System.out.println( "Signal ("+signal_count+")" );
-				break;
-			default:
-				break;
-		}
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
+	public static WorldCoordinate llaToEcef( LLA coordinate )
 	{
-		DiscoConfiguration configuration = new DiscoConfiguration();
-		//configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
-		configuration.getNetworkConfiguration().setPort( 3000 );
-		configuration.getNetworkConfiguration().setNetworkInterface( "LINK_LOCAL" );
+        double lat = Math.toRadians(coordinate.getLatitude());
+        double lon = Math.toRadians(coordinate.getLongitude());
+        double alt = Math.toRadians(coordinate.getAltitude());
 
-		Test test = new Test();
-		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setReceiver( test );
-		opscenter.open();
-		//opscenter.close();
+        //intermediate calculation (prime vertical radius of curvature)
+        double N = a / Math.sqrt(1 - (e * e) * (Math.sin(lat) * Math.sin(lat)));
+
+        double x = (N + alt) * Math.cos(lat) * Math.cos(lon);
+        double y = (N + alt) * Math.cos(lat) * Math.sin(lon);
+        double z = ((1 - (e * e)) * N + alt) * Math.sin(lat);
+
+        return new WorldCoordinate( x, y, z );
 	}
+
+	public static LLA eceftolla( WorldCoordinate ecef )
+	{
+		double x = ecef.getX();
+		double y = ecef.getY();
+		double z = ecef.getZ();
+
+		double b = Math.sqrt( asq * (1-esq) );
+		double bsq = Math.pow(b,2);
+		double ep = Math.sqrt( (asq - bsq)/bsq);
+		double p = Math.sqrt( Math.pow(x,2) + Math.pow(y,2) );
+		double th = Math.atan2(a*z, b*p);
+		
+		double lon = Math.atan2(y,x);
+		double lat = Math.atan2( (z + Math.pow(ep,2)*b*Math.pow(Math.sin(th),3) ), (p - esq*a*Math.pow(Math.cos(th),3)) );
+		double N = a/( Math.sqrt(1-esq*Math.pow(Math.sin(lat),2)) );
+		double alt = p / Math.cos(lat) - N;
+
+		// mod lat to 0-2pi
+		lon = lon % (2*Math.PI);
+		
+		// correction for altitude near poles left out.
+		return new LLA( Math.toDegrees(lat), Math.toDegrees(lon), alt );
+	}	
 }
