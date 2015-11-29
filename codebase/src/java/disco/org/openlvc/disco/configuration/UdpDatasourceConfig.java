@@ -88,6 +88,13 @@ public class UdpDatasourceConfig
 	 */
 	public void setAddress( String address ) throws DiscoException
 	{
+		if( address.equals("BROADCAST") )
+		{
+			System.setProperty( PROP_ADDRESS, "BROADCAST" );
+			this.address = null; // next call to getAddress() will resolve this
+			return;
+		}
+		
 		try
 		{
 			this.address = InetAddress.getByName( address );

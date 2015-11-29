@@ -72,6 +72,30 @@ public class DiscoConfiguration
 	}
 
 	/**
+	 * Override the locally configured logger and just use the provided logger. Note that this
+	 * has to be done before the `OpsCenter` is started because that is when all the other
+	 * components grab a reference to the logger. After that, they just use their local ref,
+	 * so changing it here will do nothing.
+	 */
+	public void setDiscoLogger( Logger logger )
+	{
+		if( logger == null )
+			return;
+
+		// If we already have an active logger, print a warning to it
+		if( this.applicationLogger != null )
+		{
+			this.applicationLogger.warn( "We have been asked to switch to a different logger" );
+			this.applicationLogger.warn( "See stacktrace for who asked us to do this:" );
+			try { throw new Exception(); } catch( Exception e )
+			{ this.applicationLogger.warn(e); }
+		}
+
+		// Set the logger
+		this.applicationLogger = logger;
+	}
+
+	/**
 	 * Return the default log4j configuration, updated with any information found in the
 	 * configuration system properties (from configuration file or system properties).
 	 */
