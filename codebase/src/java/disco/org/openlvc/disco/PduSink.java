@@ -47,7 +47,7 @@ public class PduSink
 
 	public void send( PDU pdu )
 	{
-		
+		provider.send( pdu );
 	}
 
 	//----------------------------------------------------------

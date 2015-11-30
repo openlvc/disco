@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.radio.ReceiverPdu;
@@ -150,6 +151,11 @@ public enum PduType
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static int getByteLength()
+	{
+		return DisSizes.UI8_SIZE;
+	}
+
 	public static PduType fromValue( short value )
 	{
 		if( value == EntityState.value )

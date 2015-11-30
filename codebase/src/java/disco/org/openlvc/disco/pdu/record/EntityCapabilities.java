@@ -137,7 +137,7 @@ public class EntityCapabilities implements IPduComponent, Cloneable
 			ch1 |= 0x10;
 		
 		dos.writeInt( ch1 );
-    }
+	}
 
 	@Override
     public int getByteLength()

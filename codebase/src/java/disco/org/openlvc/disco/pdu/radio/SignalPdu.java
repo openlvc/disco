@@ -26,7 +26,7 @@ import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.field.TdlType;
 import org.openlvc.disco.pdu.record.EncodingScheme;
-import org.openlvc.disco.pdu.record.EntityIdentifier;
+import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.PduHeader;
 
 /**
@@ -45,7 +45,7 @@ public class SignalPdu extends PDU
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EntityIdentifier entityID;
+	private EntityId entityID;
 	private int radioID;
 	private EncodingScheme encodingScheme;
 	private TdlType tdlType;
@@ -64,7 +64,7 @@ public class SignalPdu extends PDU
 		if( header.getPduType() != PduType.Signal )
 			throw new IllegalStateException( "Expected Signal header, found "+header.getPduType() );
 		
-		this.entityID = new EntityIdentifier();
+		this.entityID = new EntityId();
 		this.radioID = 0;
 		this.encodingScheme = new EncodingScheme();
 		this.tdlType = TdlType.Other;
@@ -135,12 +135,12 @@ public class SignalPdu extends PDU
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public EntityIdentifier getEntityIdentifier()
+	public EntityId getEntityIdentifier()
 	{
 		return entityID;
 	}
 	
-	public void setEntityIdentifier( EntityIdentifier id )
+	public void setEntityIdentifier( EntityId id )
 	{
 		entityID = id;
 	}

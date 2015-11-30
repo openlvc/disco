@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco;
 
+import org.openlvc.disco.pdu.PDU;
+
 /**
  * The Source class is a generic representation of some medium that PDU's can be drawn
  * from and sent to. Whether that is a network connection, file, database or what does
@@ -50,5 +52,10 @@ public interface IDatasource
 	 * Close out the connection to this provider.
 	 */
 	public void close() throws DiscoException;
+
+	/**
+	 * Send the given DIS PDU to the network.
+	 */
+	public void send( PDU pdu ) throws DiscoException;
 
 }

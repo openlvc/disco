@@ -20,8 +20,9 @@ package org.openlvc.disco.pdu.record;
 import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
+import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.pdu.field.PduVersion;
+import org.openlvc.disco.pdu.field.ProtocolVersion;
 import org.openlvc.disco.pdu.field.ProtocolFamily;
 
 public class PduHeader
@@ -33,7 +34,7 @@ public class PduHeader
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private PduVersion version;
+	private ProtocolVersion version;
 	private short exerciseId;
 	private PduType pduType;
 	private ProtocolFamily family;
@@ -44,10 +45,10 @@ public class PduHeader
 	//----------------------------------------------------------
 	public PduHeader()
 	{
-		this( PduVersion.Version6, (short)0, PduType.Other, ProtocolFamily.Other, 0 );
+		this( ProtocolVersion.Version6, (short)0, PduType.Other, ProtocolFamily.Other, 0 );
 	}
 	
-	public PduHeader( PduVersion version,
+	public PduHeader( ProtocolVersion version,
 	                  short exerciseId, 
 	                  PduType pduType,
 	                  ProtocolFamily family,
@@ -66,7 +67,7 @@ public class PduHeader
 
 	public void from( DisInputStream dis ) throws IOException
 	{
-		this.version = PduVersion.fromValue( dis.readUI8() );
+		this.version = ProtocolVersion.fromValue( dis.readUI8() );
 		this.exerciseId = dis.readUI8();
 		this.pduType = PduType.fromValue( dis.readUI8() );
 		this.family = ProtocolFamily.fromValue( dis.readUI8() );
@@ -74,6 +75,25 @@ public class PduHeader
 		
 		dis.readUI16(); // Length
 		dis.readUI16(); // padding bytes
+	}
+
+	public void to( DisOutputStream dos, int contentLength ) throws IOException
+	{
+		int totalLength = getByteLength() + contentLength;
+		
+		dos.writeUI8( this.version.getValue() );
+		dos.writeUI8( exerciseId );
+		dos.writeUI8( pduType.value() );
+		dos.writeUI8( family.value() );
+		dos.writeUI32( timestamp );
+
+		dos.writeUI16( totalLength );
+		dos.writePadding( 2 );
+	}
+
+	public final int getByteLength()
+	{
+		return 12;
 	}
 
 	@Override
@@ -85,11 +105,11 @@ public class PduHeader
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public PduVersion getVersion() { return this.version; }
-	public void setVersion( PduVersion version ) { this.version = version; }
+	public ProtocolVersion getVersion() { return this.version; }
+	public void setVersion( ProtocolVersion version ) { this.version = version; }
 	
 	public PduType getPduType() { return this.pduType; }
-	public void setPduType( PduType type ) { this.pduType = type; }
+	public PduHeader setPduType( PduType type ) { this.pduType = type; return this; }
 	
 	public short getExerciseId() { return this.exerciseId; }
 	public void setExerciseId( short id ) { this.exerciseId = id; }

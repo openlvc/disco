@@ -15,60 +15,73 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.pdu;
+package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.disco.pdu.radio.ReceiverPdu;
-import org.openlvc.disco.pdu.radio.SignalPdu;
-import org.openlvc.disco.pdu.radio.TransmitterPdu;
-import org.openlvc.disco.pdu.record.PduHeader;
-import org.openlvc.disco.pdu.warfare.DetonationPdu;
-import org.openlvc.disco.pdu.warfare.FirePdu;
+import org.openlvc.disco.pdu.DisSizes;
 
-/**
- * Methods to help quickly create certain types of PDU's, or to create PDUs from an
- * incoming stream/source.
- */
-public class PduFactory
+public enum ProtocolVersion
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
-
+	Other   ( (short)0 ),
+	Version1( (short)1 ),    // DIS PDU version 1.0 (May 92)
+	Version2( (short)2 ),    // IEEE 1278-1993
+	Version3( (short)3 ),    // DIS PDU version 2.0 - third draft (May 93)
+	Version4( (short)4 ),    // DIS PDU version 2.0 - fourth draft (revised) March 16, 1994
+	Version5( (short)5 ),    // IEEE 1278.1-1995
+	Version6( (short)6 ),    // IEEE 1278.1A-1998
+	Version7( (short)7 );    // IEEE 1278.1-2012
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private ProtocolVersion( short value )
+	{
+		this.value = value;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	public short getValue()
+	{
+		return this.value;
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static PDU create( PduHeader header )
+	public static int getByteLength()
 	{
-		switch( header.getPduType() )
-		{
-			case EntityState:
-				return new EntityStatePdu( header );
-			case Fire:
-				return new FirePdu( header );
-			case Detonation:
-				return new DetonationPdu( header );
-			case Transmitter:
-				return new TransmitterPdu( header );
-			case Signal:
-				return new SignalPdu( header );
-			case Receiver:
-				return new ReceiverPdu( header );
-			default:
-				throw new UnsupportedPDU( "PDU Type not currently supported: "+header.getPduType() );
-		}
+		return DisSizes.UI8_SIZE;
 	}
-	
+
+	public static ProtocolVersion fromValue( short value )
+	{
+		if( value == 7 )
+			return Version7;
+		else if( value == 6 )
+			return Version6;
+		else if( value == 5 )
+			return Version5;
+		else if( value == 0 )
+			return Other;
+		// end of common values
+		else if( value == 4 )
+			return Version4;
+		else if( value == 3 )
+			return Version3;
+		else if( value == 2 )
+			return Version2;
+		else if( value == 1 )
+			return Version1;
+		else
+			throw new IllegalArgumentException( value+" not a valid Protocol Version number" );
+	}
 }

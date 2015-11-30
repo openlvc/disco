@@ -43,6 +43,12 @@ public abstract class PDU
 		this.received = System.currentTimeMillis();
 	}
 
+	protected PDU()
+	{
+		this.header = new PduHeader();
+		this.received = System.currentTimeMillis();
+	}
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -86,6 +92,11 @@ public abstract class PDU
 		this.received = received;
 	}
 
+	public final void writeHeader( DisOutputStream dos ) throws IOException
+	{
+		this.header.to( dos, getContentLength() );
+	}
+	
 	/**
 	 * Reads new field values for the PDU Component from the provided DISInputStream replacing any 
 	 * existing field values before the method was called.

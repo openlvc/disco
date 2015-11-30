@@ -25,7 +25,7 @@ import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.BurstDescriptor;
-import org.openlvc.disco.pdu.record.EntityIdentifier;
+import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.EventIdentifier;
 import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.record.VectorRecord;
@@ -47,9 +47,9 @@ public class FirePdu extends PDU
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EntityIdentifier firingEntityID;
-	private EntityIdentifier targetEntityID;
-	private EntityIdentifier munitionID;
+	private EntityId firingEntityID;
+	private EntityId targetEntityID;
+	private EntityId munitionID;
 	private EventIdentifier eventID;
 
 	private long fireMissionIndex;
@@ -68,9 +68,9 @@ public class FirePdu extends PDU
 		if( header.getPduType() != PduType.Fire )
 			throw new IllegalStateException( "Expected Fire PDU header, found "+header.getPduType() );
 
-		this.firingEntityID = new EntityIdentifier();
-		this.targetEntityID = new EntityIdentifier();
-		this.munitionID = new EntityIdentifier();
+		this.firingEntityID = new EntityId();
+		this.targetEntityID = new EntityId();
+		this.munitionID = new EntityId();
 		this.eventID = new EventIdentifier();
 
 		this.fireMissionIndex = 0;
@@ -137,32 +137,32 @@ public class FirePdu extends PDU
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public EntityIdentifier getFiringEntityID()
+	public EntityId getFiringEntityID()
 	{
 		return firingEntityID;
 	}
 
-	public void setFiringEntityID( EntityIdentifier firingEntityID )
+	public void setFiringEntityID( EntityId firingEntityID )
 	{
 		this.firingEntityID = firingEntityID;
 	}
 
-	public EntityIdentifier getTargetEntityID()
+	public EntityId getTargetEntityID()
 	{
 		return targetEntityID;
 	}
 
-	public void setTargetEntityID( EntityIdentifier targetEntityID )
+	public void setTargetEntityID( EntityId targetEntityID )
 	{
 		this.targetEntityID = targetEntityID;
 	}
 
-	public EntityIdentifier getMunitionID()
+	public EntityId getMunitionID()
 	{
 		return munitionID;
 	}
 
-	public void setMunitionID( EntityIdentifier munitionID )
+	public void setMunitionID( EntityId munitionID )
 	{
 		this.munitionID = munitionID;
 	}

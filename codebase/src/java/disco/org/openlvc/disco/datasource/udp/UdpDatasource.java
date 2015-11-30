@@ -17,17 +17,23 @@
  */
 package org.openlvc.disco.datasource.udp;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
+import java.net.SocketAddress;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.IDatasource;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.UdpDatasourceConfig;
+import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.utils.NetworkUtils;
 
 public class UdpDatasource implements IDatasource
@@ -45,6 +51,9 @@ public class UdpDatasource implements IDatasource
 	private DatagramSocket socket;
 	private Thread receiverThread;
 
+	// cache of details to assist with sending
+	private SocketAddress targetAddress;
+
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -61,8 +70,6 @@ public class UdpDatasource implements IDatasource
 	{
 		this.opscenter = opscenter;
 		this.logger = opscenter.getLogger();
-		
-		// create the socket is we know what type
 		this.configuration = opscenter.getConfiguration().getNetworkConfiguration();
 	}
 	
@@ -70,6 +77,9 @@ public class UdpDatasource implements IDatasource
 	public void open() throws DiscoException
 	{
 		logger.debug( "Opening UDP Provider connection" );
+		
+		// Store any temporary information we need to make things a bit faster
+		this.targetAddress = new InetSocketAddress( configuration.getAddress(), configuration.getPort() );
 		
 		//
 		// Get a reference to the queue we need to dump incoming messages onto
@@ -121,6 +131,37 @@ public class UdpDatasource implements IDatasource
 	public String getName()
 	{
 		return "network.udp";
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Sender Methods   ///////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void send( PDU pdu ) throws DiscoException
+	{
+		// Create a DISOutputStream to write to
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DisOutputStream dos = new DisOutputStream( baos );
+		
+		try
+		{
+			// Firstly write the PDU header to the stream
+			pdu.writeHeader( dos );
+			
+			// Write the body content
+			pdu.to( dos );
+			
+			// Get the underlying byte array and wrap it in a Datagram packet
+			byte[] payload = baos.toByteArray();
+			DatagramPacket packet = 
+				new DatagramPacket( payload, 0, payload.length, this.targetAddress );
+			
+			// Send the packet
+			socket.send( packet );
+		}
+		catch ( IOException ioex )
+		{
+			logger.warn( "Error trying to send PDU ("+pdu+"): "+ioex.getMessage(), ioex );
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

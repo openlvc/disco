@@ -29,7 +29,7 @@ import org.openlvc.disco.pdu.field.InputSource;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.field.TransmitState;
 import org.openlvc.disco.pdu.record.AntennaLocation;
-import org.openlvc.disco.pdu.record.EntityIdentifier;
+import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.ModulationType;
 import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.record.RadioEntityType;
@@ -51,7 +51,7 @@ public class TransmitterPdu extends PDU
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EntityIdentifier entityID;
+	private EntityId entityID;
 	private int radioID;
 	private RadioEntityType radioEntityType;
 	private TransmitState transmitState;
@@ -77,7 +77,7 @@ public class TransmitterPdu extends PDU
 		if( header.getPduType() != PduType.Transmitter )
 			throw new IllegalStateException( "Expected Transmitter header, found "+header.getPduType() );
 		
-		this.entityID = new EntityIdentifier();
+		this.entityID = new EntityId();
 		this.radioID = 0;
 		this.radioEntityType = new RadioEntityType();
 		this.transmitState = TransmitState.Off;
@@ -194,12 +194,12 @@ public class TransmitterPdu extends PDU
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public EntityIdentifier getEntityIdentifier()
+	public EntityId getEntityIdentifier()
 	{
 		return entityID;
 	}
 	
-	public void setEntityIdentifier( EntityIdentifier id )
+	public void setEntityIdentifier( EntityId id )
 	{
 		entityID = id;
 	}

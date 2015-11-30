@@ -17,20 +17,18 @@
  */
 package org.openlvc.disco.pdu.field;
 
-public enum PduVersion
+import org.openlvc.disco.pdu.DisSizes;
+
+public enum MarkingCharSet
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	Other   ( (short)0 ),
-	Version1( (short)1 ),    // DIS PDU version 1.0 (May 92)
-	Version2( (short)2 ),    // IEEE 1278-1993
-	Version3( (short)3 ),    // DIS PDU version 2.0 - third draft (May 93)
-	Version4( (short)4 ),    // DIS PDU version 2.0 - fourth draft (revised) March 16, 1994
-	Version5( (short)5 ),    // IEEE 1278.1-1995
-	Version6( (short)6 ),    // IEEE 1278.1A-1998
-	Version7( (short)7 );    // IEEE 1278.1-2012
-	
+	Unused( (short)0 ),
+	ASCII( (short)1 ),
+	ArmyMarking( (short)2 ),
+	DigitChevron( (short)3 );
+
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -39,7 +37,7 @@ public enum PduVersion
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private PduVersion( short value )
+	private MarkingCharSet( short value )
 	{
 		this.value = value;
 	}
@@ -47,7 +45,7 @@ public enum PduVersion
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public short getValue()
+	public int getValue()
 	{
 		return this.value;
 	}
@@ -55,26 +53,18 @@ public enum PduVersion
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static PduVersion fromValue( short value )
+	public static int getByteLength()
 	{
-		if( value == 7 )
-			return Version7;
-		else if( value == 6 )
-			return Version6;
-		else if( value == 5 )
-			return Version5;
-		else if( value == 0 )
-			return Other;
-		// end of common values
-		else if( value == 4 )
-			return Version4;
-		else if( value == 3 )
-			return Version3;
-		else if( value == 2 )
-			return Version2;
-		else if( value == 1 )
-			return Version1;
-		else
-			throw new IllegalArgumentException( value+" not a valid Protocol Version number" );
+		return DisSizes.UI8_SIZE;
 	}
+
+	public static MarkingCharSet fromValue( short value )
+	{
+		if( value == ASCII.value ) return ASCII;
+		if( value == Unused.value ) return Unused;
+		if( value == ArmyMarking.value ) return ArmyMarking;
+		if( value == DigitChevron.value ) return DigitChevron;
+		else throw new IllegalArgumentException( value+" is not a valid ForceId" );
+	}
+	
 }

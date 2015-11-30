@@ -20,6 +20,7 @@ package org.openlvc.disco.pdu;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * This class is responsible for writing types specified in the DIS 
@@ -44,13 +45,20 @@ public class DisOutputStream extends DataOutputStream
 	 * @param size - Size of the backing buffer.
 	 */
 	public DisOutputStream( int size )
-    {
+	{
 		super( new ByteArrayOutputStream(size) );
-    }
+	}
+	
+	public DisOutputStream( OutputStream ostream )
+	{
+		super( ostream );
+	}
 	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+
+	
 	/**
 	 * Writes the specified 8-bit unsigned integer value to the stream. 
 	 * 
@@ -163,9 +171,23 @@ public class DisOutputStream extends DataOutputStream
 	 * Write the given string to the stream, limited to the given number of characters.
 	 */
 	public void writeString( String string, int limit ) throws IOException
-	{
-		string = string.substring( 0, limit );
-		super.writeChars( string );
+	{	
+		byte[] bytes = new byte[limit+1];
+		bytes[0] = 1;
+		int length = string.length();
+		if( length > limit )
+		{
+			string = string.substring( 0, limit );
+			for( int i = 0; i < limit; i++ )
+				bytes[i+1] = (byte)string.charAt(i);
+		}
+		else
+		{
+			for( int i = 0; i < length; i++ )
+				bytes[i+1] = (byte)string.charAt(i);
+		}
+		
+		super.write( bytes );
 	}
 
 	//----------------------------------------------------------

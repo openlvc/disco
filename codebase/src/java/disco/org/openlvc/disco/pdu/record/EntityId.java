@@ -21,14 +21,13 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
 
 /**
  * Each Entity in a given exercise executing on a DIS application shall be 
  * assigned an Entity Identifier Record Unique to the exercise.
  */
-public class EntityIdentifier implements IPduComponent, Cloneable
+public class EntityId implements IPduComponent, Cloneable
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -38,21 +37,23 @@ public class EntityIdentifier implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private SimulationAddress simulationAddress;
-	private int entityIdentity;
+	private int siteId;
+	private int appId;
+	private int entityId;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public EntityIdentifier()
+	public EntityId()
 	{
-		this( new SimulationAddress(), 0 );
+		this( 0, 0, 0 );
 	}
 	
-	public EntityIdentifier( SimulationAddress simulationAddress, int entityIdentity )
+	public EntityId( int siteId, int appId, int entityIdentity )
 	{
-		this.simulationAddress = simulationAddress;
-		this.entityIdentity = entityIdentity;
+		this.siteId = 0;
+		this.appId = 0;
+		this.entityId = entityIdentity;
 	}
 	
 	//----------------------------------------------------------
@@ -64,11 +65,12 @@ public class EntityIdentifier implements IPduComponent, Cloneable
 		if( other == this )
 			return true;
 		
-		if( other instanceof EntityIdentifier )
+		if( other instanceof EntityId )
 		{
-			EntityIdentifier asEntityIdentifier = (EntityIdentifier)other;
-			if( asEntityIdentifier.simulationAddress.equals(this.simulationAddress) &&
-				asEntityIdentifier.entityIdentity == entityIdentity )
+			EntityId asEntityId = (EntityId)other;
+			if( (asEntityId.siteId == siteId) &&
+				(asEntityId.appId == appId) &&
+				(asEntityId.entityId == entityId) )
 			{
 				return true;
 			}
@@ -78,10 +80,9 @@ public class EntityIdentifier implements IPduComponent, Cloneable
 	}
 	
 	@Override
-	public EntityIdentifier clone()
+	public EntityId clone()
 	{
-		SimulationAddress simulationAddressClone = simulationAddress.clone();
-		return new EntityIdentifier( simulationAddressClone, entityIdentity );
+		return new EntityId( siteId, appId, entityId );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,48 +91,63 @@ public class EntityIdentifier implements IPduComponent, Cloneable
 	@Override
     public void from( DisInputStream dis ) throws IOException
     {
-		simulationAddress.from( dis );
-		entityIdentity = dis.readUI16();
+		siteId = dis.readUI16();
+		entityId = dis.readUI16();
+		entityId = dis.readUI16();
     }
 
 	@Override
     public void to( DisOutputStream dos ) throws IOException
     {
-		simulationAddress.to( dos );
-		dos.writeUI16( entityIdentity );
+		dos.writeUI16( siteId );
+		dos.writeUI16( appId );
+		dos.writeUI16( entityId );
     }
 	
 	@Override
     public int getByteLength()
 	{
-		int size = simulationAddress.getByteLength();
-		size += DisSizes.UI16_SIZE;
-		return size;
+		return 6;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public SimulationAddress getSimulationAddress()
+	public int getSiteId()
 	{
-		return simulationAddress;
+		return this.siteId;
 	}
 	
-	public void setSimulationAddress( SimulationAddress simulationAddress )
+	public void setSiteId( int siteId )
 	{
-		this.simulationAddress = simulationAddress;
+		this.siteId = siteId;
 	}
 	
-	public int getEntityIdentity()
+	public int getAppId()
 	{
-		return entityIdentity;
+		return this.appId;
 	}
 	
-	public void setEntityIdentity( int entityIdentity )
+	public void setAppId( int appId )
 	{
-		this.entityIdentity = entityIdentity;
+		this.appId = appId;
 	}
 
+	public int getEntityIdentity()
+	{
+		return entityId;
+	}
+	
+	public void setEntityId( int entityIdentity )
+	{
+		this.entityId = entityIdentity;
+	}
+
+	public String toString()
+	{
+		return siteId+"-"+appId+"-"+entityId;
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

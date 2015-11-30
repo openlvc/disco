@@ -27,10 +27,11 @@ import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.ForceId;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
 import org.openlvc.disco.pdu.record.DeadReckoningParameter;
 import org.openlvc.disco.pdu.record.EntityCapabilities;
-import org.openlvc.disco.pdu.record.EntityIdentifier;
+import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.EntityType;
 import org.openlvc.disco.pdu.record.EulerAngles;
 import org.openlvc.disco.pdu.record.PduHeader;
@@ -46,7 +47,7 @@ public class EntityStatePdu extends PDU
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EntityIdentifier entityID;
+	private EntityId entityID;
 	private ForceId forceID;
 	private EntityType entityType;
 	private EntityType alternativeEntityType;
@@ -68,8 +69,8 @@ public class EntityStatePdu extends PDU
 
 		if( header.getPduType() != PduType.EntityState )
 			throw new IllegalStateException( "Expected EntityStatePdu header, found "+header.getPduType() );
-		
-		this.entityID = new EntityIdentifier();
+
+		this.entityID = new EntityId();
 		this.forceID = ForceId.Other;
 		this.entityType = new EntityType();
 		this.alternativeEntityType = new EntityType();
@@ -83,15 +84,21 @@ public class EntityStatePdu extends PDU
 		this.articulationParameters = new ArrayList<ArticulationParameter>();
 	}
 
+	public EntityStatePdu()
+	{
+		this( new PduHeader().setPduType( PduType.EntityState ) );
+		super.getHeader().setProtocolFamily( ProtocolFamily.Entity );
+	}
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
 	public String toString()
 	{
-		return "Marking: "+entityMarking;
+		return "Marking: " + entityMarking;
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// IPduComponent Methods   ////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +106,7 @@ public class EntityStatePdu extends PDU
 	public void from( DisInputStream dis ) throws IOException
 	{
 		articulationParameters.clear();
-		
+
 		entityID.from( dis );
 		forceID = ForceId.fromValue( dis.readUI8() );
 		short numberOfArticulationParameters = dis.readUI8();
@@ -112,7 +119,7 @@ public class EntityStatePdu extends PDU
 		deadReckoningParameters.from( dis );
 		entityMarking = dis.readString( 11 );
 		entityCapabilities.from( dis );
-		
+
 		articulationParameters.clear();
 		for( int i = 0; i < numberOfArticulationParameters; ++i )
 		{
@@ -121,19 +128,19 @@ public class EntityStatePdu extends PDU
 			articulationParameters.add( articulationParameter );
 		}
 	}
-	
+
 	@Override
 	public void to( DisOutputStream dos ) throws IOException
 	{
 		entityID.to( dos );
 		dos.writeUI8( forceID.value() );
-		
+
 		int articulationParamCount = articulationParameters.size();
-		if ( articulationParamCount > DisSizes.UI8_MAX_VALUE )
+		if( articulationParamCount > DisSizes.UI8_MAX_VALUE )
 		{
 			// TODO Warn about truncation
 		}
-		
+
 		short paramCountAsShort = (short)articulationParamCount;
 		dos.writeUI8( paramCountAsShort );
 		entityType.to( dos );
@@ -145,156 +152,164 @@ public class EntityStatePdu extends PDU
 		deadReckoningParameters.to( dos );
 		dos.writeString( entityMarking, 11 );
 		entityCapabilities.to( dos );
-		
-		for ( ArticulationParameter parameter : articulationParameters )
+
+		for( ArticulationParameter parameter : articulationParameters )
 			parameter.to( dos );
 	}
+
 	@Override
 	public int getContentLength()
 	{
 		int size = entityID.getByteLength();
 		size += ForceId.getByteLength();
-		size += DisSizes.UI8_SIZE;				// ParamCount
+		size += DisSizes.UI8_SIZE; // ParamCount
 		size += entityType.getByteLength();
 		size += alternativeEntityType.getByteLength();
 		size += entityLinearVelocity.getByteLength();
 		size += entityLocation.getByteLength();
 		size += entityOrientation.getByteLength();
-		size += DisSizes.UI32_SIZE;				// Appearance
+		size += DisSizes.UI32_SIZE; // Appearance
 		size += deadReckoningParameters.getByteLength();
-		size += 12;                             // Marking
+		size += 12; // Marking
 		size += entityCapabilities.getByteLength();
 		size += DisSizes.getByteLengthOfCollection( articulationParameters );
-		
+
 		return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public EntityIdentifier getEntityID()
-    {
-    	return entityID;
-    }
+	public EntityId getEntityID()
+	{
+		return entityID;
+	}
 
-	public void setEntityID( EntityIdentifier entityID )
-    {
-    	this.entityID = entityID;
-    }
+	public void setEntityID( EntityId entityID )
+	{
+		this.entityID = entityID;
+	}
+
+	public void setEntityID( int siteId, int appId, int entityId )
+	{
+		this.entityID.setSiteId( siteId );
+		this.entityID.setAppId( appId );
+		this.entityID.setEntityId( entityId );
+	}
 
 	public ForceId getForceID()
-    {
-    	return forceID;
-    }
+	{
+		return forceID;
+	}
 
 	public void setForceID( ForceId forceID )
-    {
-    	this.forceID = forceID;
-    }
+	{
+		this.forceID = forceID;
+	}
 
 	public EntityType getEntityType()
-    {
-    	return entityType;
-    }
+	{
+		return entityType;
+	}
 
 	public void setEntityType( EntityType entityType )
-    {
-    	this.entityType = entityType;
-    }
+	{
+		this.entityType = entityType;
+	}
 
 	public EntityType getAlternativeEntityType()
-    {
-    	return alternativeEntityType;
-    }
+	{
+		return alternativeEntityType;
+	}
 
 	public void setAlternativeEntityType( EntityType alternativeEntityType )
-    {
-    	this.alternativeEntityType = alternativeEntityType;
-    }
+	{
+		this.alternativeEntityType = alternativeEntityType;
+	}
 
 	public VectorRecord getEntityLinearVelocity()
-    {
-    	return entityLinearVelocity;
-    }
+	{
+		return entityLinearVelocity;
+	}
 
 	public void setEntityLinearVelocity( VectorRecord entityLinearVelocity )
-    {
-    	this.entityLinearVelocity = entityLinearVelocity;
-    }
+	{
+		this.entityLinearVelocity = entityLinearVelocity;
+	}
 
 	public WorldCoordinate getEntityLocation()
-    {
-    	return entityLocation;
-    }
+	{
+		return entityLocation;
+	}
 
 	public void setEntityLocation( WorldCoordinate entityLocation )
-    {
-    	this.entityLocation = entityLocation;
-    }
+	{
+		this.entityLocation = entityLocation;
+	}
 
 	public EulerAngles getEntityOrientation()
-    {
-    	return entityOrientation;
-    }
+	{
+		return entityOrientation;
+	}
 
 	public void setEntityOrientation( EulerAngles entityOrientation )
-    {
-    	this.entityOrientation = entityOrientation;
-    }
+	{
+		this.entityOrientation = entityOrientation;
+	}
 
 	public int getEntityAppearance()
-    {
-    	return entityAppearance;
-    }
+	{
+		return entityAppearance;
+	}
 
 	public void setEntityAppearance( int entityAppearance )
-    {
-    	this.entityAppearance = entityAppearance;
-    }
+	{
+		this.entityAppearance = entityAppearance;
+	}
 
 	public DeadReckoningParameter getDeadReckoningParameters()
-    {
-    	return deadReckoningParameters;
-    }
+	{
+		return deadReckoningParameters;
+	}
 
 	public void setDeadReckoningParameters( DeadReckoningParameter deadReckoningParameters )
-    {
-    	this.deadReckoningParameters = deadReckoningParameters;
-    }
+	{
+		this.deadReckoningParameters = deadReckoningParameters;
+	}
 
 	public String getEntityMarking()
-    {
-    	return entityMarking;
-    }
+	{
+		return entityMarking;
+	}
 
 	public void setEntityMarking( String entityMarking )
-    {
-    	this.entityMarking = entityMarking;
-    }
+	{
+		this.entityMarking = entityMarking;
+	}
 
 	public EntityCapabilities getEntityCapabilities()
-    {
-    	return entityCapabilities;
-    }
+	{
+		return entityCapabilities;
+	}
 
 	public void setEntityCapabilities( EntityCapabilities entityCapabilities )
-    {
-    	this.entityCapabilities = entityCapabilities;
-    }
-	
+	{
+		this.entityCapabilities = entityCapabilities;
+	}
+
 	public List<ArticulationParameter> getArticulationParameter()
-    {
-    	return articulationParameters;
-    }
+	{
+		return articulationParameters;
+	}
 
 	public void setArticulationParameter( List<ArticulationParameter> articulationParameter )
-    {
+	{
 		if( articulationParameter.size() > DisSizes.UI8_MAX_VALUE )
-			throw new IllegalArgumentException( "A maximum of " + DisSizes.UI8_MAX_VALUE + 
+			throw new IllegalArgumentException( "A maximum of " + DisSizes.UI8_MAX_VALUE +
 			                                    " articulation parameters are supported by the DIS specification" );
-			
+
 		this.articulationParameters = articulationParameter;
-    }
+	}
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

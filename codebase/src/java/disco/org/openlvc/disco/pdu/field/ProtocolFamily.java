@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.pdu.DisSizes;
+
 public enum ProtocolFamily
 {
 	//----------------------------------------------------------
@@ -54,6 +56,11 @@ public enum ProtocolFamily
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static int getByteLength()
+	{
+		return DisSizes.UI8_SIZE;
+	}
+
 	public static ProtocolFamily fromValue( short value )
 	{
 		if( value == Entity.value )
