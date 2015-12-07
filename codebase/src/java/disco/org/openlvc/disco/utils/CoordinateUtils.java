@@ -49,23 +49,25 @@ public class CoordinateUtils
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static WorldCoordinate llaToEcef( LLA coordinate )
+	// Acknowlegemnet: https://gist.github.com/klucar/1536194
+	public static WorldCoordinate toECEF( LLA coordinate )
 	{
-        double lat = Math.toRadians(coordinate.getLatitude());
-        double lon = Math.toRadians(coordinate.getLongitude());
-        double alt = Math.toRadians(coordinate.getAltitude());
+		double lat = Math.toRadians(coordinate.getLatitude());
+		double lon = Math.toRadians(coordinate.getLongitude());
+		double alt = Math.toRadians(coordinate.getAltitude());
 
-        //intermediate calculation (prime vertical radius of curvature)
-        double N = a / Math.sqrt(1 - (e * e) * (Math.sin(lat) * Math.sin(lat)));
+		//intermediate calculation (prime vertical radius of curvature)
+		double N = a / Math.sqrt(1 - esq * Math.pow(Math.sin(lat),2) );
 
-        double x = (N + alt) * Math.cos(lat) * Math.cos(lon);
-        double y = (N + alt) * Math.cos(lat) * Math.sin(lon);
-        double z = ((1 - (e * e)) * N + alt) * Math.sin(lat);
+		double x = (N + alt) * Math.cos(lat) * Math.cos(lon);
+		double y = (N + alt) * Math.cos(lat) * Math.sin(lon);
+		double z = ((1 - (e * e)) * N + alt) * Math.sin(lat);
 
-        return new WorldCoordinate( x, y, z );
+		return new WorldCoordinate( x, y, z );
 	}
 
-	public static LLA eceftolla( WorldCoordinate ecef )
+	// Acknowlegemnet: https://gist.github.com/klucar/1536194
+	public static LLA toLLA( WorldCoordinate ecef )
 	{
 		double x = ecef.getX();
 		double y = ecef.getY();
@@ -87,5 +89,5 @@ public class CoordinateUtils
 		
 		// correction for altitude near poles left out.
 		return new LLA( Math.toDegrees(lat), Math.toDegrees(lon), alt );
-	}	
+	}
 }

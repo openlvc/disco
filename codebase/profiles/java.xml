@@ -140,6 +140,7 @@
 	<!-- Run the core DIsco test suite -->
 	<target name="test.disco" depends="compile.tests">
 		<java-test suite="org/openlvc/disco"
+		           groups="${test.groups}"
 		           classdir="${test.classes.dir}"
 		           outdir="${test.reports.dir}"
 		           classpath="test.classpath">

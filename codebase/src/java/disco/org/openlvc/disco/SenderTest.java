@@ -78,7 +78,7 @@ public class SenderTest implements IPduReceiver
 		{
 			EntityStatePdu pdu = new EntityStatePdu();
 			pdu.setEntityID( 1, 1, 1 );
-			pdu.setEntityMarking( "Entity"+i );
+			pdu.setMarking( "Entity"+i );
 			entitiyList.add( pdu );
 		}
 		

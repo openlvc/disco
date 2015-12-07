@@ -25,7 +25,9 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.field.Domain;
 import org.openlvc.disco.pdu.field.ForceId;
+import org.openlvc.disco.pdu.field.Kind;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
@@ -51,13 +53,13 @@ public class EntityStatePdu extends PDU
 	private ForceId forceID;
 	private EntityType entityType;
 	private EntityType alternativeEntityType;
-	private VectorRecord entityLinearVelocity;
-	private WorldCoordinate entityLocation;
-	private EulerAngles entityOrientation;
-	private int entityAppearance;
-	private DeadReckoningParameter deadReckoningParameters;
-	private String entityMarking;
-	private EntityCapabilities entityCapabilities;
+	private VectorRecord linearVelocity;
+	private WorldCoordinate location;
+	private EulerAngles orientation;
+	private int appearance;
+	private DeadReckoningParameter deadReckoningParams;
+	private String marking;
+	private EntityCapabilities capabilities;
 	private List<ArticulationParameter> articulationParameters;
 
 	//----------------------------------------------------------
@@ -74,13 +76,13 @@ public class EntityStatePdu extends PDU
 		this.forceID = ForceId.Other;
 		this.entityType = new EntityType();
 		this.alternativeEntityType = new EntityType();
-		this.entityLinearVelocity = new VectorRecord();
-		this.entityLocation = new WorldCoordinate();
-		this.entityOrientation = new EulerAngles();
-		this.entityAppearance = 0;
-		this.deadReckoningParameters = new DeadReckoningParameter();
-		this.entityMarking = "DiscoObject";
-		this.entityCapabilities = new EntityCapabilities();
+		this.linearVelocity = new VectorRecord();
+		this.location = new WorldCoordinate();
+		this.orientation = new EulerAngles();
+		this.appearance = 0;
+		this.deadReckoningParams = new DeadReckoningParameter();
+		this.marking = "DiscoObject";
+		this.capabilities = new EntityCapabilities();
 		this.articulationParameters = new ArrayList<ArticulationParameter>();
 	}
 
@@ -96,7 +98,7 @@ public class EntityStatePdu extends PDU
 
 	public String toString()
 	{
-		return "Marking: " + entityMarking;
+		return "Marking: " + marking;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,13 +114,13 @@ public class EntityStatePdu extends PDU
 		short numberOfArticulationParameters = dis.readUI8();
 		entityType.from( dis );
 		alternativeEntityType.from( dis );
-		entityLinearVelocity.from( dis );
-		entityLocation.from( dis );
-		entityOrientation.from( dis );
-		entityAppearance = dis.readInt();
-		deadReckoningParameters.from( dis );
-		entityMarking = dis.readString( 11 );
-		entityCapabilities.from( dis );
+		linearVelocity.from( dis );
+		location.from( dis );
+		orientation.from( dis );
+		appearance = dis.readInt();
+		deadReckoningParams.from( dis );
+		marking = dis.readString( 11 );
+		capabilities.from( dis );
 
 		articulationParameters.clear();
 		for( int i = 0; i < numberOfArticulationParameters; ++i )
@@ -145,13 +147,13 @@ public class EntityStatePdu extends PDU
 		dos.writeUI8( paramCountAsShort );
 		entityType.to( dos );
 		alternativeEntityType.to( dos );
-		entityLinearVelocity.to( dos );
-		entityLocation.to( dos );
-		entityOrientation.to( dos );
-		dos.writeInt( entityAppearance );
-		deadReckoningParameters.to( dos );
-		dos.writeString( entityMarking, 11 );
-		entityCapabilities.to( dos );
+		linearVelocity.to( dos );
+		location.to( dos );
+		orientation.to( dos );
+		dos.writeInt( appearance );
+		deadReckoningParams.to( dos );
+		dos.writeString( marking, 11 );
+		capabilities.to( dos );
 
 		for( ArticulationParameter parameter : articulationParameters )
 			parameter.to( dos );
@@ -165,16 +167,29 @@ public class EntityStatePdu extends PDU
 		size += DisSizes.UI8_SIZE; // ParamCount
 		size += entityType.getByteLength();
 		size += alternativeEntityType.getByteLength();
-		size += entityLinearVelocity.getByteLength();
-		size += entityLocation.getByteLength();
-		size += entityOrientation.getByteLength();
+		size += linearVelocity.getByteLength();
+		size += location.getByteLength();
+		size += orientation.getByteLength();
 		size += DisSizes.UI32_SIZE; // Appearance
-		size += deadReckoningParameters.getByteLength();
+		size += deadReckoningParams.getByteLength();
 		size += 12; // Marking
-		size += entityCapabilities.getByteLength();
+		size += capabilities.getByteLength();
 		size += DisSizes.getByteLengthOfCollection( articulationParameters );
 
 		return size;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Convenience Methods   //////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public Kind getKind()
+	{
+		return entityType.getKindEnum();
+	}
+
+	public Domain getDomain()
+	{
+		return entityType.getDomainEnum();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -227,74 +242,74 @@ public class EntityStatePdu extends PDU
 		this.alternativeEntityType = alternativeEntityType;
 	}
 
-	public VectorRecord getEntityLinearVelocity()
+	public VectorRecord getLinearVelocity()
 	{
-		return entityLinearVelocity;
+		return linearVelocity;
 	}
 
-	public void setEntityLinearVelocity( VectorRecord entityLinearVelocity )
+	public void setLinearVelocity( VectorRecord velocity )
 	{
-		this.entityLinearVelocity = entityLinearVelocity;
+		this.linearVelocity = velocity;
 	}
 
-	public WorldCoordinate getEntityLocation()
+	public WorldCoordinate getLocation()
 	{
-		return entityLocation;
+		return location;
 	}
 
-	public void setEntityLocation( WorldCoordinate entityLocation )
+	public void setLocation( WorldCoordinate location )
 	{
-		this.entityLocation = entityLocation;
+		this.location = location;
 	}
 
-	public EulerAngles getEntityOrientation()
+	public EulerAngles getOrientation()
 	{
-		return entityOrientation;
+		return orientation;
 	}
 
-	public void setEntityOrientation( EulerAngles entityOrientation )
+	public void setOrientation( EulerAngles orientation )
 	{
-		this.entityOrientation = entityOrientation;
+		this.orientation = orientation;
 	}
 
-	public int getEntityAppearance()
+	public int getAppearance()
 	{
-		return entityAppearance;
+		return appearance;
 	}
 
-	public void setEntityAppearance( int entityAppearance )
+	public void setAppearance( int appearance )
 	{
-		this.entityAppearance = entityAppearance;
+		this.appearance = appearance;
 	}
 
-	public DeadReckoningParameter getDeadReckoningParameters()
+	public DeadReckoningParameter getDeadReckoningParams()
 	{
-		return deadReckoningParameters;
+		return deadReckoningParams;
 	}
 
-	public void setDeadReckoningParameters( DeadReckoningParameter deadReckoningParameters )
+	public void setDeadReckoningParams( DeadReckoningParameter deadReckoningParams )
 	{
-		this.deadReckoningParameters = deadReckoningParameters;
+		this.deadReckoningParams = deadReckoningParams;
 	}
 
-	public String getEntityMarking()
+	public String getMarking()
 	{
-		return entityMarking;
+		return marking;
 	}
 
-	public void setEntityMarking( String entityMarking )
+	public void setMarking( String marking )
 	{
-		this.entityMarking = entityMarking;
+		this.marking = marking;
 	}
 
-	public EntityCapabilities getEntityCapabilities()
+	public EntityCapabilities getCapabilities()
 	{
-		return entityCapabilities;
+		return capabilities;
 	}
 
-	public void setEntityCapabilities( EntityCapabilities entityCapabilities )
+	public void setCapabilities( EntityCapabilities capabilities )
 	{
-		this.entityCapabilities = entityCapabilities;
+		this.capabilities = capabilities;
 	}
 
 	public List<ArticulationParameter> getArticulationParameter()
@@ -302,13 +317,13 @@ public class EntityStatePdu extends PDU
 		return articulationParameters;
 	}
 
-	public void setArticulationParameter( List<ArticulationParameter> articulationParameter )
+	public void setArticulationParameters( List<ArticulationParameter> articulationParameters )
 	{
-		if( articulationParameter.size() > DisSizes.UI8_MAX_VALUE )
+		if( articulationParameters.size() > DisSizes.UI8_MAX_VALUE )
 			throw new IllegalArgumentException( "A maximum of " + DisSizes.UI8_MAX_VALUE +
 			                                    " articulation parameters are supported by the DIS specification" );
 
-		this.articulationParameters = articulationParameter;
+		this.articulationParameters = articulationParameters;
 	}
 	//----------------------------------------------------------
 	//                     STATIC METHODS

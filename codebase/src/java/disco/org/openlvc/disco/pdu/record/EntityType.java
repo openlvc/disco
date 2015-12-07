@@ -26,6 +26,7 @@ import org.openlvc.disco.pdu.IPduComponent;
 import org.openlvc.disco.pdu.field.Country;
 import org.openlvc.disco.pdu.field.Domain;
 import org.openlvc.disco.pdu.field.EntityKind;
+import org.openlvc.disco.pdu.field.Kind;
 
 /**
  * The type of entity in a DIS exercise shall be specified by an Entity Type record. 
@@ -42,7 +43,7 @@ public class EntityType implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private short entityKind;
+	private short kind;
 	private short domain;
 	private int country;
 	private short category;
@@ -66,7 +67,7 @@ public class EntityType implements IPduComponent, Cloneable
 	                   short specific,
 	                   short extra )
 	{
-		this.entityKind = entityKind;
+		this.kind = entityKind;
 		this.domain = domain;
 		this.country = country;
 		this.category = category;
@@ -87,7 +88,7 @@ public class EntityType implements IPduComponent, Cloneable
 		if( other instanceof EntityType )
 		{
 			EntityType otherType = (EntityType)other;
-			if( otherType.entityKind == entityKind &&
+			if( otherType.kind == kind &&
 				otherType.domain == domain &&
 				otherType.country == country &&
 				otherType.category == category &&
@@ -105,7 +106,26 @@ public class EntityType implements IPduComponent, Cloneable
 	@Override
 	public EntityType clone()
 	{
-		return new EntityType( entityKind, domain, country, category, subcategory, specific, extra );
+		return new EntityType( kind, domain, country, category, subcategory, specific, extra );
+	}
+
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append( kind );
+		builder.append( "." );
+		builder.append( domain );
+		builder.append( "." );
+		builder.append( country );
+		builder.append( "." );
+		builder.append( category );
+		builder.append( "." );
+		builder.append( subcategory );
+		builder.append( "." );
+		builder.append( specific );
+		builder.append( "." );
+		builder.append( extra );
+		return builder.toString();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +134,7 @@ public class EntityType implements IPduComponent, Cloneable
 	@Override
 	public void from( DisInputStream dis ) throws IOException
 	{
-		entityKind = dis.readUI8();
+		kind = dis.readUI8();
 		domain = dis.readUI8();
 		country = dis.readUI16();
 		category = dis.readUI8();
@@ -126,7 +146,7 @@ public class EntityType implements IPduComponent, Cloneable
 	@Override
 	public void to( DisOutputStream dos ) throws IOException
 	{
-		dos.writeUI8( entityKind );
+		dos.writeUI8( kind );
 		dos.writeUI8( domain );
 		dos.writeUI16( country );
 		dos.writeUI8( category );
@@ -152,14 +172,14 @@ public class EntityType implements IPduComponent, Cloneable
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public short getEntityKind()
+	public short getKind()
 	{
-		return entityKind;
+		return kind;
 	}
 
-	public void setEntityKind( short entityKind )
+	public void setKind( short kind )
 	{
-		this.entityKind = entityKind;
+		this.kind = kind;
 	}
 
 	public short getDomain()
@@ -220,6 +240,29 @@ public class EntityType implements IPduComponent, Cloneable
 	public void setExtra( short extra )
 	{
 		this.extra = extra;
+	}
+	
+	//
+	// Convenience Methods
+	//
+	public Kind getKindEnum()
+	{
+		return Kind.fromValue( this.kind );
+	}
+	
+	public void setKind( Kind kind )
+	{
+		this.kind = kind.value();
+	}
+	
+	public Domain getDomainEnum()
+	{
+		return Domain.fromValue( this.domain );
+	}
+	
+	public void setDomain( Domain domain )
+	{
+		this.domain = domain.value();
 	}
 
 	//----------------------------------------------------------
