@@ -206,7 +206,7 @@ public class LLA
 			cosSqAlpha = 1 - sinAlpha * sinAlpha;
 			cos2SigmaM = cosSigma - 2 * sinU1 * sinU2 / cosSqAlpha;
 			if( Double.isNaN( cos2SigmaM ) )
-				cos2SigmaM = 0; // equatorial line: cosSqAlpha=0 (§6)
+				cos2SigmaM = 0; // equatorial line: cosSqAlpha=0 (6)
 			double C = vincentry_f / 16 * cosSqAlpha * (4+vincentry_f * (4-3 * cosSqAlpha));
 			lambdaP = lambda;
 			lambda = L + (1 - C) * vincentry_f * sinAlpha *
