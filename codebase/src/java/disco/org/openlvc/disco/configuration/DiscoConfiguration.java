@@ -28,6 +28,9 @@ public class DiscoConfiguration
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	/** Should parsing problems result in exceptions? */
+	public static boolean STRICT_MODE = Boolean.valueOf( System.getProperty("disco.strict","false") );
+	
 	private static final String PROP_PROVIDER = "disco.provider";
 
 	private static final String PROP_LOG_LEVEL = "disco.log.level";
