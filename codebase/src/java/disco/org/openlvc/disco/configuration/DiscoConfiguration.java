@@ -108,45 +108,37 @@ public class DiscoConfiguration
 			return loggingConfiguration;
 
 		// we haven't got a configuration yet - build one
+		String loglevel = System.getProperty( PROP_LOG_LEVEL, "INFO" );
+		boolean logToConsole = getBoolean( System.getProperty(PROP_LOG_CONSOLE,"true") );
+		String logFile = System.getProperty( PROP_LOG_FILE, "disco.log" );
+		boolean logToFile = false;
+		try
+		{
+			logToFile = getBoolean(System.getProperty(PROP_LOG_FILE,"false") );
+		}
+		catch( IllegalArgumentException ia )
+		{
+			// must point to a log file, which is an implicit "yes, turn it on"
+			logToFile = true;
+		}
+
+		// Set up the logging configuration based on the above information
 		Log4jConfiguration configuration = new Log4jConfiguration( "disco" );
-		configuration.setLevel( getLogLevel() );
-		configuration.setConsoleOn( isLogToConsole() );
-		if( isLogToFile() )
+		configuration.setLevel( loglevel );
+		configuration.setConsoleOn( logToConsole );
+		if( logToFile )
 		{
 			configuration.setFileOn( true );
-			configuration.setFile( getLogFile() );
+			configuration.setFile( logFile );
 		}
 		
+		this.loggingConfiguration = configuration;
 		return configuration;
 	}
 
 	public void setLoggingConfiguration( Log4jConfiguration configuration )
 	{
 		this.loggingConfiguration = configuration;
-	}
-
-	public String getLogLevel()
-	{
-		return System.getProperty( PROP_LOG_LEVEL, "DEBUG" );
-	}
-	
-	public boolean isLogToConsole()
-	{
-		return getBoolean( System.getProperty(PROP_LOG_CONSOLE,"true") );
-	}
-
-	public boolean isLogToFile()
-	{
-		String value = System.getProperty( PROP_LOG_FILE, "true" );
-		if( value.equals("false") )
-			return false;
-		else
-			return true;
-	}
-
-	public String getLogFile()
-	{
-		return System.getProperty( PROP_LOG_FILE, "disco.log" );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

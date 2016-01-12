@@ -77,8 +77,12 @@ public class OpsCenter
 			throw new DiscoException( "Cannot open connection without PDU Receiver: null" );
 		
 		// activate logging
-		this.configuration.getLoggingConfiguration().activateConfiguration();
-		this.logger = configuration.getDiscoLogger();
+		if( this.logger == null )
+		{
+			this.configuration.getLoggingConfiguration().activateConfiguration();
+			this.logger = configuration.getDiscoLogger();
+		}
+
 		welcomeMessage();
 		
 		// create the underlying provider
