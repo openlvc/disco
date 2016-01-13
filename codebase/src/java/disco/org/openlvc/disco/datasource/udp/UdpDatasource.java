@@ -91,7 +91,7 @@ public class UdpDatasource implements IDatasource
 		InetAddress address = configuration.getAddress();
 		int port = configuration.getPort();
 		NetworkInterface networkInterface = configuration.getNetworkInterface();
-		logger.debug( "Connecting to socket "+address+":"+port+" (interface: "+networkInterface+")" );
+		logger.info( "Connecting to socket "+address+":"+port+" (interface: "+networkInterface+")" );
 
 		if( address.isMulticastAddress() )
 			this.socket = NetworkUtils.createMulticast( address, port, networkInterface );
