@@ -17,7 +17,9 @@
  */
 package org.openlvc.disco.configuration;
 
+import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 
@@ -58,20 +60,34 @@ public class UdpDatasourceConfig
 
 	public InetAddress getAddress()
 	{
-		if( this.address == null )
+		// have we already done this and found our address?
+		if( this.address != null )
+			return address;
+	
+		// Find the Address we are configured to use
+		// Valid values for the address are BROADCAST or some literal MulticastAddress
+		// that we can use for the NIC
+		String prop = System.getProperty( PROP_ADDRESS, "BROADCAST" );
+		if( prop.equals("BROADCAST") )
 		{
-			String prop = System.getProperty( PROP_ADDRESS, "BROADCAST" );
-			if( prop.equals("BROADCAST") )
+			// Need to determine the broadcast address for the chosen NIC
+			NetworkInterface nic = getNetworkInterface();
+			for( InterfaceAddress ifAddr : nic.getInterfaceAddresses() )
 			{
-				// Get Network Interface to determine local address
-				NetworkInterface nic = getNetworkInterface();
-				this.address = nic.getInterfaceAddresses().get(0).getAddress();
+				if( ifAddr.getAddress() instanceof Inet6Address )
+					continue;
+				
+				this.address = ifAddr.getBroadcast();
+				break;
 			}
-			else
-			{
-				// It if an address, get it directly
-				this.address = NetworkUtils.getAddress( prop );
-			}
+			
+			if( this.address == null )
+				throw new DiscoException( "NIC doesn't support IPv4 Broadcast: "+nic );
+		}
+		else
+		{
+			// It if an address, get it directly
+			this.address = NetworkUtils.getAddress( prop );
 		}
 		
 		return this.address;
@@ -88,6 +104,8 @@ public class UdpDatasourceConfig
 	 */
 	public void setAddress( String address ) throws DiscoException
 	{
+		// Works in conjunction with getNetworkInterface()
+		// Valid values here are BROADCAST, or some multicast address
 		if( address.equals("BROADCAST") )
 		{
 			System.setProperty( PROP_ADDRESS, "BROADCAST" );
