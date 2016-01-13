@@ -92,7 +92,7 @@ public class EntityId implements IPduComponent, Cloneable
     public void from( DisInputStream dis ) throws IOException
     {
 		siteId = dis.readUI16();
-		entityId = dis.readUI16();
+		appId  = dis.readUI16();
 		entityId = dis.readUI16();
     }
 
@@ -113,6 +113,11 @@ public class EntityId implements IPduComponent, Cloneable
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public boolean isValid()
+	{
+		return siteId != 0 || appId != 0 || entityId != 0;
+	}
+	
 	public int getSiteId()
 	{
 		return this.siteId;
