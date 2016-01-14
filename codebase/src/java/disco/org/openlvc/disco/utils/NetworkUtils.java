@@ -100,8 +100,10 @@ public class NetworkUtils
 	{
 		try
 		{
-			DatagramSocket socket = new DatagramSocket( port, address );
+			DatagramSocket socket = new DatagramSocket(null); // null to avoid implicit bind!
+			socket.setReuseAddress( true );                   // could be others listening as well
 			socket.setBroadcast( true );
+			socket.bind( new InetSocketAddress(address,port) );
 			return socket;
 		}
 		catch( Exception e )
@@ -193,6 +195,28 @@ public class NetworkUtils
 		catch( Exception e )
 		{
 			throw new DiscoException( e );
+		}
+	}
+
+	/**
+	 * For the given {@link InetAddress}, find and retuen the {@link InterfaceAddress}.
+	 * We can extract more information from this, such as broadcast address.
+	 */
+	public static InterfaceAddress getInterfaceAddress( InetAddress regular )
+	{
+		try
+		{
+			NetworkInterface nic = NetworkInterface.getByInetAddress( regular );
+			for( InterfaceAddress addr : nic.getInterfaceAddresses() )
+				if( addr.getAddress().equals(regular) )
+					return addr;
+			
+			// we didn't find it if we get here
+			return null;
+		}
+		catch( Exception e )
+		{
+			return null;
 		}
 	}
 	

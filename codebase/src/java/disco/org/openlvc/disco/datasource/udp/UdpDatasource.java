@@ -23,6 +23,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
 
@@ -91,12 +92,18 @@ public class UdpDatasource implements IDatasource
 		InetAddress address = configuration.getAddress();
 		int port = configuration.getPort();
 		NetworkInterface networkInterface = configuration.getNetworkInterface();
-		logger.info( "Connecting to socket "+address+":"+port+" (interface: "+networkInterface+")" );
-
 		if( address.isMulticastAddress() )
+		{
+			logger.info( "Connecting to multicast group - "+address+":"+port+" (interface: "+networkInterface+")" );
 			this.socket = NetworkUtils.createMulticast( address, port, networkInterface );
+		}
 		else
+		{
+			InterfaceAddress ifaddr = NetworkUtils.getInterfaceAddress( address );
+			logger.info( "Connecting broadcast socket - "+address+":"+port+" (broadcast "+ifaddr.getBroadcast()+")" );
+			logger.info( "Network Interface: "+networkInterface );
 			this.socket = NetworkUtils.createBroadcast( address, port );
+		}
 		
 		//
 		// Start the receiver thread so we can process PDUs

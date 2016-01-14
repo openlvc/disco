@@ -77,7 +77,7 @@ public class UdpDatasourceConfig
 				if( ifAddr.getAddress() instanceof Inet6Address )
 					continue;
 				
-				this.address = ifAddr.getBroadcast();
+				this.address = ifAddr.getAddress();
 				break;
 			}
 			
