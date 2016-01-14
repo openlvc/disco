@@ -103,7 +103,12 @@ public class NetworkUtils
 			DatagramSocket socket = new DatagramSocket(null); // null to avoid implicit bind!
 			socket.setReuseAddress( true );                   // could be others listening as well
 			socket.setBroadcast( true );
-			socket.bind( new InetSocketAddress(address,port) );
+			socket.bind( new InetSocketAddress(port) );       // works everywhere - but on all nics
+			// Write Once, Cry Everywhere
+			// First (addr/port) works on Windows, not on the mac
+			// Second (bcast/port) works on the Mac, not on Windows
+			//socket.bind( new InetSocketAddress(address,port) );
+			//socket.bind( new InetSocketAddress(getInterfaceAddress(address).getBroadcast(),port) );
 			return socket;
 		}
 		catch( Exception e )
