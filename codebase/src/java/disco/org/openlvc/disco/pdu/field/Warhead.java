@@ -17,6 +17,11 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openlvc.disco.configuration.DiscoConfiguration;
+
 /**
  * The warhead shall be specified by a 16-bit enumeration.
  * 
@@ -97,6 +102,12 @@ public enum Warhead
 	BiologicalToxin( 9500 );
 
 	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	// fast lookup for types with lots of options
+	private static Map<Integer,Warhead> CACHE = new HashMap<>();
+
+	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private int value;
@@ -107,6 +118,7 @@ public enum Warhead
 	private Warhead( int value )
 	{
 		this.value = value;
+		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -117,15 +129,24 @@ public enum Warhead
 		return this.value;
 	}
 	
+	private void store( int value )
+	{
+		Warhead.CACHE.put( value, this );
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	public static Warhead fromValue( int value )
 	{
-		for( Warhead warhead : Warhead.values() )
-			if( warhead.value == value )
-				return warhead;
-		
-		throw new IllegalArgumentException( value+" not a valid Warhead number" );		
+		Warhead result = CACHE.get( value );
+		if( result != null )
+			return result;
+
+		// Missing
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" not a valid Warhead number" );
+		else
+			return Other;
 	}
 }

@@ -17,6 +17,10 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import java.util.HashMap;
+
+import org.openlvc.disco.configuration.DiscoConfiguration;
+
 public enum DetonationResult
 {
 	//----------------------------------------------------------
@@ -50,6 +54,12 @@ public enum DetonationResult
 	HeHitLarge                          ( (short)9 );
 
 	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	// Cache for speed
+	private static HashMap<Short,DetonationResult> CACHE = new HashMap<>();
+
+	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private short value;
@@ -60,6 +70,7 @@ public enum DetonationResult
 	private DetonationResult( short value )
 	{
 		this.value = value;
+		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -70,17 +81,23 @@ public enum DetonationResult
 		return this.value;
 	}
 
+	private void store( short value )
+	{
+		CACHE.put( value, this );
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	public static DetonationResult fromValue( short value )
 	{
-		for( DetonationResult result : values() )
-		{
-			if( result.value == value )
-				return result;
-		}
-		
-		throw new IllegalArgumentException( value+" not a valid DetonationResult" );
+		DetonationResult result = CACHE.get( value );
+		if( result != null )
+			return result;
+
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" not a valid DetonationResult" );
+		else
+			return Other;
 	}
 }

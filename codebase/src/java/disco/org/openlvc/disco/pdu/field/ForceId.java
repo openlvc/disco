@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum ForceId
@@ -60,10 +61,18 @@ public enum ForceId
 
 	public static ForceId fromValue( short value )
 	{
-		if( value == Friendly.value ) return Friendly;
-		if( value == Opposing.value ) return Opposing;
-		if( value == Other.value ) return Other;
-		if( value == Neutral.value ) return Neutral;
-		else throw new IllegalArgumentException( value+" is not a valid ForceId" );
+		switch( value )
+		{
+			 case 1: return Friendly;
+			 case 2: return Opposing;
+			 case 3: return Neutral;
+			 case 0: return Other;
+			default: // drop through
+		}
+		
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" is not a valid ForceId" );
+		else
+			return Other;
 	}
 }

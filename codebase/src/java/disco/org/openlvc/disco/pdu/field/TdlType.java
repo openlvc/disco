@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 /**
@@ -87,6 +88,9 @@ public enum TdlType
 				return type;
 		}
 		
-		throw new IllegalArgumentException( value+" not a valid TDLType" );
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" not a valid TDLType" );
+		else
+			return Other;
 	}
 }

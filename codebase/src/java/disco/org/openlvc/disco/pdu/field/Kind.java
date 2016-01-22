@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum Kind
@@ -66,15 +67,24 @@ public enum Kind
 
 	public static Kind fromValue( short value )
 	{
-		if( value == Platform.value )             return Platform;
-		else if( value == Lifeform.value )        return Lifeform;
-		else if( value == Munition.value )        return Munition;
-		else if( value == Radio.value )           return Radio;
-		else if( value == SensorEmitter.value )   return SensorEmitter;
-		else if( value == Environmental.value )   return Environmental;
-		else if( value == Supply.value )          return Supply;
-		else if( value == Expendable.value )      return Expendable;
-		else if( value == CulturalFeature.value ) return CulturalFeature;
-		else                                      return Other;
+		switch( value )
+		{
+			 case 1: return Platform;
+			 case 2: return Munition;
+			 case 3: return Lifeform;
+			 case 4: return Environmental;
+			 case 5: return CulturalFeature;
+			 case 6: return Supply;
+			 case 7: return Radio;
+			 case 8: return Expendable;
+			 case 9: return SensorEmitter;
+			 case 0: return Other;
+			default: // drop through
+		}
+
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" not a valid Kind" );
+		else
+			return Other;
 	}
 }

@@ -17,6 +17,9 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import java.util.HashMap;
+
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
@@ -113,6 +116,11 @@ public enum PduType
 	Attribute         ( (short)72 );
 	
 	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static HashMap<Short,PduType> CACHE = new HashMap<>(); 
+
+	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private short value;
@@ -124,12 +132,14 @@ public enum PduType
 	private PduType( short value )
 	{
 		this.value = value;
+		store( value );
 	}
 	
 	private PduType( short value, Class<? extends PDU> type )
 	{
 		this.value = value;
 		this.type = type;
+		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -147,6 +157,11 @@ public enum PduType
 	{
 		return this.type;
 	}
+	
+	private void store( short value )
+	{
+		CACHE.put( value, this );
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
@@ -158,29 +173,14 @@ public enum PduType
 
 	public static PduType fromValue( short value )
 	{
-		if( value == EntityState.value )
-			return EntityState;
-		else if( value == Fire.value )
-			return Fire;
-		else if( value == Signal.value )
-			return Signal;
-		else if( value == Transmitter.value )
-			return Transmitter;
-		else if( value == Detonation.value )
-			return Detonation;
-		else if( value == Designator.value )
-			return Designator;
-		else if( value == Receiver.value )
-			return Receiver;
-		else
-		{
-			for( PduType type : PduType.values() )
-			{
-				if( type.value == value )
-					return type;
-			}
-			
+		PduType type = CACHE.get( value );
+		if( type != null )
+			return type;
+
+		// Missing
+		if( DiscoConfiguration.STRICT_MODE )
 			throw new IllegalArgumentException( value+" not a valid PDUType number" );
-		}
+		else
+			return Other;
 	}
 }

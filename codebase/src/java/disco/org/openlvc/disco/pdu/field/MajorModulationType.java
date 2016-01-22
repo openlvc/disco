@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum MajorModulationType
@@ -66,8 +67,11 @@ public enum MajorModulationType
 		for( MajorModulationType type : values() )
 			if( type.value == value )
 				return type;
-		
-		throw new IllegalArgumentException( value+" is not a valid value for MajorModulationType" );
+
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" is not a valid value for MajorModulationType" );
+		else
+			return Other;
 	}
 
 }

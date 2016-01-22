@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum EntityKind
@@ -66,12 +67,24 @@ public enum EntityKind
 
 	public static EntityKind fromValue( short value )
 	{
-		for( EntityKind kind : values() )
+		switch( value )
 		{
-			if( kind.value == value )
-				return kind;
+			 case 1: return Platform;
+			 case 2: return Munition;
+			 case 3: return Lifeform;
+			 case 4: return Environmental;
+			 case 5: return CulturalFeature;
+			 case 6: return Supply;
+			 case 7: return Radio;
+			 case 8: return Expandable;
+			 case 9: return SensorEmitter;
+			 case 0: return Other;
+			default: // drop through
 		}
 		
-		throw new IllegalArgumentException( value+" not a valid EntityKind" );
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" not a valid EntityKind" );
+		else
+			return Other;
 	}
 }

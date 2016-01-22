@@ -59,11 +59,13 @@ public enum ParameterTypeDesignator
 
 	public static ParameterTypeDesignator fromValue( short value )
 	{
-		if( value == ArticulatedPart.value )
-			return ArticulatedPart;
-		else if( value == AttachedPart.value )
-			return AttachedPart;
-		else
-			return Invalid;
+		switch( value )
+		{
+			case 0: return ArticulatedPart;
+			case 1: return AttachedPart;
+			default: // drop through
+		}
+
+		return Invalid;
 	}
 }

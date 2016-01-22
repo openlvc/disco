@@ -17,8 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
 
@@ -113,8 +112,8 @@ public enum Fuse
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	// values we don't have - cache for performance
-	private static Set<Integer> MISSING = new HashSet<>();
+	// Lots of options - cache if for some speedup
+	private static HashMap<Integer,Fuse> CACHE = new HashMap<>();
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -127,6 +126,7 @@ public enum Fuse
 	private Fuse( int value )
 	{
 		this.value = value;
+		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -137,19 +137,19 @@ public enum Fuse
 		return this.value;
 	}
 	
+	private void store( int value )
+	{
+		CACHE.put( value, this );
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	public static Fuse fromValue( int value )
 	{
-		if( MISSING.contains(value) == false )
-		{
-			for( Fuse fuse : Fuse.values() )
-				if( fuse.value == value )
-					return fuse;
-			
-			MISSING.add( value );
-		}
+		Fuse result = CACHE.get( value );
+		if( result != null )
+			return result;
 
 		if( DiscoConfiguration.STRICT_MODE )
 			throw new IllegalArgumentException( value+" not a valid Fuse number" );

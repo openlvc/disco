@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum DeadReckoningAlgorithm
@@ -66,13 +67,25 @@ public enum DeadReckoningAlgorithm
 
 	public static DeadReckoningAlgorithm fromValue( short value )
 	{
-		for( DeadReckoningAlgorithm algo : values() )
+		switch( value )
 		{
-			if( algo.value == value )
-				return algo;
+			 case 2: return FPW;
+			 case 4: return RVW;
+			 case 1: return Static;
+			 case 8: return RVB;
+			 case 3: return RPW;
+			 case 5: return FVW;
+			 case 6: return FPB;
+			 case 7: return RPB;
+			 case 9: return FVB;
+			default: // drop through
 		}
 		
-		throw new IllegalArgumentException( value+" not a valid Dead Reckoning Algorithm" );
+		// Missing
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" not a valid Dead Reckoning Algorithm" );
+		else
+			return Other;
 	}
 
 }

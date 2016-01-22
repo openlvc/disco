@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum ProtocolFamily
@@ -63,22 +64,21 @@ public enum ProtocolFamily
 
 	public static ProtocolFamily fromValue( short value )
 	{
-		if( value == Entity.value )
-			return Entity;
-		else if( value == Warfare.value )
-			return Warfare;
-		else if( value == Radio.value )
-			return Radio;
-		else if( value == Emission.value )
-			return Emission;
-		else if( value == SimManagement.value )
-			return SimManagement;
-		else if( value == Logistics.value )
-			return Logistics;
-		else if( value == Other.value )
-			return Other;
-		else
+		switch( value )
+		{
+			 case 1: return Entity;
+			 case 2: return Warfare;
+			 case 3: return Logistics;
+			 case 4: return Radio;
+			 case 5: return SimManagement;
+			 case 6: return Emission;
+			default: // drop through
+		}
+
+		if( DiscoConfiguration.STRICT_MODE )
 			throw new IllegalArgumentException( value+" is not a valid value for ProtocolFamily" );
+		else
+			return Other;
 	}
 	
 }

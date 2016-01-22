@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 /**
@@ -73,7 +74,10 @@ public enum EncodingClass
 			if( type.value == value )
 				return type;
 		}
-		
-		throw new IllegalArgumentException( value+" not a valid EncodingClass" );
+
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" not a valid EncodingClass" );
+		else
+			return RawBinaryData;
 	}
 }

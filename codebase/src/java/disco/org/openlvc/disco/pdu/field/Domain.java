@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum Domain
@@ -62,12 +63,20 @@ public enum Domain
 
 	public static Domain fromValue( short value )
 	{
-		for( Domain domain : values() )
+		switch( value )
 		{
-			if( domain.value == value )
-				return domain;
+			 case 1: return Land;
+			 case 2: return Air;
+			 case 3: return Surface;
+			 case 4: return Subsurface;
+			 case 5: return Space;
+			 case 0: return Other;
+			default: // drop through
 		}
-		
-		throw new IllegalArgumentException( value+" not a valid Domain" );
+
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" not a valid Domain" );
+		else
+			return Other;
 	}
 }

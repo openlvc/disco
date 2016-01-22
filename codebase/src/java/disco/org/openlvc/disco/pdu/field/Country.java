@@ -17,6 +17,9 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import java.util.HashMap;
+
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum Country
@@ -288,6 +291,12 @@ public enum Country
 	Uzbekistan( 266 );
 
 	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	// fast lookup for types with lots of options
+	private static HashMap<Integer,Country> CACHE = new HashMap<>();
+
+	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private int value;
@@ -298,6 +307,7 @@ public enum Country
 	private Country( int value )
 	{
 		this.value = value;
+		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -306,6 +316,11 @@ public enum Country
 	public int value()
 	{
 		return this.value;
+	}
+	
+	private void store( int value )
+	{
+		CACHE.put( value, this );
 	}
 
 	//----------------------------------------------------------
@@ -318,26 +333,14 @@ public enum Country
 
 	public static Country fromValue( int value )
 	{
-		if( value == UnitedStates.value ) return UnitedStates;
-		else if( value == UnitedKingdom.value ) return UnitedKingdom;
-		else if( value == Germany.value ) return Germany;
-		else if( value == Australia.value ) return Australia;
-		else if( value == Austria.value ) return Austria;
-		else if( value == Sweden.value ) return Sweden;
-		else if( value == Norway.value ) return Norway;
-		else if( value == Denmark.value ) return Denmark;
-		else if( value == NewZealand.value ) return NewZealand;
-		else if( value == Greece.value ) return Greece;
-		else if( value == Israel.value ) return Israel;
-		else if( value == Japan.value ) return Japan;
-		else if( value == China.value ) return China;
-		
-		for( Country country : values() )
-		{
-			if( country.value == value )
-				return country;
-		}
-		
-		throw new IllegalArgumentException( value+" not a valid Country Code" );
+		Country temp = CACHE.get( value );
+		if( temp != null )
+			return temp;
+
+		// Missing
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" not a valid Country Code" );
+		else
+			return Other;
 	}
 }

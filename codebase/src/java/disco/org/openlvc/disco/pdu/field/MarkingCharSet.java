@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum MarkingCharSet
@@ -60,11 +61,19 @@ public enum MarkingCharSet
 
 	public static MarkingCharSet fromValue( short value )
 	{
-		if( value == ASCII.value ) return ASCII;
-		if( value == Unused.value ) return Unused;
-		if( value == ArmyMarking.value ) return ArmyMarking;
-		if( value == DigitChevron.value ) return DigitChevron;
-		else throw new IllegalArgumentException( value+" is not a valid ForceId" );
+		switch( value )
+		{
+			 case 0: return Unused;
+			 case 1: return ASCII;
+			 case 2: return ArmyMarking;
+			 case 3: return DigitChevron;
+			default: // drop through
+		}
+		
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" is not a valid MarkingCharSet value" );
+		else
+			return Unused;
 	}
 	
 }

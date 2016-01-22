@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 /**
@@ -32,6 +33,7 @@ public enum EncodingType
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
+	Unknown((short)0 ),
 	Mulaw8( (short)1 ),
 	CVSD  ( (short)2 ),
 	ADPCM ( (short)3 ),
@@ -75,7 +77,10 @@ public enum EncodingType
 			if( type.value == value )
 				return type;
 		}
-		
-		throw new IllegalArgumentException( value+" not a valid EncodingType" );
+
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" not a valid EncodingType" );
+		else
+			return Unknown;
 	}
 }

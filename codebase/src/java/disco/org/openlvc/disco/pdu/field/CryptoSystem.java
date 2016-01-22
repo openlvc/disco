@@ -17,6 +17,10 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 /**
@@ -41,6 +45,12 @@ public enum CryptoSystem
 	Invalid     ( Integer.MAX_VALUE );
 
 	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	// fast lookup
+	private static Map<Integer,CryptoSystem> CACHE = new HashMap<>();
+
+	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private int value;
@@ -51,6 +61,7 @@ public enum CryptoSystem
 	private CryptoSystem( int value )
 	{
 		this.value = value;
+		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -59,6 +70,11 @@ public enum CryptoSystem
 	public int value()
 	{
 		return this.value;
+	}
+
+	private void store( int value )
+	{
+		CACHE.put( value, this );
 	}
 
 	//----------------------------------------------------------
@@ -71,13 +87,14 @@ public enum CryptoSystem
 
 	public static CryptoSystem fromValue( int value )
 	{
-		for( CryptoSystem crypto : values() )
-		{
-			if( crypto.value == value )
-				return crypto;
-		}
-		
-		return Invalid;
-		//throw new IllegalArgumentException( value+" not a valid CryptoSystem" );
+		CryptoSystem result = CACHE.get( value );
+		if( result != null )
+			return result;
+
+		// Missing
+		if( DiscoConfiguration.STRICT_MODE )
+			throw new IllegalArgumentException( value+" not a valid CryptoSystem" );
+		else
+			return Invalid;
 	}
 }

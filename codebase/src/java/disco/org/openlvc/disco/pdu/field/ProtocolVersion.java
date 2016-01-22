@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum ProtocolVersion
@@ -64,24 +65,20 @@ public enum ProtocolVersion
 
 	public static ProtocolVersion fromValue( short value )
 	{
-		if( value == 7 )
-			return Version7;
-		else if( value == 6 )
-			return Version6;
-		else if( value == 5 )
-			return Version5;
-		else if( value == 0 )
-			return Other;
-		// end of common values
-		else if( value == 4 )
-			return Version4;
-		else if( value == 3 )
-			return Version3;
-		else if( value == 2 )
-			return Version2;
-		else if( value == 1 )
-			return Version1;
-		else
+		switch( value )
+		{
+			case 7: return Version7;
+			case 6: return Version6;
+			case 5: return Version5;
+			case 4: return Version4;
+			case 3: return Version3;
+			case 2: return Version2;
+			case 1: return Version1;
+			default: // drop through
+		}
+		if( DiscoConfiguration.STRICT_MODE )
 			throw new IllegalArgumentException( value+" not a valid Protocol Version number" );
+		else
+			return Other;
 	}
 }
