@@ -103,6 +103,9 @@
 	<!-- Mac OS X C++ and Installer profiles -->
 	<include file="profiles/installer.xml" as="installer"/>
 
+	<!-- Load Master build -->
+	<include file="profiles/loadmaster.xml" as="loadmaster"/>
+
 	<!-- =========================================================== -->
 	<!-- Convenience targets for specifying debug or release builds. -->
 	<!-- =========================================================== -->
