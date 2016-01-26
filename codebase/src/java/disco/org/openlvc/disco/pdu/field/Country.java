@@ -320,6 +320,9 @@ public enum Country
 	
 	private void store( int value )
 	{
+		if( CACHE == null )
+			CACHE = new HashMap<>();
+
 		CACHE.put( value, this );
 	}
 

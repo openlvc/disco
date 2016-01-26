@@ -76,6 +76,28 @@ public class EntityType implements IPduComponent, Cloneable
 		this.extra = extra;
 	}
 
+	/**
+	 * Convenience constructor so that you don't have to cast every `int` you pass in as a
+	 * parameter. Note that all fields except country will be cast down to a `short`, so
+	 * ensure they are in range.
+	 */
+	public EntityType( int entityKind,
+	                   int domain,
+	                   int country,
+	                   int category,
+	                   int subcategory,
+	                   int specific,
+	                   int extra )
+	{
+		this( (short)entityKind,
+		      (short)domain,
+		      country,
+		      (short)category,
+		      (short)subcategory,
+		      (short)specific,
+		      (short)extra );
+	}
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------

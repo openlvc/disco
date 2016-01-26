@@ -139,6 +139,9 @@ public enum Fuse
 	
 	private void store( int value )
 	{
+		if( CACHE == null )
+			CACHE = new HashMap<>();
+
 		CACHE.put( value, this );
 	}
 

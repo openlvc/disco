@@ -131,6 +131,9 @@ public enum Warhead
 	
 	private void store( int value )
 	{
+		if( CACHE == null )
+			CACHE = new HashMap<>();
+
 		Warhead.CACHE.put( value, this );
 	}
 	

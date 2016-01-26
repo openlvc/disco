@@ -83,6 +83,9 @@ public enum DetonationResult
 
 	private void store( short value )
 	{
+		if( CACHE == null )
+			CACHE = new HashMap<>();
+
 		CACHE.put( value, this );
 	}
 

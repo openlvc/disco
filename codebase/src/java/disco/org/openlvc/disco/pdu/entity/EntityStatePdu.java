@@ -88,7 +88,7 @@ public class EntityStatePdu extends PDU
 
 	public EntityStatePdu()
 	{
-		this( new PduHeader().setPduType( PduType.EntityState ) );
+		this( new PduHeader().setPduType(PduType.EntityState) );
 		super.getHeader().setProtocolFamily( ProtocolFamily.Entity );
 	}
 

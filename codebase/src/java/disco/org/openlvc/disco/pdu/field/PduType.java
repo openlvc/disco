@@ -118,7 +118,7 @@ public enum PduType
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	private static HashMap<Short,PduType> CACHE = new HashMap<>(); 
+	private static HashMap<Short,PduType> CACHE;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -160,6 +160,9 @@ public enum PduType
 	
 	private void store( short value )
 	{
+		if( CACHE == null )
+			CACHE = new HashMap<>();
+
 		CACHE.put( value, this );
 	}
 

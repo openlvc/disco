@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.utils;
 
+import org.openlvc.disco.pdu.record.WorldCoordinate;
+
 /**
  * Utility class representing Lat, Lon, Altitude.
  */
@@ -54,11 +56,24 @@ public class LLA
 		this.lon = lon;
 		this.alt = alt;
 	}
+	
+	public LLA( WorldCoordinate ecef )
+	{
+		LLA other = CoordinateUtils.toLLA( ecef );
+		this.lat = other.lat;
+		this.lon = other.lon;
+		this.alt = other.alt;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	public WorldCoordinate toWorldCoordinate()
+	{
+		return CoordinateUtils.toECEF( this );
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

@@ -23,7 +23,9 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
+import org.openlvc.disco.utils.CoordinateUtils;
 import org.openlvc.disco.utils.FloatingPointUtils;
+import org.openlvc.disco.utils.LLA;
 
 /**
  * Location of the origin of the entity's coordinate system shall be specified 
@@ -67,6 +69,14 @@ public class WorldCoordinate implements IPduComponent, Cloneable
 		this.z = z;
 	}
 	
+	public WorldCoordinate( LLA lla )
+	{
+		WorldCoordinate converted = CoordinateUtils.toECEF( lla );
+		this.x = converted.x;
+		this.y = converted.y;
+		this.z = converted.z;
+	}
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -100,6 +110,11 @@ public class WorldCoordinate implements IPduComponent, Cloneable
 	public WorldCoordinate clone()
 	{
 		return new WorldCoordinate( x, y, z );
+	}
+
+	public LLA toLLA()
+	{
+		return CoordinateUtils.toLLA( this );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
