@@ -17,8 +17,10 @@
  */
 package org.openlvc.disco.loadmaster;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.OpsCenter;
@@ -105,11 +107,34 @@ public class LoadMaster
 
 		long endTime = System.currentTimeMillis();
 		int totalpdus = espdus + firepdus + detpdus;
-		logger.info( String.format("[%7d] Tick completed: Sent %d PDUs to network in %dms",count,totalpdus,(endTime-startTime)) );
+		
+		
+//		"[     1] Tick Completed -- 100,000pdu in 875ms (102,444/s)
+//		"[     1]   Entity State -- 100,000            | "
+//		"[     1]           Fire -- 0"
+//		"[     1]     Detonation -- 0"
+
+		// do some precalculation on some fields
+		long periodMillis = (endTime - startTime);
+		double periodSeconds = periodMillis / 1000.0;
+		int pdusPerSecond = (int)(totalpdus / periodSeconds);
+		
+		String sTotal   = NumberFormat.getNumberInstance().format( totalpdus );
+		String sEspdu   = NumberFormat.getNumberInstance().format( espdus );
+		String sFirepdu = NumberFormat.getNumberInstance().format( firepdus );
+		String sDetpdu  = NumberFormat.getNumberInstance().format( detpdus );
+		String sPduPerSecond = NumberFormat.getNumberInstance().format( pdusPerSecond );
+		
+		logger.info( String.format("[%7d] Tick Completed: %s PDUs in %dms (%s/s)",
+		                           count,
+		                           sTotal,
+		                           periodMillis,
+		                           sPduPerSecond) );
+		//logger.info( String.format("[%7d] Tick completed: Sent %d PDUs to network in %dms",count,totalpdus,(endTime-startTime)) );
 		//gger.info( "[     1] Tick completed: Sent "+totalpdus+" PDUs to network in "+(endTime-startTime)+"ms" );
-		logger.info( "           Entity State: "+espdus );
-		logger.info( "                   Fire: "+firepdus );
-		logger.info( "             Detonation: "+detpdus );
+		logger.info( "            Entity State: "+sEspdu );
+		logger.info( "                    Fire: "+sFirepdu );
+		logger.info( "              Detonation: "+sDetpdu );
 		logger.info( "" );
 	}
 
@@ -129,7 +154,6 @@ public class LoadMaster
 			{
 				siteId = (int)(i / 65535.0)+1;
 				entityId = 0;
-				logger.fatal( "New Site ID: "+siteId );
 			}
 			
 			EntityStatePdu pdu = new EntityStatePdu();
