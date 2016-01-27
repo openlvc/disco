@@ -18,6 +18,7 @@
 package org.openlvc.disco.loadmaster.configuration;
 
 import java.util.LinkedList;
+import java.util.Properties;
 import java.util.Queue;
 
 public class Arguments
@@ -25,29 +26,24 @@ public class Arguments
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static final String ARG_CONFIG_FILE    = "--config-file";
 	private static final String ARG_LOG_LEVEL      = "--log-level";
 	private static final String ARG_OBJECTS        = "--objects";
-	private static final String ARG_TICK_INTERVAL  = "--tick";
+	private static final String ARG_TICK_INTERVAL  = "--tick-interval";
+	private static final String ARG_LOOPS          = "--loops";
 	private static final String ARG_SIM_ADDRESS    = "--simulation-address";
+
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private String loglevel;                    // optional
-	private int objectCount;                    // optional
-	private long tickInterval;                  // optional 1000ms
-	private String simulationAddress;           // optional (1-65534)-(1-65535)-(1-65533) 
-
+	private Properties properties;
+	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	public Arguments( String[] args ) throws Exception
 	{
-		// Set defaults
-		this.loglevel = "INFO";
-		this.objectCount = 100;
-		this.tickInterval = 1000;
-		this.simulationAddress = "1-1-20913"; // exerciseId=1, siteId=1, appId=20913 (T[20] I[9] M[13])
-		
+		this.properties = new Properties();
 		scan( args );
 		validate();
 	}
@@ -67,14 +63,18 @@ public class Arguments
 		{
 			String argument = queue.remove();
 			
-			if( argument.equals(ARG_LOG_LEVEL) )
-				setLogLevel( queue.remove() );
+			if( argument.equals(ARG_CONFIG_FILE) )
+				properties.put( Configuration.KEY_CONFIG_FILE, queue.remove() );
+			else if( argument.equals(ARG_LOG_LEVEL) )
+				properties.put( Configuration.KEY_LOG_LEVEL, queue.remove() );
 			else if( argument.equals(ARG_OBJECTS) )
-				setObjectCount( queue.remove() );
+				properties.put( Configuration.KEY_OBJECT_COUNT, queue.remove() );
 			else if( argument.equals(ARG_TICK_INTERVAL) )
-				setTickInterval( queue.remove() );
+				properties.put( Configuration.KEY_TICK_INTERVAL, queue.remove() );
+			else if( argument.equals(ARG_LOOPS) )
+				properties.put( Configuration.KEY_LOOPS, queue.remove() );
 			else if( argument.equals(ARG_SIM_ADDRESS) )
-				setSimulationAddress( queue.remove() );
+				properties.put( Configuration.KEY_SIMULATION_ADDRESS, queue.remove() );
 			else
 				throw new Exception( "Unknown argument: "+argument );
 		}
@@ -86,15 +86,19 @@ public class Arguments
 	 */
 	private void validate() throws Exception
 	{
-		// check the log level
-		if( !loglevel.equals("OFF") &&
-			!loglevel.equals("FATAL") &&
-			!loglevel.equals("WARN") &&
-			!loglevel.equals("INFO") &&
-			!loglevel.equals("DEBUG") &&
-			!loglevel.equals("TRACE") )
+		if( properties.contains(Configuration.KEY_LOG_LEVEL) )
 		{
-			throw new Exception( "Unknown log level: "+loglevel );
+			String loglevel = properties.getProperty( Configuration.KEY_LOG_LEVEL );
+			// check the log level
+			if( !loglevel.equals( "OFF" ) &&
+				!loglevel.equals( "FATAL" ) &&
+			    !loglevel.equals( "WARN" ) &&
+			    !loglevel.equals( "INFO" ) &&
+			    !loglevel.equals( "DEBUG" ) &&
+			    !loglevel.equals( "TRACE" ) )
+			{
+				throw new Exception( "Unknown log level: " + loglevel );
+			}
 		}
 	}
 
@@ -114,58 +118,53 @@ public class Arguments
 		
 		return builder.toString();
 	}
-	
+
+	protected Properties getProperties()
+	{
+		return this.properties;
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public String getConfigFile()
+	{
+		return properties.getProperty( Configuration.KEY_CONFIG_FILE );
+	}
+	
 	public String getLogLevel()
 	{
-		return this.loglevel;
+		return properties.getProperty( Configuration.KEY_LOG_LEVEL );
 	}
 	
-	private void setLogLevel( String loglevel )
+	public String getObjectCount()
 	{
-		this.loglevel = loglevel; 
+		return properties.getProperty( Configuration.KEY_OBJECT_COUNT );
 	}
 	
-	public int getObjectCount()
+	public String getTickInterval()
 	{
-		return this.objectCount;
+		return properties.getProperty( Configuration.KEY_TICK_INTERVAL );
 	}
 	
-	private void setObjectCount( String objectCount )
+	public String getLoops()
 	{
-		this.objectCount = Integer.parseUnsignedInt( objectCount );
+		return properties.getProperty( Configuration.KEY_LOOPS );
 	}
 	
-	public long getTickInterval()
-	{
-		return this.tickInterval;
-	}
-	
-	private void setTickInterval( String tickInterval )
-	{
-		this.tickInterval = Long.parseUnsignedLong( tickInterval );
-	}
-
 	public String getSimulationAddress()
 	{
-		return this.simulationAddress;
+		return properties.getProperty( Configuration.KEY_SIMULATION_ADDRESS );
 	}
 
-	private void setSimulationAddress( String simulationAddress )
-	{
-		this.simulationAddress = simulationAddress;
-	}
-	
 	@Override
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();
-		builder.append( "          Object Count: "+objectCount+"\n" );
-		builder.append( "         Tick Interval: "+tickInterval+"\n" );
-		builder.append( "    Simulation Address: "+simulationAddress+"\n" );
-		builder.append( "             Log Level: "+loglevel+"\n" );
+		builder.append( "             Log Level: "+getLogLevel()+"\n" );
+		builder.append( "          Object Count: "+getObjectCount()+"\n" );
+		builder.append( "         Tick Interval: "+getTickInterval()+"\n" );
+		builder.append( "    Simulation Address: "+getSimulationAddress()+"\n" );
 		return builder.toString();
 	}
 

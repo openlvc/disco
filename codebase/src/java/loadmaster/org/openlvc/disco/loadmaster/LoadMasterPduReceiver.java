@@ -17,10 +17,10 @@
  */
 package org.openlvc.disco.loadmaster;
 
-import org.openlvc.disco.loadmaster.configuration.Arguments;
-import org.openlvc.disco.loadmaster.configuration.Configuration;
+import org.openlvc.disco.IPduReceiver;
+import org.openlvc.disco.pdu.PDU;
 
-public class Main
+public class LoadMasterPduReceiver implements IPduReceiver
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -37,36 +37,13 @@ public class Main
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run( String[] args ) throws Exception
+
+	public void receiver( PDU pdu )
 	{
-		// Read the command line
-		Arguments commandline = new Arguments( args );
-
-		// Load configuration
-		Configuration configuration = new Configuration( commandline.getConfigFile() );
-
-		// Override settings with any command line args
-		configuration.override( commandline );
-		
-		// Run the load master
-		LoadMaster loadmaster = new LoadMaster( configuration );
-		loadmaster.execute();
+		// no-op for us
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
-	{
-		for( String string : args )
-		{
-			if( string.equalsIgnoreCase("--help") )
-			{
-				Arguments.printHelp();
-				return;
-			}
-		}
-		
-		new Main().run( args );
-	}
 }
