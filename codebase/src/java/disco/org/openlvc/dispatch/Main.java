@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2016 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -15,15 +15,13 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.dispatch;
 
-import java.util.Arrays;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Log4jConfiguration;
-
+/**
+ * The DIS Recorder will gather up all DIS traffic on its configured network and save it to
+ * a file for later use, or can read from recorded files and replay the traffic to the network,
+ * rewriting some of the header information to suit local needs.
+ */
 public class Main
 {
 	//----------------------------------------------------------
@@ -41,36 +39,35 @@ public class Main
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run( String[] args )
-	{
-		// Are there any special commands to tell us to run on of the child apps?
-		if( args.length > 0 && args[0].equalsIgnoreCase("--app:logger") )
-		{
-			org.openlvc.dispatch.Main.main( Arrays.copyOfRange(args,1,args.length) );
-			return;
-		}
-		
-		////////////////////////////////////////////////////////////
-		// initialize the logging and tell it what args we loaded //
-		////////////////////////////////////////////////////////////
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
-		logConfiguration.activateConfiguration();
-		Logger logger = LogManager.getFormatterLogger( "disco" );
-		logger.info( "      Welcome to Open LVC Disco" );
-		logger.info( "        .___.__                     " );
-		logger.info( "      __| _/|__| ______ ____  ____  " );
-		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
-		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
-		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
-		logger.info( "         \\/         \\/     \\/       " );
-		logger.info( "Version: "+DiscoConfiguration.getVersion() );
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	public static void main( String[] args )
 	{
-		new Main().run(args);
+		if( args.length == 0 )
+		{
+			Configuration.printHelp();
+			return;
+		}
+		
+		// check the args for the --help command
+		for( String temp : args )
+		{
+			if( temp.equalsIgnoreCase("--help") )
+			{
+				Configuration.printHelp();
+				return;
+			}
+		}
+		
+		// parse the full command line and start a recorder
+		Configuration configuration = new Configuration( args );
+
+		if( configuration.isRecording() )
+			new Recorder(configuration).execute();
+		else
+			new Replay(configuration).execute();
 	}
+
 }
