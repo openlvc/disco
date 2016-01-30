@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.loadmaster.configuration;
+package org.openlvc.disruptor.configuration;
 
 import java.util.LinkedList;
 import java.util.Properties;
@@ -173,8 +173,10 @@ public class Arguments
 	//----------------------------------------------------------
 	public static void printHelp()
 	{
-		
-		System.out.println( "Calytrix Cost Counter Licensing Application" );
+		System.out.println( "Disruptor - Load testing tool for DIS applications" );
+		System.out.println( "Usage: bin/disruptor [--args]\n" );
+
+		System.out.println( "" );
 		System.out.println( "" );
 
 		String formatString = "%22s   %s";

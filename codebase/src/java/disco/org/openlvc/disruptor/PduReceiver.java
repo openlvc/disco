@@ -15,14 +15,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.dispatch;
+package org.openlvc.disruptor;
 
-/**
- * The DIS Recorder will gather up all DIS traffic on its configured network and save it to
- * a file for later use, or can read from recorded files and replay the traffic to the network,
- * rewriting some of the header information to suit local needs.
- */
-public class Main
+import org.openlvc.disco.IPduReceiver;
+import org.openlvc.disco.pdu.PDU;
+
+public class PduReceiver implements IPduReceiver
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -40,34 +38,12 @@ public class Main
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	public void receiver( PDU pdu )
+	{
+		// no-op for us
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
-	{
-		if( args.length == 0 )
-		{
-			Configuration.printHelp();
-			return;
-		}
-		
-		// check the args for the --help command
-		for( String temp : args )
-		{
-			if( temp.equalsIgnoreCase("--help") )
-			{
-				Configuration.printHelp();
-				return;
-			}
-		}
-		
-		// parse the full command line and start a recorder
-		Configuration configuration = new Configuration( args );
-
-		if( configuration.isRecording() )
-			new Recorder(configuration).execute();
-		else
-			new Replay(configuration).execute();
-	}
-
 }

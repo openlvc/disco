@@ -15,22 +15,21 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.loadmaster;
+package org.openlvc.disruptor;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.OpsCenter;
-import org.openlvc.disco.loadmaster.configuration.Configuration;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.record.EntityType;
 import org.openlvc.disco.utils.CoordinateUtils;
 import org.openlvc.disco.utils.LLA;
+import org.openlvc.disruptor.configuration.Configuration;
 
-public class LoadMaster
+public class Disruptor
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -48,10 +47,10 @@ public class LoadMaster
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected LoadMaster( Configuration configuration )
+	protected Disruptor( Configuration configuration )
 	{
 		this.configuration = configuration;
-		this.logger = this.configuration.getLMLogger();
+		this.logger = this.configuration.getDisruptorLogger();
 		this.opscenter = null; // set in execute()
 		
 		this.entities = new ArrayList<>();
@@ -71,7 +70,7 @@ public class LoadMaster
 		
 		// Open up the Disco Operations Centre
 		opscenter = new OpsCenter( configuration.getDiscoConfiguration() );
-		opscenter.setReceiver( new LoadMasterPduReceiver() );
+		opscenter.setReceiver( new PduReceiver() );
 		opscenter.open();
 
 		try
@@ -159,7 +158,7 @@ public class LoadMaster
 			EntityStatePdu pdu = new EntityStatePdu();
 			pdu.setEntityID( siteId, 20913, ++entityId );
 			pdu.setEntityType( new EntityType(1, 1, 225, 1, 2, 3, 4) );
-			pdu.setMarking( "LM"+i );
+			pdu.setMarking( "DSRPT"+i );
 			pdu.setLocation( CoordinateUtils.toECEF(new LLA(-31.95224,115.8614,0)) );
 			
 			entities.add( pdu );
@@ -172,16 +171,17 @@ public class LoadMaster
 	private void printWelcome()
 	{
 		logger.info("");
-		logger.info("   (                          *                               ");
-		logger.info("   )\\ )              (      (  `                 )            ");
-		logger.info("  (()/(          )   )\\ )   )\\))(      )      ( /(   (   (    ");
-		logger.info("   /(_))  (   ( /(  (()/(  ((_)()\\  ( /(  (   )\\()) ))\\  )(   ");
-		logger.info("  (_))    )\\  )(_))  ((_)) (_()((_) )(_)) )\\ (_))/ /((_)(()\\  ");
-		logger.info("  | |    ((_)((_)_   _| |  |  \\/  |((_)_ ((_)| |_ (_))   ((_) ");
-		logger.info("  | |__ / _ \\/ _` |/ _` |  | |\\/| |/ _` |(_-<|  _|/ -_) | '_| ");
-		logger.info("  |____|\\___/\\__,_|\\__,_|  |_|  |_|\\__,_|/__/ \\__|\\___| |_|   ");
+		logger.info( " (                                              " );
+		logger.info( " )\\ )                               )           " );
+		logger.info( "(()/(  (       (      (          ( /(      (    " );
+		logger.info( " /(_)) )\\  (   )(    ))\\  `  )   )\\()) (   )(   " );
+		logger.info( "(_))_ ((_) )\\ (()\\  /((_) /(/(  (_))/  )\\ (()\\  " );
+		logger.info( " |   \\ (_)((_) ((_)(_))( ((_)_\\ | |_  ((_) ((_) " );
+		logger.info( " | |) || |(_-<| '_|| || || '_ \\)|  _|/ _ \\| '_| " );
+		logger.info( " |___/ |_|/__/|_|   \\_,_|| .__/  \\__|\\___/|_|   " );
+		logger.info( "                         |_|                    " );
 		logger.info("");
-		logger.info( "Welcome to the Load Master - Breaking Sims since Two-Oh-One-Six" );
+		logger.info( "Welcome to the Disruptor - Breaking things since Two-Oh-One-Six" );
 		logger.info("");
 	}
 	

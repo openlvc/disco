@@ -15,11 +15,13 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.loadmaster;
+package org.openlvc.duplicator;
 
-import org.openlvc.disco.loadmaster.configuration.Arguments;
-import org.openlvc.disco.loadmaster.configuration.Configuration;
-
+/**
+ * The DIS Recorder will gather up all DIS traffic on its configured network and save it to
+ * a file for later use, or can read from recorded files and replay the traffic to the network,
+ * rewriting some of the header information to suit local needs.
+ */
 public class Main
 {
 	//----------------------------------------------------------
@@ -37,36 +39,35 @@ public class Main
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run( String[] args ) throws Exception
-	{
-		// Read the command line
-		Arguments commandline = new Arguments( args );
-
-		// Load configuration
-		Configuration configuration = new Configuration( commandline.getConfigFile() );
-
-		// Override settings with any command line args
-		configuration.override( commandline );
-		
-		// Run the load master
-		LoadMaster loadmaster = new LoadMaster( configuration );
-		loadmaster.execute();
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
+	public static void main( String[] args )
 	{
-		for( String string : args )
+		if( args.length == 0 )
 		{
-			if( string.equalsIgnoreCase("--help") )
+			Configuration.printHelp();
+			return;
+		}
+		
+		// check the args for the --help command
+		for( String temp : args )
+		{
+			if( temp.equalsIgnoreCase("--help") )
 			{
-				Arguments.printHelp();
+				Configuration.printHelp();
 				return;
 			}
 		}
 		
-		new Main().run( args );
+		// parse the full command line and start a recorder
+		Configuration configuration = new Configuration( args );
+
+		if( configuration.isRecording() )
+			new Recorder(configuration).execute();
+		else
+			new Replay(configuration).execute();
 	}
+
 }

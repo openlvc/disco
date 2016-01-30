@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.dispatch;
+package org.openlvc.duplicator;
 
 import org.openlvc.disco.DiscoException;
 
@@ -156,8 +156,8 @@ public class Configuration
 	public static void printHelp()
 	{
 		StringBuilder builder = new StringBuilder();
-		builder.append( "Dispatch - Record or replay traffic from a DIS network\n" );
-		builder.append( "Usage: bin/logger [--args]\n" );
+		builder.append( "Duplicator - Record or replay traffic from a DIS network\n" );
+		builder.append( "Usage: bin/duplicator [--args]\n" );
 		builder.append( "\n" );
 		builder.append( "   --record                    Make a recording (default)\n" );
 		builder.append( "   --replay                    Replay from a previous recording\n" );

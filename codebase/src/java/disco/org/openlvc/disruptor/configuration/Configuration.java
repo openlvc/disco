@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.loadmaster.configuration;
+package org.openlvc.disruptor.configuration;
 
 import java.io.File;
 import java.util.Properties;
@@ -30,20 +30,20 @@ public class Configuration
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	public static final String KEY_CONFIG_FILE     = "lm.configfile";
-	public static final String KEY_LOG_LEVEL       = "lm.loglevel";
-	public static final String KEY_LOG_FILE        = "lm.logfile";
+	public static final String KEY_CONFIG_FILE     = "disruptor.configfile";
+	public static final String KEY_LOG_LEVEL       = "disruptor.loglevel";
+	public static final String KEY_LOG_FILE        = "disruptor.logfile";
 	
-	public static final String KEY_OBJECT_COUNT    = "lm.objectCount";
-	public static final String KEY_LOOPS           = "lm.loops";
-	public static final String KEY_TICK_INTERVAL   = "lm.tickInterval";
+	public static final String KEY_OBJECT_COUNT    = "disruptor.objectCount";
+	public static final String KEY_LOOPS           = "disruptor.loops";
+	public static final String KEY_TICK_INTERVAL   = "disruptor.tickInterval";
 	
-	public static final String KEY_SIMULATION_ADDRESS = "lm.dis.simaddress";
+	public static final String KEY_SIMULATION_ADDRESS = "disruptor.dis.simaddress";
 
-	public static final String KEY_DISCO_LOG_LEVEL = "lm.dis.loglevel";
-	public static final String KEY_DISCO_ADDRESS   = "lm.dis.address";
-	public static final String KEY_DISCO_PORT      = "lm.dis.port";
-	public static final String KEY_DISCO_NIC       = "lm.dis.nic";
+	public static final String KEY_DISCO_LOG_LEVEL = "disruptor.disco.loglevel";
+	public static final String KEY_DISCO_ADDRESS   = "disruptor.dis.address";
+	public static final String KEY_DISCO_PORT      = "disruptor.dis.port";
+	public static final String KEY_DISCO_NIC       = "disruptor.dis.nic";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -52,7 +52,7 @@ public class Configuration
 	private Logger applicationLogger;
 	private Log4jConfiguration appLoggerConfiguration;
 	
-	private String configFile = "etc/loadmaster.config";
+	private String configFile = "etc/disruptor.config";
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -67,7 +67,7 @@ public class Configuration
 
 		// logging configuration
 		this.applicationLogger = null; // set on first access
-		this.appLoggerConfiguration = new Log4jConfiguration( "lm" );
+		this.appLoggerConfiguration = new Log4jConfiguration( "disruptor" );
 		this.appLoggerConfiguration.setConsoleOn( true );
 		this.appLoggerConfiguration.setFileOn( false );
 		this.appLoggerConfiguration.setLevel( "INFO" );
@@ -127,14 +127,14 @@ public class Configuration
 		return temp;
 	}
 	
-	/** Get the Load Master application logger. Will lazy-load configuration. */
-	public Logger getLMLogger()
+	/** Get the Disruptor application logger. Will lazy-load configuration. */
+	public Logger getDisruptorLogger()
 	{
 		if( this.applicationLogger != null )
 			return applicationLogger;
 		
 		this.appLoggerConfiguration.activateConfiguration();
-		this.applicationLogger = LogManager.getFormatterLogger( "lm" );
+		this.applicationLogger = LogManager.getFormatterLogger( "disruptor" );
 		return applicationLogger;
 	}
 

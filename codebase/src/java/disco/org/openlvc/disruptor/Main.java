@@ -15,12 +15,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.loadmaster;
+package org.openlvc.disruptor;
 
-import org.openlvc.disco.IPduReceiver;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disruptor.configuration.Arguments;
+import org.openlvc.disruptor.configuration.Configuration;
 
-public class LoadMasterPduReceiver implements IPduReceiver
+public class Main
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -37,13 +37,36 @@ public class LoadMasterPduReceiver implements IPduReceiver
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	public void receiver( PDU pdu )
+	private void run( String[] args ) throws Exception
 	{
-		// no-op for us
+		// Read the command line
+		Arguments commandline = new Arguments( args );
+
+		// Load configuration
+		Configuration configuration = new Configuration( commandline.getConfigFile() );
+
+		// Override settings with any command line args
+		configuration.override( commandline );
+		
+		// Run the load master
+		Disruptor loadmaster = new Disruptor( configuration );
+		loadmaster.execute();
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static void main( String[] args ) throws Exception
+	{
+		for( String string : args )
+		{
+			if( string.equalsIgnoreCase("--help") )
+			{
+				Arguments.printHelp();
+				return;
+			}
+		}
+		
+		new Main().run( args );
+	}
 }

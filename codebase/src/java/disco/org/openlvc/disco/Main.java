@@ -41,15 +41,8 @@ public class Main
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run( String[] args )
+	private void run()
 	{
-		// Are there any special commands to tell us to run on of the child apps?
-		if( args.length > 0 && args[0].equalsIgnoreCase("--app:logger") )
-		{
-			org.openlvc.dispatch.Main.main( Arrays.copyOfRange(args,1,args.length) );
-			return;
-		}
-		
 		////////////////////////////////////////////////////////////
 		// initialize the logging and tell it what args we loaded //
 		////////////////////////////////////////////////////////////
@@ -69,8 +62,22 @@ public class Main
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
+	public static void main( String[] args ) throws Exception
 	{
-		new Main().run(args);
+		// Are there any special commands to tell us to run on of the child apps?
+		if( args.length > 0 && args[0].equalsIgnoreCase("--app:duplicator") )
+		{
+			org.openlvc.duplicator.Main.main( Arrays.copyOfRange(args,1,args.length) );
+			return;
+		}
+		
+		if( args.length > 0 && args[0].equalsIgnoreCase("--app:disruptor") )
+		{
+			org.openlvc.disruptor.Main.main( Arrays.copyOfRange(args,1,args.length) );
+			return;
+		}
+
+		// print out some information about us
+		new Main().run();
 	}
 }
