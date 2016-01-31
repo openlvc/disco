@@ -17,7 +17,10 @@
  */
 package org.openlvc.duplicator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.configuration.Log4jConfiguration;
 
 public class Configuration
 {
@@ -31,6 +34,10 @@ public class Configuration
 	private boolean recording;      // recording or replaying?
 	private String filename;        // file to read/write
 
+	// Logging
+	private Log4jConfiguration appLoggerConfiguration;
+	private Logger applicationLogger;
+	
 	// DIS Settings
 	private String disAddress;      // address or "BROADCAST"
 	private int    disPort;         // port to listen on
@@ -43,7 +50,14 @@ public class Configuration
 	public Configuration()
 	{
 		this.recording = true;
-		this.filename = "disco.soundtrack";
+		this.filename = "duplicator.session";
+		
+		// Logging
+		this.appLoggerConfiguration = new Log4jConfiguration( "duplicator" );
+		this.appLoggerConfiguration.setFileOn( false );
+		this.appLoggerConfiguration.setConsoleOn( true );
+		this.appLoggerConfiguration.setLevel( "INFO" );
+		this.applicationLogger = null; // set on first access
 		
 		// DIS Settings
 		this.disAddress   = "BROADCAST";
@@ -90,6 +104,17 @@ public class Configuration
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public Logger getLogger()
+	{
+		if( this.applicationLogger == null )
+		{
+			this.appLoggerConfiguration.activateConfiguration();
+			this.applicationLogger = LogManager.getFormatterLogger( "duplicator" );
+		}
+
+		return this.applicationLogger;
+	}
+	
 	public boolean isRecording()
 	{
 		return recording;

@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.openlvc.disco.pdu.field.PduType;
@@ -27,6 +28,8 @@ public abstract class PDU
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	/** Max size of a single PDU as defined by IEEE 1278.2 */
+	public static final int MAX_SIZE = 8912;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -128,6 +131,19 @@ public abstract class PDU
 	 * @return An int value representing the length of this PDU's content section in bytes
 	 */
 	public abstract int getContentLength();
+
+
+	/**
+	 * Convert the given PDU into a `byte[]`.
+	 */
+	public byte[] toByteArray() throws IOException
+	{
+		ByteArrayOutputStream baos = new ByteArrayOutputStream( PDU.MAX_SIZE );
+		DisOutputStream dos = new DisOutputStream( baos );
+		this.writeHeader( dos );
+		this.to( dos );
+		return baos.toByteArray();
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

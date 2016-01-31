@@ -17,6 +17,9 @@
  */
 package org.openlvc.duplicator;
 
+import org.apache.logging.log4j.Logger;
+import org.openlvc.disco.configuration.DiscoConfiguration;
+
 /**
  * The DIS Recorder will gather up all DIS traffic on its configured network and save it to
  * a file for later use, or can read from recorded files and replay the traffic to the network,
@@ -31,14 +34,46 @@ public class Main
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private String[] args;
+	private Recorder recorder; // store so we can access from shutdown hook
+	private Replay replay;     // store so we can access from shutdown hook
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private Main( String[] args )
+	{
+		this.args = args;
+		this.recorder = null;
+		this.replay = null;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	private void runMain()
+	{
+		// register the shutdown hook so we can gracefully exit
+		Runtime.getRuntime().addShutdownHook( new ShutdownHook() );
+		
+		// parse the full command line and start a recorder
+		Configuration configuration = new Configuration( args );
+
+		// print a welcome message
+		printWelcome( configuration.getLogger() );
+		
+		// start recording or replaying - whichever we have been told to
+		if( configuration.isRecording() )
+		{
+			this.recorder = new Recorder( configuration );
+			this.recorder.execute();
+		}
+		else
+		{
+			this.replay = new Replay( configuration );
+			this.replay.execute();
+		}
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
@@ -61,13 +96,38 @@ public class Main
 			}
 		}
 		
-		// parse the full command line and start a recorder
-		Configuration configuration = new Configuration( args );
-
-		if( configuration.isRecording() )
-			new Recorder(configuration).execute();
-		else
-			new Replay(configuration).execute();
+		// Run this thing
+		new Main(args).runMain();
 	}
-
+	
+	public static void printWelcome( Logger logger )
+	{
+		logger.info( "       Welcome to the Open LVC DIS Duplicator      " );
+		logger.info( "    ____              ___            __            " );
+		logger.info( "   / __ \\__  ______  / (_)________ _/ /_____  _____" );
+		logger.info( "  / / / / / / / __ \\/ / / ___/ __ `/ __/ __ \\/ ___/" );
+		logger.info( " / /_/ / /_/ / /_/ / / / /__/ /_/ / /_/ /_/ / /    " );
+		logger.info( "/_____/\\__,_/ .___/_/_/\\___/\\__,_/\\__/\\____/_/     " );
+		logger.info( "           /_/                                     " );
+		logger.info( "" );
+		logger.info( " The Duplicator is part of the Open LVC DIS family " );
+		logger.info( " Version: "+DiscoConfiguration.getVersion() );
+		logger.info( "" );
+	}
+	
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Shutdown Hook   ///////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+	public class ShutdownHook extends Thread
+	{
+		@Override
+		public void run()
+		{
+			if( recorder != null )
+				recorder.shutdown();
+			
+			if( replay != null )
+				replay.shutdown();
+		}
+	}
 }

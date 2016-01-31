@@ -15,13 +15,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.duplicator;
+package org.openlvc.disco.utils;
 
-public class Replay
+public class BufferOverflowException extends RuntimeException
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static final long serialVersionUID = 3112252018924L;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -30,28 +31,42 @@ public class Replay
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public Replay( Configuration configuration )
+	/**
+	 * Just create an empty exception
+	 */
+	public BufferOverflowException()
 	{
+		super();
+	}
 
+	/**
+	 * @param message The message to create the exception with
+	 */
+	public BufferOverflowException( String message )
+	{
+		super( message );
+	}
+
+	/**
+	 * @param cause The cause of the exception
+	 */
+	public BufferOverflowException( Throwable cause )
+	{
+		super( cause );
+	}
+
+	/**
+	 * @param message The message to create the exception with
+	 * @param cause The cause of the exception
+	 */
+	public BufferOverflowException( String message, Throwable cause )
+	{
+		super( message, cause );
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	public void execute()
-	{
-		
-	}
-
-	public void shutdown()
-	{
-		
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

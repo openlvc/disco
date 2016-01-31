@@ -17,7 +17,6 @@
  */
 package org.openlvc.disco.pdu;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -39,16 +38,6 @@ public class DisOutputStream extends DataOutputStream
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	/**
-	 * Constructor for type DISOutputStream with provided OutputStream
-	 * 
-	 * @param size - Size of the backing buffer.
-	 */
-	public DisOutputStream( int size )
-	{
-		super( new ByteArrayOutputStream(size) );
-	}
-	
 	public DisOutputStream( OutputStream ostream )
 	{
 		super( ostream );

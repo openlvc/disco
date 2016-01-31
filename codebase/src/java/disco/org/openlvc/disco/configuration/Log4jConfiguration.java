@@ -143,7 +143,17 @@ public class Log4jConfiguration
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////// Accessor and Mutator Methods ///////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-
+	/**
+	 * Disable this configuration entirely. Sets the log level to OFF and disables file and
+	 * console logging.
+	 */
+	public void disable()
+	{
+		this.setLevel( "OFF" );
+		this.setFileOn( false );
+		this.setConsoleOn( false );
+	}
+	
 	public String getAppName() { return this.appName; }
 	public void setAppName( String name ) { this.appName = name; }
 	
