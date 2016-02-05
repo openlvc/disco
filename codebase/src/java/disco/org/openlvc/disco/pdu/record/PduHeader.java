@@ -65,7 +65,7 @@ public class PduHeader
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	public void from( DisInputStream dis ) throws IOException
+	public PduHeader from( DisInputStream dis ) throws IOException
 	{
 		this.version = ProtocolVersion.fromValue( dis.readUI8() );
 		this.exerciseId = dis.readUI8();
@@ -75,6 +75,8 @@ public class PduHeader
 		
 		dis.readUI16(); // Length
 		dis.readUI16(); // padding bytes
+		
+		return this; // return ourselves so the method can be chained
 	}
 
 	public void to( DisOutputStream dos, int contentLength ) throws IOException

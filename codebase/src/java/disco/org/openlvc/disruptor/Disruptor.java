@@ -159,7 +159,7 @@ public class Disruptor
 			pdu.setEntityID( siteId, 20913, ++entityId );
 			pdu.setEntityType( new EntityType(1, 1, 225, 1, 2, 3, 4) );
 			pdu.setMarking( "DSRPT"+i );
-			pdu.setLocation( CoordinateUtils.toECEF(new LLA(-31.95224,115.8614,0)) );
+			pdu.setLocation( CoordinateUtils.toECEF(new LLA(-31.9522,115.8589,0)) );
 			
 			entities.add( pdu );
 		}

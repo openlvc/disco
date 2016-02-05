@@ -57,6 +57,8 @@ public class Recorder implements IPduReceiver
 	private Thread sessionWriter;
 	private FileOutputStream fos;
 	private BufferedOutputStream bos;
+	private long pdusWritten;
+	private long bytesWritten;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -79,6 +81,8 @@ public class Recorder implements IPduReceiver
 		this.sessionWriter = new Thread( new SessionWriter(), "SessionWriter" );
 		this.fos = null;                  // set in execute()
 		this.bos = null;                  // set in execute()
+		this.pdusWritten = 0;
+		this.bytesWritten = 0;
 	}
 
 	//----------------------------------------------------------
@@ -116,6 +120,7 @@ public class Recorder implements IPduReceiver
 		this.openingTimestamp = System.currentTimeMillis();
 		this.sessionWriter.start();
 		this.opscenter.open();
+		logger.info( "Recorder is active - DO YOUR WORST" );
 	}
 
 	/**
@@ -135,6 +140,7 @@ public class Recorder implements IPduReceiver
 			this.sessionWriter.join();
 			this.fos.close();
 			logger.info( "Session writer has shutdown" );
+			logger.info( "Captured %,d PDUs (%,d bytes)", pdusWritten, bytesWritten );
 		}
 		catch( InterruptedException ie )
 		{
@@ -151,6 +157,7 @@ public class Recorder implements IPduReceiver
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void receiver( PDU pdu )
 	{
+++this.pdusWritten;
 		this.buffer.add( new Track(pdu) ); // non-blocking call
 	}
 
@@ -241,8 +248,12 @@ public class Recorder implements IPduReceiver
 				{
 					try
 					{
+						byte[] pdubytes = track.pdu.toByteArray();
 						bos.write( BitHelpers.longToBytes(track.timestamp) );
-						bos.write( track.pdu.toByteArray() );
+						bos.write( BitHelpers.shortToBytes((short)pdubytes.length) );
+						bos.write( pdubytes );
+//						pdusWritten++;
+						bytesWritten += (pdubytes.length+9);
 					}
 					catch( IOException ioex )
 					{

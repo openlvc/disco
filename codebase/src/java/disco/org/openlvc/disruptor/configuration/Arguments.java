@@ -162,6 +162,7 @@ public class Arguments
 	{
 		StringBuilder builder = new StringBuilder();
 		builder.append( "             Log Level: "+getLogLevel()+"\n" );
+		builder.append( "                 Loops: "+getLoops()+"\n" );
 		builder.append( "          Object Count: "+getObjectCount()+"\n" );
 		builder.append( "         Tick Interval: "+getTickInterval()+"\n" );
 		builder.append( "    Simulation Address: "+getSimulationAddress()+"\n" );
@@ -181,7 +182,8 @@ public class Arguments
 
 		String formatString = "%22s   %s";
 		System.out.println( String.format(formatString,ARG_OBJECTS       ,"integer  (optional)  Number of objects to create              (default: 100)") );
-		System.out.println( String.format(formatString,ARG_TICK_INTERVAL ,"string   (optional)  Millis between update tick cycle         (default: 1000)") );
+		System.out.println( String.format(formatString,ARG_LOOPS         ,"integer  (optional)  Numbber of sim-loops to run              (default: 300)") );
+		System.out.println( String.format(formatString,ARG_TICK_INTERVAL ,"integer  (optional)  Millis between update tick cycle         (default: 1000)") );
 		System.out.println( String.format(formatString,ARG_SIM_ADDRESS   ,"string   (optional)  Simulation Address                       (default: 1-1-20913)") );
 		System.out.println( String.format(formatString,ARG_LOG_LEVEL     ,"string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE]  (default: INFO)") );
 		System.out.println( "" );

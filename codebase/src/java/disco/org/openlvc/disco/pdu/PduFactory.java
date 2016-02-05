@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.pdu;
 
+import java.io.IOException;
+
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.radio.ReceiverPdu;
 import org.openlvc.disco.pdu.radio.SignalPdu;
@@ -70,5 +72,24 @@ public class PduFactory
 				throw new UnsupportedPDU( "PDU Type not currently supported: "+header.getPduType() );
 		}
 	}
-	
+
+	/**
+	 * Turn the given byte[] into a PDU and return it.
+	 */
+	public static PDU create( byte[] pdubytes ) throws IOException
+	{
+		// wrap the buffer in a stream we can read from
+		DisInputStream instream = new DisInputStream( pdubytes );
+		
+		// 1. Read off the header first
+		PduHeader header = new PduHeader();
+		header.from( instream );
+
+		// 2. Read in the body
+		PDU pdu = PduFactory.create( header );
+		pdu.from( instream );
+		
+		return pdu;
+	}
+
 }

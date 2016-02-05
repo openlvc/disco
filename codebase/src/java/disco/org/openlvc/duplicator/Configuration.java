@@ -43,6 +43,9 @@ public class Configuration
 	private int    disPort;         // port to listen on
 	private String disInterface;    // IP or nic to use or one of the symbols "LOOPBACK",
 	                                // "LINK_LOCAL", "SITE_LOCAL", "GLOBAL"
+	
+	// Replay Settings
+	private boolean replayRealtime; // Should replay proceed in real time (with waits between PDUs)
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -63,6 +66,9 @@ public class Configuration
 		this.disAddress   = "BROADCAST";
 		this.disPort      = 3000;
 		this.disInterface = "SITE_LOCAL";
+		
+		// Replay Settings
+		this.replayRealtime = true;
 	}
 
 	public Configuration( String[] commandline ) throws DiscoException
@@ -96,6 +102,12 @@ public class Configuration
 				this.setDisPort( Integer.parseInt(args[++i]) );
 			else if( argument.equalsIgnoreCase("--dis-interface") )
 				this.setDisInterface( args[++i] );
+			else if( argument.equalsIgnoreCase("--replay-realtime") )
+				this.setReplayRealtime( true );
+			else if( argument.equalsIgnoreCase("--replay-fast") )
+				this.setReplayRealtime( false );
+			else if( argument.equalsIgnoreCase("--log-level") )
+				this.setLogLevel( args[++i] );
 			else
 				throw new DiscoException( "Unknown argument: "+argument );
 		}
@@ -175,6 +187,27 @@ public class Configuration
 		this.disInterface = disInterface;
 	}
 	
+	public void setReplayRealtime( boolean replayRealtime )
+	{
+		this.replayRealtime = replayRealtime;
+	}
+
+	/**
+	 * If true, replay should be "real time", which means that any wait between PDUs that we
+	 * experienced should be faithfully maintained. The alternate is to try and replay PDUs as
+	 * fast as possible. If `true`, the replay should be real time. Otherwise, `false` menas
+	 * the replay should be as fast as possible.
+	 */
+	public boolean isReplayRealtime()
+	{
+		return this.replayRealtime;
+	}
+	
+	public void setLogLevel( String level )
+	{
+		this.appLoggerConfiguration.setLevel( level );
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
@@ -190,6 +223,9 @@ public class Configuration
 		builder.append( "   --dis-address     (string)  Multicast address to use or BROADCAST (default)\n" );
 		builder.append( "   --dis-port        (int)     DIS port to listen/send on. Default: 3000\n" );
 		builder.append( "   --dis-interface   (string)  NIC to use. LOOPBACK, LINK_LOCAL, SITE_LOCAL*, GLOBAL\n" );
+		builder.append( "   --replay-realtime           Replay as PDus happened. Delay PDUs if there was receive delay\n" );
+		builder.append( "   --replay-fast               Replay all stored PDUs as fast as possible\n" );
+		builder.append( "   --log-level                 Set the log level: OFF, ERROR, WARN, INFO(default), DEBUG, TRACE\n" );
 		builder.append( "\n" );
 		System.out.println( builder.toString() );
 	}

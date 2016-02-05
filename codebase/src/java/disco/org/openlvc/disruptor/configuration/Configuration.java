@@ -150,7 +150,7 @@ public class Configuration
 
 	public int getLoops()
 	{
-		return Integer.parseUnsignedInt( properties.getProperty(KEY_LOOPS,"100") ); 
+		return Integer.parseUnsignedInt( properties.getProperty(KEY_LOOPS,"300") ); 
 	}
 	
 	public void setLoops( int loops )

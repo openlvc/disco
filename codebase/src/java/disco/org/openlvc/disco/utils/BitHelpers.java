@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.utils;
 
+import java.io.InputStream;
+
 /**
  * A group of static utility methods to help with various bit manipulation tasks.
  */
@@ -385,6 +387,11 @@ public class BitHelpers
 			           ((buffer[offset+1] & 255) /*<< 0*/));
 	}
 
+//	public static short readShortBE( InputStream stream )
+//	{
+//		
+//	}
+	
 	/**
 	 * Read and return an int value from the given buffer, starting at the given offset.
 	 * <p/>
