@@ -58,7 +58,13 @@ public interface IConnection
 	/**
 	 * Send the given DIS PDU to the network.
 	 */
+	@Deprecated
 	public void send( PDU pdu ) throws DiscoException;
+
+	/**
+	 * Send the given PDU bytes to the network.
+	 */
+	public void send( byte[] pdubytes ) throws DiscoException;
 
 	/**
 	 * Return the {@link Metrics} gathered for this data source.

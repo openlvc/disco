@@ -161,7 +161,7 @@ public class UdpConfiguration
 
 	public int getSendBufferSize()
 	{
-		return (int)StringUtils.bytesFromString( parent.getProperty(PROP_SEND_BUFFER,"4MB") );
+		return (int)StringUtils.bytesFromString( parent.getProperty(PROP_SEND_BUFFER,"8MB") );
 	}
 	
 	public void setSendBufferSize( int bytes )
@@ -171,7 +171,7 @@ public class UdpConfiguration
 
 	public int getRecvBufferSize()
 	{
-		return (int)StringUtils.bytesFromString( parent.getProperty(PROP_RECV_BUFFER,"4MB") );
+		return (int)StringUtils.bytesFromString( parent.getProperty(PROP_RECV_BUFFER,"8MB") );
 	}
 
 	public void setRecvBufferSize( int bytes )

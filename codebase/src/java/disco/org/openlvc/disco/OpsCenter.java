@@ -104,7 +104,8 @@ public class OpsCenter
 		this.logger.info( "Closing OpsCenter" );
 		this.logger.debug( "Closing connection: "+connection.getName() );
 		this.connection.close();
-		this.pduReceiver.close();
+		this.pduReceiver.close();  // has executors we need to shut down
+		this.pduSender.close();    // has executors we need to shut down
 
 		this.logger.info( "OpsCenter has closed" );
 		this.open = false;

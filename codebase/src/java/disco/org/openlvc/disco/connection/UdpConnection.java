@@ -181,6 +181,19 @@ public class UdpConnection implements IConnection
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Sender Methods   ///////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public void send( byte[] payload ) throws DiscoException
+	{
+		try
+		{
+			socket.send( new DatagramPacket(payload,0,payload.length,targetAddress) );
+			metrics.pduSent( payload.length );
+		}
+		catch( IOException ioex )
+		{
+			throw new DiscoException( ioex.getMessage(), ioex );
+		}
+	}
+	
 	public void send( PDU pdu ) throws DiscoException
 	{
 		// Create a DISOutputStream to write to
@@ -195,17 +208,10 @@ public class UdpConnection implements IConnection
 			// Write the body content
 			pdu.to( dos );
 			
-			// Get the underlying byte array and wrap it in a Datagram packet
-			byte[] payload = baos.toByteArray();
-			DatagramPacket packet = 
-				new DatagramPacket( payload, 0, payload.length, this.targetAddress );
-			
-			// Send the packet
-			socket.send( packet );
-			
-			metrics.pduSent( payload.length );
+			// Send the payload
+			send( baos.toByteArray() );
 		}
-		catch ( IOException ioex )
+		catch( IOException ioex )
 		{
 			logger.warn( "Error trying to send PDU ("+pdu+"): "+ioex.getMessage(), ioex );
 		}
