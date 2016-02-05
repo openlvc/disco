@@ -15,17 +15,18 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disco.connection;
 
-import org.openlvc.disco.datasource.Metrics;
+import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.pdu.PDU;
 
 /**
- * The Source class is a generic representation of some medium that PDU's can be drawn
- * from and sent to. Whether that is a network connection, file, database or what does
- * not matter.
+ * Represents a connection to an underlying source of incoming PDUs and a target for
+ * outgoing PDUs. Typically this will be a network connection, but it would well be
+ * some other form of data source.
  */
-public interface IDatasource
+public interface IConnection
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

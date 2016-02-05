@@ -19,7 +19,8 @@ package org.openlvc.disco;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.datasource.DatasourceFactory;
+import org.openlvc.disco.connection.ConnectionFactory;
+import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.pdu.PDU;
 
 public class OpsCenter
@@ -34,11 +35,11 @@ public class OpsCenter
 	private boolean open;
 	private DiscoConfiguration configuration;
 	private Logger logger;
-	private PduSource pduSource;
-	private PduSink pduSink;
+	private PduReceiver pduReceiver;   // where we receive byte[]'s from the network    (incoming)
+	private PduSender pduSender;       // where we send byte[]'s to the network         (outgoing)
+	private IPduListener pduListener;  // where we send PDU's received from the network (incoming)
 
-	private IDatasource provider;
-	private IPduReceiver pduReceiver;
+	private IConnection connection;    // source and destiantion for PDUs - typically network
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -48,10 +49,10 @@ public class OpsCenter
 		this.open = false;
 		this.configuration = new DiscoConfiguration();
 		this.logger = null;
-		this.pduSource = null;
-		this.pduSink = null;
-		this.provider = null;
 		this.pduReceiver = null;
+		this.pduSender = null;
+		this.pduListener = null;
+		this.connection = null;
 	}
 
 	public OpsCenter( DiscoConfiguration configuration )
@@ -72,28 +73,24 @@ public class OpsCenter
 		if( open )
 			return;
 		
-		// check to make sure we have everything
-		if( this.pduReceiver == null )
-			throw new DiscoException( "Cannot open connection without PDU Receiver: null" );
-		
 		// activate logging - fetching the logger will cause the configuration to be lazy loaded
 		this.logger = configuration.getDiscoLogger();
 		welcomeMessage();
-		
-		// create the underlying provider
-		if( this.provider == null )
+
+		// enable networking
+		if( this.connection == null )
 		{
-			this.logger.debug( "Creating provider: "+configuration.getProvider() );
-			this.provider = DatasourceFactory.getDatasource( configuration.getProvider() );
-			this.provider.configure( this );
+			this.logger.debug( "Creating connection: "+configuration.getConnection() );
+			this.connection = ConnectionFactory.getConnection( configuration.getConnection() );
+			this.connection.configure( this );
 		}
 		
-		// wire up the source and sink to the provider and receiver
-		this.pduSource = new PduSource( this, this.provider, this.pduReceiver );
-		this.pduSink = new PduSink( this, this.provider );
+		// wire up the sender and receiver to the connection and listener
+		this.pduReceiver = new PduReceiver( this, this.connection, this.pduListener );
+		this.pduSender = new PduSender( this, this.connection );
 		
 		// open the flood gates!
-		this.pduSource.open();
+		this.pduReceiver.open();
 		
 		this.open = true;
 		logger.info( "OpsCenter is up and running... Can you dig it?" );
@@ -105,9 +102,9 @@ public class OpsCenter
 			return;
 		
 		this.logger.info( "Closing OpsCenter" );
-		this.logger.debug( "Closing provider: "+provider.getName() );
-		this.provider.close();
-		this.pduSource.close();
+		this.logger.debug( "Closing connection: "+connection.getName() );
+		this.connection.close();
+		this.pduReceiver.close();
 
 		this.logger.info( "OpsCenter has closed" );
 		this.open = false;
@@ -117,22 +114,20 @@ public class OpsCenter
 	/// Message Handling Methods   /////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/**
-	 * Set the {@link IPduReceiver} that incoming messages will be routed to. Has no effect
+	 * Set the {@link IPduListener} that incoming messages will be routed to. Has no effect
 	 * after {@link #open()} has been called.
 	 */
-	public void setReceiver( IPduReceiver receiver )
+	public void setListener( IPduListener receiver )
 	{
-		this.pduReceiver = receiver;
+		this.pduListener = receiver;
 	}
 
-	public void setProvider( IDatasource provider )
-	{
-		this.provider = provider;
-	}
-
+	/**
+	 * Hand the given PDU off to the {@link PduSender} to process and forward to the network
+	 */
 	public void send( PDU pdu ) throws DiscoException
 	{
-		this.pduSink.send( pdu );
+		this.pduSender.send( pdu );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,9 +143,9 @@ public class OpsCenter
 		return this.configuration;
 	}
 	
-	public PduSource getPduSource()
+	public PduReceiver getPduReceiver()
 	{
-		return this.pduSource;
+		return this.pduReceiver;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

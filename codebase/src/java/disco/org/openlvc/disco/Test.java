@@ -20,7 +20,7 @@ package org.openlvc.disco;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
 
-public class Test implements IPduReceiver
+public class Test implements IPduListener
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -95,12 +95,12 @@ public class Test implements IPduReceiver
 	{
 		DiscoConfiguration configuration = new DiscoConfiguration();
 		//configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
-		configuration.getNetworkConfiguration().setPort( 3000 );
-		configuration.getNetworkConfiguration().setNetworkInterface( "LINK_LOCAL" );
+		configuration.getUdpConfiguration().setPort( 3000 );
+		configuration.getUdpConfiguration().setNetworkInterface( "LINK_LOCAL" );
 
 		Test test = new Test();
 		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setReceiver( test );
+		opscenter.setListener( test );
 		opscenter.open();
 		//opscenter.close();
 	}

@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.datasource.udp;
+package org.openlvc.disco.connection;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,16 +30,16 @@ import java.net.SocketException;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.IDatasource;
 import org.openlvc.disco.OpsCenter;
-import org.openlvc.disco.configuration.UdpDatasourceConfig;
-import org.openlvc.disco.datasource.Metrics;
+import org.openlvc.disco.configuration.UdpConfiguration;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.utils.NetworkUtils;
+import org.openlvc.disco.utils.SocketOptions;
+import org.openlvc.disco.utils.StringUtils;
 
-public class UdpDatasource implements IDatasource
+public class UdpConnection implements IConnection
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -50,7 +50,7 @@ public class UdpDatasource implements IDatasource
 	//----------------------------------------------------------
 	private Logger logger;
 	private OpsCenter opscenter;
-	private UdpDatasourceConfig configuration;
+	private UdpConfiguration configuration;
 	private DatagramSocket socket;
 	private Thread receiverThread;
 
@@ -76,7 +76,7 @@ public class UdpDatasource implements IDatasource
 	{
 		this.opscenter = opscenter;
 		this.logger = opscenter.getLogger();
-		this.configuration = opscenter.getConfiguration().getNetworkConfiguration();
+		this.configuration = opscenter.getConfiguration().getUdpConfiguration();
 	}
 	
 	@Override
@@ -101,16 +101,36 @@ public class UdpDatasource implements IDatasource
 		if( address.isMulticastAddress() )
 		{
 			logger.info( "Connecting to multicast group - "+address+":"+port+" (interface: "+networkInterface+")" );
-			this.socket = NetworkUtils.createMulticast( address, port, networkInterface );
+			
+			SocketOptions options = new SocketOptions();
+			options.setSendBufferSize( configuration.getSendBufferSize() );
+			options.setRecvBufferSize( configuration.getRecvBufferSize() );
+			this.socket = NetworkUtils.createMulticast( address, port, networkInterface, options );
 		}
 		else
 		{
 			InterfaceAddress ifaddr = NetworkUtils.getInterfaceAddress( address );
 			logger.info( "Connecting broadcast socket - "+address+":"+port+" (broadcast "+ifaddr.getBroadcast()+")" );
 			logger.info( "Network Interface: "+networkInterface );
-			this.socket = NetworkUtils.createBroadcast( address, port );
+			
+			SocketOptions options = new SocketOptions();
+			options.setSendBufferSize( configuration.getSendBufferSize() );
+			options.setRecvBufferSize( configuration.getRecvBufferSize() );
+
+			this.socket = NetworkUtils.createBroadcast( address, port, options );
 		}
-		
+
+		try
+		{
+			logger.debug( "  -> Send Buffer: "+StringUtils.humanReadableSize(socket.getSendBufferSize()) );
+			logger.debug( "  -> Recv Buffer: "+StringUtils.humanReadableSize(socket.getReceiveBufferSize()) );
+		}
+		catch( SocketException se )
+		{
+			logger.debug( "Could not determine buffer sizes: "+se.getMessage(), se );
+		}
+
+
 		//
 		// Start the receiver thread so we can process PDUs
 		//
@@ -211,7 +231,7 @@ public class UdpDatasource implements IDatasource
 					if( logger.isTraceEnabled() )
 						logger.trace( "(Packet) size="+packet.getLength()+", source="+packet.getSocketAddress() );
 
-					opscenter.getPduSource().queueForIngest( buffer );
+					opscenter.getPduReceiver().queueForIngest( buffer );
 					metrics.pduReceived( packet.getLength() );
 				}
 				catch( SocketException se )

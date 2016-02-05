@@ -18,9 +18,10 @@
 package org.openlvc.disco;
 
 import org.apache.logging.log4j.Logger;
+import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.pdu.PDU;
 
-public class PduSink
+public class PduSender
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -30,12 +31,12 @@ public class PduSink
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private Logger logger;
-	private IDatasource provider;
+	private IConnection provider;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduSink( OpsCenter opscenter, IDatasource provider )
+	protected PduSender( OpsCenter opscenter, IConnection provider )
 	{
 		this.logger = opscenter.getLogger();
 		this.provider = provider;

@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2016 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -25,32 +25,36 @@ import java.net.UnknownHostException;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.utils.NetworkUtils;
+import org.openlvc.disco.utils.StringUtils;
 
-public class UdpDatasourceConfig
+public class UdpConfiguration
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 	// Keys for properties file
-	private static final String PROP_INTERFACE = "disco.provider.udp.interface";
-	private static final String PROP_ADDRESS = "disco.provider.udp.address";
-	private static final String PROP_PORT = "disco.provider.udp.port";
+	private static final String PROP_INTERFACE    = "disco.udp.interface";
+	private static final String PROP_ADDRESS      = "disco.udp.address";
+	private static final String PROP_PORT         = "disco.udp.port";
+	private static final String PROP_SEND_BUFFER  = "disco.udp.sendBuffer";
+	private static final String PROP_RECV_BUFFER  = "disco.udp.recvBuffer";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private DiscoConfiguration parent;
+
 	private NetworkInterface networkInterface;
 	private InetAddress address;
-	private int port;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public UdpDatasourceConfig()
+	protected UdpConfiguration( DiscoConfiguration parent )
 	{
-		// lazy-load all of these from system properties unless they are set separately
+		this.parent = parent;
+
 		this.address = null;
-		this.port = -1;
 		this.networkInterface = null;
 	}
 
@@ -67,7 +71,7 @@ public class UdpDatasourceConfig
 		// Find the Address we are configured to use
 		// Valid values for the address are BROADCAST or some literal MulticastAddress
 		// that we can use for the NIC
-		String prop = System.getProperty( PROP_ADDRESS, "BROADCAST" );
+		String prop = parent.getProperty( PROP_ADDRESS, "BROADCAST" );
 		if( prop.equals("BROADCAST") )
 		{
 			// Need to determine the broadcast address for the chosen NIC
@@ -108,7 +112,7 @@ public class UdpDatasourceConfig
 		// Valid values here are BROADCAST, or some multicast address
 		if( address.equals("BROADCAST") )
 		{
-			System.setProperty( PROP_ADDRESS, "BROADCAST" );
+			parent.setProperty( PROP_ADDRESS, "BROADCAST" );
 			this.address = null; // next call to getAddress() will resolve this
 			return;
 		}
@@ -125,15 +129,12 @@ public class UdpDatasourceConfig
 	
 	public int getPort()
 	{
-		if( this.port == -1 )
-			this.port = Integer.parseInt( System.getProperty(PROP_PORT,"3000") );
-
-		return this.port;
+		return Integer.parseInt( parent.getProperty(PROP_PORT,"3000") );
 	}
 	
 	public void setPort( int port )
 	{
-		this.port = port;
+		parent.setProperty( PROP_PORT, ""+port );
 	}
 	
 	public NetworkInterface getNetworkInterface()
@@ -141,7 +142,7 @@ public class UdpDatasourceConfig
 		if( this.networkInterface == null )
 		{
 			// have they provided a specific nic?
-			String prop = System.getProperty( PROP_INTERFACE, "SITE_LOCAL" );
+			String prop = parent.getProperty(PROP_INTERFACE,"SITE_LOCAL" );
 			this.networkInterface = NetworkUtils.getNetworkInterface( prop );
 		}
 
@@ -156,6 +157,26 @@ public class UdpDatasourceConfig
 	public void setNetworkInterface( String name )
 	{
 		this.networkInterface = NetworkUtils.getNetworkInterface( name );
+	}
+
+	public int getSendBufferSize()
+	{
+		return (int)StringUtils.bytesFromString( parent.getProperty(PROP_SEND_BUFFER,"4MB") );
+	}
+	
+	public void setSendBufferSize( int bytes )
+	{
+		parent.setProperty(PROP_SEND_BUFFER,""+bytes );
+	}
+
+	public int getRecvBufferSize()
+	{
+		return (int)StringUtils.bytesFromString( parent.getProperty(PROP_RECV_BUFFER,"4MB") );
+	}
+
+	public void setRecvBufferSize( int bytes )
+	{
+		parent.setProperty(PROP_RECV_BUFFER,""+bytes );
 	}
 
 	//----------------------------------------------------------

@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2016 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -15,23 +15,35 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco;
+package org.openlvc.disruptor;
 
+import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.pdu.PDU;
 
-/**
- * Application classes implement this interface if they want to receive PDU data from
- * a {@link PduSource}.
- */
-public interface IPduReceiver
+public class PduListener implements IPduListener
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 
 	//----------------------------------------------------------
+	//                   INSTANCE VARIABLES
+	//----------------------------------------------------------
+
+	//----------------------------------------------------------
+	//                      CONSTRUCTORS
+	//----------------------------------------------------------
+
+	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public void receiver( PDU pdu );
-	
+
+	public void receiver( PDU pdu )
+	{
+		// no-op for us
+	}
+
+	//----------------------------------------------------------
+	//                     STATIC METHODS
+	//----------------------------------------------------------
 }

@@ -15,36 +15,23 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.testapp;
+package org.openlvc.disco;
 
-import org.openlvc.disco.IPduReceiver;
 import org.openlvc.disco.pdu.PDU;
 
-public class TestReceiver implements IPduReceiver
+/**
+ * Application classes implement this interface if they want to receive PDU data from
+ * a {@link PduReceiver}.
+ */
+public interface IPduListener
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 
 	//----------------------------------------------------------
-	//                   INSTANCE VARIABLES
-	//----------------------------------------------------------
-
-	//----------------------------------------------------------
-	//                      CONSTRUCTORS
-	//----------------------------------------------------------
-
-	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	@Override
-	public void receiver( PDU pdu )
-	{
-		
-	}
-
-	//----------------------------------------------------------
-	//                     STATIC METHODS
-	//----------------------------------------------------------
+	public void receiver( PDU pdu );
+	
 }

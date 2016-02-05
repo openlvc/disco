@@ -26,13 +26,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.IPduReceiver;
+import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.utils.BitHelpers;
 
-public class Recorder implements IPduReceiver
+public class Recorder implements IPduListener
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -107,12 +107,12 @@ public class Recorder implements IPduReceiver
 		// Create the Disco configuration from the base config data
 		this.discoConfiguration = new DiscoConfiguration();
 		discoConfiguration.getLoggingConfiguration().disable();
-		discoConfiguration.getNetworkConfiguration().setAddress( configuration.getDisAddress() );
-		discoConfiguration.getNetworkConfiguration().setPort( configuration.getDisPort() );
-		discoConfiguration.getNetworkConfiguration().setNetworkInterface( configuration.getDisInterface() );
+		discoConfiguration.getUdpConfiguration().setAddress( configuration.getDisAddress() );
+		discoConfiguration.getUdpConfiguration().setPort( configuration.getDisPort() );
+		discoConfiguration.getUdpConfiguration().setNetworkInterface( configuration.getDisInterface() );
 		
 		this.opscenter = new OpsCenter( discoConfiguration );
-		this.opscenter.setReceiver( this );
+		this.opscenter.setListener( this );
 		
 		//
 		// Kick things off

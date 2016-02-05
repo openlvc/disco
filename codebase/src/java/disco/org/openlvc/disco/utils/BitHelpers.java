@@ -17,8 +17,6 @@
  */
 package org.openlvc.disco.utils;
 
-import java.io.InputStream;
-
 /**
  * A group of static utility methods to help with various bit manipulation tasks.
  */

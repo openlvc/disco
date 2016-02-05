@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.Logger;
+import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.PduFactory;
@@ -33,10 +34,11 @@ import org.openlvc.disco.pdu.UnsupportedPDU;
 import org.openlvc.disco.pdu.record.PduHeader;
 
 /**
- * A PduSource is the place that PDU's will emerge from as they are received or read from
- * a {@link IDatasource}. 
+ * The {@link PduReceiver} is where incoming packets from a {@link Connection} are routed to
+ * for inspection and processing. From the incoming stream, suitable {@link PDU}s are handed
+ * off to the client code's {@link IPduListener}. 
  */
-public class PduSource implements RejectedExecutionHandler
+public class PduReceiver implements RejectedExecutionHandler
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -46,8 +48,8 @@ public class PduSource implements RejectedExecutionHandler
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private Logger logger;
-	private IDatasource datasource;
-	private IPduReceiver receiver;
+	private IConnection connection;
+	private IPduListener pduListener;
 	
 	// Processing
 	private BlockingQueue<Runnable> ingestqueue;  // ingest converts byte[] -> PDU and filters
@@ -68,11 +70,11 @@ public class PduSource implements RejectedExecutionHandler
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduSource( OpsCenter opscenter, IDatasource source, IPduReceiver receiver )
+	protected PduReceiver( OpsCenter opscenter, IConnection connection, IPduListener listener )
 	{
 		this.logger = opscenter.getLogger();
-		this.datasource = source;
-		this.receiver = receiver;
+		this.connection = connection;
+		this.pduListener = listener;
 
 		// Processing
 		this.ingestqueue = new LinkedBlockingQueue<Runnable>(100000);
@@ -102,12 +104,12 @@ public class PduSource implements RejectedExecutionHandler
 		// Start our internal queue processing thread
 		
 		// Open the provider!
-		this.datasource.open();
+		this.connection.open();
 	}
 	
 	public void close() throws DiscoException
 	{
-		this.datasource.close();
+		this.connection.close();
 		this.ingestExecutor.shutdown();
 		this.inqueueExecutor.shutdown();
 		
@@ -119,7 +121,7 @@ public class PduSource implements RejectedExecutionHandler
 	}
 
 	/**
-	 * The following has been received from the {@link IDatasource} for processing.
+	 * The following has been received from the {@link IConnection} for processing.
 	 */
 	public void queueForIngest( byte[] array )
 	{
@@ -210,7 +212,8 @@ public class PduSource implements RejectedExecutionHandler
 		public HandoffTask( PDU pdu ) { this.pdu = pdu; }
 		public void run()
 		{
-			receiver.receiver( pdu );
+			if( pduListener != null )
+				pduListener.receiver( pdu );
 
 			metricsTotalPdusDelivered.incrementAndGet();
 			metricsTotalPdusDeliveredSize.addAndGet( pdu.getContentLength() );

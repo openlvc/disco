@@ -119,9 +119,9 @@ public class Configuration
 	public DiscoConfiguration getDiscoConfiguration()
 	{
 		DiscoConfiguration temp = new DiscoConfiguration();
-		temp.getNetworkConfiguration().setAddress( getDisAddress() );
-		temp.getNetworkConfiguration().setPort( getDisPort() );
-		temp.getNetworkConfiguration().setNetworkInterface( getDisNic() );
+		temp.getUdpConfiguration().setAddress( getDisAddress() );
+		temp.getUdpConfiguration().setPort( getDisPort() );
+		temp.getUdpConfiguration().setNetworkInterface( getDisNic() );
 		
 		// copy the logging configuration
 		temp.getLoggingConfiguration().setLevel( properties.getProperty(KEY_DISCO_LOG_LEVEL,"INFO") );

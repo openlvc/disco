@@ -26,13 +26,13 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.IPduReceiver;
+import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.PduFactory;
 
-public class Replay implements IPduReceiver
+public class Replay implements IPduListener
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -113,12 +113,12 @@ public class Replay implements IPduReceiver
 		// Create the Disco configuration from the base config data
 		this.discoConfiguration = new DiscoConfiguration();
 		discoConfiguration.getLoggingConfiguration().disable();
-		discoConfiguration.getNetworkConfiguration().setAddress( configuration.getDisAddress() );
-		discoConfiguration.getNetworkConfiguration().setPort( configuration.getDisPort() );
-		discoConfiguration.getNetworkConfiguration().setNetworkInterface( configuration.getDisInterface() );
+		discoConfiguration.getUdpConfiguration().setAddress( configuration.getDisAddress() );
+		discoConfiguration.getUdpConfiguration().setPort( configuration.getDisPort() );
+		discoConfiguration.getUdpConfiguration().setNetworkInterface( configuration.getDisInterface() );
 		
 		this.opscenter = new OpsCenter( discoConfiguration );
-		this.opscenter.setReceiver( this );
+		this.opscenter.setListener( this );
 		
 		//
 		// Kick things off
@@ -256,10 +256,23 @@ public class Replay implements IPduReceiver
 	 */
 	private final void refillBuffer()
 	{
-		logger.debug( "Loading more tracks from disk (limit: "+BUFFER_REFILL_THRESHOLD+")" );
-
+		// check to see if there are any more to get, if not, just return
 		try
 		{
+			if( fis.available() == 0 )
+				return;
+		}
+		catch( IOException e )
+		{
+			logger.warn( "Exeption while refilling PDU buffer: "+e.getMessage(), e );
+			return;
+		}
+
+		// refill the buffer
+		try
+		{
+			logger.debug( "Loading more tracks from disk (limit: "+BUFFER_REFILL_THRESHOLD+")" );
+
 			int pdusRead = 0;
 			while( (fis.available() > 0) && (pdusRead < BUFFER_REFILL_THRESHOLD) )
     		{
@@ -282,7 +295,7 @@ public class Replay implements IPduReceiver
 		}
 		catch( IOException e )
 		{
-			logger.warn( "Exeption while reading in PDU: "+e.getMessage(), e );
+			logger.warn( "Exeption while refilling PDU buffer: "+e.getMessage(), e );
 			return;
 		}
 	}

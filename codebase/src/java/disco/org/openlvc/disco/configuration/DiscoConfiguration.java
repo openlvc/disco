@@ -31,27 +31,30 @@ public class DiscoConfiguration
 	/** Should parsing problems result in exceptions? */
 	public static boolean STRICT_MODE = Boolean.valueOf( System.getProperty("disco.strict","false") );
 	
-	private static final String PROP_PROVIDER = "disco.provider";
+	private static final String PROP_CONNECTION = "disco.connection";
 
-	private static final String PROP_LOG_LEVEL = "disco.log.level";
+	private static final String PROP_LOG_LEVEL   = "disco.log.level";
 	private static final String PROP_LOG_CONSOLE = "disco.log.console"; // true, false
-	private static final String PROP_LOG_FILE = "disco.log.file";       // filename
+	private static final String PROP_LOG_FILE    = "disco.log.file";    // filename
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	protected Properties properties;
+	
 	private Log4jConfiguration loggingConfiguration;
 	private Logger applicationLogger;
 	
-	private UdpDatasourceConfig networkConfiguration;
+	private UdpConfiguration udpConfiguration;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	public DiscoConfiguration()
 	{
+		this.properties = new Properties();
 		this.loggingConfiguration = null; // lazy loaded
-		this.networkConfiguration = new UdpDatasourceConfig();
+		this.udpConfiguration = new UdpConfiguration( this );
 	}
 
 	//----------------------------------------------------------
@@ -142,18 +145,34 @@ public class DiscoConfiguration
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Provider Properties   //////////////////////////////////////////////////////////////////
+	/// Connection Properties   ////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public String getProvider()
+	public String getConnection()
 	{
-		return System.getProperty( PROP_PROVIDER, "network.udp" );
+		return properties.getProperty( PROP_CONNECTION, "udp" );
 	}
 	
-	public UdpDatasourceConfig getNetworkConfiguration()
+	public void setConnection( String connection )
 	{
-		return this.networkConfiguration;
+		properties.setProperty( PROP_CONNECTION, connection );
+	}
+
+	public UdpConfiguration getUdpConfiguration()
+	{
+		return this.udpConfiguration;
 	}
 	
+	
+	protected String getProperty( String key, String defaultValue )
+	{
+		return properties.getProperty( key, defaultValue );
+	}
+
+	protected void setProperty( String key, String value )
+	{
+		properties.setProperty( key, value );
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

@@ -17,7 +17,7 @@
  */
 package org.openlvc.disco;
 
-import org.openlvc.disco.testapp.TestReceiver;
+import org.openlvc.disco.testapp.TestListener;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -72,16 +72,11 @@ public class LifecycleTest
 	@Test
 	public void testLifecycle()
 	{
-		// SpecialProvider provider = new SpecialProvider();
-		// OpsCenter opscenter = new OpsCenter();
-		// opscenter.setProvider( provider );
-		// opscenter.setReceiver( receiver );
-
 		try
 		{
-    		TestReceiver receiver = new TestReceiver();
+    		TestListener listener = new TestListener();
     		OpsCenter opscenter = new OpsCenter();
-    		opscenter.setReceiver( receiver );
+    		opscenter.setListener( listener );
     		opscenter.open();
     		opscenter.close();
 		}

@@ -70,7 +70,7 @@ public class Disruptor
 		
 		// Open up the Disco Operations Centre
 		opscenter = new OpsCenter( configuration.getDiscoConfiguration() );
-		opscenter.setReceiver( new PduReceiver() );
+		opscenter.setListener( new PduListener() );
 		opscenter.open();
 
 		try

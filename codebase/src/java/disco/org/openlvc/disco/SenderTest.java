@@ -27,7 +27,7 @@ import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 
-public class SenderTest implements IPduReceiver
+public class SenderTest implements IPduListener
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -63,13 +63,13 @@ public class SenderTest implements IPduReceiver
 	{
 		DiscoConfiguration configuration = new DiscoConfiguration();
 		//configuration.getNetworkConfiguration().setAddress( "239.1.2.3" );
-		configuration.getNetworkConfiguration().setPort( 3000 );
-		configuration.getNetworkConfiguration().setNetworkInterface( "LINK_LOCAL" );
+		configuration.getUdpConfiguration().setPort( 3000 );
+		configuration.getUdpConfiguration().setNetworkInterface( "LINK_LOCAL" );
 
 		this.entitiyList = new ArrayList<EntityStatePdu>();
 		
 		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setReceiver( this );
+		opscenter.setListener( this );
 		opscenter.open();
 		//opscenter.close();
 

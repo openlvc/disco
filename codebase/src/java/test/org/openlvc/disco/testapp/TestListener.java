@@ -1,5 +1,5 @@
 /*
- *   Copyright 2016 Open LVC Project.
+ *   Copyright 2015 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -15,12 +15,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disruptor;
+package org.openlvc.disco.testapp;
 
-import org.openlvc.disco.IPduReceiver;
+import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.pdu.PDU;
 
-public class PduReceiver implements IPduReceiver
+public class TestListener implements IPduListener
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -38,9 +38,10 @@ public class PduReceiver implements IPduReceiver
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
 	public void receiver( PDU pdu )
 	{
-		// no-op for us
+		
 	}
 
 	//----------------------------------------------------------

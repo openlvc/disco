@@ -68,6 +68,16 @@ public class NetworkUtils
 	}
 
 	/**
+	 * Calls {@link #createMulticast(InetAddress, int, NetworkInterface, SocketOptions)} with
+	 * <code>null</code> for socket options.
+	 */
+	public static DatagramSocket createMulticast( InetAddress address, int port, NetworkInterface nic )
+		throws DiscoException
+	{
+		return createMulticast( address, port, nic, null );
+	}
+
+	/**
 	 * Creates and connects to a multicast socket on the given address/port before returning it.
 	 * 
 	 * @param hostAddress The multicast address to listen on
@@ -77,7 +87,10 @@ public class NetworkUtils
 	 * 
 	 * @throws IOException thrown if there was an error connecting the socket
 	 */
-	public static DatagramSocket createMulticast( InetAddress address, int port, NetworkInterface nic )
+	public static DatagramSocket createMulticast( InetAddress address,
+	                                              int port,
+	                                              NetworkInterface nic,
+	                                              SocketOptions options )
 			throws DiscoException
 	{
 		try
@@ -85,7 +98,13 @@ public class NetworkUtils
     		MulticastSocket socket = new MulticastSocket( port );
     		//asMulticast.setTimeToLive( multicastTTL );
     		//asMulticast.setTrafficClass( multicastTrafficClass );
-    		InetSocketAddress socketAddress = new InetSocketAddress( address, port );
+    		if( options != null )
+    		{
+    			socket.setSendBufferSize( options.sendBufferSize );
+    			socket.setReceiveBufferSize( options.getRecvBufferSize() );
+    		}
+
+			InetSocketAddress socketAddress = new InetSocketAddress( address, port );
     		socket.joinGroup( socketAddress, nic );
     		return socket;
 		}
@@ -94,8 +113,14 @@ public class NetworkUtils
 			throw new DiscoException( ioex );
 		}
 	}
-	
+
 	public static DatagramSocket createBroadcast( InetAddress address, int port )
+		throws DiscoException
+	{
+		return createBroadcast( address, port, null );
+	}
+
+	public static DatagramSocket createBroadcast( InetAddress address, int port, SocketOptions options )
 		throws DiscoException
 	{
 		try
@@ -103,6 +128,12 @@ public class NetworkUtils
 			DatagramSocket socket = new DatagramSocket(null); // null to avoid implicit bind!
 			socket.setReuseAddress( true );                   // could be others listening as well
 			socket.setBroadcast( true );
+			if( options != null )
+			{
+				socket.setSendBufferSize( options.getSendBufferSize() );
+				socket.setReceiveBufferSize( options.getRecvBufferSize() );
+			}
+
 			socket.bind( new InetSocketAddress(port) );       // works everywhere - but on all nics
 			// Write Once, Cry Everywhere
 			// First (addr/port) works on Windows, not on the mac
