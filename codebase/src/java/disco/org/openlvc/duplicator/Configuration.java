@@ -65,7 +65,7 @@ public class Configuration
 		// DIS Settings
 		this.disAddress   = "BROADCAST";
 		this.disPort      = 3000;
-		this.disInterface = "SITE_LOCAL";
+		this.disInterface = "LOOPBACK";
 		
 		// Replay Settings
 		this.replayRealtime = true;

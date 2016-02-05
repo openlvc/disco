@@ -107,6 +107,7 @@ public class OpsCenter
 		this.logger.info( "Closing OpsCenter" );
 		this.logger.debug( "Closing provider: "+provider.getName() );
 		this.provider.close();
+		this.pduSource.close();
 
 		this.logger.info( "OpsCenter has closed" );
 		this.open = false;

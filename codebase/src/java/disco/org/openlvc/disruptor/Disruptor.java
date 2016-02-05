@@ -81,13 +81,13 @@ public class Disruptor
     			tick( i );
     			sleep( configuration.getTickInterval() );
     		}
-    
-    		logger.info( "Execution over - you can breathe again" );
 		}
 		finally
 		{
 			opscenter.close();
 		}
+
+		logger.info( "Execution over - you can breathe again" );
 	}
 
 	

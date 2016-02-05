@@ -15,12 +15,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disruptor;
+package org.openlvc.disco.datasource;
 
-import org.openlvc.disruptor.configuration.Arguments;
-import org.openlvc.disruptor.configuration.Configuration;
-
-public class Main
+/**
+ * Generic object for recording baseline metrics in.
+ */
+public class Metrics
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,44 +29,67 @@ public class Main
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private long pdusSent;
+	private long pdusReceived;
+	private long bytesSent;
+	private long bytesReceived;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public Metrics()
+	{
+		reset();
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run( String[] args ) throws Exception
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void pduSent( long bytes )
 	{
-		// Read the command line
-		Arguments commandline = new Arguments( args );
+		++pdusSent;
+		bytesSent += bytes;
+	}
+	
+	public void pduReceived( long bytes )
+	{
+		++pdusReceived;
+		bytesReceived += bytes;
+	}
 
-		// Load configuration
-		Configuration configuration = new Configuration( commandline.getConfigFile() );
+	public void reset()
+	{
+		this.pdusSent = 0;
+		this.pdusReceived = 0;
+		this.bytesSent = 0;
+		this.bytesReceived = 0;
+	}
+	
+	public long getPdusSent()
+	{
+		return pdusSent;
+	}
 
-		// Override settings with any command line args
-		configuration.override( commandline );
-		
-		// Run the load master
-		Disruptor disruptor = new Disruptor( configuration );
-		disruptor.execute();
+	public long getPdusReceived()
+	{
+		return pdusReceived;
+	}
+
+	public long getBytesSent()
+	{
+		return bytesSent;
+	}
+
+	public long getBytesReceived()
+	{
+		return bytesReceived;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
-	{
-		for( String string : args )
-		{
-			if( string.equalsIgnoreCase("--help") )
-			{
-				Arguments.printHelp();
-				return;
-			}
-		}
-		
-		new Main().run( args );
-	}
 }

@@ -26,12 +26,14 @@ import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
+import java.net.SocketException;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.IDatasource;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.UdpDatasourceConfig;
+import org.openlvc.disco.datasource.Metrics;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
@@ -55,6 +57,9 @@ public class UdpDatasource implements IDatasource
 	// cache of details to assist with sending
 	private SocketAddress targetAddress;
 
+	// metrics
+	private Metrics metrics;
+	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -77,6 +82,7 @@ public class UdpDatasource implements IDatasource
 	@Override
 	public void open() throws DiscoException
 	{
+		this.metrics = new Metrics();
 		logger.debug( "Opening UDP Provider connection" );
 		
 		// Store any temporary information we need to make things a bit faster
@@ -123,6 +129,12 @@ public class UdpDatasource implements IDatasource
 		this.receiverThread.interrupt();
 		this.socket.close();
 		
+		// Print some metrics while we wait
+		logger.info( "=== PDU Summary ===" );
+		logger.info( "       Sent: %,d (%,d bytes)", metrics.getPdusSent(), metrics.getBytesSent() );
+		logger.info( "   Received: %,d (%,d bytes)", metrics.getPdusReceived(), metrics.getBytesReceived() );
+		logger.info( "" );
+
 		// Wait for the receiver to close up shop
 		try
 		{
@@ -138,6 +150,12 @@ public class UdpDatasource implements IDatasource
 	public String getName()
 	{
 		return "network.udp";
+	}
+
+	@Override
+	public Metrics getMetrics()
+	{
+		return this.metrics;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,6 +182,8 @@ public class UdpDatasource implements IDatasource
 			
 			// Send the packet
 			socket.send( packet );
+			
+			metrics.pduSent( payload.length );
 		}
 		catch ( IOException ioex )
 		{
@@ -192,6 +212,12 @@ public class UdpDatasource implements IDatasource
 						logger.trace( "(Packet) size="+packet.getLength()+", source="+packet.getSocketAddress() );
 
 					opscenter.getPduSource().queueForIngest( buffer );
+					metrics.pduReceived( packet.getLength() );
+				}
+				catch( SocketException se )
+				{
+					// socket was closed on it - that's our cue to leave!
+					return;
 				}
 				catch( Exception e )
 				{

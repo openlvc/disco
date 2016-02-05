@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco;
 
+import org.openlvc.disco.datasource.Metrics;
 import org.openlvc.disco.pdu.PDU;
 
 /**
@@ -57,5 +58,10 @@ public interface IDatasource
 	 * Send the given DIS PDU to the network.
 	 */
 	public void send( PDU pdu ) throws DiscoException;
+
+	/**
+	 * Return the {@link Metrics} gathered for this data source.
+	 */
+	public Metrics getMetrics();
 
 }

@@ -107,9 +107,15 @@ public class PduSource implements RejectedExecutionHandler
 	
 	public void close() throws DiscoException
 	{
+		this.datasource.close();
 		this.ingestExecutor.shutdown();
 		this.inqueueExecutor.shutdown();
-		this.datasource.close();
+		
+		while( this.ingestExecutor.isShutdown() == false ||
+		       this.inqueueExecutor.isShutdown() == false )
+		{
+			try { Thread.sleep( 1000 ); }catch( InterruptedException ie ) { return; }
+		}
 	}
 
 	/**

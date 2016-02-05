@@ -50,7 +50,7 @@ public class Configuration
 	//----------------------------------------------------------
 	private Properties properties;
 	private Logger applicationLogger;
-	private Log4jConfiguration appLoggerConfiguration;
+	private Log4jConfiguration loggingConfiguration;
 	
 	private String configFile = "etc/disruptor.config";
 
@@ -67,10 +67,10 @@ public class Configuration
 
 		// logging configuration
 		this.applicationLogger = null; // set on first access
-		this.appLoggerConfiguration = new Log4jConfiguration( "disruptor" );
-		this.appLoggerConfiguration.setConsoleOn( true );
-		this.appLoggerConfiguration.setFileOn( false );
-		this.appLoggerConfiguration.setLevel( "INFO" );
+		this.loggingConfiguration = new Log4jConfiguration( "disruptor" );
+		this.loggingConfiguration.setConsoleOn( true );
+		this.loggingConfiguration.setFileOn( false );
+		this.loggingConfiguration.setLevel( "INFO" );
 
 	}
 
@@ -119,10 +119,14 @@ public class Configuration
 	public DiscoConfiguration getDiscoConfiguration()
 	{
 		DiscoConfiguration temp = new DiscoConfiguration();
-		temp.setLoggingConfiguration( this.appLoggerConfiguration );
 		temp.getNetworkConfiguration().setAddress( getDisAddress() );
 		temp.getNetworkConfiguration().setPort( getDisPort() );
 		temp.getNetworkConfiguration().setNetworkInterface( getDisNic() );
+		
+		// copy the logging configuration
+		temp.getLoggingConfiguration().setLevel( properties.getProperty(KEY_DISCO_LOG_LEVEL,"INFO") );
+		temp.getLoggingConfiguration().setConsoleOn( loggingConfiguration.isConsoleOn() );
+		temp.getLoggingConfiguration().setFileOn( loggingConfiguration.isFileOn() );
 		
 		return temp;
 	}
@@ -133,7 +137,7 @@ public class Configuration
 		if( this.applicationLogger != null )
 			return applicationLogger;
 		
-		this.appLoggerConfiguration.activateConfiguration();
+		this.loggingConfiguration.activateConfiguration();
 		this.applicationLogger = LogManager.getFormatterLogger( "disruptor" );
 		return applicationLogger;
 	}
