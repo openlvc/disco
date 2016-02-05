@@ -137,6 +137,9 @@ public class Configuration
 		if( this.applicationLogger != null )
 			return applicationLogger;
 		
+		// check for any properties that may have been specified on command line to override
+		loggingConfiguration.setLevel( properties.getProperty(KEY_LOG_LEVEL,"INFO") );
+		
 		this.loggingConfiguration.activateConfiguration();
 		this.applicationLogger = LogManager.getFormatterLogger( "disruptor" );
 		return applicationLogger;
@@ -170,6 +173,11 @@ public class Configuration
 	public void setTickInterval( long tickInterval )
 	{
 		this.properties.put( KEY_TICK_INTERVAL, ""+tickInterval );
+	}
+	
+	public void setLogLevel( String level )
+	{
+		loggingConfiguration.setLevel( level );
 	}
 	
 	//
