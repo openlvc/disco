@@ -82,8 +82,6 @@ public class Configuration
 	//----------------------------------------------------------
 	/**
 	 * Apply the given command line args to override any defaults that we have
-	 * @param args
-	 * @throws DiscoException
 	 */
 	public void applyCommandLine( String[] args ) throws DiscoException
 	{

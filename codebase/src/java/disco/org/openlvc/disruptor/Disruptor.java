@@ -27,7 +27,6 @@ import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.record.EntityType;
 import org.openlvc.disco.utils.CoordinateUtils;
 import org.openlvc.disco.utils.LLA;
-import org.openlvc.disruptor.configuration.Configuration;
 
 public class Disruptor
 {

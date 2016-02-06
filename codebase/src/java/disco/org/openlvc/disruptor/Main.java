@@ -17,9 +17,6 @@
  */
 package org.openlvc.disruptor;
 
-import org.openlvc.disruptor.configuration.Arguments;
-import org.openlvc.disruptor.configuration.Configuration;
-
 public class Main
 {
 	//----------------------------------------------------------
@@ -39,15 +36,9 @@ public class Main
 	//----------------------------------------------------------
 	private void run( String[] args ) throws Exception
 	{
-		// Read the command line
-		Arguments commandline = new Arguments( args );
-
 		// Load configuration
-		Configuration configuration = new Configuration( commandline.getConfigFile() );
+		Configuration configuration = new Configuration( args );
 
-		// Override settings with any command line args
-		configuration.override( commandline );
-		
 		// Run the load master
 		Disruptor disruptor = new Disruptor( configuration );
 		disruptor.execute();
@@ -62,7 +53,7 @@ public class Main
 		{
 			if( string.equalsIgnoreCase("--help") )
 			{
-				Arguments.printHelp();
+				Configuration.printHelp();
 				return;
 			}
 		}
