@@ -23,7 +23,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
 import java.net.SocketException;
@@ -102,6 +101,9 @@ public class UdpConnection implements IConnection
 		{
 			logger.info( "Connecting to multicast group - "+address+":"+port+" (interface: "+networkInterface+")" );
 			
+			//
+			// Create a MULTICAST socket
+			//
 			SocketOptions options = new SocketOptions();
 			options.setSendBufferSize( configuration.getSendBufferSize() );
 			options.setRecvBufferSize( configuration.getRecvBufferSize() );
@@ -109,21 +111,24 @@ public class UdpConnection implements IConnection
 		}
 		else
 		{
-			InterfaceAddress ifaddr = NetworkUtils.getInterfaceAddress( address );
-			logger.info( "Connecting broadcast socket - "+address+":"+port+" (broadcast "+ifaddr.getBroadcast()+")" );
-			logger.info( "Network Interface: "+networkInterface );
-			
+			//
+			// Create a BROADCAST socket
+			//
+			logger.info( "Connecting broadcast socket - %s:%d (interface: %s)", address, port, networkInterface );
 			SocketOptions options = new SocketOptions();
 			options.setSendBufferSize( configuration.getSendBufferSize() );
 			options.setRecvBufferSize( configuration.getRecvBufferSize() );
-
 			this.socket = NetworkUtils.createBroadcast( address, port, options );
 		}
 
 		try
 		{
-			logger.debug( "  -> Send Buffer: "+StringUtils.humanReadableSize(socket.getSendBufferSize()) );
-			logger.debug( "  -> Recv Buffer: "+StringUtils.humanReadableSize(socket.getReceiveBufferSize()) );
+			logger.debug( "  -> Send Buffer: %s  (requested: %s)",
+			              StringUtils.humanReadableSize(socket.getSendBufferSize()),
+			              StringUtils.humanReadableSize(configuration.getSendBufferSize()) );
+			logger.debug( "  -> Recv Buffer: %s  (requested: %s)",
+			              StringUtils.humanReadableSize(socket.getReceiveBufferSize()),
+			              StringUtils.humanReadableSize(configuration.getRecvBufferSize()) );
 		}
 		catch( SocketException se )
 		{

@@ -93,7 +93,6 @@ public class Log4jConfiguration
 			ConsoleAppender appender = createConsoleAppender();
 			appender.start();
 			config.addAppender( appender, level, null );
-System.out.printf( "(%s) %s\n", appName, level );
 		}
 		
 		if( this.fileOn )

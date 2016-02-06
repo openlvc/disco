@@ -125,8 +125,10 @@ public class NetworkUtils
 	{
 		try
 		{
-			DatagramSocket socket = new DatagramSocket(null); // null to avoid implicit bind!
-			socket.setReuseAddress( true );                   // could be others listening as well
+			// Create socket with null, which will create an unbound socket.
+			// We do this so we can modify the socket properties prior to binding
+			DatagramSocket socket = new DatagramSocket(null);
+			socket.setReuseAddress( true ); // could be others listening as well
 			socket.setBroadcast( true );
 			if( options != null )
 			{
@@ -134,7 +136,10 @@ public class NetworkUtils
 				socket.setReceiveBufferSize( options.getRecvBufferSize() );
 			}
 
-			socket.bind( new InetSocketAddress(port) );       // works everywhere - but on all nics
+			// Bind the socket. Because we're broadcast, bind it to the wildcard
+			// address, which we can do by creating the socket address with port only
+			socket.bind( new InetSocketAddress(port) );
+
 			// Write Once, Cry Everywhere
 			// First (addr/port) works on Windows, not on the mac
 			// Second (bcast/port) works on the Mac, not on Windows

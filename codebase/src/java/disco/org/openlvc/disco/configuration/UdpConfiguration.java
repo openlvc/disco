@@ -45,7 +45,7 @@ public class UdpConfiguration
 	private DiscoConfiguration parent;
 
 	private NetworkInterface networkInterface;
-	private InetAddress address;
+	private InetAddress targetAddress;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -54,7 +54,7 @@ public class UdpConfiguration
 	{
 		this.parent = parent;
 
-		this.address = null;
+		this.targetAddress = null;
 		this.networkInterface = null;
 	}
 
@@ -62,68 +62,107 @@ public class UdpConfiguration
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	/**
+	 * Returns the value stored in the "address" field of the configuration. This can
+	 * be specified as the symbolic name "BROADCAST". If that is the case, the returned
+	 * address will be determined by looking at the network interface, finding the first
+	 * IPv4 enabled address and getting its broadcast value.
+	 * 
+	 * If a literal address is provided, it will be returned without modification.
+	 * 
+	 * For example:
+	 *   +----------------+---------------+
+	 *   |   Sepcified    |    Returned   |
+	 *   +----------------+---------------+
+	 *   | 192.168.0.123  | 192.168.0.123 |
+	 *   +----------------+---------------+
+	 *   | 192.168.0.255  | 192.168.0.255 |
+	 *   +----------------+---------------+
+	 *   | BROADCAST      | 192.168.0.255 | << Depends on NIC
+	 *   +----------------+---------------+
+	 *   | 239.0.1.123    | 239.0.1.1233  | << Multicast
+	 *   +----------------+---------------+
+	 * 
+	 * @return Address that all packets we send should be addressed to.
+	 */
 	public InetAddress getAddress()
 	{
-		// have we already done this and found our address?
-		if( this.address != null )
-			return address;
-	
+		// lazy load
+		if( this.targetAddress != null )
+			return targetAddress;
+
 		// Find the Address we are configured to use
 		// Valid values for the address are BROADCAST or some literal MulticastAddress
 		// that we can use for the NIC
 		String prop = parent.getProperty( PROP_ADDRESS, "BROADCAST" );
-		if( prop.equals("BROADCAST") )
+		if( prop.equalsIgnoreCase("BROADCAST") )
 		{
-			// Need to determine the broadcast address for the chosen NIC
+			//
+			// Broadcast Address
+			//
+			// Get the NIC (which itself can be specified many ways) and find
+			// the first IPv4 address that it has, then set our address to the
+			// _broadcast_ address associated with it
 			NetworkInterface nic = getNetworkInterface();
-			for( InterfaceAddress ifAddr : nic.getInterfaceAddresses() )
+			for( InterfaceAddress interfaceAddress : nic.getInterfaceAddresses() )
 			{
-				if( ifAddr.getAddress() instanceof Inet6Address )
+				if( interfaceAddress.getAddress() instanceof Inet6Address )
 					continue;
 				
-				this.address = ifAddr.getAddress();
+				this.targetAddress = interfaceAddress.getBroadcast();
 				break;
 			}
-			
-			if( this.address == null )
+
+			if( this.targetAddress == null )
 				throw new DiscoException( "NIC doesn't support IPv4 Broadcast: "+nic );
 		}
 		else
 		{
 			// It if an address, get it directly
-			this.address = NetworkUtils.getAddress( prop );
+			this.targetAddress = NetworkUtils.getAddress( prop );
 		}
-		
-		return this.address;
-	}
-	
-	public void setAddress( InetAddress address )
-	{
-		this.address = address;
+
+		return this.targetAddress;
 	}
 
 	/**
-	 * This can be a domain name or an actual IP address, or alternatively it can be one
-	 * of the special symbols accepted by {@link NetworkUtils#getByName(String)}.
+	 * Sets the target address to the given one. This will be used as the target address
+	 * for the construction of all packets from here on in.
 	 */
-	public void setAddress( String address ) throws DiscoException
+	public void setAddress( InetAddress address )
 	{
+		// no need to do anything special - by setting this value we'll cause getAddress()
+		// to short-circuit as it is lazy-loaded
+		this.targetAddress = address;
+	}
+
+	/**
+	 * Set the target address to the given one. This will be used as the target address
+	 * for the construction of all packets from here on in.
+	 * 
+	 * Valid values are either an explicit address (such as a multicast address), or the
+	 * symbolic "BROADCAST" value. If that is provided, the broadcast address of the specified
+	 * interface (as returned by {@link #getNetworkInterface()} will be used.
+	 */
+	public void setAddress( String addressString ) throws DiscoException
+	{
+		parent.setProperty( PROP_ADDRESS, addressString );
+
 		// Works in conjunction with getNetworkInterface()
 		// Valid values here are BROADCAST, or some multicast address
-		if( address.equals("BROADCAST") )
+		if( addressString.equals("BROADCAST") )
 		{
-			parent.setProperty( PROP_ADDRESS, "BROADCAST" );
-			this.address = null; // next call to getAddress() will resolve this
+			this.targetAddress = null; // next call to getAddress() will resolve this
 			return;
 		}
 		
 		try
 		{
-			this.address = InetAddress.getByName( address );
+			this.targetAddress = InetAddress.getByName( addressString );
 		}
 		catch( UnknownHostException uhe )
 		{
-			throw new DiscoException( "Could not find address: "+address );
+			throw new DiscoException( "Could not find address: "+addressString );
 		}
 	}
 	
@@ -136,13 +175,30 @@ public class UdpConfiguration
 	{
 		parent.setProperty( PROP_PORT, ""+port );
 	}
-	
+
+	/**
+	 * Specifies the network interface that should be used for sending. There are two ways
+	 * to specify this.
+	 * 
+	 *  1. Either as an explicit IP address or DNS name
+	 *     The NIC associated with that name will be looked up and used
+	 *     
+	 *  2. One of the special symbols which will cause a more intelligent lookup
+	 *     LOOPBACK  : The local loopback address 
+	 *     LINK_LOCAL: An address valid on the local link (typically self-assigned ips)
+	 *     SITE_LOCAL: An address that is limited in scope to local site (10.x, 192.168.x, etc...)
+	 *     GLOBAL    : An address that is globablly routable on the internet
+	 * 
+	 * Note that NIC should will affect {@link #getAddress()} if the address has been set to
+	 * BROADCAST, then the chosen broadcast address will depend on the address of the specified
+	 * NIC. 
+	 */
 	public NetworkInterface getNetworkInterface()
 	{
 		if( this.networkInterface == null )
 		{
 			// have they provided a specific nic?
-			String prop = parent.getProperty(PROP_INTERFACE,"SITE_LOCAL" );
+			String prop = parent.getProperty( PROP_INTERFACE, "SITE_LOCAL" );
 			this.networkInterface = NetworkUtils.getNetworkInterface( prop );
 		}
 
