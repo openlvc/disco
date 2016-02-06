@@ -157,7 +157,6 @@ public class Recorder implements IPduListener
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void receiver( PDU pdu )
 	{
-++this.pdusWritten;
 		this.buffer.add( new Track(pdu) ); // non-blocking call
 	}
 
@@ -252,7 +251,7 @@ public class Recorder implements IPduListener
 						bos.write( BitHelpers.longToBytes(track.timestamp) );
 						bos.write( BitHelpers.shortToBytes((short)pdubytes.length) );
 						bos.write( pdubytes );
-//						pdusWritten++;
+						pdusWritten++;
 						bytesWritten += (pdubytes.length+9);
 					}
 					catch( IOException ioex )

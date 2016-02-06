@@ -175,8 +175,7 @@ public class Arguments
 	public static void printHelp()
 	{
 		System.out.println( "Disruptor - Load testing tool for DIS applications" );
-		System.out.println( "Usage: bin/disruptor [--args]\n" );
-
+		System.out.println( "Usage: bin/disruptor [--args]" );
 		System.out.println( "" );
 		System.out.println( "" );
 
