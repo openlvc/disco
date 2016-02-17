@@ -44,6 +44,10 @@ public class Configuration
 	private String disInterface;    // IP or nic to use or one of the symbols "LOOPBACK",
 	                                // "LINK_LOCAL", "SITE_LOCAL", "GLOBAL"
 	
+	// PDU Processing
+	private String pduSender;
+	private String pduReceiver;
+
 	// Replay Settings
 	private boolean replayRealtime; // Should replay proceed in real time (with waits between PDUs)
 
@@ -66,6 +70,10 @@ public class Configuration
 		this.disAddress   = "BROADCAST";
 		this.disPort      = 3000;
 		this.disInterface = "SITE_LOCAL";
+		
+		// PDU Processing
+		this.pduSender = null;
+		this.pduReceiver = null;
 		
 		// Replay Settings
 		this.replayRealtime = true;
@@ -106,6 +114,10 @@ public class Configuration
 				this.setReplayRealtime( false );
 			else if( argument.equalsIgnoreCase("--log-level") )
 				this.setLogLevel( args[++i] );
+			else if( argument.equalsIgnoreCase("--pdu-sender") )
+				this.setPduSender( args[++i] );
+			else if( argument.equalsIgnoreCase("--pdu-receiver") )
+				this.setPduReceiver( args[++i] );
 			else
 				throw new DiscoException( "Unknown argument: "+argument );
 		}
@@ -185,6 +197,26 @@ public class Configuration
 		this.disInterface = disInterface;
 	}
 	
+	public void setPduSender( String pduSender )
+	{
+		this.pduSender = pduSender;
+	}
+
+	public String getPduSender()
+	{
+		return this.pduSender;
+	}
+
+	public void setPduReceiver( String pduReceiver )
+	{
+		this.pduReceiver = pduReceiver;
+	}
+
+	public String getPduReceiver()
+	{
+		return this.pduReceiver;
+	}
+
 	public void setReplayRealtime( boolean replayRealtime )
 	{
 		this.replayRealtime = replayRealtime;

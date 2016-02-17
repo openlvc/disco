@@ -31,11 +31,14 @@ public class DiscoConfiguration
 	/** Should parsing problems result in exceptions? */
 	public static boolean STRICT_MODE = Boolean.valueOf( System.getProperty("disco.strict","false") );
 	
-	private static final String PROP_CONNECTION = "disco.connection";
+	public static final String PROP_CONNECTION = "disco.connection";
 
-	private static final String PROP_LOG_LEVEL   = "disco.log.level";
-	private static final String PROP_LOG_CONSOLE = "disco.log.console"; // true, false
-	private static final String PROP_LOG_FILE    = "disco.log.file";    // filename
+	public static final String PROP_LOG_LEVEL   = "disco.log.level";
+	public static final String PROP_LOG_CONSOLE = "disco.log.console"; // true, false
+	public static final String PROP_LOG_FILE    = "disco.log.file";    // filename
+	
+	public static final String PROP_PDU_SENDER   = "disco.pdu.sender";
+	public static final String PROP_PDU_RECEIVER = "disco.pdu.receiver";
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -142,6 +145,33 @@ public class DiscoConfiguration
 	public void setLoggingConfiguration( Log4jConfiguration configuration )
 	{
 		this.loggingConfiguration = configuration;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// PDU Processing Properties   ////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public String getPduSender()
+	{
+		return properties.getProperty( PROP_PDU_SENDER, "single-thread" );
+	}
+
+	/** See PduSender.create() for valid values */
+	public void setPduSender( String sender )
+	{
+		if( sender != null )
+			properties.setProperty( PROP_PDU_SENDER, sender );
+	}
+
+	public String getPduReceiver()
+	{
+		return properties.getProperty( PROP_PDU_RECEIVER, "single-thread" );
+	}
+
+	/** See PduReceiver.create() for valid values */
+	public void setPduReceiver( String receiver )
+	{
+		if( receiver != null )
+			properties.setProperty( PROP_PDU_RECEIVER, receiver );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

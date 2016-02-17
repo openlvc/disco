@@ -121,6 +121,9 @@ public class Configuration
 		temp.getLoggingConfiguration().setConsoleOn( loggingConfiguration.isConsoleOn() );
 		temp.getLoggingConfiguration().setFileOn( loggingConfiguration.isFileOn() );
 		
+		temp.setPduSender( properties.getProperty(DiscoConfiguration.PROP_PDU_SENDER) );
+		temp.setPduReceiver( properties.getProperty(DiscoConfiguration.PROP_PDU_RECEIVER) );
+
 		return temp;
 	}
 	
@@ -216,6 +219,21 @@ public class Configuration
 		this.properties.put( KEY_DISCO_NIC, iface );
 	}
 
+	//
+	// PDU Processing
+	//
+	public void setPduSender( String pduSender )
+	{
+		if( pduSender != null )
+			this.properties.put( DiscoConfiguration.PROP_PDU_SENDER, pduSender );
+	}
+
+	public void setPduReceiver( String pduReceiver )
+	{
+		if( pduReceiver != null )
+			this.properties.put( DiscoConfiguration.PROP_PDU_RECEIVER, pduReceiver );
+	}
+
 	@Override
 	public String toString()
 	{
@@ -264,8 +282,12 @@ public class Configuration
 				this.setDisAddress( args[++i] );
 			else if( argument.equalsIgnoreCase("--dis-port") )
 				this.setDisPort( Integer.parseInt( args[++i]) );
-			else if( argument.equalsIgnoreCase("--dis-nic") )
+			else if( argument.equalsIgnoreCase("--dis-nic") || argument.equalsIgnoreCase("--dis-interface") )
 				this.setDisNic( args[++i] );
+			else if( argument.equalsIgnoreCase("--pdu-sender") )
+				this.setPduSender( args[++i] );
+			else if( argument.equalsIgnoreCase("--pdu-receiver") )
+				this.setPduReceiver( args[++i] );
 			else
 				throw new DiscoException( "Unknown argument: "+argument );
 		}
@@ -280,16 +302,16 @@ public class Configuration
 		System.out.println( "Usage: bin/disruptor [--args]" );
 		System.out.println( "" );
 
-		System.out.println( "--config-file         integer  (optional)  Number of objects to create              (default: 100)" );
-		System.out.println( "--objects             integer  (optional)  Number of objects to create              (default: 100)" );
-		System.out.println( "--loops               integer  (optional)  Numbber of sim-loops to run              (default: 300)" );
-		System.out.println( "--tick-interval       integer  (optional)  Millis between update tick cycle         (default: 1000)");
-		System.out.println( "--simulation-address  string   (optional)  Simulation Address                       (default: 1-1-20913)" );
-		System.out.println( "--log-level           string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE]  (default: INFO)" );
-		System.out.println( "--dis-address         string   (optional)  Where to send DIS traffic, or BROADCAST  (default: BROADCAST)" );
-		System.out.println( "--dis-port            integer  (optional)  Port for DIS traffic                     (default: 3000)" );
-		System.out.println( "--dis-nic             string   (optional)  NIC to use. Address or a special symbol: (default: SITE_LOCAL)" );
-		System.out.println( "                                           LOOPBACK, LINK_LOCAL, SITE_LOCAL, GLOBAL" );
+		System.out.println( "  --config-file         integer  (optional)  Number of objects to create              (default: 100)" );
+		System.out.println( "  --objects             integer  (optional)  Number of objects to create              (default: 100)" );
+		System.out.println( "  --loops               integer  (optional)  Numbber of sim-loops to run              (default: 300)" );
+		System.out.println( "  --tick-interval       integer  (optional)  Millis between update tick cycle         (default: 1000)");
+		System.out.println( "  --simulation-address  string   (optional)  Simulation Address                       (default: 1-1-20913)" );
+		System.out.println( "  --log-level           string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE]  (default: INFO)" );
+		System.out.println( "  --dis-address         string   (optional)  Where to send DIS traffic, or BROADCAST  (default: BROADCAST)" );
+		System.out.println( "  --dis-port            integer  (optional)  Port for DIS traffic                     (default: 3000)" );
+		System.out.println( "  --dis-interface       string   (optional)  NIC to use. Address or a special symbol: (default: SITE_LOCAL)" );
+		System.out.println( "                                             LOOPBACK, LINK_LOCAL, SITE_LOCAL, GLOBAL" );
 		System.out.println( "" );
 	}
 

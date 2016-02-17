@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.connection.ConnectionFactory;
 import org.openlvc.disco.connection.IConnection;
+import org.openlvc.disco.connection.Metrics;
 import org.openlvc.disco.pdu.PDU;
 
 public class OpsCenter
@@ -36,7 +37,7 @@ public class OpsCenter
 	private DiscoConfiguration configuration;
 	private Logger logger;
 	private PduReceiver pduReceiver;   // where we receive byte[]'s from the network    (incoming)
-	private PduSender pduSender;       // where we send byte[]'s to the network         (outgoing)
+	private PduSender pduSender;       // where we send PDUs to the network             (outgoing)
 	private IPduListener pduListener;  // where we send PDU's received from the network (incoming)
 
 	private IConnection connection;    // source and destiantion for PDUs - typically network
@@ -86,10 +87,11 @@ public class OpsCenter
 		}
 		
 		// wire up the sender and receiver to the connection and listener
-		this.pduReceiver = new PduReceiver( this, this.connection, this.pduListener );
-		this.pduSender = new PduSender( this, this.connection );
+		this.pduReceiver = PduReceiver.create( configuration.getPduReceiver(), this, connection, pduListener );
+		this.pduSender = PduSender.create( configuration.getPduSender(), this, this.connection );
 		
 		// open the flood gates!
+		this.connection.open();
 		this.pduReceiver.open();
 		
 		this.open = true;
@@ -103,12 +105,18 @@ public class OpsCenter
 		
 		this.logger.info( "Closing OpsCenter" );
 		this.logger.debug( "Closing connection: "+connection.getName() );
+		
+		// flush any messages in the sender and close
+		this.pduSender.close();
+		
+		// kill the connection to stop incoming packets
 		this.connection.close();
-		this.pduReceiver.close();  // has executors we need to shut down
-		this.pduSender.close();    // has executors we need to shut down
+		
+		// flush any messages in the receiver and close
+		this.pduReceiver.close();
 
-		this.logger.info( "OpsCenter has closed" );
 		this.open = false;
+		this.logger.info( "OpsCenter has closed" );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,6 +155,11 @@ public class OpsCenter
 	public PduReceiver getPduReceiver()
 	{
 		return this.pduReceiver;
+	}
+	
+	public Metrics getMetrics()
+	{
+		return this.connection.getMetrics();
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

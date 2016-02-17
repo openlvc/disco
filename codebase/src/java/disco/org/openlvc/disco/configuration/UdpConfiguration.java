@@ -104,6 +104,15 @@ public class UdpConfiguration
 			// the first IPv4 address that it has, then set our address to the
 			// _broadcast_ address associated with it
 			NetworkInterface nic = getNetworkInterface();
+			
+			// if we are using the loopback adapter, just assign the proper IP and exit
+			if( NetworkUtils.isLoopback(nic) )
+			{
+				this.targetAddress = NetworkUtils.getAddress( "127.0.0.1" );
+				return this.targetAddress;
+			}
+
+			// check for a broadcast address on the nic
 			for( InterfaceAddress interfaceAddress : nic.getInterfaceAddresses() )
 			{
 				if( interfaceAddress.getAddress() instanceof Inet6Address )

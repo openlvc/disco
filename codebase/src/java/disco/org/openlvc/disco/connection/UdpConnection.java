@@ -148,7 +148,8 @@ public class UdpConnection implements IConnection
 	@Override
 	public void close() throws DiscoException
 	{
-		logger.info( "Provider close()" );
+		if( this.socket.isClosed() )
+			return;
 		
 		// Close the socket we're listening on and the thread will drop out
 		this.receiverThread.interrupt();
@@ -242,7 +243,7 @@ public class UdpConnection implements IConnection
 					if( logger.isTraceEnabled() )
 						logger.trace( "(Packet) size="+packet.getLength()+", source="+packet.getSocketAddress() );
 
-					opscenter.getPduReceiver().queueForIngest( buffer );
+					opscenter.getPduReceiver().receive( buffer );
 					metrics.pduReceived( packet.getLength() );
 				}
 				catch( SocketException se )

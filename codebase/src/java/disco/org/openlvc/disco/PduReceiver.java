@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2016 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -17,28 +17,26 @@
  */
 package org.openlvc.disco;
 
-import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.connection.IConnection;
-import org.openlvc.disco.pdu.DisInputStream;
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.PduFactory;
-import org.openlvc.disco.pdu.UnsupportedPDU;
-import org.openlvc.disco.pdu.record.PduHeader;
+import org.openlvc.disco.receivers.SimpleReceiver;
+import org.openlvc.disco.receivers.SingleThreadReceiver;
+import org.openlvc.disco.receivers.ThreadPoolReceiver;
 
 /**
- * The {@link PduReceiver} is where incoming packets from a {@link Connection} are routed to
- * for inspection and processing. From the incoming stream, suitable {@link PDU}s are handed
- * off to the client code's {@link IPduListener}. 
+ * Networking is hard. There are a bunch of approaches to doing something as simple as PDU
+ * receiving and processing of a PDU. Do we just immediately deserialize and hand off for
+ * processing? Do we queue them up for a separate thread to deserialize and hand-off?
+ * If we do that, do we use more than one thread to notify clients? Do we separately handle
+ * the deserialization and notification? Where do we do filtering? After we've deserialized
+ * the PDU? After the header? etc... 
+ * 
+ * Networking across platforms in Java is also not as "Write Once, Run Anywhere" as it may
+ * first appear. As such, despite a strong desire to avoid over abstraction, the receiving of
+ * PDUs will be pushed behind an interface so that we can quickly and easily swap the underlying
+ * implementation via configuration or code.
  */
-public class PduReceiver implements RejectedExecutionHandler
+public abstract class PduReceiver
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -47,177 +45,66 @@ public class PduReceiver implements RejectedExecutionHandler
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Logger logger;
-	private IConnection connection;
-	private IPduListener pduListener;
+	protected Logger logger;
+	protected IConnection connection;
+	protected IPduListener clientListener;
 	
-	// Processing
-	private BlockingQueue<Runnable> ingestqueue;  // ingest converts byte[] -> PDU and filters
-	private ThreadPoolExecutor ingestExecutor;
-
-	private BlockingQueue<Runnable> inqueue;      // passes to IPduReceiver for processing
-	private ThreadPoolExecutor inqueueExecutor;
-	
-	// Metrics
-	private AtomicLong metricsTotalPdusReceived;
-	private AtomicLong metricsTotalPdusReceivedSize;
-	private AtomicLong metricsTotalPdusDropped;
-	private AtomicLong metricsTotalPdusFiltered;
-	private AtomicLong metricsTotalPdusFilteredSize;
-	private AtomicLong metricsTotalPdusDelivered;
-	private AtomicLong metricsTotalPdusDeliveredSize;
-
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduReceiver( OpsCenter opscenter, IConnection connection, IPduListener listener )
+	protected PduReceiver( OpsCenter opscenter, IConnection connection, IPduListener clientListener )
 	{
 		this.logger = opscenter.getLogger();
 		this.connection = connection;
-		this.pduListener = listener;
-
-		// Processing
-		this.ingestqueue = new LinkedBlockingQueue<Runnable>(100000);
-		this.ingestExecutor = new ThreadPoolExecutor( 2, 2, 60, TimeUnit.SECONDS, ingestqueue );
-		this.ingestExecutor.setRejectedExecutionHandler( this );
-		
-		this.inqueue = new LinkedBlockingQueue<Runnable>(100000);
-		this.inqueueExecutor = new ThreadPoolExecutor( 1, 1, 60, TimeUnit.SECONDS, inqueue );
-		this.inqueueExecutor.setRejectedExecutionHandler( this );
-		
-		// Metrics
-		this.metricsTotalPdusReceived      = new AtomicLong( 0 );
-		this.metricsTotalPdusReceivedSize  = new AtomicLong( 0 );
-		this.metricsTotalPdusDropped       = new AtomicLong( 0 );
-		this.metricsTotalPdusFiltered      = new AtomicLong( 0 );
-		this.metricsTotalPdusFilteredSize  = new AtomicLong( 0 );
-		this.metricsTotalPdusDelivered     = new AtomicLong( 0 );
-		this.metricsTotalPdusDeliveredSize = new AtomicLong( 0 );
+		this.clientListener = clientListener;
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	public void open() throws DiscoException
-	{
-		// Start our internal queue processing thread
-		
-		// Open the provider!
-		this.connection.open();
-	}
-	
-	public void close() throws DiscoException
-	{
-		this.connection.close();
-		this.ingestExecutor.shutdown();
-		this.inqueueExecutor.shutdown();
-		
-		while( this.ingestExecutor.isShutdown() == false ||
-		       this.inqueueExecutor.isShutdown() == false )
-		{
-			try { Thread.sleep( 1000 ); }catch( InterruptedException ie ) { return; }
-		}
-	}
+	/**
+	 * A packet has been received from the network. Depending on the implmentation this method
+	 * may do some work on it, throw it away, block until it is processed, queue for later, or
+	 * any of these in some sort of combination (who knows!?).
+	 */
+	public abstract void receive( byte[] packet );
 
 	/**
-	 * The following has been received from the {@link IConnection} for processing.
+	 * You may proceed. Receiver should now accept and act on incoming PDUs.
 	 */
-	public void queueForIngest( byte[] array )
-	{
-		this.metricsTotalPdusReceived.incrementAndGet();
-		this.metricsTotalPdusReceivedSize.addAndGet( array.length );
-		
-		// create the task and submit to the executor
-		IngestTask ingestTask = new IngestTask( array );
-		ingestExecutor.execute( ingestTask );
-	}
-
-	/**
-	 * Catch when one of the ingest or delivery queue drops a packet because it is full.
-	 */
-	public void rejectedExecution( Runnable task, ThreadPoolExecutor executor )
-	{
-		if( executor == this.ingestExecutor )
-			metricsTotalPdusDropped.incrementAndGet();
-	}
+	public abstract void open() throws DiscoException;
 	
+	/**
+	 * Time to shut down. Stop processing packets. Flush any queues, do any cleanup work, etc...
+	 */
+	public abstract void close() throws DiscoException;
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Incoming Message Processing   /////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
-	private class IngestTask implements Runnable
+
+	/**
+	 * Creates a new receiver based on the name. Valid values are:
+	 * 
+	 *   - single-thread    -> SingleThreadReceiver
+	 *   - thread-pool      -> ThreadPoolReceiver
+	 *   - simple           -> SimpleReceiver
+	 */
+	public static PduReceiver create( String name,
+	                                  OpsCenter opscenter,
+	                                  IConnection connection,
+	                                  IPduListener client )
+		throws DiscoException
 	{
-		public byte[] buffer;
-		public IngestTask( byte[] buffer ) { this.buffer = buffer; }
-
-		
-		public void run()
-		{
-			// wrap the buffer in a stream we can read from
-			DisInputStream instream = new DisInputStream( buffer );
-			
-			// 1. Read off the header first
-			PduHeader header = new PduHeader();
-			try
-			{
-				header.from( instream );
-			}
-			catch( IOException ioex )
-			{
-				logger.error( "Error reading PDU Header, discarding packet", ioex );
-				return;
-			}
-			
-			// 2. First Filter
-			// Do we want to filter this based on any header values?
-			// TODO Implement
-			
-			// 3. Turn the bytes into a PDU
-			PDU pdu = null;
-			try
-			{
-				pdu = PduFactory.create( header );
-				pdu.from( instream );
-			}
-			catch( UnsupportedPDU up )
-			{
-				if( logger.isTraceEnabled() )
-					logger.trace( "Received unsupported PDU Type: "+up.getMessage() );
-				return;
-			}
-			catch( IOException ioex )
-			{
-				logger.error( "Error reading PDU Body, discarding packet", ioex );
-				return;
-			}
-			
-			// 4. Full Filters
-			// TODO Not implemented yet
-
-			// 5. Hand off to receiver
-			inqueueExecutor.execute( new HandoffTask(pdu) );
-		}
-	}
-	
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Outgoing Message Processing   /////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
-	private class HandoffTask implements Runnable
-	{
-		public PDU pdu;
-		public HandoffTask( PDU pdu ) { this.pdu = pdu; }
-		public void run()
-		{
-			if( pduListener != null )
-				pduListener.receiver( pdu );
-
-			metricsTotalPdusDelivered.incrementAndGet();
-			metricsTotalPdusDeliveredSize.addAndGet( pdu.getContentLength() );
-		}
+		if( name.equalsIgnoreCase("single-thread") )
+			return new SingleThreadReceiver( opscenter, connection, client );
+		if( name.equalsIgnoreCase("thread-pool") )
+			return new ThreadPoolReceiver( opscenter, connection, client );
+		else if( name.equals("simple") )
+			return new SimpleReceiver( opscenter, connection, client );
+		else
+			throw new DiscoException( "Unknown PDU Receiver: "+name );
 	}
 
 }

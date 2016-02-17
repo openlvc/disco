@@ -67,6 +67,19 @@ public class NetworkUtils
 		}
 	}
 
+	/** @return true if the given NIC is the loopback. If there is an exception, return false */
+	public static boolean isLoopback( NetworkInterface nic )
+	{
+		try
+		{
+			return nic.isLoopback();
+		}
+		catch( Exception e )
+		{
+			return false;
+		}
+	}
+	
 	/**
 	 * Calls {@link #createMulticast(InetAddress, int, NetworkInterface, SocketOptions)} with
 	 * <code>null</code> for socket options.

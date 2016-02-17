@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.connection.Metrics;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.record.EntityType;
 import org.openlvc.disco.utils.CoordinateUtils;
@@ -72,6 +73,7 @@ public class Disruptor
 		opscenter.setListener( new PduListener() );
 		opscenter.open();
 
+		long benchmarkStart = System.currentTimeMillis();
 		try
 		{
     		// Do our work
@@ -87,6 +89,19 @@ public class Disruptor
 		}
 
 		logger.info( "Execution over - you can breathe again" );
+		
+		Metrics metrics = opscenter.getMetrics();
+		long sent = metrics.getPdusSent();
+		long received = metrics.getPdusReceived();
+		float percentage = (float)received / (float)sent;
+		long time = System.currentTimeMillis() - benchmarkStart;
+		long perSecond = (long)(((double)sent / (double)time) * 1000.0);
+		logger.info( "Sent %s in %d ms (%d/s), Received %s (%.2f%%).",
+		             NumberFormat.getNumberInstance().format(sent),
+		             time,
+		             perSecond,
+		             NumberFormat.getNumberInstance().format(received),
+		             percentage*100.0 );
 	}
 
 	

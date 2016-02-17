@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2016 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -17,20 +17,25 @@
  */
 package org.openlvc.disco;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.connection.IConnection;
-import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.senders.SimpleSender;
+import org.openlvc.disco.senders.SingleThreadSender;
+import org.openlvc.disco.senders.ThreadPoolSender;
 
-public class PduSender implements RejectedExecutionHandler
+/**
+ * Networking is hard. There are a bunch of approaches to doing something as simple as PDU
+ * serialization and sending. Do we block for every send request? Do we queue them all up
+ * and flush on a different thread? Do we serialize on one thread and send on another to keep
+ * the sender focused on one this? So many choices!
+ * 
+ * Networking across platforms in Java is also not as "Write Once, Run Anywhere" as it may
+ * first appear. As such, despite a strong desire to avoid over abstraction, the sending of
+ * PDUs will be pushed behind an interface so that we can quickly and easily swap the underlying
+ * implementation via configuration or code.
+ */
+public abstract class PduSender
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -39,11 +44,8 @@ public class PduSender implements RejectedExecutionHandler
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Logger logger;
-	private IConnection connection;
-	
-	private BlockingQueue<Runnable> conversionQueue;
-	private ThreadPoolExecutor conversionExecutor;
+	protected Logger logger;
+	protected IConnection connection;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -52,80 +54,48 @@ public class PduSender implements RejectedExecutionHandler
 	{
 		this.logger = opscenter.getLogger();
 		this.connection = connection;
-		
-		this.conversionQueue = new LinkedBlockingQueue<>(100000);
-		this.conversionExecutor = new ThreadPoolExecutor( 2, 2, 60, TimeUnit.SECONDS, conversionQueue );
-		this.conversionExecutor.setRejectedExecutionHandler( this );
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	public void send( PDU pdu )
-	{
-		conversionExecutor.execute( new ConversionTask(pdu) );
-		//connection.send( pdu );
+	/**
+	 * Send the given PDU to the network. Depending on the implementation this may block,
+	 * queue the method for later sending or do something else entirely (who knows!?).
+	 */
+	public abstract void send( PDU pdu );
 
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	public void open() throws DiscoException
-	{
-		// nothing to do here - the sender should already be ready
-	}
+	/**
+	 * You may proceed. Sender should now accept and act on requests to send PDUs
+	 */
+	public abstract void open() throws DiscoException;
 	
-	public void close() throws DiscoException
-	{
-		this.conversionExecutor.shutdown();
-		while( this.conversionExecutor.isShutdown() == false )
-		{
-			try { Thread.sleep( 1000 ); }catch( InterruptedException ie ) { return; }
-		}
-	}
-	
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// ThreadPoolExecutor Methods   ///////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	public void rejectedExecution( Runnable task, ThreadPoolExecutor executor )
-	{
-		logger.warn( "(PDU Send) Conversion task was rejected for PDU: "+((ConversionTask)task).pdu );
-	}
+	/**
+	 * Time to shut down. Stop processing packets. Flush any queues, do any cleanup work, etc...
+	 */
+	public abstract void close() throws DiscoException;
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	
-	///
-	private class ConversionTask implements Runnable
+	/**
+	 * Creates a new sender based on the name. Valid values are:
+	 * 
+	 *   - single-thread    -> SingleThreadSender
+	 *   - thread-pool      -> ThreadPoolSender
+	 *   - simple           -> SimpleSender
+	 */
+	public static PduSender create( String name, OpsCenter opscenter, IConnection connection )
+		throws DiscoException
 	{
-		public PDU pdu;
-		public ConversionTask( PDU pdu ) { this.pdu = pdu; }
-		
-		public void run()
-		{
-			try
-			{
-				// Set the stream up
-				ByteArrayOutputStream baos = new ByteArrayOutputStream( 2048 );
-				DisOutputStream dos = new DisOutputStream( baos );
-
-				// Write the PDU header to the stream
-				pdu.writeHeader( dos );
-				
-				// Write the body content
-				pdu.to( dos );
-				
-				// Send it off to the network
-				connection.send( baos.toByteArray() );
-			}
-			catch( IOException ioex )
-			{
-				logger.warn( "Error trying to serialize PDU ("+pdu+"): "+ioex.getMessage(), ioex );
-			}
-		}
+		if( name.equalsIgnoreCase("single-thread") )
+			return new SingleThreadSender( opscenter, connection );
+		if( name.equalsIgnoreCase("thread-pool") )
+			return new ThreadPoolSender( opscenter, connection );
+		else if( name.equals("simple") )
+			return new SimpleSender( opscenter, connection );
+		else
+			throw new DiscoException( "Unknown PDU Sender: "+name );
 	}
 }
