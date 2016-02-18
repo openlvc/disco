@@ -88,10 +88,6 @@ public class UdpConnection implements IConnection
 		this.targetAddress = new InetSocketAddress( configuration.getAddress(), configuration.getPort() );
 		
 		//
-		// Get a reference to the queue we need to dump incoming messages onto
-		//
-		
-		//
 		// Get a socket opened up
 		//
 		InetAddress address = configuration.getAddress();

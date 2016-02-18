@@ -44,6 +44,11 @@ public class PlatformAppearance
 	{
 		this.bitfield = new BitField32( bits );
 	}
+	
+	public PlatformAppearance()
+	{
+		this( 0 );
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
@@ -53,9 +58,10 @@ public class PlatformAppearance
 		return bitfield.getInt();
 	}
 	
-	public void setBits( int bits )
+	public PlatformAppearance setBits( int bits )
 	{
 		this.bitfield.setInt( bits );
+		return this;
 	}
 	
 	public boolean isMobilityKilled()
@@ -63,9 +69,10 @@ public class PlatformAppearance
 		return bitfield.isSet( INDEX_MKILL );
 	}
 
-	public void setMobilityKilled( boolean mkill )
+	public PlatformAppearance setMobilityKilled( boolean mkill )
 	{
 		bitfield.setBit( INDEX_MKILL, mkill );
+		return this;
 	}
 	
 	public boolean isPowerplantOn()
@@ -73,9 +80,10 @@ public class PlatformAppearance
 		return bitfield.isSet( INDEX_POWERPLANT );
 	}
 	
-	public void setPowerplantOn( boolean on )
+	public PlatformAppearance setPowerplantOn( boolean on )
 	{
 		bitfield.setBit( INDEX_POWERPLANT, on );
+		return this;
 	}
 
 	//----------------------------------------------------------

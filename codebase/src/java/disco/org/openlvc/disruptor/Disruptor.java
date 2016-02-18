@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.connection.Metrics;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.appearance.PlatformAppearance;
 import org.openlvc.disco.pdu.record.EntityType;
 import org.openlvc.disco.utils.CoordinateUtils;
 import org.openlvc.disco.utils.LLA;
@@ -173,6 +174,7 @@ public class Disruptor
 			pdu.setEntityID( siteId, 20913, ++entityId );
 			pdu.setEntityType( new EntityType(1, 1, 225, 1, 2, 3, 4) );
 			pdu.setMarking( "DSRPT"+i );
+			pdu.setAppearance( new PlatformAppearance().setPowerplantOn(true).getBits() );
 			pdu.setLocation( CoordinateUtils.toECEF(new LLA(-31.9522,115.8589,0)) );
 			
 			entities.add( pdu );
