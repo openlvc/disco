@@ -255,7 +255,9 @@ public class Configuration
 		builder.append( "   --dis-interface   (string)  NIC to use. LOOPBACK, LINK_LOCAL, SITE_LOCAL*, GLOBAL\n" );
 		builder.append( "   --replay-realtime           Replay as PDus happened. Delay PDUs if there was receive delay\n" );
 		builder.append( "   --replay-fast               Replay all stored PDUs as fast as possible\n" );
-		builder.append( "   --log-level                 Set the log level: OFF, ERROR, WARN, INFO(default), DEBUG, TRACE\n" );
+		builder.append( "   --log-level       (string)  Set the log level: OFF, ERROR, WARN, INFO(default), DEBUG, TRACE\n" );
+		builder.append( "   --pdu-receiver    (string)  PDU receive processor: single-thread (def), thread-pool, simple\n" );
+		builder.append( "   --pdu-sender      (string)  PDU send processor: single-thread (def), thread-pool, simple\n" );
 		builder.append( "\n" );
 		System.out.println( builder.toString() );
 	}

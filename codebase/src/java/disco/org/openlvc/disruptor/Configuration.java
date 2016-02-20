@@ -312,6 +312,8 @@ public class Configuration
 		System.out.println( "  --dis-port            integer  (optional)  Port for DIS traffic                     (default: 3000)" );
 		System.out.println( "  --dis-interface       string   (optional)  NIC to use. Address or a special symbol: (default: SITE_LOCAL)" );
 		System.out.println( "                                             LOOPBACK, LINK_LOCAL, SITE_LOCAL, GLOBAL" );
+		System.out.println( "  --pdu-sender          string   (optional)  single-thread, thread-pool, simple       (default: single-thread)" );
+		System.out.println( "  --pdu-receiver        string   (optional)  single-thread, thread-pool, simple       (default: single-thread)" );
 		System.out.println( "" );
 	}
 
