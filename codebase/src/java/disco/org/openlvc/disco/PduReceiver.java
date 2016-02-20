@@ -80,6 +80,19 @@ public abstract class PduReceiver
 	 */
 	public abstract void close() throws DiscoException;
 
+	//////////////////////////////////////////////////////////////////////////////////
+	/// Monitoring Methods   /////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////
+	public long getQueuedPacketCount()
+	{
+		return 0; // not implemented - can be overriden by child
+	}
+	
+	public long getAvgProcessTimeNanos()
+	{
+		return 0; // not implemented - can be overriden by child
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

@@ -45,6 +45,10 @@ public class SingleThreadReceiver extends PduReceiver
 	private ReceiverThread receiveThread;
 	private long droppedPackets;
 
+	// Monitoring
+	private long avgProcessTimeNanos;
+	private long packetsProcessed;
+	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -55,6 +59,9 @@ public class SingleThreadReceiver extends PduReceiver
 		this.receiveQueue = new LinkedBlockingQueue<>();
 		this.receiveThread = null;   // set in open()
 		this.droppedPackets = 0;     // reset in open()
+
+		this.avgProcessTimeNanos = 0;
+		this.packetsProcessed = 0;
 	}
 
 	//----------------------------------------------------------
@@ -110,6 +117,19 @@ public class SingleThreadReceiver extends PduReceiver
 		return droppedPackets;
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Monitoring Methods   ///////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public long getQueuedPacketCount()
+	{
+		return receiveQueue.size();
+	}
+	
+	public long getAvgProcessTimeNanos()
+	{
+		return avgProcessTimeNanos;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
@@ -131,7 +151,14 @@ public class SingleThreadReceiver extends PduReceiver
 				try
 				{
 					packet = receiveQueue.take();
+					
+					long nanoStart = System.nanoTime();
 					clientListener.receiver( PDU.fromByteArray(packet) );
+					long nanoTime = System.nanoTime() - nanoStart;
+
+					++packetsProcessed;
+					avgProcessTimeNanos = avgProcessTimeNanos * (packetsProcessed-1)/packetsProcessed + nanoTime/packetsProcessed;
+					                      
 				}
 				catch( IOException ioex )
 				{
