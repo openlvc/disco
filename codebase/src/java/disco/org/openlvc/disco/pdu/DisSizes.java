@@ -43,7 +43,9 @@ public class DisSizes
 	/**
 	 * The maximum value that can fit into the PDU Header's length field (specified in bytes). 
 	 */
-	public static final int PDU_MAX_SIZE = UI16_MAX_VALUE;
+	//   MTU - IPv4 Header - UDP Header
+	//  1500       20            8       = 1472
+	public static final int PDU_MAX_SIZE = 1472; 
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
