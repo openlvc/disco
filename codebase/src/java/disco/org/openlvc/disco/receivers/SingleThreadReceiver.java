@@ -46,7 +46,8 @@ public class SingleThreadReceiver extends PduReceiver
 	private long droppedPackets;
 
 	// Monitoring
-	private long avgProcessTimeNanos;
+	private long totalProcessNanos;
+	private long avgProcessNanos;
 	private long packetsProcessed;
 	
 	//----------------------------------------------------------
@@ -60,7 +61,8 @@ public class SingleThreadReceiver extends PduReceiver
 		this.receiveThread = null;   // set in open()
 		this.droppedPackets = 0;     // reset in open()
 
-		this.avgProcessTimeNanos = 0;
+		this.totalProcessNanos = 0;
+		this.avgProcessNanos = 0;
 		this.packetsProcessed = 0;
 	}
 
@@ -120,14 +122,22 @@ public class SingleThreadReceiver extends PduReceiver
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Monitoring Methods   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
 	public long getQueuedPacketCount()
 	{
 		return receiveQueue.size();
 	}
-	
+
+	@Override
 	public long getAvgProcessTimeNanos()
 	{
-		return avgProcessTimeNanos;
+		return avgProcessNanos;
+	}
+
+	@Override
+	public long getProcessedPacketCount()
+	{
+		return packetsProcessed;
 	}
 
 	//----------------------------------------------------------
@@ -156,9 +166,10 @@ public class SingleThreadReceiver extends PduReceiver
 					clientListener.receiver( PDU.fromByteArray(packet) );
 					long nanoTime = System.nanoTime() - nanoStart;
 
+					// take our metrics
 					++packetsProcessed;
-					avgProcessTimeNanos = avgProcessTimeNanos * (packetsProcessed-1)/packetsProcessed + nanoTime/packetsProcessed;
-					                      
+					totalProcessNanos += nanoTime;
+					avgProcessNanos = totalProcessNanos / packetsProcessed;
 				}
 				catch( IOException ioex )
 				{

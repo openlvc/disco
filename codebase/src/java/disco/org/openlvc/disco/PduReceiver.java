@@ -93,6 +93,11 @@ public abstract class PduReceiver
 		return 0; // not implemented - can be overriden by child
 	}
 
+	public long getProcessedPacketCount()
+	{
+		return 0; // not implemented - can be overriden by child
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
