@@ -39,6 +39,7 @@ public class PduHeader
 	private PduType pduType;
 	private ProtocolFamily family;
 	private long timestamp;
+	private int pdulength;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -72,8 +73,7 @@ public class PduHeader
 		this.pduType = PduType.fromValue( dis.readUI8() );
 		this.family = ProtocolFamily.fromValue( dis.readUI8() );
 		this.timestamp = dis.readUI32();
-		
-		dis.readUI16(); // Length
+		this.pdulength = dis.readUI16(); // Length
 		dis.readUI16(); // padding bytes
 		
 		return this; // return ourselves so the method can be chained
@@ -121,6 +121,9 @@ public class PduHeader
 	
 	public long getTimestamp() { return this.timestamp; }
 	public void setTimestamp( long timestamp ) { this.timestamp = timestamp; }
+	
+	/** Returns size of PDU including header */
+	public long getPduSize() { return 12 + this.pdulength; } 
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
