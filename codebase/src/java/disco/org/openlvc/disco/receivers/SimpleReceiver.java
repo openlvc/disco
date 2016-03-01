@@ -25,6 +25,7 @@ import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduReceiver;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.UnsupportedPDU;
 
 public class SimpleReceiver extends PduReceiver
 {
@@ -62,6 +63,22 @@ public class SimpleReceiver extends PduReceiver
 		catch( IOException ioex )
 		{
 			logger.warn( "(PduRecv) Problem deserializing PDU: "+ioex.getMessage(), ioex );
+		}
+		catch( UnsupportedPDU up )
+		{
+			// log and continue
+			if( logger.isTraceEnabled() )
+				logger.trace( "(PduRecv) Received unsupported PDU, skipping it: "+up.getMessage() );					
+		}
+		catch( DiscoException de )
+		{
+			// log and continue
+			if( logger.isDebugEnabled() )
+				logger.debug( "(PduRecv) Problem deserializing PDU, skipping it: "+de.getMessage(), de );
+		}
+		catch( Exception e )
+		{
+			logger.warn( "(PduRecv) Unknown exception while processing PDU, skipping it: "+e.getMessage(), e );
 		}
 	}
 

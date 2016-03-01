@@ -188,14 +188,19 @@ public class ThreadPoolReceiver extends PduReceiver implements RejectedExecution
 			}
 			catch( UnsupportedPDU up )
 			{
+				// log and continue
 				if( logger.isTraceEnabled() )
-					logger.trace( "Received unsupported PDU Type: "+up.getMessage() );
-				return;
+					logger.trace( "(PduRecv) Received unsupported PDU, skipping it: "+up.getMessage() );					
 			}
-			catch( IOException ioex )
+			catch( DiscoException de )
 			{
-				logger.error( "Error reading PDU Body, discarding packet", ioex );
-				return;
+				// log and continue
+				if( logger.isDebugEnabled() )
+					logger.debug( "(PduRecv) Problem deserializing PDU, skipping it: "+de.getMessage(), de );
+			}
+			catch( Exception e )
+			{
+				logger.warn( "(PduRecv) Unknown exception while processing PDU, skipping it: "+e.getMessage(), e );
 			}
 			
 			// 4. Full Filters

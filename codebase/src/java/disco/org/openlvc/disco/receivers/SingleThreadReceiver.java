@@ -27,6 +27,7 @@ import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduReceiver;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.UnsupportedPDU;
 import org.openlvc.disco.utils.ThreadUtils;
 
 /**
@@ -180,6 +181,22 @@ public class SingleThreadReceiver extends PduReceiver
 				{
 					// time to shut down
 					return;
+				}
+				catch( UnsupportedPDU up )
+				{
+					// log and continue
+					if( logger.isTraceEnabled() )
+						logger.trace( "(PduRecv) Received unsupported PDU, skipping it: "+up.getMessage() );					
+				}
+				catch( DiscoException de )
+				{
+					// log and continue
+					if( logger.isDebugEnabled() )
+						logger.debug( "(PduRecv) Problem deserializing PDU, skipping it: "+de.getMessage(), de );
+				}
+				catch( Exception e )
+				{
+					logger.warn( "(PduRecv) Unknown exception while processing PDU, skipping it: "+e.getMessage(), e );
 				}
 			}
 		}
