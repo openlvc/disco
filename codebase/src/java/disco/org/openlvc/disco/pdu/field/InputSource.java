@@ -54,7 +54,7 @@ public enum InputSource
 	//----------------------------------------------------------
 	public short value()
 	{
-		return this.value();
+		return this.value;
 	}
 
 	//----------------------------------------------------------
