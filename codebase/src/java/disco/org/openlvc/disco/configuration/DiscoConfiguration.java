@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2016 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -48,6 +48,7 @@ public class DiscoConfiguration
 	private Log4jConfiguration loggingConfiguration;
 	private Logger applicationLogger;
 	
+	private DisConfiguration disConfiguration;
 	private UdpConfiguration udpConfiguration;
 
 	//----------------------------------------------------------
@@ -57,6 +58,7 @@ public class DiscoConfiguration
 	{
 		this.properties = new Properties();
 		this.loggingConfiguration = null; // lazy loaded
+		this.disConfiguration = new DisConfiguration( this );
 		this.udpConfiguration = new UdpConfiguration( this );
 	}
 
@@ -185,6 +187,11 @@ public class DiscoConfiguration
 	public void setConnection( String connection )
 	{
 		properties.setProperty( PROP_CONNECTION, connection );
+	}
+
+	public DisConfiguration getDisConfiguration()
+	{
+		return this.disConfiguration;
 	}
 
 	public UdpConfiguration getUdpConfiguration()

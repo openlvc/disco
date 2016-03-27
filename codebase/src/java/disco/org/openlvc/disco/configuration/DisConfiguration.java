@@ -15,92 +15,58 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection;
+package org.openlvc.disco.configuration;
 
 /**
- * Generic object for recording baseline metrics in.
+ * General DIS protocol settings that are applicable regardless of transport, sender or receiver
+ * implementation.
  */
-public class Metrics
+public class DisConfiguration
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	// Keys for properties file
+	private static final String PROP_EXERCISE_ID  = "disco.dis.exerciseId";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private long pdusSent;
-	private long pdusReceived;
-	private long bytesSent;
-	private long bytesReceived;
-	
-	private long pdusDiscarded;
+	private DiscoConfiguration parent;
+
+	private short exerciseId;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public Metrics()
+	protected DisConfiguration( DiscoConfiguration parent )
 	{
-		reset();
+		this.parent = parent;
+
+		this.exerciseId = -1; // -1 so we can lazy load
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	/**
+	 * Exercise ID to use for outgoing packets. Defaults to 1.
+	 */
+	public short getExerciseId()
+	{
+		// lazy load
+		if( this.exerciseId == -1 )
+			this.exerciseId = Short.parseShort( parent.getProperty(PROP_EXERCISE_ID,"1") );
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	public void pduSent( long bytes )
-	{
-		++pdusSent;
-		bytesSent += bytes;
-	}
-	
-	public void pduReceived( long bytes )
-	{
-		++pdusReceived;
-		bytesReceived += bytes;
+		return this.exerciseId;
 	}
 
-	public void pduDiscarded()
+	/**
+	 * Sets the exercise to use for all outgoing PDUs and the only one we'll accept for incoming.
+	 */
+	public void setExerciseId( short exerciseId )
 	{
-		++pdusDiscarded;
-	}
-
-	public void reset()
-	{
-		this.pdusSent = 0;
-		this.pdusReceived = 0;
-		this.bytesSent = 0;
-		this.bytesReceived = 0;
-		
-		this.pdusDiscarded = 0;
-	}
-	
-	public long getPdusSent()
-	{
-		return pdusSent;
-	}
-
-	public long getPdusReceived()
-	{
-		return pdusReceived;
-	}
-
-	public long getPdusDiscarded()
-	{
-		return pdusDiscarded;
-	}
-
-	public long getBytesSent()
-	{
-		return bytesSent;
-	}
-
-	public long getBytesReceived()
-	{
-		return bytesReceived;
+		parent.setProperty( PROP_EXERCISE_ID, ""+exerciseId );
 	}
 
 	//----------------------------------------------------------

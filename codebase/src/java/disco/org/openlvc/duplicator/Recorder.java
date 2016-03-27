@@ -110,6 +110,7 @@ public class Recorder implements IPduListener
 		discoConfiguration.getUdpConfiguration().setAddress( configuration.getDisAddress() );
 		discoConfiguration.getUdpConfiguration().setPort( configuration.getDisPort() );
 		discoConfiguration.getUdpConfiguration().setNetworkInterface( configuration.getDisInterface() );
+		discoConfiguration.getDisConfiguration().setExerciseId( configuration.getDisExerciseId() );
 		// PDU processing options
 		discoConfiguration.setPduSender( configuration.getPduSender() );
 		discoConfiguration.setPduReceiver( configuration.getPduReceiver() );

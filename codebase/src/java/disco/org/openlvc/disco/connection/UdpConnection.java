@@ -55,6 +55,9 @@ public class UdpConnection implements IConnection
 
 	// cache of details to assist with sending
 	private SocketAddress targetAddress;
+	
+	// cache of configuration to assist with receive filtering
+	private short exerciseId;
 
 	// metrics
 	private Metrics metrics;
@@ -76,6 +79,9 @@ public class UdpConnection implements IConnection
 		this.opscenter = opscenter;
 		this.logger = opscenter.getLogger();
 		this.configuration = opscenter.getConfiguration().getUdpConfiguration();
+		
+		// receive-side cache values
+		this.exerciseId = opscenter.getConfiguration().getDisConfiguration().getExerciseId();
 	}
 	
 	@Override
@@ -232,10 +238,19 @@ public class UdpConnection implements IConnection
 			{
 				try
 				{
+					// receive the packet
 					byte[] buffer = new byte[DisSizes.PDU_MAX_SIZE];
 					DatagramPacket packet = new DatagramPacket( buffer, buffer.length );
 					socket.receive( packet );
 
+					// FILTER - throw away if outside our exercise
+					if( buffer[1] != exerciseId )
+					{
+						metrics.pduDiscarded();
+						continue;
+					}
+					
+					// hand it off to the receiver
 					if( logger.isTraceEnabled() )
 						logger.trace( "(Packet) size="+packet.getLength()+", source="+packet.getSocketAddress() );
 

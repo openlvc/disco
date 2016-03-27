@@ -43,6 +43,7 @@ public class Configuration
 	private int    disPort;         // port to listen on
 	private String disInterface;    // IP or nic to use or one of the symbols "LOOPBACK",
 	                                // "LINK_LOCAL", "SITE_LOCAL", "GLOBAL"
+	private short disExerciseId;
 	
 	// PDU Processing
 	private String pduSender;
@@ -67,9 +68,10 @@ public class Configuration
 		this.applicationLogger = null; // set on first access
 		
 		// DIS Settings
-		this.disAddress   = "BROADCAST";
-		this.disPort      = 3000;
-		this.disInterface = "SITE_LOCAL";
+		this.disAddress    = "BROADCAST";
+		this.disPort       = 3000;
+		this.disInterface  = "SITE_LOCAL";
+		this.disExerciseId = 1;
 		
 		// PDU Processing
 		this.pduSender = null;
@@ -108,6 +110,8 @@ public class Configuration
 				this.setDisPort( Integer.parseInt(args[++i]) );
 			else if( argument.equalsIgnoreCase("--dis-interface") )
 				this.setDisInterface( args[++i] );
+			else if( argument.equalsIgnoreCase("--dis-exercise-id") || argument.equalsIgnoreCase("--dis-exerciseId") )
+				this.setDisExerciseId(Short.parseShort(args[++i]) );
 			else if( argument.equalsIgnoreCase("--replay-realtime") )
 				this.setReplayRealtime( true );
 			else if( argument.equalsIgnoreCase("--replay-fast") )
@@ -197,6 +201,16 @@ public class Configuration
 		this.disInterface = disInterface;
 	}
 	
+	public void setDisExerciseId( short id )
+	{
+		this.disExerciseId = id;
+	}
+	
+	public short getDisExerciseId()
+	{
+		return this.disExerciseId;
+	}
+
 	public void setPduSender( String pduSender )
 	{
 		this.pduSender = pduSender;
@@ -253,6 +267,7 @@ public class Configuration
 		builder.append( "   --dis-address     (string)  Multicast address to use or BROADCAST (default)\n" );
 		builder.append( "   --dis-port        (int)     DIS port to listen/send on. Default: 3000\n" );
 		builder.append( "   --dis-interface   (string)  NIC to use. LOOPBACK, LINK_LOCAL, SITE_LOCAL*, GLOBAL\n" );
+		builder.append( "   --dis-exercise-id (short)   Exercise ID to send in outgoing and only recv on (default: 1)\n" );
 		builder.append( "   --replay-realtime           Replay as PDus happened. Delay PDUs if there was receive delay\n" );
 		builder.append( "   --replay-fast               Replay all stored PDUs as fast as possible\n" );
 		builder.append( "   --log-level       (string)  Set the log level: OFF, ERROR, WARN, INFO(default), DEBUG, TRACE\n" );

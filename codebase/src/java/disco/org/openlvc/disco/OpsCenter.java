@@ -42,6 +42,9 @@ public class OpsCenter
 
 	private IConnection connection;    // source and destiantion for PDUs - typically network
 
+	// Cached configuration settings for quick access
+	private short exerciseId;
+	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -54,6 +57,8 @@ public class OpsCenter
 		this.pduSender = null;
 		this.pduListener = null;
 		this.connection = null;
+		
+		this.exerciseId = 1;
 	}
 
 	public OpsCenter( DiscoConfiguration configuration )
@@ -73,6 +78,9 @@ public class OpsCenter
 	{
 		if( open )
 			return;
+		
+		// get cached values -- for SPEEEED
+		this.exerciseId = configuration.getDisConfiguration().getExerciseId();
 		
 		// activate logging - fetching the logger will cause the configuration to be lazy loaded
 		this.logger = configuration.getDiscoLogger();
@@ -136,6 +144,7 @@ public class OpsCenter
 	 */
 	public void send( PDU pdu ) throws DiscoException
 	{
+		pdu.setExerciseId( this.exerciseId );
 		this.pduSender.send( pdu );
 	}
 

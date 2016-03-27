@@ -116,6 +116,7 @@ public class Replay implements IPduListener
 		discoConfiguration.getUdpConfiguration().setAddress( configuration.getDisAddress() );
 		discoConfiguration.getUdpConfiguration().setPort( configuration.getDisPort() );
 		discoConfiguration.getUdpConfiguration().setNetworkInterface( configuration.getDisInterface() );
+		discoConfiguration.getDisConfiguration().setExerciseId( configuration.getDisExerciseId() );
 		
 		this.opscenter = new OpsCenter( discoConfiguration );
 		this.opscenter.setListener( this );

@@ -85,6 +85,16 @@ public abstract class PDU
 		this.header = header;
 	}
 	
+	public final short getExerciseId()
+	{
+		return header.getExerciseId();
+	}
+	
+	public final void setExerciseId( short exerciseId )
+	{
+		header.setExerciseId( exerciseId );
+	}
+	
 	public long getReceived()
 	{
 		return received;
