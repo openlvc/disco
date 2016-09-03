@@ -17,10 +17,14 @@
  */
 package org.openlvc.distributor.configuration;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.Log4jConfiguration;
+
 
 public class Configuration
 {
@@ -33,33 +37,11 @@ public class Configuration
 	
 	// Site Configuration
 	public static final String KEY_SITES           = "distributor.site";
-
 	
-	//
-	// Configuration Key Snippets
-	//
-	// Site-specific configurations will appear multiple times within the configuration.
-	// All keys will be prefixed with "distributor.[site]". A sample config might look
-	// as follows:
-	//
-	// distributor.sites = per, nyc, sgp
-	// distributor.per.dis.address = BROADCAST
-	// distributor.per.dis.port = 3000
-	// distributor.per...
-	//
-	// The keys below are the snippets that follow the prefix
-	//
-	private static final String KEY_SITE_DIS_ADDRESS    = "dis.address";
-	private static final String KEY_SITE_DIS_PORT       = "dis.port";
-	private static final String KEY_SITE_DIS_NIC        = "dis.nic";
-	private static final String KEY_SITE_UDP_SENDBUFFER = "udp.sendBuffer";
-	private static final String KEY_SITE_UDP_RECVBUFFER = "udp.recvBuffer";
-
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Properties properties;
-	private Logger applicationLogger;
+	private Map<String,SiteConfiguration> sites;
 	private Log4jConfiguration loggingConfiguration;	
 	private String configFile = "etc/distributor.config";
 
@@ -68,14 +50,9 @@ public class Configuration
 	//----------------------------------------------------------
 	public Configuration( String[] args )
 	{
-		//
-		// default configuration
-		//
-		// place we store all the base properties
-		this.properties = new Properties();
+		this.sites = new HashMap<>();
 
 		// logging configuration
-		this.applicationLogger = null; // set on first access
 		this.loggingConfiguration = new Log4jConfiguration( "distributor" );
 		this.loggingConfiguration.setConsoleOn( true );
 		this.loggingConfiguration.setFileOn( false );
@@ -96,6 +73,155 @@ public class Configuration
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public Log4jConfiguration getLogConfiguration()
+	{
+		return this.loggingConfiguration;
+	}
+
+	public void setLogLevel( String loglevel )
+	{
+		this.loggingConfiguration.setLevel( loglevel );
+	}
+
+	public void setLogFile( String logfile )
+	{
+		this.loggingConfiguration.setFile( logfile );
+		this.loggingConfiguration.setFileOn( true );
+	}
+	
+	public Map<String,SiteConfiguration> getSites()
+	{
+		return this.sites;
+	}
+	
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Command Line Argument Methods   ////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/** If --config-file is in the args, load it into the local var for processing. We do
+	    this separately so we can load the config file before the command line args, which
+	    we do later so that they override all other values */
+	private void checkArgsForConfigFile( String[] args )
+	{
+		for( int i = 0; i < args.length; i++ )
+		{
+			if( args[i].equalsIgnoreCase("--config-file") )
+			{
+				this.configFile = args[++i];
+				return;
+			}
+		}
+	}
+
+	/**
+	 * Apply the given command line args to override any defaults that we have
+	 */
+	private void applyCommandLine( String[] args ) throws DiscoException
+	{
+		for( int i = 0; i < args.length; i++ )
+		{
+			String argument = args[i];
+			if( argument.equalsIgnoreCase("--config-file") )
+				this.configFile = args[++i];
+			else if( argument.equalsIgnoreCase("--log-level") )
+				this.loggingConfiguration.setLevel( args[++i] );
+			else
+				throw new DiscoException( "Unknown argument: "+argument );
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Configuration File Loading   ///////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	private void loadConfigFile()
+	{
+		//
+		// Load the configuration file into a Properties object
+		//
+		Properties properties = new Properties();
+		File configurationFile = new File( this.configFile );
+		if( configurationFile.exists() )
+		{
+    		// configuration file exists, load the properties into it
+    		try
+    		{
+    			properties.load( configurationFile.toURI().toURL().openStream() );
+    		}
+    		catch( Exception e )
+    		{
+    			throw new RuntimeException( "Problem parsing config file: "+e.getMessage(), e );
+    		}
+		}
+		
+		//
+		// pull the logging configuration out of the properties
+		//
+		if( properties.containsKey(KEY_LOG_FILE) )
+		{
+			this.loggingConfiguration.setFile(properties.getProperty(KEY_LOG_FILE));
+			this.loggingConfiguration.setFileOn( true );
+		}
+
+		if( properties.containsKey(KEY_LOG_LEVEL) )
+			this.loggingConfiguration.setLevel( properties.getProperty(KEY_LOG_LEVEL) );
+		
+		//
+		// Site Configuration
+		//
+		if( properties.containsKey(KEY_SITES) )
+		{
+			String siteString = properties.getProperty( KEY_SITES );
+			String[] siteNames = siteString.split( "," );
+			for( String siteName : siteNames )
+			{
+				siteName = siteName.trim();
+				SiteConfiguration siteConfiguration = new SiteConfiguration( siteName, properties );
+				this.sites.put( siteName, siteConfiguration );
+			}
+		}
+	}
+
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append( " Distributor - Bridging and filtering between DIS networks" );
+		builder.append( "\n Version 0.0" ); // FIXME
+		builder.append( "\n" );
+
+		builder.append( "\n    config file: "+configFile );
+		builder.append( "\n       log file: "+loggingConfiguration.getFile() );
+		builder.append( "\n      log level: "+loggingConfiguration.getLevel() );
+		builder.append( "\n" );
+		builder.append( "\n ======== Site Configuration ========" );
+		builder.append( "\n  "+sites.size()+" sites configured: "+sites.keySet() );
+		builder.append( "\n" );
+		for( SiteConfiguration config : sites.values() )
+		{
+			builder.append( "\n ----------------------------" );
+			builder.append( "\n Site Name: "+config.getName() );
+			builder.append( "\n                 Mode: "+config.getMode() );
+			if( config.getMode() == SiteConfiguration.Mode.DIS )
+			{
+				builder.append( "\n     DIS Adddress: "+config.getDisAddress() );
+				builder.append( "\n         DIS Port: "+config.getDisPort() );
+				builder.append( "\n          DIS NIC: "+config.getDisNic() );
+			}
+			else
+			{
+				builder.append( "\n         WAN Adddress: "+config.getWanAddress() );
+				builder.append( "\n             WAN Port: "+config.getWanPort() );
+				//builder.append( "\n              WAN NIC: "+config.getWanNic() );
+				builder.append( "\n         WAN Bundling: "+config.isWanBundling() );
+				builder.append( "\n  WAN Bundle Max Size: "+config.getWanBundlingSizeBytes() );
+				builder.append( "\n  WAN Bundle Max Time: "+config.getWanBundlingTime() );
+				
+			}
+			builder.append( "\n" );
+		}
+		
+		return builder.toString();
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

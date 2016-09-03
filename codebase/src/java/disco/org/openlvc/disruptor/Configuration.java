@@ -51,6 +51,7 @@ public class Configuration
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private Properties properties;
+
 	private Logger applicationLogger;
 	private Log4jConfiguration loggingConfiguration;
 	

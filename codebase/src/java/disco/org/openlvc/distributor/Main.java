@@ -17,6 +17,8 @@
  */
 package org.openlvc.distributor;
 
+import org.openlvc.distributor.configuration.Configuration;
+
 public class Main
 {
 	//----------------------------------------------------------
@@ -34,12 +36,33 @@ public class Main
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	private void run( String[] args ) throws Exception
+	{
+		// Load configuration
+		Configuration configuration = new Configuration( args );
+		System.out.println( configuration.toString() );
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+		// Run the load master
+//		Distributor distributor = new Distributor( configuration );
+//		distributor.execute();
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static void main( String[] args ) throws Exception
+	{
+		for( String string : args )
+		{
+			if( string.equalsIgnoreCase("--help") )
+			{
+				Configuration.printHelp();
+				return;
+			}
+		}
+		
+		new Main().run( args );
+	}
+
+
 }

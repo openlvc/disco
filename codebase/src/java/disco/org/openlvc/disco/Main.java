@@ -76,6 +76,12 @@ public class Main
 			org.openlvc.disruptor.Main.main( Arrays.copyOfRange(args,1,args.length) );
 			return;
 		}
+		
+		if( args.length > 0 && args[0].equalsIgnoreCase("--app:distributor") )
+		{
+			org.openlvc.distributor.Main.main( Arrays.copyOfRange(args,1,args.length) );
+			return;
+		}
 
 		// print out some information about us
 		new Main().run();
