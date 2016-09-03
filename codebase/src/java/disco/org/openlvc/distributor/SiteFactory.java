@@ -17,9 +17,11 @@
  */
 package org.openlvc.distributor;
 
-import org.openlvc.distributor.configuration.Configuration;
+import org.openlvc.distributor.configuration.SiteConfiguration;
+import org.openlvc.distributor.dis.DisSite;
+import org.openlvc.distributor.wan.WanSite;
 
-public class Main
+public class SiteFactory
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -36,28 +38,20 @@ public class Main
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run( String[] args ) throws Exception
-	{
-		Configuration configuration = new Configuration( args );
-		Distributor distributor = new Distributor( configuration );
-		distributor.up();
-		distributor.down();
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
+	public static ISite createSite( SiteConfiguration siteConfiguration )
 	{
-		for( String string : args )
+		switch( siteConfiguration.getMode() )
 		{
-			if( string.equalsIgnoreCase("--help") )
-			{
-				Configuration.printHelp();
-				return;
-			}
+			case DIS:
+				return new DisSite( siteConfiguration );
+			case WAN:
+				return new WanSite( siteConfiguration );
+			default:
+				throw new IllegalArgumentException( "Unknown mode: "+siteConfiguration.getMode() );
 		}
-		
-		new Main().run( args );
 	}
 }

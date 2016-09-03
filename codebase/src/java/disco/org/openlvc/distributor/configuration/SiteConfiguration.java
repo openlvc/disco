@@ -20,15 +20,10 @@ package org.openlvc.distributor.configuration;
 import java.util.Properties;
 
 import org.openlvc.disco.utils.StringUtils;
+import org.openlvc.distributor.Mode;
 
 public class SiteConfiguration
 {
-	//----------------------------------------------------------
-	//                     ENUMERATIONS
-	//----------------------------------------------------------
-	// What is the mode of a site connection?
-	public enum Mode { DIS, WAN };
-
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------

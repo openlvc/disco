@@ -17,47 +17,33 @@
  */
 package org.openlvc.distributor;
 
-import org.openlvc.distributor.configuration.Configuration;
+import org.openlvc.distributor.configuration.SiteConfiguration;
 
-public class Main
+/**
+ * Represents a connection to a particular site/network.
+ * 
+ * Sites are purely logical constructors. Just a name used to tag a configuration set.
+ * Sites represent a conncetion that the Distributor will attempt to bring online. It will
+ * take input from the site and reflect it back out to all others, subject to any defined
+ * filtering rules.
+ */
+public interface ISite
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 
 	//----------------------------------------------------------
-	//                   INSTANCE VARIABLES
-	//----------------------------------------------------------
-
-	//----------------------------------------------------------
-	//                      CONSTRUCTORS
-	//----------------------------------------------------------
-
-	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run( String[] args ) throws Exception
-	{
-		Configuration configuration = new Configuration( args );
-		Distributor distributor = new Distributor( configuration );
-		distributor.up();
-		distributor.down();
-	}
+	// Properties
+	public String getName();
+	public SiteConfiguration getConfiguration();
+	public String getLinkStatus();
+	public boolean isLinkUp();
 
-	//----------------------------------------------------------
-	//                     STATIC METHODS
-	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
-	{
-		for( String string : args )
-		{
-			if( string.equalsIgnoreCase("--help") )
-			{
-				Configuration.printHelp();
-				return;
-			}
-		}
-		
-		new Main().run( args );
-	}
+	// Lifecycle
+	public void up();      // bring the connection online
+	public void down();    // close the connection
+
 }

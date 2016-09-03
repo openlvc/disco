@@ -17,9 +17,11 @@
  */
 package org.openlvc.distributor;
 
-import org.openlvc.distributor.configuration.Configuration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openlvc.distributor.configuration.SiteConfiguration;
 
-public class Main
+public abstract class SiteBase
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -28,36 +30,54 @@ public class Main
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	protected SiteConfiguration siteConfiguration;
+	protected Logger logger;
+	protected boolean linkUp;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public SiteBase( SiteConfiguration siteConfiguration )
+	{
+		this.siteConfiguration = siteConfiguration;
+		this.logger = LogManager.getFormatterLogger( "distributor."+siteConfiguration.getName() );
+		this.linkUp = false;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run( String[] args ) throws Exception
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public abstract void up();
+	public abstract void down();
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public String getName()
 	{
-		Configuration configuration = new Configuration( args );
-		Distributor distributor = new Distributor( configuration );
-		distributor.up();
-		distributor.down();
+		return siteConfiguration.getName();
+	}
+	
+	public SiteConfiguration getConfiguration()
+	{
+		return this.siteConfiguration;
+	}
+	
+	public boolean isLinkUp()
+	{
+		return this.linkUp;
+	}
+	
+	public String getLinkStatus()
+	{
+		return this.linkUp ? "up" : "down";
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
-	{
-		for( String string : args )
-		{
-			if( string.equalsIgnoreCase("--help") )
-			{
-				Configuration.printHelp();
-				return;
-			}
-		}
-		
-		new Main().run( args );
-	}
 }

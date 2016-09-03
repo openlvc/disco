@@ -15,11 +15,13 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.distributor;
+package org.openlvc.distributor.dis;
 
-import org.openlvc.distributor.configuration.Configuration;
+import org.openlvc.distributor.ISite;
+import org.openlvc.distributor.SiteBase;
+import org.openlvc.distributor.configuration.SiteConfiguration;
 
-public class Main
+public class DisSite extends SiteBase implements ISite
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -32,32 +34,35 @@ public class Main
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public DisSite( SiteConfiguration siteConfiguration )
+	{
+		super( siteConfiguration );
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run( String[] args ) throws Exception
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void up()
 	{
-		Configuration configuration = new Configuration( args );
-		Distributor distributor = new Distributor( configuration );
-		distributor.up();
-		distributor.down();
+		logger.debug( "Up" );
+		super.linkUp = true;
 	}
+	
+	public void down()
+	{
+		logger.debug( "Down" );
+		super.linkUp = false;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
-	{
-		for( String string : args )
-		{
-			if( string.equalsIgnoreCase("--help") )
-			{
-				Configuration.printHelp();
-				return;
-			}
-		}
-		
-		new Main().run( args );
-	}
 }

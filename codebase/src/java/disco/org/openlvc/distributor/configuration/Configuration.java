@@ -22,8 +22,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.Log4jConfiguration;
+import org.openlvc.distributor.Mode;
 
 
 public class Configuration
@@ -42,7 +45,8 @@ public class Configuration
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private Map<String,SiteConfiguration> sites;
-	private Log4jConfiguration loggingConfiguration;	
+	private Log4jConfiguration loggingConfiguration;
+	private Logger applicationLogger;
 	private String configFile = "etc/distributor.config";
 
 	//----------------------------------------------------------
@@ -57,6 +61,7 @@ public class Configuration
 		this.loggingConfiguration.setConsoleOn( true );
 		this.loggingConfiguration.setFileOn( false );
 		this.loggingConfiguration.setLevel( "INFO" );
+		this.applicationLogger = null; // lazy loaded via getApplicationLogger()
 
 		// see if the user specified a config file on the command line before we process it
 		this.checkArgsForConfigFile( args );
@@ -93,7 +98,21 @@ public class Configuration
 	{
 		return this.sites;
 	}
-	
+
+	/**
+	 * Fetch the application logger. If it hasn't been create yet, activate the
+	 * stored configuration, generate the logger and return it.
+	 */
+	public Logger getApplicationLogger()
+	{
+		if( this.applicationLogger != null )
+			return applicationLogger;
+
+		// activate the configuration and return the logger
+		this.loggingConfiguration.activateConfiguration();
+		this.applicationLogger = LogManager.getFormatterLogger( "distributor" );
+		return applicationLogger;
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Command Line Argument Methods   ////////////////////////////////////////////////////////
@@ -201,7 +220,7 @@ public class Configuration
 			builder.append( "\n ----------------------------" );
 			builder.append( "\n Site Name: "+config.getName() );
 			builder.append( "\n                 Mode: "+config.getMode() );
-			if( config.getMode() == SiteConfiguration.Mode.DIS )
+			if( config.getMode() == Mode.DIS )
 			{
 				builder.append( "\n     DIS Adddress: "+config.getDisAddress() );
 				builder.append( "\n         DIS Port: "+config.getDisPort() );
