@@ -46,5 +46,8 @@ public interface ILink
 	// Lifecycle
 	public void up();      // bring the connection online
 	public void down();    // close the connection
+	
+	/** Get some short (one-line) status summary information */
+	public String getStatusSummary();
 
 }

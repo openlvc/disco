@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.connection;
 
+import org.openlvc.disco.utils.StringUtils;
+
 /**
  * Generic object for recording baseline metrics in.
  */
@@ -101,6 +103,21 @@ public class Metrics
 	public long getBytesReceived()
 	{
 		return bytesReceived;
+	}
+
+	/**
+	 * Returns metrics summary in the form:
+	 * <code>{ pduSent=123 (10.44KB), pduRecv=123 (10.44KB), pduDiscard=0 }</code>
+	 */
+	public String getSummaryString()
+	{
+		return
+		String.format( "{ pduSent=%d (%s), pduRecv=%d (%s), pduDiscard=%d } ",
+		               pdusSent,
+		               StringUtils.humanReadableSize(bytesSent),
+		               pdusReceived,
+		               StringUtils.humanReadableSize(bytesReceived),
+		               pdusDiscarded );
 	}
 
 	//----------------------------------------------------------

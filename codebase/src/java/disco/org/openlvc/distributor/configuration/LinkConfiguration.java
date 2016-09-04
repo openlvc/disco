@@ -18,7 +18,9 @@
 package org.openlvc.distributor.configuration;
 
 import java.util.Properties;
+import java.util.Random;
 
+import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.utils.StringUtils;
 import org.openlvc.distributor.Mode;
 
@@ -49,6 +51,12 @@ public class LinkConfiguration
 	public static final String LINK_DIS_ADDRESS         = "dis.address";
 	public static final String LINK_DIS_PORT            = "dis.port";
 	public static final String LINK_DIS_NIC             = "dis.nic";
+	public static final String LINK_DIS_EXID            = "dis.exerciseId";
+	public static final String LINK_DIS_SITE_ID         = "dis.siteId";
+	public static final String LINK_DIS_APP_ID          = "dis.appId";
+	public static final String LINK_DIS_LOG_LEVEL       = "dis.loglevel";
+	public static final String LINK_DIS_LOG_FILE        = "dis.logfile";
+	public static final String LINK_DIS_LOG_TO_FILE     = "dis.logtofile";
 	
 	public static final String LINK_WAN_ADDRESS         = "wan.address";
 	public static final String LINK_WAN_PORT            = "wan.port";
@@ -101,12 +109,26 @@ public class LinkConfiguration
 			String value = properties.getProperty( key );
 			if( key.equalsIgnoreCase(prefix+LINK_MODE) )
 				this.setMode( value );
+			// DIS Settings
 			else if( key.equalsIgnoreCase(prefix+LINK_DIS_ADDRESS) )
 				this.setDisAddress( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_DIS_PORT) )
 				this.setDisPort( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_DIS_NIC) )
 				this.setDisNic( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_DIS_EXID) )
+				this.setDisExerciseId( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_DIS_SITE_ID) )
+				this.setDisSiteId( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_DIS_APP_ID) )
+				this.setDisAppId( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_DIS_LOG_LEVEL) )
+				this.setDisLogLevel( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_DIS_LOG_FILE) )
+				this.setDisLogFile( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_DIS_LOG_TO_FILE) )
+				this.setDisLogToFile( value );
+			// WAN Settings
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_ADDRESS) )
 				this.setWanAddress( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_PORT) )
@@ -147,9 +169,14 @@ public class LinkConfiguration
 		set( LINK_MODE, mode );
 	}
 	
-	/////////////////////////////////////////////
-	// DIS Properties  //////////////////////////
-	/////////////////////////////////////////////
+	private void setMode( String value )
+	{
+		setMode( Mode.valueOfIgnoreCase(value) );
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// DIS Properties   ////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 	public String getDisAddress()
 	{
 		return getAsString( LINK_DIS_ADDRESS, "BROADCAST" );
@@ -160,15 +187,11 @@ public class LinkConfiguration
 		set( LINK_DIS_ADDRESS, address );
 	}
 	
-	//public InetAddress getResolvedDisAddress()
-	//{
-	//}
-	
 	public int getDisPort()
 	{
 		return getAsInt( LINK_DIS_PORT, 3000 );
 	}
-	
+
 	public void setDisPort( int port )
 	{
 		if( port > 65536 )
@@ -179,6 +202,11 @@ public class LinkConfiguration
 		set( LINK_DIS_PORT, port );
 	}
 	
+	private void setDisPort( String value )
+	{
+		setDisPort( Integer.parseInt(value)  );
+	}
+
 	public String getDisNic()
 	{
 		return getAsString( LINK_DIS_NIC, "SITE_LOCAL" );
@@ -189,35 +217,152 @@ public class LinkConfiguration
 		set( LINK_DIS_NIC, nic );
 	}
 	
-	//public NetworkInterface getResolvedDisNic()
-	//{
-	//}
-
-	//
-	// Properties parsing specific methods
-	//
-	private void setMode( String value )
+	public short getDisExerciseId()
 	{
-		for( Mode mode : Mode.values() )
-		{
-			if( mode.toString().equalsIgnoreCase(value) )
-			{
-				setMode( mode );
-				return;
-			}
-		}
+		return (short)getAsInt( LINK_DIS_EXID, 1 );
+	}
+
+	public void setDisExerciseId( int id )
+	{
+		if( id > 255 )
+			throw new IllegalArgumentException( "Site ID cannot be greater than 255" );
+		set( LINK_DIS_EXID, id );
+	}
+
+	/**
+	 * Accepts an integer or the special string `<any>`
+	 */
+	public void setDisExerciseId( String id )
+	{
+		if( id.trim().equalsIgnoreCase("<any>") )
+			setDisExerciseId( -1 );
+		else
+			setDisExerciseId( Integer.parseInt(id) );
+	}
+
+	/**
+	 * Get the site ID for this link. If it is not configured, a random one is assigned.
+	 */
+	public int getDisSiteId()
+	{
+		// if we don't have it, set it to a random one
+		if( properties.containsKey(LINK_DIS_SITE_ID) == false )
+			setDisSiteId( "<random>" );
 		
-		throw new IllegalArgumentException( "Invalid Link Mode: "+value );
+		return getAsInt( LINK_DIS_SITE_ID );
 	}
 	
-	private void setDisPort( String value )
+	public void setDisSiteId( int id )
 	{
-		setDisPort( Integer.parseInt(value)  );
+		if( id > EntityId.MAX_SITE_ID )
+			throw new IllegalArgumentException( "Site ID cannot be greater than: "+EntityId.MAX_SITE_ID );
+
+		set( LINK_DIS_SITE_ID, id );
+	}
+	
+	/**
+	 * Accepts an integer or the special string `<random>`
+	 */
+	public void setDisSiteId( String id )
+	{
+		if( id.trim().equalsIgnoreCase("<random>") )
+			setDisSiteId( new Random().nextInt(EntityId.MAX_SITE_ID) );
+		else
+			setDisSiteId( Integer.parseInt(id) );
+	}
+	
+	/**
+	 * Get the App ID for this link. If it is not configured, a random one is assigned.
+	 */
+	public int getDisAppId()
+	{
+		// if we don't have it, set it to a random one
+		if( properties.containsKey(LINK_DIS_APP_ID) == false )
+			setDisSiteId( "<random>" );
+		
+		return getAsInt( LINK_DIS_APP_ID );
+	}
+	
+	public void setDisAppId( int id )
+	{
+		if( id > EntityId.MAX_APP_ID )
+			throw new IllegalArgumentException( "Site ID cannot be greater than: "+EntityId.MAX_APP_ID );
+
+		set( LINK_DIS_APP_ID, id );
+	}
+	
+	/**
+	 * Accepts an integer or the special string `<random>`
+	 */
+	public void setDisAppId( String id )
+	{
+		if( id.trim().equalsIgnoreCase("<random>") )
+			setDisAppId( new Random().nextInt(EntityId.MAX_APP_ID) );
+		else
+			setDisAppId( Integer.parseInt(id) );
 	}
 
-	/////////////////////////////////////////////
-	// WAN Properties  //////////////////////////
-	/////////////////////////////////////////////
+	/**
+	 * The log level to use for the underlying DIS library
+	 */
+	public String getDisLogLevel()
+	{
+		return getAsString( LINK_DIS_LOG_LEVEL, "ERROR" );
+	}
+
+	public void setDisLogLevel( String level )
+	{
+		set( LINK_DIS_LOG_LEVEL, level );
+	}
+	
+	/**
+	 * The log file to use for the underlying DIS library
+	 */
+	public String getDisLogFile()
+	{
+		return getAsString( LINK_DIS_LOG_FILE, "logs/distributor."+name+".log" );
+	}
+
+	/**
+	 * Set the path to the log file to use for the underlying DIS library. If it contains
+	 * the string &lt;name&gt;, that will be replaced with the name of this link.
+	 * @param path
+	 */
+	public void setDisLogFile( String path )
+	{
+		// replace the <name> token with this link name if it is present
+		path = path.replace( "<name>", name );
+		set( LINK_DIS_LOG_FILE, path );
+	}
+
+	/**
+	 * Should file logging for this connection be turned on or off
+	 */
+	public boolean getDisLogToFile()
+	{
+		return getAsBoolean( LINK_DIS_LOG_TO_FILE, false );
+	}
+	
+	public void setDisLogToFile( boolean logToFile )
+	{
+		set( LINK_DIS_LOG_TO_FILE, logToFile );
+	}
+	
+	public void setDisLogToFile( String value )
+	{
+		value = value.trim();
+		if( value.equalsIgnoreCase("true")   ||
+			value.equalsIgnoreCase("on")     ||
+			value.equalsIgnoreCase("yes")    ||
+			value.equalsIgnoreCase("enabled") )
+			setDisLogToFile( true );
+		else
+			setDisLogToFile( false );
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// WAN Properties   ////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 	public String getWanAddress()
 	{
 		return getAsString( LINK_WAN_ADDRESS );

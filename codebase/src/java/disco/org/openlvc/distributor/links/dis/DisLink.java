@@ -17,6 +17,8 @@
  */
 package org.openlvc.distributor.links.dis;
 
+import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.distributor.ILink;
 import org.openlvc.distributor.LinkBase;
 import org.openlvc.distributor.configuration.LinkConfiguration;
@@ -30,13 +32,17 @@ public class DisLink extends LinkBase implements ILink
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private OpsCenter opsCenter;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public DisLink( LinkConfiguration siteConfiguration )
+	public DisLink( LinkConfiguration linkConfiguration )
 	{
-		super( siteConfiguration );
+		super( linkConfiguration );
+		
+		// Loaded when link is brought up
+		this.opsCenter = null;
 	}
 
 	//----------------------------------------------------------
@@ -48,19 +54,70 @@ public class DisLink extends LinkBase implements ILink
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void up()
 	{
-		logger.debug( "Up" );
+		if( isUp() )
+			return;
+
+		logger.debug( "Bringing up link: "+super.getName() );
+		logger.debug( "Link Mode: DIS" );
+		
+		// Create the Disco configuration from our link configuration
+		this.opsCenter = new OpsCenter( turnIntoDiscoConfiguration(linkConfiguration) );
+		this.opsCenter.setListener( new PduListener() );
+		this.opsCenter.open();
+
+		logger.debug( "Link is up" );
 		super.linkUp = true;
 	}
 	
 	public void down()
 	{
-		logger.debug( "Down" );
+		if( isDown() )
+			return;
+
+		logger.debug( "Taking down link: "+super.getName() );
+		
+		this.opsCenter.close();
+		logger.debug( "Link is down" );
+
 		super.linkUp = false;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public String getStatusSummary()
+	{
+		// if link has never been up, return configuration information
+		if( opsCenter == null )
+		{
+			return String.format( "{ DIS, address:%s, port:%d, nic:%s }",
+			                      linkConfiguration.getDisAddress(),
+			                      linkConfiguration.getDisPort(),
+			                      linkConfiguration.getDisNic() );
+		}
+		else
+		{
+			return opsCenter.getMetrics().getSummaryString();
+		}
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	private DiscoConfiguration turnIntoDiscoConfiguration( LinkConfiguration link )
+	{
+		DiscoConfiguration disco = new DiscoConfiguration();
+		disco.getUdpConfiguration().setAddress( link.getDisAddress() );
+		disco.getUdpConfiguration().setPort( link.getDisPort() );
+		disco.getUdpConfiguration().setNetworkInterface( link.getDisNic() );
+
+		disco.getDisConfiguration().setExerciseId( link.getDisExerciseId() );
+		
+		disco.getLoggingConfiguration().setLevel( link.getDisLogLevel() );
+		disco.getLoggingConfiguration().setFile( link.getDisLogFile() );
+		disco.getLoggingConfiguration().setFileOn( link.getDisLogToFile() );
+		return disco;
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

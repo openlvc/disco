@@ -28,4 +28,13 @@ public enum Mode
 {
 	DIS,
 	WAN;
+	
+	public static Mode valueOfIgnoreCase( String string )
+	{
+		for( Mode mode : Mode.values() )
+			if( mode.name().equalsIgnoreCase(string) )
+				return mode;
+		
+		throw new IllegalArgumentException( "Unknown Mode: "+string );
+	}
 }

@@ -60,10 +60,20 @@ public class Distributor
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Bring all links in the Distributor up. Any links that are up already are skipped. If
+	 * all links are already up, this is a no-op.
+	 */
 	public void up()
 	{
+		// do we even have anything to bring up?
+		if( areAnyLinksDown() == false )
+			return;
+
+		// print some welcome information
 		printWelcome();
 		
+		// bring the links up
 		//long downCount = links.values().stream().filter( link -> !link.isLinkUp() ).count();
 		//logger.info( "Brining "+downCount+" links up:" );
 		logger.info( "" );
@@ -76,7 +86,7 @@ public class Distributor
 				if( link.isUp() == false )
 					link.up();
 				
-				logger.info( getLinkSummary(link) );
+				logger.info( getLinkConfigSummary(link) );
 			}
 			catch( Exception e )
 			{
@@ -86,9 +96,17 @@ public class Distributor
 		}
 		
 	}
-	
+
+	/**
+	 * Bring all links in the Distributor down. Any links that are down already are skipped. If
+	 * all links are already down, this is a no-op.
+	 */
 	public void down()
 	{
+		// do we even have anything to bring up?
+		if( areAnyLinksUp() == false )
+			return;
+
 		//long upCount = links.values().stream().filter( link -> link.isLinkUp() ).count();
 		//logger.info( "Brining "+upCount+" links down:" );
 		logger.info( "" );
@@ -100,7 +118,8 @@ public class Distributor
 			{
 				if( link.isUp() )
 					link.down();
-				logger.info( getLinkSummary(link) );
+
+				logger.info( getLinkStatusSummary(link) );
 			}
 			catch( Exception e )
 			{
@@ -109,6 +128,18 @@ public class Distributor
 			}
 		}
 		
+	}
+
+	/** @return true if any contained links are up */
+	public boolean areAnyLinksUp()
+	{
+		return links.values().stream().anyMatch( link -> link.isUp() );
+	}
+	
+	/** @return true if any contained links are down */
+	public boolean areAnyLinksDown()
+	{
+		return links.values().stream().anyMatch( link -> link.isDown() );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,11 +160,11 @@ public class Distributor
 
 		logger.info( links.size()+" links configured: "+links.keySet() );
 		for( ILink link : links.values() )
-			logger.info( getLinkSummary(link) );
+			logger.info( getLinkConfigSummary(link) );
 
 	}
 
-	private String getLinkSummary( ILink link )
+	private String getLinkConfigSummary( ILink link )
 	{
 		LinkConfiguration linkConfig = link.getConfiguration();
 		String linkName = linkConfig.getName();
@@ -154,6 +185,14 @@ public class Distributor
 			                      linkConfig.getWanAddress(),
 			                      linkConfig.getWanPort() );
 		}
+	}
+	
+	private String getLinkStatusSummary( ILink link )
+	{
+		return String.format( "  %-8s [%4s] %s",
+		                      link.getName(),
+		                      link.getLinkStatus(),
+		                      link.getStatusSummary() );
 	}
 
 	//----------------------------------------------------------

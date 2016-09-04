@@ -28,19 +28,35 @@ public class Main
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private Configuration configuration;
+	private Distributor distributor;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private Main()
+	{
+		this.configuration = null;
+		this.distributor = null;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 	private void run( String[] args ) throws Exception
 	{
-		Configuration configuration = new Configuration( args );
-		Distributor distributor = new Distributor( configuration );
+		// register the shutdown hook so we can gracefully exit
+		Runtime.getRuntime().addShutdownHook( new ShutdownHook() );
+
+		// parse teh configuration and command line args
+		configuration = new Configuration( args );
+		
+		// construct and start a new distributor
+		distributor = new Distributor( configuration );
 		distributor.up();
+		
+		// tear down
+		try{ Thread.sleep(10000); } catch(Exception e) {e.printStackTrace();}
 		distributor.down();
 	}
 
@@ -60,4 +76,20 @@ public class Main
 		
 		new Main().run( args );
 	}
+	
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Shutdown Hook   ///////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+	public class ShutdownHook extends Thread
+	{
+		@Override
+		public void run()
+		{
+			if( distributor == null )
+				return;
+			else
+				distributor.down();
+		}
+	}
+
 }
