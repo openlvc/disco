@@ -17,13 +17,17 @@
  */
 package org.openlvc.distributor.links.dis;
 
+import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.pdu.PDU;
+import org.openlvc.distributor.Reflector;
 import org.openlvc.distributor.ILink;
 import org.openlvc.distributor.LinkBase;
+import org.openlvc.distributor.Message;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 
-public class DisLink extends LinkBase implements ILink
+public class DisLink extends LinkBase implements ILink, IPduListener
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -33,6 +37,7 @@ public class DisLink extends LinkBase implements ILink
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private OpsCenter opsCenter;
+	private Reflector reflector;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -43,6 +48,7 @@ public class DisLink extends LinkBase implements ILink
 		
 		// Loaded when link is brought up
 		this.opsCenter = null;
+		this.reflector = null;
 	}
 
 	//----------------------------------------------------------
@@ -57,12 +63,15 @@ public class DisLink extends LinkBase implements ILink
 		if( isUp() )
 			return;
 
+		if( this.reflector == null )
+			throw new RuntimeException( "Nobody has told us where the reflector is yet" );
+		
 		logger.debug( "Bringing up link: "+super.getName() );
 		logger.debug( "Link Mode: DIS" );
 		
 		// Create the Disco configuration from our link configuration
 		this.opsCenter = new OpsCenter( turnIntoDiscoConfiguration(linkConfiguration) );
-		this.opsCenter.setListener( new PduListener() );
+		this.opsCenter.setListener( this );
 		this.opsCenter.open();
 
 		logger.debug( "Link is up" );
@@ -80,6 +89,42 @@ public class DisLink extends LinkBase implements ILink
 		logger.debug( "Link is down" );
 
 		super.linkUp = false;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// PDU Reception Methods   ////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void receiver( PDU pdu )
+	{
+		try
+		{
+			reflector.reflect( new Message(this,pdu) );
+		}
+		catch( InterruptedException ie )
+		{
+			logger.warn( "PDU dropped, interrupted while offering to reflector: "+ie.getMessage() );
+		}
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Message Processing Methods   ///////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void reflect( Message message )
+	{
+		try
+		{
+			this.opsCenter.sendRaw( message.getPdu() );
+		}
+		catch( Exception e )
+		{
+			logger.error( "Problem sending PDU, dropped. Reason: "+e.getMessage() );
+			logger.trace( e.getMessage(), e );
+		}
+	}
+
+	public void setReflector( Reflector reflector )
+	{
+		this.reflector = reflector;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

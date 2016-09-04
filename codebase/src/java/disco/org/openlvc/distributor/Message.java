@@ -17,41 +17,49 @@
  */
 package org.openlvc.distributor;
 
-import org.openlvc.distributor.configuration.LinkConfiguration;
+import org.openlvc.disco.pdu.PDU;
 
 /**
- * Represents a links to a particular site/network.
+ * Wrapper for a PDU that is to be sent through the bridge.
  * 
- * Links are purely logical constructors. Just a name used to tag a configuration set.
- * Links represent a conncetion that the Distributor will attempt to bring online. It will
- * take input from the link and reflect it back out to all others, subject to any defined
- * filtering rules.
+ * We include source information so that we don't reflect a PDU back to the place from
+ * whence it came.
  */
-public interface ILink
+public class Message
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 
 	//----------------------------------------------------------
+	//                   INSTANCE VARIABLES
+	//----------------------------------------------------------
+	private ILink source;
+	private PDU pdu;
+
+	//----------------------------------------------------------
+	//                      CONSTRUCTORS
+	//----------------------------------------------------------
+	public Message( ILink source, PDU pdu )
+	{
+		this.source = source;
+		this.pdu = pdu;
+	}
+
+	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	// Properties
-	public String getName();
-	public LinkConfiguration getConfiguration();
-	public String getLinkStatus();
-	public boolean isUp();
-	public boolean isDown();
-
-	// Lifecycle
-	public void up();      // bring the connection online
-	public void down();    // close the connection
+	public ILink getSouce()
+	{
+		return this.source;
+	}
 	
-	// Message Passing
-	public void setReflector( Reflector reflector );
-	public void reflect( Message message );
-	
-	/** Get some short (one-line) status summary information */
-	public String getStatusSummary();
+	public PDU getPdu()
+	{
+		return this.pdu;
+	}
 
+	//----------------------------------------------------------
+	//                     STATIC METHODS
+	//----------------------------------------------------------
 }

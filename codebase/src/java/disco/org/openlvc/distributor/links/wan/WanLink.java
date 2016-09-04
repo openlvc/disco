@@ -19,6 +19,8 @@ package org.openlvc.distributor.links.wan;
 
 import org.openlvc.distributor.ILink;
 import org.openlvc.distributor.LinkBase;
+import org.openlvc.distributor.Message;
+import org.openlvc.distributor.Reflector;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 
 public class WanLink extends LinkBase implements ILink
@@ -62,6 +64,19 @@ public class WanLink extends LinkBase implements ILink
 	public String getStatusSummary()
 	{
 		return "{ Not Implemented }";
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Message Processing Methods   ///////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void reflect( Message message )
+	{
+		
+	}
+	
+	public void setReflector( Reflector reflector )
+	{
+		
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

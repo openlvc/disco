@@ -42,7 +42,7 @@ public enum CryptoSystem
 	NSVE        ( 3 ),
 	WSVE        ( 4 ),
 	SincgarsIcom( 5 ),
-	Invalid     ( Integer.MAX_VALUE );
+	Invalid     ( Short.MAX_VALUE );
 
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -85,7 +85,7 @@ public enum CryptoSystem
 	//----------------------------------------------------------
 	public static int getByteLength()
 	{
-		return DisSizes.UI8_SIZE;
+		return DisSizes.UI16_SIZE;
 	}
 
 	public static CryptoSystem fromValue( int value )

@@ -56,7 +56,7 @@ public class Main
 		distributor.up();
 		
 		// tear down
-		try{ Thread.sleep(10000); } catch(Exception e) {e.printStackTrace();}
+		try{ Thread.sleep(10000000); } catch(Exception e) {e.printStackTrace();}
 		distributor.down();
 	}
 

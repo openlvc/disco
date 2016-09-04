@@ -62,7 +62,7 @@ public class DisOutputStream extends DataOutputStream
 	{
 		if( value < 0 || value > DisSizes.UI8_MAX_VALUE )
 		{
-			String message = "Out of range. Expecting number between 0 and "+DisSizes.UI8_MAX_VALUE;
+			String message = "Out of range ("+value+"): Expecting number between 0 and "+DisSizes.UI8_MAX_VALUE;
 			throw new IllegalArgumentException( message );
 		}
 		
@@ -83,7 +83,7 @@ public class DisOutputStream extends DataOutputStream
 	{
 		if( value < 0 || value > DisSizes.UI16_MAX_VALUE )
 		{
-			String message = "Out of range. Expecting number between 0 and "+DisSizes.UI16_MAX_VALUE;
+			String message = "Out of range ("+value+"): Expecting number between 0 and "+DisSizes.UI16_MAX_VALUE;
 			throw new IllegalArgumentException( message );
 		}
 
@@ -104,7 +104,7 @@ public class DisOutputStream extends DataOutputStream
 	{
 		if( value < 0 || value > DisSizes.UI32_MAX_VALUE )
 		{
-			String msg = "Out of range. Expecting number between 0 and "+DisSizes.UI32_MAX_VALUE;
+			String msg = "Out of range ("+value+"): Expecting number between 0 and "+DisSizes.UI32_MAX_VALUE;
 			throw new IllegalArgumentException( msg );
 		}
 		

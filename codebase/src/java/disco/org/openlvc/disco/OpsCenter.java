@@ -148,6 +148,15 @@ public class OpsCenter
 		this.pduSender.send( pdu );
 	}
 
+	/**
+	 * Sends the given PDU without making any modifications or additions (such as settings its
+	 * exercise/site/app ids or anything like that). Just send the PDU straight through as it is.
+	 */
+	public void sendRaw( PDU pdu ) throws DiscoException
+	{
+		this.pduSender.send( pdu );
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

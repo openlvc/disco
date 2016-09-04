@@ -36,7 +36,9 @@ public class Distributor
 	//----------------------------------------------------------
 	private Configuration configuration;
 	private Logger logger;
-	private Map<String,ILink> links;
+	protected Map<String,ILink> links;
+	
+	private Reflector reflector;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -45,12 +47,14 @@ public class Distributor
 	{
 		this.configuration = configuration;
 		this.logger = this.configuration.getApplicationLogger();
-		this.links = new HashMap<>();
+		this.links = new HashMap<String,ILink>();
 		for( LinkConfiguration linkConfiguration : configuration.getLinks().values() )
 		{
 			ILink link = LinkFactory.createLink( linkConfiguration );
 			this.links.put( link.getName(), link );
 		}
+
+		this.reflector = new Reflector( this );
 	}
 
 	//----------------------------------------------------------
@@ -70,21 +74,25 @@ public class Distributor
 		if( areAnyLinksDown() == false )
 			return;
 
-		// print some welcome information
+		// 1. Print welcome information -- remember to introduce yo'self, fool
 		printWelcome();
 		
-		// bring the links up
-		//long downCount = links.values().stream().filter( link -> !link.isLinkUp() ).count();
-		//logger.info( "Brining "+downCount+" links up:" );
-		logger.info( "" );
-		logger.info( "Brining all links up:" );
+		// 2. Bring the Reflector online before we open the flood gates
+		logger.info( "Starting Reflector" );
+		reflector.up();
+		
+		// 3. Bring the links up. Brace yoursef; the PDUs are coming.
+		logger.info( "Bringing all links up:" );
 
 		for( ILink link : links.values() )
 		{
 			try
 			{
 				if( link.isUp() == false )
+				{
+					link.setReflector( reflector );
 					link.up();
+				}
 				
 				logger.info( getLinkConfigSummary(link) );
 			}
@@ -94,6 +102,8 @@ public class Distributor
 				logger.debug( e.getMessage(), e );
 			}
 		}
+		
+		logger.info( "" );
 		
 	}
 
@@ -107,11 +117,12 @@ public class Distributor
 		if( areAnyLinksUp() == false )
 			return;
 
-		//long upCount = links.values().stream().filter( link -> link.isLinkUp() ).count();
-		//logger.info( "Brining "+upCount+" links down:" );
-		logger.info( "" );
-		logger.info( "Brining all links down:" );
+		// 1. Bring down the reflector first
+		logger.info( "Brining reflector down" );
+		reflector.down();
 		
+		// 2. Bring down all the separate links
+		logger.info( "Brining all links down:" );
 		for( ILink link : links.values() )
 		{
 			try
@@ -145,6 +156,10 @@ public class Distributor
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 	private void printWelcome()
 	{
 		logger.info("");
@@ -162,6 +177,7 @@ public class Distributor
 		for( ILink link : links.values() )
 			logger.info( getLinkConfigSummary(link) );
 
+		logger.info( "" );
 	}
 
 	private String getLinkConfigSummary( ILink link )
@@ -198,4 +214,5 @@ public class Distributor
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+
 }
