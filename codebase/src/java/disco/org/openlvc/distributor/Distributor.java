@@ -23,7 +23,7 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.distributor.configuration.Configuration;
-import org.openlvc.distributor.configuration.SiteConfiguration;
+import org.openlvc.distributor.configuration.LinkConfiguration;
 
 public class Distributor
 {
@@ -36,7 +36,7 @@ public class Distributor
 	//----------------------------------------------------------
 	private Configuration configuration;
 	private Logger logger;
-	private Map<String,ISite> sites;
+	private Map<String,ILink> links;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -45,11 +45,11 @@ public class Distributor
 	{
 		this.configuration = configuration;
 		this.logger = this.configuration.getApplicationLogger();
-		this.sites = new HashMap<>();
-		for( SiteConfiguration siteConfiguration : configuration.getSites().values() )
+		this.links = new HashMap<>();
+		for( LinkConfiguration linkConfiguration : configuration.getLinks().values() )
 		{
-			ISite site = SiteFactory.createSite( siteConfiguration );
-			this.sites.put( site.getName(), site );
+			ILink link = LinkFactory.createLink( linkConfiguration );
+			this.links.put( link.getName(), link );
 		}
 	}
 
@@ -64,23 +64,23 @@ public class Distributor
 	{
 		printWelcome();
 		
-		//long downCount = sites.values().stream().filter( site -> !site.isLinkUp() ).count();
-		//logger.info( "Brining "+downCount+" sites up:" );
+		//long downCount = links.values().stream().filter( link -> !link.isLinkUp() ).count();
+		//logger.info( "Brining "+downCount+" links up:" );
 		logger.info( "" );
-		logger.info( "Brining all sites up:" );
+		logger.info( "Brining all links up:" );
 
-		for( ISite site : sites.values() )
+		for( ILink link : links.values() )
 		{
 			try
 			{
-				if( site.isLinkUp() == false )
-					site.up();
+				if( link.isUp() == false )
+					link.up();
 				
-				logger.info( getSiteSummary(site) );
+				logger.info( getLinkSummary(link) );
 			}
 			catch( Exception e )
 			{
-				logger.error( "  %-8s [ err] { Exception: %s }", site.getName(), e.getMessage() );
+				logger.error( "  %-8s [ err] { Exception: %s }", link.getName(), e.getMessage() );
 				logger.debug( e.getMessage(), e );
 			}
 		}
@@ -89,22 +89,22 @@ public class Distributor
 	
 	public void down()
 	{
-		//long upCount = sites.values().stream().filter( site -> site.isLinkUp() ).count();
-		//logger.info( "Brining "+upCount+" sites down:" );
+		//long upCount = links.values().stream().filter( link -> link.isLinkUp() ).count();
+		//logger.info( "Brining "+upCount+" links down:" );
 		logger.info( "" );
-		logger.info( "Brining all sites down:" );
+		logger.info( "Brining all links down:" );
 		
-		for( ISite site : sites.values() )
+		for( ILink link : links.values() )
 		{
 			try
 			{
-				if( site.isLinkUp() )
-					site.down();
-				logger.info( getSiteSummary(site) );
+				if( link.isUp() )
+					link.down();
+				logger.info( getLinkSummary(link) );
 			}
 			catch( Exception e )
 			{
-				logger.error( "  %-8s [err ] { Exception: %s }", site.getName(), e.getMessage() );
+				logger.error( "  %-8s [err ] { Exception: %s }", link.getName(), e.getMessage() );
 				logger.debug( e.getMessage(), e );
 			}
 		}
@@ -127,32 +127,32 @@ public class Distributor
 		logger.info( "Version "+DiscoConfiguration.getVersion() );
 		logger.info("");
 
-		logger.info( sites.size()+" sites configured: "+sites.keySet() );
-		for( ISite site : sites.values() )
-			logger.info( getSiteSummary(site) );
+		logger.info( links.size()+" links configured: "+links.keySet() );
+		for( ILink link : links.values() )
+			logger.info( getLinkSummary(link) );
 
 	}
 
-	private String getSiteSummary( ISite site )
+	private String getLinkSummary( ILink link )
 	{
-		SiteConfiguration siteConfig = site.getConfiguration();
-		String siteName = siteConfig.getName();
-		if( siteConfig.getMode() == Mode.DIS )
+		LinkConfiguration linkConfig = link.getConfiguration();
+		String linkName = linkConfig.getName();
+		if( linkConfig.getMode() == Mode.DIS )
 		{
 			return String.format( "  %-8s [%4s] { DIS, address:%s, port:%d, nic:%s }",
-			                      siteName,
-			                      site.getLinkStatus(),
-			                      siteConfig.getDisAddress(),
-			                      siteConfig.getDisPort(),
-			                      siteConfig.getDisNic() );
+			                      linkName,
+			                      link.getLinkStatus(),
+			                      linkConfig.getDisAddress(),
+			                      linkConfig.getDisPort(),
+			                      linkConfig.getDisNic() );
 		}
 		else
 		{
 			return String.format( "  %-8s [%4s] { WAN, address:%s, port:%d }",
-			                      siteName,
-			                      site.getLinkStatus(),
-			                      siteConfig.getWanAddress(),
-			                      siteConfig.getWanPort() );
+			                      linkName,
+			                      link.getLinkStatus(),
+			                      linkConfig.getWanAddress(),
+			                      linkConfig.getWanPort() );
 		}
 	}
 

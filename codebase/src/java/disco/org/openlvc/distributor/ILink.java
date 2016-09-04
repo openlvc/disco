@@ -17,17 +17,17 @@
  */
 package org.openlvc.distributor;
 
-import org.openlvc.distributor.configuration.SiteConfiguration;
+import org.openlvc.distributor.configuration.LinkConfiguration;
 
 /**
- * Represents a connection to a particular site/network.
+ * Represents a links to a particular site/network.
  * 
- * Sites are purely logical constructors. Just a name used to tag a configuration set.
- * Sites represent a conncetion that the Distributor will attempt to bring online. It will
- * take input from the site and reflect it back out to all others, subject to any defined
+ * Links are purely logical constructors. Just a name used to tag a configuration set.
+ * Links represent a conncetion that the Distributor will attempt to bring online. It will
+ * take input from the link and reflect it back out to all others, subject to any defined
  * filtering rules.
  */
-public interface ISite
+public interface ILink
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -38,9 +38,10 @@ public interface ISite
 	//----------------------------------------------------------
 	// Properties
 	public String getName();
-	public SiteConfiguration getConfiguration();
+	public LinkConfiguration getConfiguration();
 	public String getLinkStatus();
-	public boolean isLinkUp();
+	public boolean isUp();
+	public boolean isDown();
 
 	// Lifecycle
 	public void up();      // bring the connection online

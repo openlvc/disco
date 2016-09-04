@@ -38,13 +38,13 @@ public class Configuration
 	public static final String KEY_LOG_LEVEL       = "distributor.loglevel";
 	public static final String KEY_LOG_FILE        = "distributor.logfile";
 	
-	// Site Configuration
-	public static final String KEY_SITES           = "distributor.site";
+	// Link Configuration
+	public static final String KEY_LINKS           = "distributor.links";
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Map<String,SiteConfiguration> sites;
+	private Map<String,LinkConfiguration> links;
 	private Log4jConfiguration loggingConfiguration;
 	private Logger applicationLogger;
 	private String configFile = "etc/distributor.config";
@@ -54,7 +54,7 @@ public class Configuration
 	//----------------------------------------------------------
 	public Configuration( String[] args )
 	{
-		this.sites = new HashMap<>();
+		this.links = new HashMap<>();
 
 		// logging configuration
 		this.loggingConfiguration = new Log4jConfiguration( "distributor" );
@@ -94,9 +94,9 @@ public class Configuration
 		this.loggingConfiguration.setFileOn( true );
 	}
 	
-	public Map<String,SiteConfiguration> getSites()
+	public Map<String,LinkConfiguration> getLinks()
 	{
-		return this.sites;
+		return this.links;
 	}
 
 	/**
@@ -185,17 +185,17 @@ public class Configuration
 			this.loggingConfiguration.setLevel( properties.getProperty(KEY_LOG_LEVEL) );
 		
 		//
-		// Site Configuration
+		// Link Configuration
 		//
-		if( properties.containsKey(KEY_SITES) )
+		if( properties.containsKey(KEY_LINKS) )
 		{
-			String siteString = properties.getProperty( KEY_SITES );
-			String[] siteNames = siteString.split( "," );
-			for( String siteName : siteNames )
+			String linkString = properties.getProperty( KEY_LINKS );
+			String[] linkNames = linkString.split( "," );
+			for( String linkName : linkNames )
 			{
-				siteName = siteName.trim();
-				SiteConfiguration siteConfiguration = new SiteConfiguration( siteName, properties );
-				this.sites.put( siteName, siteConfiguration );
+				linkName = linkName.trim();
+				LinkConfiguration linkConfiguration = new LinkConfiguration( linkName, properties );
+				this.links.put( linkName, linkConfiguration );
 			}
 		}
 	}
@@ -212,13 +212,13 @@ public class Configuration
 		builder.append( "\n       log file: "+loggingConfiguration.getFile() );
 		builder.append( "\n      log level: "+loggingConfiguration.getLevel() );
 		builder.append( "\n" );
-		builder.append( "\n ======== Site Configuration ========" );
-		builder.append( "\n  "+sites.size()+" sites configured: "+sites.keySet() );
+		builder.append( "\n ======== Link Configuration ========" );
+		builder.append( "\n  "+links.size()+" links configured: "+links.keySet() );
 		builder.append( "\n" );
-		for( SiteConfiguration config : sites.values() )
+		for( LinkConfiguration config : links.values() )
 		{
 			builder.append( "\n ----------------------------" );
-			builder.append( "\n Site Name: "+config.getName() );
+			builder.append( "\n Link Name: "+config.getName() );
 			builder.append( "\n                 Mode: "+config.getMode() );
 			if( config.getMode() == Mode.DIS )
 			{

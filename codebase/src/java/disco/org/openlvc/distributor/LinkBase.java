@@ -17,11 +17,11 @@
  */
 package org.openlvc.distributor;
 
-import org.openlvc.distributor.configuration.SiteConfiguration;
-import org.openlvc.distributor.dis.DisSite;
-import org.openlvc.distributor.wan.WanSite;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openlvc.distributor.configuration.LinkConfiguration;
 
-public class SiteFactory
+public abstract class LinkBase
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -30,28 +30,59 @@ public class SiteFactory
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	protected LinkConfiguration linkConfiguration;
+	protected Logger logger;
+	protected boolean linkUp;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public LinkBase( LinkConfiguration linkConfiguration )
+	{
+		this.linkConfiguration = linkConfiguration;
+		this.logger = LogManager.getFormatterLogger( "distributor."+linkConfiguration.getName() );
+		this.linkUp = false;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public abstract void up();
+	public abstract void down();
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public String getName()
+	{
+		return linkConfiguration.getName();
+	}
+	
+	public LinkConfiguration getConfiguration()
+	{
+		return this.linkConfiguration;
+	}
+	
+	public boolean isUp()
+	{
+		return this.linkUp;
+	}
+	
+	public boolean isDown()
+	{
+		return this.linkUp == false;
+	}
+	
+	public String getLinkStatus()
+	{
+		return this.linkUp ? "up" : "down";
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static ISite createSite( SiteConfiguration siteConfiguration )
-	{
-		switch( siteConfiguration.getMode() )
-		{
-			case DIS:
-				return new DisSite( siteConfiguration );
-			case WAN:
-				return new WanSite( siteConfiguration );
-			default:
-				throw new IllegalArgumentException( "Unknown mode: "+siteConfiguration.getMode() );
-		}
-	}
 }

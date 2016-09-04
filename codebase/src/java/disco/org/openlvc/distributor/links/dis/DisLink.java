@@ -15,13 +15,13 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.distributor.wan;
+package org.openlvc.distributor.links.dis;
 
-import org.openlvc.distributor.ISite;
-import org.openlvc.distributor.SiteBase;
-import org.openlvc.distributor.configuration.SiteConfiguration;
+import org.openlvc.distributor.ILink;
+import org.openlvc.distributor.LinkBase;
+import org.openlvc.distributor.configuration.LinkConfiguration;
 
-public class WanSite extends SiteBase implements ISite
+public class DisLink extends LinkBase implements ILink
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -34,7 +34,7 @@ public class WanSite extends SiteBase implements ISite
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public WanSite( SiteConfiguration siteConfiguration )
+	public DisLink( LinkConfiguration siteConfiguration )
 	{
 		super( siteConfiguration );
 	}
@@ -49,8 +49,7 @@ public class WanSite extends SiteBase implements ISite
 	public void up()
 	{
 		logger.debug( "Up" );
-		throw new RuntimeException( "No route to host: 192.168.0.1" );
-		//super.linkUp = true;
+		super.linkUp = true;
 	}
 	
 	public void down()

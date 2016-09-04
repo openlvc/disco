@@ -18,7 +18,7 @@
 package org.openlvc.distributor;
 
 /**
- * Represents the mode that a Site connection can have:
+ * Represents the mode that a Link connection can have:
  * <ul>
  *   <li>DIS: Standard DIS network connection</li>
  *   <li>WAN: Forwarding to a central router</li>

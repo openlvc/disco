@@ -22,38 +22,40 @@ import java.util.Properties;
 import org.openlvc.disco.utils.StringUtils;
 import org.openlvc.distributor.Mode;
 
-public class SiteConfiguration
+public class LinkConfiguration
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 	//
-	// Configuration Key Snippets
+	// Link Specific Snippets
 	//
-	// Site-specific configurations will appear multiple times within the configuration.
-	// All keys will be prefixed with "distributor.[site]". A sample config might look
-	// as follows:
+	// Within a Distributor configuration there may be many links. Details specific to a
+	// link are identified by a common prefix: <code>distributor.[LINKNAME].</code>.
+	// These properties are the names we expect after the prefixes. For example, a configuration
+	// might look as follows:
 	//
-	// distributor.sites = per, nyc, sgp
+	// distributor.links = per, nyc, sgp
 	// distributor.per.mode = dis
 	// distributor.per.dis.address = BROADCAST
 	// distributor.per.dis.port = 3000
 	// distributor.per...
 	//
-	// The keys below are the snippets that follow the prefix
+	// The <code>mode</code>, <code>dis.address</code>, ... settings can be specified for
+	// any number of links, as long as they appear under the proper prefix.
 	//
-	public static final String SITE_MODE                = "mode";
+	public static final String LINK_MODE                = "mode";
 	
-	public static final String SITE_DIS_ADDRESS         = "dis.address";
-	public static final String SITE_DIS_PORT            = "dis.port";
-	public static final String SITE_DIS_NIC             = "dis.nic";
+	public static final String LINK_DIS_ADDRESS         = "dis.address";
+	public static final String LINK_DIS_PORT            = "dis.port";
+	public static final String LINK_DIS_NIC             = "dis.nic";
 	
-	public static final String SITE_WAN_ADDRESS         = "wan.address";
-	public static final String SITE_WAN_PORT            = "wan.port";
-	public static final String SITE_WAN_TYPE            = "wan.type"; // tcp|udp
-	public static final String SITE_WAN_BUNDLING        = "wan.bundling";
-	public static final String SITE_WAN_BUNDLING_SIZE   = "wan.bundling.maxSize";
-	public static final String SITE_WAN_BUNDLING_TIME   = "wan.bundling.maxTime";
+	public static final String LINK_WAN_ADDRESS         = "wan.address";
+	public static final String LINK_WAN_PORT            = "wan.port";
+	public static final String LINK_WAN_TYPE            = "wan.type"; // tcp|udp
+	public static final String LINK_WAN_BUNDLING        = "wan.bundling";
+	public static final String LINK_WAN_BUNDLING_SIZE   = "wan.bundling.maxSize";
+	public static final String LINK_WAN_BUNDLING_TIME   = "wan.bundling.maxTime";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -64,7 +66,7 @@ public class SiteConfiguration
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public SiteConfiguration( String name, Properties properties )
+	public LinkConfiguration( String name, Properties properties )
 	{
 		this.name = name;
 		this.properties = new Properties();
@@ -73,7 +75,7 @@ public class SiteConfiguration
 			this.loadFromProperties( properties );
 	}
 	
-	public SiteConfiguration( String name )
+	public LinkConfiguration( String name )
 	{
 		this( name, null );
 	}
@@ -82,8 +84,8 @@ public class SiteConfiguration
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 	/**
-	 * Load any site settings from the given configuration. We will look for all keys
-	 * that start with the prefix "distributor.SITE_NAME.".
+	 * Load any link settings from the given configuration. We will look for all keys
+	 * that start with the prefix "distributor.LINK_NAME.".
 	 * 
 	 * @param properties The properties file to load from
 	 */
@@ -97,25 +99,25 @@ public class SiteConfiguration
 				continue;
 			
 			String value = properties.getProperty( key );
-			if( key.equalsIgnoreCase(prefix+SITE_MODE) )
+			if( key.equalsIgnoreCase(prefix+LINK_MODE) )
 				this.setMode( value );
-			else if( key.equalsIgnoreCase(prefix+SITE_DIS_ADDRESS) )
+			else if( key.equalsIgnoreCase(prefix+LINK_DIS_ADDRESS) )
 				this.setDisAddress( value );
-			else if( key.equalsIgnoreCase(prefix+SITE_DIS_PORT) )
+			else if( key.equalsIgnoreCase(prefix+LINK_DIS_PORT) )
 				this.setDisPort( value );
-			else if( key.equalsIgnoreCase(prefix+SITE_DIS_NIC) )
+			else if( key.equalsIgnoreCase(prefix+LINK_DIS_NIC) )
 				this.setDisNic( value );
-			else if( key.equalsIgnoreCase(prefix+SITE_WAN_ADDRESS) )
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_ADDRESS) )
 				this.setWanAddress( value );
-			else if( key.equalsIgnoreCase(prefix+SITE_WAN_PORT) )
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_PORT) )
 				this.setWanPort( value );
-			else if( key.equalsIgnoreCase(prefix+SITE_WAN_TYPE) )
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_TYPE) )
 				this.setWanType( value );
-			else if( key.equalsIgnoreCase(prefix+SITE_WAN_BUNDLING) )
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING) )
 				this.setWanBundling( value );
-			else if( key.equalsIgnoreCase(prefix+SITE_WAN_BUNDLING_SIZE) )
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING_SIZE) )
 				this.setWanBundlingSize( value );
-			else if( key.equalsIgnoreCase(prefix+SITE_WAN_BUNDLING_TIME) )
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING_TIME) )
 				this.setWanBundlingTime( value );
 			else
 				; // skip
@@ -137,12 +139,12 @@ public class SiteConfiguration
 
 	public Mode getMode()
 	{
-		return Mode.valueOf( properties.getProperty(SITE_MODE) );
+		return Mode.valueOf( properties.getProperty(LINK_MODE) );
 	}
 	
 	public void setMode( Mode mode )
 	{
-		set( SITE_MODE, mode );
+		set( LINK_MODE, mode );
 	}
 	
 	/////////////////////////////////////////////
@@ -150,12 +152,12 @@ public class SiteConfiguration
 	/////////////////////////////////////////////
 	public String getDisAddress()
 	{
-		return getAsString( SITE_DIS_ADDRESS, "BROADCAST" );
+		return getAsString( LINK_DIS_ADDRESS, "BROADCAST" );
 	}
 	
 	public void setDisAddress( String address )
 	{
-		set( SITE_DIS_ADDRESS, address );
+		set( LINK_DIS_ADDRESS, address );
 	}
 	
 	//public InetAddress getResolvedDisAddress()
@@ -164,7 +166,7 @@ public class SiteConfiguration
 	
 	public int getDisPort()
 	{
-		return getAsInt( SITE_DIS_PORT, 3000 );
+		return getAsInt( LINK_DIS_PORT, 3000 );
 	}
 	
 	public void setDisPort( int port )
@@ -174,17 +176,17 @@ public class SiteConfiguration
 		else if( port < 1 )
 			throw new IllegalArgumentException( "Port must be positive number" );
 
-		set( SITE_DIS_PORT, port );
+		set( LINK_DIS_PORT, port );
 	}
 	
 	public String getDisNic()
 	{
-		return getAsString( SITE_DIS_NIC, "SITE_LOCAL" );
+		return getAsString( LINK_DIS_NIC, "SITE_LOCAL" );
 	}
 	
 	public void setDisNic( String nic )
 	{
-		set( SITE_DIS_NIC, nic );
+		set( LINK_DIS_NIC, nic );
 	}
 	
 	//public NetworkInterface getResolvedDisNic()
@@ -205,7 +207,7 @@ public class SiteConfiguration
 			}
 		}
 		
-		throw new IllegalArgumentException( "Invalid Site Mode: "+value );
+		throw new IllegalArgumentException( "Invalid Link Mode: "+value );
 	}
 	
 	private void setDisPort( String value )
@@ -218,12 +220,12 @@ public class SiteConfiguration
 	/////////////////////////////////////////////
 	public String getWanAddress()
 	{
-		return getAsString( SITE_WAN_ADDRESS );
+		return getAsString( LINK_WAN_ADDRESS );
 	}
 	
 	public void setWanAddress( String address )
 	{
-		set( SITE_WAN_ADDRESS, address );
+		set( LINK_WAN_ADDRESS, address );
 	}
 	
 	//public InetAddress getResolvedWanAddress()
@@ -232,7 +234,7 @@ public class SiteConfiguration
 	
 	public int getWanPort()
 	{
-		return getAsInt( SITE_WAN_PORT, 4919/*D-I-S*/ );
+		return getAsInt( LINK_WAN_PORT, 4919/*D-I-S*/ );
 	}
 
 	public void setWanPort( int port )
@@ -242,12 +244,12 @@ public class SiteConfiguration
 		else if( port < 1 )
 			throw new IllegalArgumentException( "Port must be positive number" );
 
-		set( SITE_WAN_PORT, port );
+		set( LINK_WAN_PORT, port );
 	}
 
 	public String getWanConnectionType()
 	{
-		return getAsString( SITE_WAN_TYPE, "udp" );
+		return getAsString( LINK_WAN_TYPE, "udp" );
 	}
 
 	public boolean isWanConnectionTypeTcp()
@@ -262,27 +264,27 @@ public class SiteConfiguration
 	
 	public void setWanConnectionTypeTcp()
 	{
-		set( SITE_WAN_TYPE, "tcp" );
+		set( LINK_WAN_TYPE, "tcp" );
 	}
 	
 	public void setWanConnectionTypeUdp()
 	{
-		set( SITE_WAN_TYPE, "udp" );
+		set( LINK_WAN_TYPE, "udp" );
 	}
 	
 	public boolean isWanBundling()
 	{
-		return getAsBoolean( SITE_WAN_BUNDLING, false );
+		return getAsBoolean( LINK_WAN_BUNDLING, false );
 	}
 	
 	public void setWanBundling( boolean enableBundling )
 	{
-		set( SITE_WAN_BUNDLING, enableBundling );
+		set( LINK_WAN_BUNDLING, enableBundling );
 	}
 	
 	public String getWanBundlingSize()
 	{
-		return getAsString( SITE_WAN_BUNDLING_SIZE, "1400b" );
+		return getAsString( LINK_WAN_BUNDLING_SIZE, "1400b" );
 	}
 
 	public int getWanBundlingSizeBytes()
@@ -292,22 +294,22 @@ public class SiteConfiguration
 	
 	public void setWanBundlingSize( String size )
 	{
-		set( SITE_WAN_BUNDLING_SIZE, size );
+		set( LINK_WAN_BUNDLING_SIZE, size );
 	}
 	
 	public void setWanBundlingSizeBytes( int bytes )
 	{
-		set( SITE_WAN_BUNDLING_SIZE, ""+bytes+"b" );
+		set( LINK_WAN_BUNDLING_SIZE, ""+bytes+"b" );
 	}
 	
 	public int getWanBundlingTime()
 	{
-		return getAsInt( SITE_WAN_BUNDLING_TIME );
+		return getAsInt( LINK_WAN_BUNDLING_TIME );
 	}
 	
 	public void setWanBundlingTime( int maxTime )
 	{
-		set( SITE_WAN_BUNDLING_TIME, maxTime );
+		set( LINK_WAN_BUNDLING_TIME, maxTime );
 	}
 	
 	//
