@@ -224,8 +224,8 @@ public class LinkConfiguration
 
 	public void setDisExerciseId( int id )
 	{
-		if( id > 255 )
-			throw new IllegalArgumentException( "Site ID cannot be greater than 255" );
+		if( id > 255 || id < 0 )
+			throw new IllegalArgumentException( "Exercise ID must be between 0-255, was "+id );
 		set( LINK_DIS_EXID, id );
 	}
 
@@ -235,7 +235,7 @@ public class LinkConfiguration
 	public void setDisExerciseId( String id )
 	{
 		if( id.trim().equalsIgnoreCase("<any>") )
-			setDisExerciseId( -1 );
+			setDisExerciseId( 0 );
 		else
 			setDisExerciseId( Integer.parseInt(id) );
 	}

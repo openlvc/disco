@@ -51,6 +51,8 @@ public class DisConfiguration
 	//----------------------------------------------------------
 	/**
 	 * Exercise ID to use for outgoing packets. Defaults to 1.
+	 * 
+	 * A setting of 0 indicates that we should accept traffic from anywhere.
 	 */
 	public short getExerciseId()
 	{

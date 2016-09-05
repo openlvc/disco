@@ -57,7 +57,7 @@ public class Log4jConfiguration
 	{
 		this.appName = appName;
 		if( appName == null )
-			this.appName = LogManager.ROOT_LOGGER_NAME;
+			this.appName = "disco"; //this.appName = LogManager.ROOT_LOGGER_NAME;
 		
 		this.pattern = "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36}: %msg%n";
 		this.level = Level.INFO;

@@ -151,11 +151,13 @@ public class NetworkUtils
 
 			// Bind the socket. Because we're broadcast, bind it to the wildcard
 			// address, which we can do by creating the socket address with port only
-			socket.bind( new InetSocketAddress(port) );
+			socket.bind( new InetSocketAddress(address,port) );
 
 			// Write Once, Cry Everywhere
-			// First (addr/port) works on Windows, not on the mac
-			// Second (bcast/port) works on the Mac, not on Windows
+			// First (port) works on both
+			// Second (addr/port) works on Windows, not on the mac
+			// Third (bcast/port) works on the Mac, not on Windows
+			//socket.bind( new InetSocketAddress(port) );
 			//socket.bind( new InetSocketAddress(address,port) );
 			//socket.bind( new InetSocketAddress(getInterfaceAddress(address).getBroadcast(),port) );
 			return socket;
@@ -166,6 +168,59 @@ public class NetworkUtils
 		}
 	}
 
+	/**
+	 * Creates a send/receive socket pair and returns. This is used when you want a setup that supports
+	 * multiple applications on the same host sending/receiving using broadcast. To avoid loopback we
+	 * need to filter out our own traffic. The only way we can distinguish this is by the send port of
+	 * a packet (send IP not enough, as there could be many apps on that IP).
+	 * 
+	 * To do this we need a socket that sends from a port we're not listening on. If send/receive port
+	 * matched, we couldn't tell any local machine traffic apart.
+	 *  
+	 * So, this method creates two sockets:
+	 *   1. Send Socket: Bound to wildcard address with ephemeral port. Target address/port defined on packet when you send.
+	 *   2. Recv Socket: Bound to specified address and port.
+	 * 
+	 * In the receiver we can then compare the send port to our own send socket port. If they match, the
+	 * packet was sent from our application.
+	 * 
+	 * @param address Address to bind the receive socket to
+	 * @param port    Port to bind the receive socket to
+	 * @param options Send/Receive socket configuration options
+	 * @return
+	 */
+	public static DatagramSocket[] createBroadcastPair( InetAddress address,
+	                                                    int port,
+	                                                    SocketOptions options )
+	{
+		try
+		{
+			// Create the send socket
+			DatagramSocket sendSocket = new DatagramSocket(null);
+			sendSocket.setReuseAddress( true );
+			sendSocket.setBroadcast( true );
+			if( options != null )
+				sendSocket.setSendBufferSize( options.getSendBufferSize() );
+			
+			// Create the receive socket
+			DatagramSocket recvSocket = new DatagramSocket(null);
+			recvSocket.setReuseAddress( true );
+			recvSocket.setBroadcast( true );
+			if( options != null )
+				recvSocket.setReceiveBufferSize( options.getRecvBufferSize() );
+			
+			// bind the two sockets
+			sendSocket.bind( new InetSocketAddress(0) ); // ephermal port
+			recvSocket.bind( new InetSocketAddress(address,port) );
+			return new DatagramSocket[] { sendSocket, recvSocket };
+		}
+		catch( Exception e )
+		{
+			throw new DiscoException( "Cannot connect to "+address+":"+port+" - "+e.getMessage() , e );
+		}
+	}
+	
+	
 	/**
 	 * Takes the given name and converts it into a {@link InetAddress}. This will exchange
 	 * the symbols for the following values:

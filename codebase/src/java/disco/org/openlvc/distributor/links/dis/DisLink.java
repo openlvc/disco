@@ -157,7 +157,8 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 		disco.getUdpConfiguration().setNetworkInterface( link.getDisNic() );
 
 		disco.getDisConfiguration().setExerciseId( link.getDisExerciseId() );
-		
+
+		disco.getLoggingConfiguration().setAppName( link.getName() );
 		disco.getLoggingConfiguration().setLevel( link.getDisLogLevel() );
 		disco.getLoggingConfiguration().setFile( link.getDisLogFile() );
 		disco.getLoggingConfiguration().setFileOn( link.getDisLogToFile() );

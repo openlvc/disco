@@ -76,7 +76,7 @@ public class DiscoConfiguration
 		if( this.applicationLogger == null )
 		{
 			getLoggingConfiguration().activateConfiguration();
-			this.applicationLogger = LogManager.getFormatterLogger( "disco" );
+			this.applicationLogger = LogManager.getFormatterLogger( getLoggingConfiguration().getAppName() );
 		}
 	
 		return applicationLogger;
