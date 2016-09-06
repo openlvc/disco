@@ -42,6 +42,23 @@ public class StringUtils
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static boolean stringToBoolean( String value )
+	{
+		value = value.trim();
+		if( value.equalsIgnoreCase("true")   ||
+			value.equalsIgnoreCase("on")     ||
+			value.equalsIgnoreCase("yes")    ||
+			value.equalsIgnoreCase("enabled") )
+			return true;
+		else if( value.equalsIgnoreCase("false") ||
+			value.equalsIgnoreCase("off")        ||
+			value.equalsIgnoreCase("no")         ||
+			value.equalsIgnoreCase("disabled") )
+			return false;
+		else
+			throw new IllegalArgumentException( value+" is not a valid binary constant (on/off, true/false, yes/no, enabled/disabled)" );
+	}
+	
 	/**
 	 * Returns a human readable character string for the given number of bytes. Can specify
 	 * whether this should display in SI units (decimal, 1000x) or binary (1024x).

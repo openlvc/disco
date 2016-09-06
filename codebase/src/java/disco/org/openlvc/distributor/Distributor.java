@@ -195,11 +195,11 @@ public class Distributor
 		}
 		else
 		{
-			return String.format( "  %-8s [%4s] { WAN, address:%s, port:%d }",
+			return String.format( "  %-8s [%4s] { RELAY, address:%s, port:%d }",
 			                      linkName,
 			                      link.getLinkStatus(),
-			                      linkConfig.getWanAddress(),
-			                      linkConfig.getWanPort() );
+			                      linkConfig.getRelayAddress(),
+			                      linkConfig.getRelayPort() );
 		}
 	}
 	

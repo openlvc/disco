@@ -228,12 +228,12 @@ public class Configuration
 			}
 			else
 			{
-				builder.append( "\n         WAN Adddress: "+config.getWanAddress() );
-				builder.append( "\n             WAN Port: "+config.getWanPort() );
-				//builder.append( "\n              WAN NIC: "+config.getWanNic() );
-				builder.append( "\n         WAN Bundling: "+config.isWanBundling() );
-				builder.append( "\n  WAN Bundle Max Size: "+config.getWanBundlingSizeBytes() );
-				builder.append( "\n  WAN Bundle Max Time: "+config.getWanBundlingTime() );
+				builder.append( "\n       Relay Adddress: "+config.getRelayAddress() );
+				builder.append( "\n           Relay Port: "+config.getRelayPort() );
+				//builder.append( "\n            Relay NIC: "+config.getWanNic() );
+				builder.append( "\n       Relay Bundling: "+config.isRelayBundling() );
+				builder.append( "\n      Bundle Max Size: "+config.getRelayBundlingSizeBytes() );
+				builder.append( "\n      Bundle Max Time: "+config.getRelayBundlingTime() );
 				
 			}
 			builder.append( "\n" );

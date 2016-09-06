@@ -23,6 +23,7 @@ import java.util.Random;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.utils.StringUtils;
 import org.openlvc.distributor.Mode;
+import org.openlvc.distributor.links.relay.TransportType;
 
 public class LinkConfiguration
 {
@@ -58,12 +59,12 @@ public class LinkConfiguration
 	public static final String LINK_DIS_LOG_FILE        = "dis.logfile";
 	public static final String LINK_DIS_LOG_TO_FILE     = "dis.logtofile";
 	
-	public static final String LINK_WAN_ADDRESS         = "wan.address";
-	public static final String LINK_WAN_PORT            = "wan.port";
-	public static final String LINK_WAN_TYPE            = "wan.type"; // tcp|udp
-	public static final String LINK_WAN_BUNDLING        = "wan.bundling";
-	public static final String LINK_WAN_BUNDLING_SIZE   = "wan.bundling.maxSize";
-	public static final String LINK_WAN_BUNDLING_TIME   = "wan.bundling.maxTime";
+	public static final String LINK_RELAY_ADDRESS         = "relay.address";
+	public static final String LINK_RELAY_PORT            = "relay.port";
+	public static final String LINK_RELAY_TRANSPORT       = "relay.transport"; // tcp|udp
+	public static final String LINK_RELAY_BUNDLING        = "relay.bundling";
+	public static final String LINK_RELAY_BUNDLING_SIZE   = "relay.bundling.maxSize";
+	public static final String LINK_RELAY_BUNDLING_TIME   = "relay.bundling.maxTime";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -128,19 +129,19 @@ public class LinkConfiguration
 				this.setDisLogFile( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_DIS_LOG_TO_FILE) )
 				this.setDisLogToFile( value );
-			// WAN Settings
-			else if( key.equalsIgnoreCase(prefix+LINK_WAN_ADDRESS) )
-				this.setWanAddress( value );
-			else if( key.equalsIgnoreCase(prefix+LINK_WAN_PORT) )
-				this.setWanPort( value );
-			else if( key.equalsIgnoreCase(prefix+LINK_WAN_TYPE) )
-				this.setWanType( value );
-			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING) )
-				this.setWanBundling( value );
-			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING_SIZE) )
-				this.setWanBundlingSize( value );
-			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING_TIME) )
-				this.setWanBundlingTime( value );
+			// Relay Settings
+			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_ADDRESS) )
+				this.setRelayAddress( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_PORT) )
+				this.setRelayPort( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_TRANSPORT) )
+				this.setRelayTransport( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_BUNDLING) )
+				this.setRelayBundling( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_BUNDLING_SIZE) )
+				this.setRelayBundlingSize( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_BUNDLING_TIME) )
+				this.setRelayBundlingTime( value );
 			else
 				; // skip
 		}
@@ -350,145 +351,123 @@ public class LinkConfiguration
 	
 	public void setDisLogToFile( String value )
 	{
-		value = value.trim();
-		if( value.equalsIgnoreCase("true")   ||
-			value.equalsIgnoreCase("on")     ||
-			value.equalsIgnoreCase("yes")    ||
-			value.equalsIgnoreCase("enabled") )
-			setDisLogToFile( true );
-		else
-			setDisLogToFile( false );
+		setDisLogToFile( StringUtils.stringToBoolean(value) );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	// WAN Properties   ////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public String getWanAddress()
+	public String getRelayAddress()
 	{
-		return getAsString( LINK_WAN_ADDRESS );
+		return getAsString( LINK_RELAY_ADDRESS );
 	}
 	
-	public void setWanAddress( String address )
+	public void setRelayAddress( String address )
 	{
-		set( LINK_WAN_ADDRESS, address );
+		set( LINK_RELAY_ADDRESS, address );
 	}
 	
-	//public InetAddress getResolvedWanAddress()
-	//{
-	//}
-	
-	public int getWanPort()
+	public int getRelayPort()
 	{
-		return getAsInt( LINK_WAN_PORT, 4919/*D-I-S*/ );
+		return getAsInt( LINK_RELAY_PORT, 4919/*D-I-S*/ );
 	}
 
-	public void setWanPort( int port )
+	public void setRelayPort( int port )
 	{
 		if( port > 65536 )
-			throw new IllegalArgumentException( "Port must be less than 65536" );
+			throw new IllegalArgumentException( "Relay port must be less than 65536" );
 		else if( port < 1 )
-			throw new IllegalArgumentException( "Port must be positive number" );
+			throw new IllegalArgumentException( "Relay port must be positive number" );
 
-		set( LINK_WAN_PORT, port );
-	}
-
-	public String getWanConnectionType()
-	{
-		return getAsString( LINK_WAN_TYPE, "udp" );
-	}
-
-	public boolean isWanConnectionTypeTcp()
-	{
-		return getWanConnectionType().equals("tcp");
+		set( LINK_RELAY_PORT, port );
 	}
 	
-	public boolean isWanConnectionTypeUdp()
+	public void setRelayPort( String port )
 	{
-		return getWanConnectionType().equals("udp");
-	}
-	
-	public void setWanConnectionTypeTcp()
-	{
-		set( LINK_WAN_TYPE, "tcp" );
-	}
-	
-	public void setWanConnectionTypeUdp()
-	{
-		set( LINK_WAN_TYPE, "udp" );
-	}
-	
-	public boolean isWanBundling()
-	{
-		return getAsBoolean( LINK_WAN_BUNDLING, false );
-	}
-	
-	public void setWanBundling( boolean enableBundling )
-	{
-		set( LINK_WAN_BUNDLING, enableBundling );
-	}
-	
-	public String getWanBundlingSize()
-	{
-		return getAsString( LINK_WAN_BUNDLING_SIZE, "1400b" );
+		setRelayPort( Integer.parseInt(port) );
 	}
 
-	public int getWanBundlingSizeBytes()
+	public TransportType getRelayTransport()
 	{
-		return (int)StringUtils.bytesFromString( getWanBundlingSize() );
-	}
-	
-	public void setWanBundlingSize( String size )
-	{
-		set( LINK_WAN_BUNDLING_SIZE, size );
-	}
-	
-	public void setWanBundlingSizeBytes( int bytes )
-	{
-		set( LINK_WAN_BUNDLING_SIZE, ""+bytes+"b" );
-	}
-	
-	public int getWanBundlingTime()
-	{
-		return getAsInt( LINK_WAN_BUNDLING_TIME );
-	}
-	
-	public void setWanBundlingTime( int maxTime )
-	{
-		set( LINK_WAN_BUNDLING_TIME, maxTime );
-	}
-	
-	//
-	// Properties parsing specific methods
-	//
-	private void setWanPort( String value )
-	{
-		setWanPort( Integer.parseInt(value) );
-	}
-	
-	private void setWanType( String value )
-	{
-		value = value.trim();
-		if( value.equalsIgnoreCase("tcp") )
-			this.setWanConnectionTypeTcp();
-		else if( value.equalsIgnoreCase("udp") )
-			this.setWanConnectionTypeUdp();
-		else
-			throw new IllegalArgumentException( "WAN Type must be tcp or udp, found: "+value );
-	}
-	
-	private void setWanBundling( String bundling )
-	{
-		if( Boolean.valueOf(bundling) )
-			this.setWanBundling( true );
-		else
-			this.setWanBundling( false );
-	}
-	
-	private void setWanBundlingTime( String time )
-	{
-		setWanBundlingTime( Integer.parseInt(time) );
+		return TransportType.valueOfIgnoreCase( getAsString(LINK_RELAY_TRANSPORT,"udp") );
 	}
 
+	public boolean isRelayTransportUdp()
+	{
+		return getRelayTransport() == TransportType.UDP;
+	}
+	
+	public boolean isRelayTransportTcp()
+	{
+		return getRelayTransport() == TransportType.TCP;
+	}
+
+	public void setRelayTransport( String transport )
+	{
+		setRelayTransport( TransportType.valueOfIgnoreCase(transport) );
+	}
+	
+	public void setRelayTransport( TransportType transport )
+	{
+		set( LINK_RELAY_TRANSPORT, transport.name().toLowerCase() );
+	}
+
+	public boolean isRelayBundling()
+	{
+		return getAsBoolean( LINK_RELAY_BUNDLING, false );
+	}
+	
+	public void setRelayBundling( boolean enableBundling )
+	{
+		set( LINK_RELAY_BUNDLING, enableBundling );
+	}
+	
+	public void setRelayBundling( String bundling )
+	{
+		setRelayBundling( StringUtils.stringToBoolean(bundling) );
+	}
+	
+	public String getRelayBundlingSize()
+	{
+		return getAsString( LINK_RELAY_BUNDLING_SIZE, "1400b" );
+	}
+
+	public int getRelayBundlingSizeBytes()
+	{
+		return (int)StringUtils.bytesFromString( getRelayBundlingSize() );
+	}
+	
+	public void setRelayBundlingSize( String size )
+	{
+		set( LINK_RELAY_BUNDLING_SIZE, size );
+	}
+	
+	public void setRelayBundlingSizeBytes( int bytes )
+	{
+		set( LINK_RELAY_BUNDLING_SIZE, ""+bytes+"b" );
+	}
+	
+	public int getRelayBundlingTime()
+	{
+		return getAsInt( LINK_RELAY_BUNDLING_TIME );
+	}
+	
+	/**
+	 * If there are no packets in this many milliseconds, flush any bundled set.
+	 */
+	public void setRelayBundlingTime( int millis )
+	{
+		set( LINK_RELAY_BUNDLING_TIME, millis );
+	}
+
+	/**
+	 * If there are no packets in this many milliseconds, flush any bundled set.
+	 */
+	public void setRelayBundlingTime( String millis )
+	{
+		setRelayBundlingTime( Integer.parseInt(millis) );
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

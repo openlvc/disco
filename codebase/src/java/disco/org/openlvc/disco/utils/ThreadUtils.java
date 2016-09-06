@@ -60,4 +60,22 @@ public class ThreadUtils
 			return false;
 		}
 	}
+	
+	/**
+	 * Join the provided thread, catching any interrupted exception and returning `false` if
+	 * it happens. Return `true` otherwise.
+	 */
+	public static boolean exceptionlessThreadJoin( Thread thread )
+	{
+		try
+		{
+			thread.join();
+			return true;
+		}
+		catch( InterruptedException ie )
+		{
+			return false;
+		}
+	}
+
 }

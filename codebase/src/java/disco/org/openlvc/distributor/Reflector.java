@@ -123,6 +123,7 @@ public class Reflector
 					Message message = queue.take();
 					distributor.links.values()
 					                 .stream()
+					                 .filter( link -> link.isUp() )
 					                 .filter( link -> link != message.getSouce() )
 					                 .forEach( link -> link.reflect(message) );
 				}

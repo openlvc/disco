@@ -15,13 +15,13 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.distributor;
+package org.openlvc.distributor.links.relay;
+
+import java.io.IOException;
 
 import org.openlvc.distributor.configuration.LinkConfiguration;
-import org.openlvc.distributor.links.dis.DisLink;
-import org.openlvc.distributor.links.relay.RelayLink;
 
-public class LinkFactory
+public class UdpTransport //implements ITransport
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -30,28 +30,46 @@ public class LinkFactory
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private LinkConfiguration linkConfiguration;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	protected UdpTransport( LinkConfiguration linkConfiguration )
+	{
+		this.linkConfiguration = linkConfiguration;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void up()
+	{
+		
+	}
+	
+	public void down()
+	{
+		
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Message Processing Methods   ///////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void reflect( byte[] message ) throws IOException
+	{
+		
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static ILink createLink( LinkConfiguration linkConfiguration )
-	{
-		switch( linkConfiguration.getMode() )
-		{
-			case DIS:
-				return new DisLink( linkConfiguration );
-			case RELAY:
-				return new RelayLink( linkConfiguration );
-			default:
-				throw new IllegalArgumentException( "Unknown mode: "+linkConfiguration.getMode() );
-		}
-	}
 }

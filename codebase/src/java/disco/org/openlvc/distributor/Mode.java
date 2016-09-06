@@ -21,13 +21,13 @@ package org.openlvc.distributor;
  * Represents the mode that a Link connection can have:
  * <ul>
  *   <li>DIS: Standard DIS network connection</li>
- *   <li>WAN: Forwarding to a central router</li>
+ *   <li>RELAY: Point-to-point connection to a relaying node</li>
  * </ul>
  */
 public enum Mode
 {
 	DIS,
-	WAN;
+	RELAY;
 	
 	public static Mode valueOfIgnoreCase( String string )
 	{
