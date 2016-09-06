@@ -146,6 +146,22 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 		}
 	}
 	
+	public String getConfigSummary()
+	{
+		// if link has never been up, return configuration information
+		if( isUp() )
+		{
+			return String.format( "{ DIS, address:%s, port:%d, nic:%s }",
+			                      opsCenter.getConfiguration().getUdpConfiguration().getAddress(),
+			                      opsCenter.getConfiguration().getUdpConfiguration().getPort(),
+			                      opsCenter.getConfiguration().getUdpConfiguration().getNetworkInterface().getDisplayName() );
+		}
+		else
+		{
+			return getStatusSummary();
+		}
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

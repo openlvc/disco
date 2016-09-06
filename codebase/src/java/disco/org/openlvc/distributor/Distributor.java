@@ -94,7 +94,7 @@ public class Distributor
 					link.up();
 				}
 				
-				logger.info( getLinkConfigSummary(link) );
+				logger.info( getConfigSummary(link) );
 			}
 			catch( Exception e )
 			{
@@ -130,7 +130,7 @@ public class Distributor
 				if( link.isUp() )
 					link.down();
 
-				logger.info( getLinkStatusSummary(link) );
+				logger.info( getConfigSummary(link) );
 			}
 			catch( Exception e )
 			{
@@ -175,35 +175,20 @@ public class Distributor
 
 		logger.info( links.size()+" links configured: "+links.keySet() );
 		for( ILink link : links.values() )
-			logger.info( getLinkConfigSummary(link) );
+			logger.info( getConfigSummary(link) );
 
 		logger.info( "" );
 	}
 
-	private String getLinkConfigSummary( ILink link )
+	private String getConfigSummary( ILink link )
 	{
-		LinkConfiguration linkConfig = link.getConfiguration();
-		String linkName = linkConfig.getName();
-		if( linkConfig.getMode() == Mode.DIS )
-		{
-			return String.format( "  %-8s [%4s] { DIS, address:%s, port:%d, nic:%s }",
-			                      linkName,
-			                      link.getLinkStatus(),
-			                      linkConfig.getDisAddress(),
-			                      linkConfig.getDisPort(),
-			                      linkConfig.getDisNic() );
-		}
-		else
-		{
-			return String.format( "  %-8s [%4s] { RELAY, address:%s, port:%d }",
-			                      linkName,
-			                      link.getLinkStatus(),
-			                      linkConfig.getRelayAddress(),
-			                      linkConfig.getRelayPort() );
-		}
+		return String.format( "  %-8s [%4s] %s",
+		                      link.getName(),
+		                      link.getLinkStatus(),
+		                      link.getConfigSummary() );
 	}
 	
-	private String getLinkStatusSummary( ILink link )
+	private String getStatusSummary( ILink link )
 	{
 		return String.format( "  %-8s [%4s] %s",
 		                      link.getName(),

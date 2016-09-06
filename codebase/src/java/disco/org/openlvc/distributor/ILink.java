@@ -52,6 +52,7 @@ public interface ILink
 	public void reflect( Message message );
 	
 	/** Get some short (one-line) status summary information */
+	public String getConfigSummary();
 	public String getStatusSummary();
 
 }

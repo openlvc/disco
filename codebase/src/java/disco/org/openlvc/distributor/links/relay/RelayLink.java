@@ -101,6 +101,11 @@ public class RelayLink extends LinkBase implements ILink
 		super.linkUp = false;
 	}
 
+	public String getConfigSummary()
+	{
+		return "{ Not Implemented }";
+	}
+
 	public String getStatusSummary()
 	{
 		return "{ Not Implemented }";
