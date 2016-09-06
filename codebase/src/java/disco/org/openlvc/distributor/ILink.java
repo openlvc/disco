@@ -46,6 +46,11 @@ public interface ILink
 	// Lifecycle
 	public void up();      // bring the connection online
 	public void down();    // close the connection
+
+	// Transient links are not persisted in distributor after they are taken down
+	// This is done primarily to support Relay created links
+	public void setTransient( boolean isTransient );
+	public boolean isTransient();
 	
 	// Message Passing
 	public void setReflector( Reflector reflector );

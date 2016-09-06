@@ -29,7 +29,8 @@ public enum Mode
 {
 	DIS,
 	WAN,
-	RELAY;
+	RELAY,
+	LOGGING;
 	
 	public static Mode valueOfIgnoreCase( String string )
 	{

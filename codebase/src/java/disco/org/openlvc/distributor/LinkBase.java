@@ -33,6 +33,7 @@ public abstract class LinkBase
 	protected LinkConfiguration linkConfiguration;
 	protected Logger logger;
 	protected boolean linkUp;
+	protected boolean isTransient;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -42,6 +43,7 @@ public abstract class LinkBase
 		this.linkConfiguration = linkConfiguration;
 		this.logger = LogManager.getFormatterLogger( "distributor."+linkConfiguration.getName() );
 		this.linkUp = false;
+		this.isTransient = false;
 	}
 
 	//----------------------------------------------------------
@@ -84,6 +86,16 @@ public abstract class LinkBase
 	public String getLinkStatus()
 	{
 		return this.linkUp ? "up" : "down";
+	}
+	
+	public void setTransient( boolean isTransient )
+	{
+		this.isTransient = isTransient;
+	}
+	
+	public boolean isTransient()
+	{
+		return this.isTransient;
 	}
 
 	//----------------------------------------------------------

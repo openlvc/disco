@@ -42,6 +42,11 @@ public class StringUtils
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	/**
+	 * Converts the given string value to a boolean.
+	 * <p/>
+	 * Valid values are on/off, true/false, yes/no, enabled/disabled
+	 */
 	public static boolean stringToBoolean( String value )
 	{
 		value = value.trim();
@@ -57,6 +62,14 @@ public class StringUtils
 			return false;
 		else
 			throw new IllegalArgumentException( value+" is not a valid binary constant (on/off, true/false, yes/no, enabled/disabled)" );
+	}
+
+	/**
+	 * Returns the given string truncated to a maximum of the givne number of characters
+	 */
+	public static String max( String string, int characters )
+	{
+		return characters > string.length() ? string : string.substring(0,characters);
 	}
 	
 	/**

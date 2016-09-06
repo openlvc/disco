@@ -30,7 +30,9 @@ import org.openlvc.distributor.ILink;
 import org.openlvc.distributor.LinkBase;
 import org.openlvc.distributor.Message;
 import org.openlvc.distributor.Reflector;
+import org.openlvc.distributor.TransportType;
 import org.openlvc.distributor.configuration.LinkConfiguration;
+import org.openlvc.distributor.links.wan.TcpWanLink;
 
 public class RelayLink extends LinkBase implements ILink
 {
@@ -41,8 +43,11 @@ public class RelayLink extends LinkBase implements ILink
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private Reflector reflector;
 	private ServerSocket serverSocket;
 	private ConnectionAcceptor connectionAcceptor;
+	
+	private int linkCounter; // how many links have we created
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -50,6 +55,11 @@ public class RelayLink extends LinkBase implements ILink
 	public RelayLink( LinkConfiguration linkConfiguration )
 	{
 		super( linkConfiguration );
+		
+		this.reflector = null;          // set in setReflector()
+		this.serverSocket = null;       // set in up()
+		this.connectionAcceptor = null; // set up up()
+		this.linkCounter = 0;
 	}
 
 	//----------------------------------------------------------
@@ -67,12 +77,17 @@ public class RelayLink extends LinkBase implements ILink
 		logger.debug( "Bringing up link: "+super.getName() );
 		logger.debug( "Link Mode: Relay" );
 
-		// 1. Resolve the address, it may be one of the symbolic values
+		// 1. Make sure we have everything we need
+		if( this.reflector == null )
+			throw new RuntimeException( "Nobody has told us where the reflector is yet" );
+
+		
+		// 2. Resolve the address, it may be one of the symbolic values
 		InetAddress serverAddress = NetworkUtils.resolveInetAddress( linkConfiguration.getRelayAddress() );
 		InetSocketAddress socketAddress = new InetSocketAddress( serverAddress,
 		                                                         linkConfiguration.getRelayPort() );
 		
-		// 1. Create the server socket
+		// 3. Create the server socket
 		try
 		{
 			this.serverSocket = new ServerSocket();
@@ -83,8 +98,8 @@ public class RelayLink extends LinkBase implements ILink
 			this.serverSocket = null;
 			throw new DiscoException( "Unable to bind server socket: "+io.getMessage() );
 		}
-		
-		// 2. Start the connection acceptor
+
+		// 4. Start the connection acceptor
 		this.connectionAcceptor = new ConnectionAcceptor();
 		this.connectionAcceptor.start();
 		
@@ -166,7 +181,8 @@ public class RelayLink extends LinkBase implements ILink
 	
 	public void setReflector( Reflector reflector )
 	{
-		// no-op
+		// store to hand off to incoming connections
+		this.reflector = reflector;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,18 +202,40 @@ public class RelayLink extends LinkBase implements ILink
 		{
 			while( !Thread.interrupted() )
 			{
-    			try
-    			{
-    				// Process new connection requests from clients
-    				Socket socket = serverSocket.accept();
-    				
-    				logger.fatal( "Received connection from "+socket.getInetAddress() );
-    				socket.close();
-    			}
+				//
+				// Wait for the next socket connection
+				//
+				Socket socket = null;
+				String ip = "unknown";
+				try
+				{ 				
+	                // Process new connection requests from clients
+					socket = serverSocket.accept();
+					ip = socket.getInetAddress().getHostAddress();
+					logger.debug( "Incoming connection from "+ip );
+				}
     			catch( IOException ioe )
     			{
     				// time to go!
+    				continue;
     			}
+				
+				//
+				// Bring a link online for the new connection
+				//
+				// Create the configuration details for the link based on the incoming socket
+				LinkConfiguration config = new LinkConfiguration( ip );
+				config.setName( "wan"+(++linkCounter) );
+				config.setWanAddress( ip );
+				config.setWanPort( socket.getPort() );
+				config.setWanTransport( TransportType.TCP );
+
+				// Create the link and push the socket in
+				logger.debug( "Creating TcpWanLink for connection (%s)", ip );
+				TcpWanLink link = new TcpWanLink( config );
+				link.setTransient( true );
+				link.setSocket( socket );
+				reflector.getDistributor().addAndBringUp( link );
 			}
 		}
 	}

@@ -15,19 +15,16 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.distributor.links.dis;
+package org.openlvc.distributor.links.logger;
 
-import org.openlvc.disco.IPduListener;
-import org.openlvc.disco.OpsCenter;
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.distributor.Reflector;
+import org.apache.logging.log4j.Level;
 import org.openlvc.distributor.ILink;
 import org.openlvc.distributor.LinkBase;
 import org.openlvc.distributor.Message;
+import org.openlvc.distributor.Reflector;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 
-public class DisLink extends LinkBase implements ILink, IPduListener
+public class LoggingLink extends LinkBase implements ILink
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -36,18 +33,16 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private OpsCenter opsCenter;
 	private Reflector reflector;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public DisLink( LinkConfiguration linkConfiguration )
+	public LoggingLink( LinkConfiguration linkConfiguration )
 	{
 		super( linkConfiguration );
 		
 		// Loaded when link is brought up
-		this.opsCenter = null;
 		this.reflector = null;
 	}
 
@@ -67,13 +62,8 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 			throw new RuntimeException( "Nobody has told us where the reflector is yet" );
 		
 		logger.debug( "Bringing up link: "+super.getName() );
-		logger.debug( "Link Mode: DIS" );
+		logger.debug( "Link Mode: Logging" );
 		
-		// Create the Disco configuration from our link configuration
-		this.opsCenter = new OpsCenter( turnIntoDiscoConfiguration(linkConfiguration) );
-		this.opsCenter.setListener( this );
-		this.opsCenter.open();
-
 		logger.debug( "Link is up" );
 		super.linkUp = true;
 	}
@@ -85,41 +75,20 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 
 		logger.debug( "Taking down link: "+super.getName() );
 		
-		this.opsCenter.close();
 		logger.debug( "Link is down" );
 
 		super.linkUp = false;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// PDU Reception Methods   ////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	public void receiver( PDU pdu )
-	{
-		try
-		{
-			reflector.reflect( new Message(this,pdu) );
-		}
-		catch( InterruptedException ie )
-		{
-			logger.warn( "PDU dropped, interrupted while offering to reflector: "+ie.getMessage() );
-		}
-	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Message Processing Methods   ///////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void reflect( Message message )
 	{
-		try
-		{
-			this.opsCenter.sendRaw( message.getPdu() );
-		}
-		catch( Exception e )
-		{
-			logger.error( "Problem sending PDU, dropped. Reason: "+e.getMessage() );
-			logger.trace( e.getMessage(), e );
-		}
+		logger.log( Level.INFO,
+		            "PDU from [%s] >> type=%s",
+		            message.getSouce().getName(),
+		            message.getPdu().getType() );
 	}
 
 	public void setReflector( Reflector reflector )
@@ -132,17 +101,7 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public String getStatusSummary()
 	{
-		// We don't check for up/down status. If the OpsCenter has even been initialized
-		// we want to get info from it so that when we bring the link down, we can see the
-		// last metrics values that were present
-		if( opsCenter != null )
-		{
-			return opsCenter.getMetrics().getSummaryString();
-		}
-		else
-		{
-			return getConfigSummary();
-		}
+		return getConfigSummary();
 	}
 	
 	public String getConfigSummary()
@@ -151,40 +110,20 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 		if( isUp() )
 		{
 			// return live, resolved connection information
-			return String.format( "{ DIS, address:%s, port:%d, nic:%s }",
-			                      opsCenter.getConfiguration().getUdpConfiguration().getAddress(),
-			                      opsCenter.getConfiguration().getUdpConfiguration().getPort(),
-			                      opsCenter.getConfiguration().getUdpConfiguration().getNetworkInterface().getDisplayName() );
+			return String.format( "{ Logging, level:%s, usefile:%s, file:%s }",
+			                      "TBA",
+			                      "TBA",
+			                      "TBA" );
 		}
 		else
 		{
 			// return raw configuration information
-			return String.format( "{ DIS, address:%s, port:%d, nic:%s }",
-			                      linkConfiguration.getDisAddress(),
-			                      linkConfiguration.getDisPort(),
-			                      linkConfiguration.getDisNic() );
+			return String.format( "{ Logging, level:%s, usefile:%s, file:%s }",
+			                      "TBA",
+			                      "TBA",
+			                      "TBA" );
 		}
 	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	private DiscoConfiguration turnIntoDiscoConfiguration( LinkConfiguration link )
-	{
-		DiscoConfiguration disco = new DiscoConfiguration();
-		disco.getUdpConfiguration().setAddress( link.getDisAddress() );
-		disco.getUdpConfiguration().setPort( link.getDisPort() );
-		disco.getUdpConfiguration().setNetworkInterface( link.getDisNic() );
-
-		disco.getDisConfiguration().setExerciseId( link.getDisExerciseId() );
-
-		disco.getLoggingConfiguration().setAppName( link.getName() );
-		disco.getLoggingConfiguration().setLevel( link.getDisLogLevel() );
-		disco.getLoggingConfiguration().setFile( link.getDisLogFile() );
-		disco.getLoggingConfiguration().setFileOn( link.getDisLogToFile() );
-		return disco;
-	}
-
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

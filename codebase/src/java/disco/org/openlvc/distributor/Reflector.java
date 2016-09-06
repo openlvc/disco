@@ -105,6 +105,13 @@ public class Reflector
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * @return A reference back to the core Distributor instance that this reflector is servicing.
+	 */
+	public Distributor getDistributor()
+	{
+		return this.distributor;
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.utils.StringUtils;
 import org.openlvc.distributor.configuration.Configuration;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 
@@ -85,27 +86,35 @@ public class Distributor
 		logger.info( "Bringing all links up:" );
 
 		for( ILink link : links.values() )
-		{
-			try
-			{
-				if( link.isUp() == false )
-				{
-					link.setReflector( reflector );
-					link.up();
-				}
-				
-				logger.info( getConfigSummary(link) );
-			}
-			catch( Exception e )
-			{
-				logger.error( "  %-8s [ err] { Exception: %s }", link.getName(), e.getMessage() );
-				logger.debug( e.getMessage(), e );
-			}
-		}
+			bringUp( link );
 		
 		logger.info( "" );
 		
 	}
+
+	/**
+	 * This is called in a couple of spots. Put here so it is in one location
+	 */
+	public void bringUp( ILink link )
+	{
+		try
+		{
+			if( link.isUp() == false )
+			{
+				link.setReflector( reflector );
+				link.up();
+			}
+			
+			logger.info( getConfigSummary(link) );
+		}
+		catch( Exception e )
+		{
+			logger.error( "  %-8s [ err] { Exception: %s }",
+			              StringUtils.max(link.getName(),8), e.getMessage() );
+			logger.debug( e.getMessage(), e );
+		}
+	}
+	
 
 	/**
 	 * Bring all links in the Distributor down. Any links that are down already are skipped. If
@@ -124,21 +133,37 @@ public class Distributor
 		// 2. Bring down all the separate links
 		logger.info( "Brining all links down:" );
 		for( ILink link : links.values() )
-		{
-			try
-			{
-				if( link.isUp() )
-					link.down();
+			takeDown( link );
+	}
 
-				logger.info( getConfigSummary(link) );
-			}
-			catch( Exception e )
+	/**
+	 * Takes a link down and prints summary information. Will remove the link from our store if
+	 * it has been marked as transient.
+	 */
+	public void takeDown( ILink link )
+	{
+		try
+		{
+			// bring the link down if it is running
+			if( link.isUp() )
+				link.down();
+
+			// print some summary stats
+			logger.info( getStatusSummary(link) );
+			
+			// if transient, dump it
+			if( link.isTransient() )
 			{
-				logger.error( "  %-8s [err ] { Exception: %s }", link.getName(), e.getMessage() );
-				logger.debug( e.getMessage(), e );
+				links.remove( link.getName() );
+				logger.debug( "Removed transient link "+link.getName() );
 			}
 		}
-		
+		catch( Exception e )
+		{
+			logger.error( "  %-8s [err ] { Exception: %s }",
+			              StringUtils.max(link.getName(),8), e.getMessage() );
+			logger.debug( e.getMessage(), e );
+		}		
 	}
 
 	/** @return true if any contained links are up */
@@ -156,6 +181,11 @@ public class Distributor
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public void addAndBringUp( ILink link )
+	{
+		links.put( link.getName(), link );
+		bringUp( link );
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
@@ -183,7 +213,7 @@ public class Distributor
 	private String getConfigSummary( ILink link )
 	{
 		return String.format( "  %-8s [%4s] %s",
-		                      link.getName(),
+		                      StringUtils.max(link.getName(),8),
 		                      link.getLinkStatus(),
 		                      link.getConfigSummary() );
 	}
@@ -191,7 +221,7 @@ public class Distributor
 	private String getStatusSummary( ILink link )
 	{
 		return String.format( "  %-8s [%4s] %s",
-		                      link.getName(),
+		                      StringUtils.max(link.getName(),8),
 		                      link.getLinkStatus(),
 		                      link.getStatusSummary() );
 	}

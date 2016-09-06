@@ -69,6 +69,10 @@ public class LinkConfiguration
 	public static final String LINK_RELAY_ADDRESS       = "relay.address";
 	public static final String LINK_RELAY_PORT          = "relay.port"; // tcp|udp
 	public static final String LINK_RELAY_TRANSPORT     = "relay.transport";
+	
+	public static final String LINK_LOGGER_LEVEL        = "logger.level";
+	public static final String LINK_LOGGER_USE_FILE     = "logger.logtofile";
+	public static final String LINK_LOGGER_FILE         = "logger.logfile";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES

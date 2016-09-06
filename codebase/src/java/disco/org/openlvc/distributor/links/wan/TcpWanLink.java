@@ -19,6 +19,7 @@ package org.openlvc.distributor.links.wan;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -69,7 +70,22 @@ public class TcpWanLink extends LinkBase implements ILink
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
+	/**
+	 * This class is used on both ends. When a TcpWanLink connects to a Relay, internally the
+	 * relay will create a new TcpWanLink instance with the exception that the socket used will
+	 * be the incoming one, rather than a newly created one. This is how we set that socket.
+	 * 
+	 * @throws DiscoException If the connection is already up (can't set socket on an active connection)
+	 */
+	public void setSocket( Socket socket ) throws DiscoException
+	{
+		if( isUp() )
+			throw new DiscoException( "Link is already up, cannot set socket" );
+		
+		this.socket = socket;
+	}
+	
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,20 +101,6 @@ public class TcpWanLink extends LinkBase implements ILink
 		if( isUp() )
 			return;
 
-		// if we pass null it will create a new socket based on config
-		up( null );
-	}
-
-	/**
-	 * The same as {@link up}, except that the socket has been created elsewhere. This is to
-	 * allow the auto-connection of WAN links to Relays. The WAN Link connects to a Relay, which
-	 * then creates a new local WAN link object and wires it into the Relay's distributor.
-	 */
-	public void up( Socket existingSocket )
-	{
-		if( isUp() )
-			throw new DiscoException( "WAN link is already up" );
-
 		//
 		// 1. Make sure we have everything we need
 		//
@@ -109,61 +111,60 @@ public class TcpWanLink extends LinkBase implements ILink
 		logger.debug( "Link Mode: WAN" );
 
 		//
-		// 2. Create the socket (or use existing) and connect to the relay
+		// 2. Create Socket
+		//    If we don't aleady have a socket, create one and connect to the relay
+		//    If we are running inside a relay, the socket will be set externally
 		//
-		initializeSocket( existingSocket ); // may be null
-		
+		if( this.socket == null )
+		{
+			// a. Resolve the address, it may be one of the symbolic values
+			InetAddress relayAddress = NetworkUtils.resolveInetAddress( linkConfiguration.getWanAddress() );
+			InetSocketAddress address = new InetSocketAddress( relayAddress, linkConfiguration.getWanPort() );
+
+			try
+			{
+    			// b. Create the socket and set its options
+    			this.socket = new Socket();
+    			this.socket.setTcpNoDelay( true );
+    			this.socket.setPerformancePreferences( 0, 1, 1 );
+    		
+    			// c. Connect to the socket
+    			this.socket.connect( address, 5000/*timeout*/ );
+			}
+			catch( SocketTimeoutException se )
+			{
+				this.socket = null;
+				throw new DiscoException( "("+address+") "+se.getMessage() );
+			}
+			catch( Exception e )
+			{
+				this.linkUp = true; /* otherwise will short-circuit */
+				down();
+				throw new DiscoException( "Error bringing TCP link up: "+e.getMessage(), e );
+			}
+		}
+
 		//
-		// 3. Start the receiver processing thread
+		// 3. Connect the Streams
+		try
+		{
+			this.instream = new DataInputStream( socket.getInputStream() );
+			this.outstream = new DataOutputStream( socket.getOutputStream() );
+		}
+		catch( Exception e )
+		{
+			this.linkUp = true; /* otherwise will short-circuit */
+			down();
+			throw new DiscoException( "Error bringing TCP link up: "+e.getMessage(), e );
+		}
+
+		//
+		// 4. Start the receiver processing thread
 		//
 		this.receiveThread = new Receiver();
 		this.receiveThread.start();
 		
 		super.linkUp = true;
-	}
-
-
-	/**
-	 * Create the socket and connect to the remote Relay. Open the streams so that we are ready
-	 * to process.
-	 */
-	private void initializeSocket( Socket existing )
-	{
-		// 1. Resolve the address, it may be one of the symbolic values
-		InetAddress relayAddress = NetworkUtils.resolveInetAddress( linkConfiguration.getWanAddress() );
-		InetSocketAddress address = new InetSocketAddress( relayAddress, linkConfiguration.getWanPort() );
-
-		try
-		{
-			if( existing == null )
-			{
-				// 2. Create the socket and set its options
-				this.socket = new Socket();
-    			this.socket.setTcpNoDelay( true );
-    			this.socket.setPerformancePreferences( 0, 1, 1 );
-    		
-    			// 3. Connect to the socket
-    			this.socket.connect( address, 5000/*timeout*/ );
-			}
-			else
-			{
-				this.socket = existing;
-			}
-			
-			// 4. Get the streams
-			this.instream = new DataInputStream( socket.getInputStream() );
-			this.outstream = new DataOutputStream( socket.getOutputStream() );
-		}
-		catch( SocketTimeoutException se )
-		{
-			this.socket = null;
-			throw new DiscoException( "("+address+") "+se.getMessage() );
-		}
-		catch( Exception e )
-		{
-			down();
-			throw new DiscoException( "Error bringing TCP link up: "+e.getMessage(), e );
-		}
 	}
 
 	public void down()
@@ -174,14 +175,7 @@ public class TcpWanLink extends LinkBase implements ILink
 		logger.debug( "Taking down link: "+super.getName() );
 		
 		//
-		// 1. Stop processing incoming messages
-		//
-		this.receiveThread.interrupt();
-		ThreadUtils.exceptionlessThreadJoin( this.receiveThread );
-		this.receiveThread = null;
-		
-		//
-		// 2. Take the connection down
+		// 1. Take the connection down
 		//
 		try
 		{
@@ -198,7 +192,17 @@ public class TcpWanLink extends LinkBase implements ILink
 			this.outstream = null;
 			super.linkUp = false;
 		}
-		
+
+		//
+		// 2. Stop processing incoming messages
+		//
+		if( this.receiveThread != null )
+		{
+    		this.receiveThread.interrupt();
+    		ThreadUtils.exceptionlessThreadJoin( this.receiveThread );
+    		this.receiveThread = null;
+		}
+
 		logger.debug( "Link is down" );
 		super.linkUp = false;
 	}
@@ -231,8 +235,8 @@ public class TcpWanLink extends LinkBase implements ILink
 		{
 			// return raw configuration data
 			return String.format( "{ WAN, address:%s, port:%d, transport:tcp }",
-			                      linkConfiguration.getRelayAddress(),
-			                      linkConfiguration.getRelayPort() );
+			                      linkConfiguration.getWanAddress(),
+			                      linkConfiguration.getWanPort() );
 		}
 	}
 
@@ -259,9 +263,21 @@ public class TcpWanLink extends LinkBase implements ILink
 	private void receiveNext() throws IOException
 	{
 		// 1. Wait for the next message
-		int length = instream.readInt();
-		byte[] payload = new byte[length];
-		instream.readFully( payload );
+		byte[] payload = null;
+		try
+		{
+			int length = instream.readInt();
+			payload = new byte[length];
+			instream.readFully( payload );
+		}
+		catch( EOFException eof )
+		{
+			// if we hit EOF, the other end disconnected on us
+			logger.info( "Remote disconnection "+socket.getRemoteSocketAddress() );
+			reflector.getDistributor().takeDown( this );
+			throw eof;
+		}
+
 
 		// 2. Turn it into a PDU and hand-off for processings
 		try
@@ -309,8 +325,7 @@ public class TcpWanLink extends LinkBase implements ILink
 					receiveNext();
 			}
 			catch( IOException ioe )
-			{
-			}
+			{}
 		}
 	}
 
