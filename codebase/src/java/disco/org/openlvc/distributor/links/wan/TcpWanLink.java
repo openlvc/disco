@@ -84,7 +84,21 @@ public class TcpWanLink extends LinkBase implements ILink
 	{
 		if( isUp() )
 			return;
-		
+
+		// if we pass null it will create a new socket based on config
+		up( null );
+	}
+
+	/**
+	 * The same as {@link up}, except that the socket has been created elsewhere. This is to
+	 * allow the auto-connection of WAN links to Relays. The WAN Link connects to a Relay, which
+	 * then creates a new local WAN link object and wires it into the Relay's distributor.
+	 */
+	public void up( Socket existingSocket )
+	{
+		if( isUp() )
+			throw new DiscoException( "WAN link is already up" );
+
 		//
 		// 1. Make sure we have everything we need
 		//
@@ -95,23 +109,48 @@ public class TcpWanLink extends LinkBase implements ILink
 		logger.debug( "Link Mode: WAN" );
 
 		//
-		// 2. Create the socket and connect to the relay
+		// 2. Create the socket (or use existing) and connect to the relay
 		//
-		// Resolve the address, it may be one of the symbolic values
+		initializeSocket( existingSocket ); // may be null
+		
+		//
+		// 3. Start the receiver processing thread
+		//
+		this.receiveThread = new Receiver();
+		this.receiveThread.start();
+		
+		super.linkUp = true;
+	}
+
+
+	/**
+	 * Create the socket and connect to the remote Relay. Open the streams so that we are ready
+	 * to process.
+	 */
+	private void initializeSocket( Socket existing )
+	{
+		// 1. Resolve the address, it may be one of the symbolic values
 		InetAddress relayAddress = NetworkUtils.resolveInetAddress( linkConfiguration.getWanAddress() );
 		InetSocketAddress address = new InetSocketAddress( relayAddress, linkConfiguration.getWanPort() );
-		
+
 		try
 		{
-			// 1. Create the socket and set its options
-			this.socket = new Socket();
-			this.socket.setTcpNoDelay( true );
-			this.socket.setPerformancePreferences( 0, 1, 1 );
-		
-			// 2. Connect to the socket
-			this.socket.connect( address, 5000/*timeout*/ );
+			if( existing == null )
+			{
+				// 2. Create the socket and set its options
+				this.socket = new Socket();
+    			this.socket.setTcpNoDelay( true );
+    			this.socket.setPerformancePreferences( 0, 1, 1 );
+    		
+    			// 3. Connect to the socket
+    			this.socket.connect( address, 5000/*timeout*/ );
+			}
+			else
+			{
+				this.socket = existing;
+			}
 			
-			// 3. Get the streams
+			// 4. Get the streams
 			this.instream = new DataInputStream( socket.getInputStream() );
 			this.outstream = new DataOutputStream( socket.getOutputStream() );
 		}
@@ -124,17 +163,9 @@ public class TcpWanLink extends LinkBase implements ILink
 		{
 			down();
 			throw new DiscoException( "Error bringing TCP link up: "+e.getMessage(), e );
-		}	
-		
-		//
-		// 3. Start the receiver processing thread
-		//
-		this.receiveThread = new Receiver();
-		this.receiveThread.start();
-		
-		super.linkUp = true;
+		}
 	}
-	
+
 	public void down()
 	{
 		if( isDown() )
