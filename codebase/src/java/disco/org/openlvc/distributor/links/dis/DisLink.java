@@ -133,16 +133,13 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 	public String getStatusSummary()
 	{
 		// if link has never been up, return configuration information
-		if( opsCenter == null )
+		if( isUp() )
 		{
-			return String.format( "{ DIS, address:%s, port:%d, nic:%s }",
-			                      linkConfiguration.getDisAddress(),
-			                      linkConfiguration.getDisPort(),
-			                      linkConfiguration.getDisNic() );
+			return opsCenter.getMetrics().getSummaryString();
 		}
 		else
 		{
-			return opsCenter.getMetrics().getSummaryString();
+			return getConfigSummary();
 		}
 	}
 	
@@ -151,6 +148,7 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 		// if link has never been up, return configuration information
 		if( isUp() )
 		{
+			// return live, resolved connection information
 			return String.format( "{ DIS, address:%s, port:%d, nic:%s }",
 			                      opsCenter.getConfiguration().getUdpConfiguration().getAddress(),
 			                      opsCenter.getConfiguration().getUdpConfiguration().getPort(),
@@ -158,7 +156,11 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 		}
 		else
 		{
-			return getStatusSummary();
+			// return raw configuration information
+			return String.format( "{ DIS, address:%s, port:%d, nic:%s }",
+			                      linkConfiguration.getDisAddress(),
+			                      linkConfiguration.getDisPort(),
+			                      linkConfiguration.getDisNic() );
 		}
 	}
 	

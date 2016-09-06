@@ -146,6 +146,13 @@ public class LinkConfiguration
 				this.setWanBundlingSize( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING_TIME) )
 				this.setWanBundlingTime( value );
+			// Relay Settings
+			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_ADDRESS) )
+				this.setRelayAddress( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_PORT) )
+				this.setRelayPort( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_TRANSPORT) )
+				this.setRelayTransport( value );
 			else
 				; // skip
 		}
@@ -386,7 +393,7 @@ public class LinkConfiguration
 		set( LINK_WAN_PORT, port );
 	}
 	
-	public void setWanPort( String port )
+	private void setWanPort( String port )
 	{
 		setWanPort( Integer.parseInt(port) );
 	}
@@ -406,7 +413,7 @@ public class LinkConfiguration
 		return getWanTransport() == TransportType.TCP;
 	}
 
-	public void setWanTransport( String transport )
+	private void setWanTransport( String transport )
 	{
 		setWanTransport( TransportType.valueOfIgnoreCase(transport) );
 	}
@@ -426,7 +433,7 @@ public class LinkConfiguration
 		set( LINK_WAN_BUNDLING, enableBundling );
 	}
 	
-	public void setWanBundling( String bundling )
+	private void setWanBundling( String bundling )
 	{
 		setWanBundling( StringUtils.stringToBoolean(bundling) );
 	}
@@ -446,7 +453,7 @@ public class LinkConfiguration
 		set( LINK_WAN_BUNDLING_SIZE, size );
 	}
 	
-	public void setWanBundlingSizeBytes( int bytes )
+	public void setWanBundlingSize( int bytes )
 	{
 		set( LINK_WAN_BUNDLING_SIZE, ""+bytes+"b" );
 	}
@@ -467,11 +474,55 @@ public class LinkConfiguration
 	/**
 	 * If there are no packets in this many milliseconds, flush any bundled set.
 	 */
-	public void setWanBundlingTime( String millis )
+	private void setWanBundlingTime( String millis )
 	{
 		setWanBundlingTime( Integer.parseInt(millis) );
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// Relay Properties   //////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void setRelayAddress( String address )
+	{
+		set( LINK_RELAY_ADDRESS, address );
+	}
 	
+	public String getRelayAddress()
+	{
+		return getAsString( LINK_RELAY_ADDRESS, "GLOBAL" );
+	}
+	
+	public void setRelayPort( int port )
+	{
+		set( LINK_RELAY_PORT, ""+port );
+	}
+	
+	private void setRelayPort( String port )
+	{
+		Integer.parseInt( port );
+		set( LINK_RELAY_PORT, port );
+	}
+	
+	public int getRelayPort()
+	{
+		return getAsInt( LINK_RELAY_PORT, 4919 );
+	}
+	
+	public void setRelayTransport( TransportType transport )
+	{
+		setRelayTransport( transport.name().toLowerCase() );
+	}
+	
+	private void setRelayTransport( String transport )
+	{
+		set( LINK_RELAY_TRANSPORT, transport.toLowerCase() );
+	}
+	
+	public TransportType getRelayTransport()
+	{
+		return TransportType.valueOfIgnoreCase( getAsString(LINK_RELAY_TRANSPORT,"tcp") );
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

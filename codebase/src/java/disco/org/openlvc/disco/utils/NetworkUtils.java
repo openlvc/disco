@@ -25,6 +25,7 @@ import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -53,8 +54,64 @@ public class NetworkUtils
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static InetAddress getByName( String name ) throws DiscoException
+	/**
+	 * Gets an InetAddress, performing substitutions for common symbolic names.
+	 * If any of the following names are found, they will be replaced with the address
+	 * of the first local network interface that matches.
+	 * <p/>
+	 * If none is found, null will be returned. 
+	 * 
+	 * <ul>
+	 *   <li><code>LOOPBACK</code></li>
+	 *   <li><code>LINK_LOCAL</code></li>
+	 *   <li><code>SITE_LOCAL</code></li>
+	 *   <li><code>GLOBAL</code></li>
+	 * </ul>
+	 * 
+	 * If the name is not symbolic, a direct <code>InetAddress.getByName()</code> will be
+	 * run, which should match any domain names, or direct IP address references. Should
+	 * it not, an exception will be thrown.
+	 * 
+	 * @param name The name or ip address to look up
+	 * @return The InetAddress that matches, or null if a symbolic name is passed but none is found
+	 * @throws DiscoException If the given non-symbolic name doesn't match an IP or valid host name
+	 */
+	public static InetAddress resolveInetAddress( String name ) throws DiscoException
 	{
+		if( name.equalsIgnoreCase("LOOPBACK" ) )
+			return InetAddress.getLoopbackAddress();
+
+		// Get a list of all the nics we have. The one we want will (hopefully) be in here somewhere!
+		List<InetAddress> pool = getListOfNetworkAddresses();
+
+		if( name.equalsIgnoreCase("LINK_LOCAL") )
+		{
+			return pool.stream()
+			           .filter( address -> address.isLinkLocalAddress() )
+			           .findFirst()
+			           .get();
+		}
+		
+		if( name.equalsIgnoreCase("SITE_LOCAL") )
+		{
+			return pool.stream()
+			           .filter( address -> address.isSiteLocalAddress() )
+			           .findFirst()
+			           .get();
+		}
+		
+		if( name.equalsIgnoreCase("GLOBAL") )
+		{
+			return pool.stream()
+			           .filter( address -> address.isLoopbackAddress() == false )
+			           .filter( address -> address.isAnyLocalAddress() == false )
+			           .filter( address -> address.isLinkLocalAddress() == false )
+			           .filter( address -> address.isSiteLocalAddress() == false )
+			           .findFirst()
+			           .get();
+		}
+		
+		// Try a direct name match
 		try
 		{
     		// TODO Implement something clever that will loop up the following symbols
@@ -280,16 +337,40 @@ public class NetworkUtils
 		}
 	}
 	
-	private static List<NetworkInterface> getListOfNetworkInterfaces() throws Exception
+	private static List<NetworkInterface> getListOfNetworkInterfaces() throws DiscoException
 	{
-		List<NetworkInterface> interfaces = new ArrayList<NetworkInterface>();
-		Enumeration<NetworkInterface> temp = NetworkInterface.getNetworkInterfaces();
-		while( temp.hasMoreElements() )
-			interfaces.add( temp.nextElement() );
-		
-		return interfaces;
+		try
+		{
+    		List<NetworkInterface> interfaces = new ArrayList<NetworkInterface>();
+    		Enumeration<NetworkInterface> temp = NetworkInterface.getNetworkInterfaces();
+    		while( temp.hasMoreElements() )
+    			interfaces.add( temp.nextElement() );
+    		
+    		return interfaces;
+		}
+		catch( SocketException se )
+		{
+			throw new DiscoException( "Exception fetching all networks interfaces: "+se.getMessage(), se );
+		}
 	}
 
+	/**
+	 * Return a list of all addresses associated with any active NIC in this computer.
+	 */
+	private static List<InetAddress> getListOfNetworkAddresses() throws DiscoException
+	{
+		List<NetworkInterface> nics = getListOfNetworkInterfaces();
+		List<InetAddress> pool = new ArrayList<>();
+		for( NetworkInterface nic : nics )
+		{
+			Enumeration<InetAddress> addresses = nic.getInetAddresses();
+			while( addresses.hasMoreElements() )
+				pool.add( addresses.nextElement() );
+		}
+		
+		return pool;
+	}
+	
 	/**
 	 * Wraps up `InetAddress.getByName(String)` so that it throws a `DiscoException`
 	 * @param name

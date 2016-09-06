@@ -70,7 +70,7 @@ public class WanLink extends LinkBase implements ILink
 			throw new RuntimeException( "Nobody has told us where the reflector is yet" );
 
 		logger.debug( "Bringing up link: "+super.getName() );
-		logger.debug( "Link Mode: Relay" );
+		logger.debug( "Link Mode: WAN" );
 		
 		// 2. Create the transport and connect
 		this.transport = createTransport();
