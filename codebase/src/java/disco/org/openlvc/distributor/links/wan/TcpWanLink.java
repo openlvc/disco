@@ -17,11 +17,18 @@
  */
 package org.openlvc.distributor.links.wan;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.PduFactory;
+import org.openlvc.disco.utils.NetworkUtils;
 import org.openlvc.disco.utils.ThreadUtils;
 import org.openlvc.distributor.ILink;
 import org.openlvc.distributor.LinkBase;
@@ -29,7 +36,7 @@ import org.openlvc.distributor.Message;
 import org.openlvc.distributor.Reflector;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 
-public class WanLink extends LinkBase implements ILink
+public class TcpWanLink extends LinkBase implements ILink
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -39,18 +46,24 @@ public class WanLink extends LinkBase implements ILink
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private Reflector reflector;
-	private ITransport transport;
+
+	private Socket socket;
+	private DataInputStream instream;
+	private DataOutputStream outstream;
 	private Receiver receiveThread;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-
-	public WanLink( LinkConfiguration linkConfiguration )
+	public TcpWanLink( LinkConfiguration linkConfiguration )
 	{
 		super( linkConfiguration );
-		this.reflector = null;   // set in setReflector() prior to call to up()
-		this.transport = null;   // set in up()
+		this.reflector     = null;   // set in setReflector() prior to call to up()
+
+		this.socket        = null;   // set in up()
+		this.instream      = null;   // set in up()
+		this.outstream     = null;   // set in up()
+		this.receiveThread = null;   // set in up()
 	}
 
 	//----------------------------------------------------------
@@ -60,23 +73,62 @@ public class WanLink extends LinkBase implements ILink
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Open a new socket to the next relay and start the thread
+	 * that will process incoming messages.
+	 * 
+	 * @throws DiscoException If there is a timeout trying to connect to the relay, or it can't
+	 *                        be contacted
+	 */
 	public void up()
 	{
 		if( isUp() )
 			return;
 		
+		//
 		// 1. Make sure we have everything we need
+		//
 		if( this.reflector == null )
 			throw new RuntimeException( "Nobody has told us where the reflector is yet" );
 
 		logger.debug( "Bringing up link: "+super.getName() );
 		logger.debug( "Link Mode: WAN" );
+
+		//
+		// 2. Create the socket and connect to the relay
+		//
+		// Resolve the address, it may be one of the symbolic values
+		InetAddress relayAddress = NetworkUtils.resolveInetAddress( linkConfiguration.getWanAddress() );
+		InetSocketAddress address = new InetSocketAddress( relayAddress, linkConfiguration.getWanPort() );
 		
-		// 2. Create the transport and connect
-		this.transport = createTransport();
-		this.transport.up();
+		try
+		{
+			// 1. Create the socket and set its options
+			this.socket = new Socket();
+			this.socket.setTcpNoDelay( true );
+			this.socket.setPerformancePreferences( 0, 1, 1 );
 		
-		// 3. Start the receiver thread processing
+			// 2. Connect to the socket
+			this.socket.connect( address, 5000/*timeout*/ );
+			
+			// 3. Get the streams
+			this.instream = new DataInputStream( socket.getInputStream() );
+			this.outstream = new DataOutputStream( socket.getOutputStream() );
+		}
+		catch( SocketTimeoutException se )
+		{
+			this.socket = null;
+			throw new DiscoException( "("+address+") "+se.getMessage() );
+		}
+		catch( Exception e )
+		{
+			down();
+			throw new DiscoException( "Error bringing TCP link up: "+e.getMessage(), e );
+		}	
+		
+		//
+		// 3. Start the receiver processing thread
+		//
 		this.receiveThread = new Receiver();
 		this.receiveThread.start();
 		
@@ -90,25 +142,67 @@ public class WanLink extends LinkBase implements ILink
 		
 		logger.debug( "Taking down link: "+super.getName() );
 		
-		// 1. Cut off the incoming stream
-		transport.down();
-		
-		// 2. Kill the receiver thread
+		//
+		// 1. Stop processing incoming messages
+		//
 		this.receiveThread.interrupt();
 		ThreadUtils.exceptionlessThreadJoin( this.receiveThread );
+		this.receiveThread = null;
+		
+		//
+		// 2. Take the connection down
+		//
+		try
+		{
+			this.socket.close();
+		}
+		catch( Exception e )
+		{
+			throw new DiscoException( "Error bringing TCP transport down: "+e.getMessage(), e );
+		}
+		finally
+		{
+			this.socket = null;
+			this.instream = null;
+			this.outstream = null;
+			super.linkUp = false;
+		}
 		
 		logger.debug( "Link is down" );
 		super.linkUp = false;
 	}
 
-	public String getConfigSummary()
-	{
-		return "{ Not Implemented }";
-	}
-
 	public String getStatusSummary()
 	{
-		return "{ Not Implemented }";
+		// if link has never been up, return configuration information
+		if( isUp() )
+		{
+			// TODO Replace with metrics
+			return getConfigSummary();
+		}
+		else
+		{
+			return getConfigSummary();
+		}
+	}
+	
+	public String getConfigSummary()
+	{
+		// if link has never been up, return configuration information
+		if( isUp() )
+		{
+			// return live, resolved connection information
+			return String.format( "{ WAN, address:%s, port:%d, transport:tcp }",
+			                      socket.getInetAddress(),
+			                      socket.getPort() );
+		}
+		else
+		{
+			// return raw configuration data
+			return String.format( "{ WAN, address:%s, port:%d, transport:tcp }",
+			                      linkConfiguration.getRelayAddress(),
+			                      linkConfiguration.getRelayPort() );
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,20 +213,26 @@ public class WanLink extends LinkBase implements ILink
 		try
 		{
 			byte[] pdu = message.getPdu().toByteArray();
-			transport.reflect( pdu );
+			outstream.writeInt( pdu.length );
+			outstream.write( pdu );
 		}
 		catch( IOException ioex )
 		{
-			logger.error( "Failed to convert PDU into byte[]: "+ioex.getMessage(), ioex );
+			logger.error( "Failed converting/writing PDU: "+ioex.getMessage(), ioex );
 		}
 	}
 
 	/**
-	 * Processes the received payload and passes it up to the reflector.
-	 * This method is called from the Receiver thread.
+	 * Read the next PDU from the socket and process it.
 	 */
-	private void receive( byte[] payload )
+	private void receiveNext() throws IOException
 	{
+		// 1. Wait for the next message
+		int length = instream.readInt();
+		byte[] payload = new byte[length];
+		instream.readFully( payload );
+
+		// 2. Turn it into a PDU and hand-off for processings
 		try
 		{
 			// 1. Turn the payload into a PDU
@@ -157,24 +257,8 @@ public class WanLink extends LinkBase implements ILink
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-
-	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	private ITransport createTransport() throws DiscoException
-	{
-		switch( super.linkConfiguration.getWanTransport() )
-		{
-			//case UDP:
-			//	return new UdpTransport( super.linkConfiguration );
-			case TCP:
-				return new TcpTransport( super.linkConfiguration );
-			default:
-				throw new DiscoException( "Unknown Relay transport type: "+super.linkConfiguration.getWanTransport() );
-		}
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
@@ -191,7 +275,7 @@ public class WanLink extends LinkBase implements ILink
 			{
 				// Process requests from the client
 				while( Thread.interrupted() == false )
-					receive( transport.receiveNext() );
+					receiveNext();
 			}
 			catch( IOException ioe )
 			{

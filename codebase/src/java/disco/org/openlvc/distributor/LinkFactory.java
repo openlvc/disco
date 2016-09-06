@@ -20,7 +20,7 @@ package org.openlvc.distributor;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 import org.openlvc.distributor.links.dis.DisLink;
 import org.openlvc.distributor.links.relay.RelayLink;
-import org.openlvc.distributor.links.wan.WanLink;
+import org.openlvc.distributor.links.wan.TcpWanLink;
 
 public class LinkFactory
 {
@@ -50,11 +50,26 @@ public class LinkFactory
 			case DIS:
 				return new DisLink( linkConfiguration );
 			case WAN:
-				return new WanLink( linkConfiguration );
+				return createWanLink( linkConfiguration );
 			case RELAY:
 				return new RelayLink( linkConfiguration );
 			default:
 				throw new IllegalArgumentException( "Unknown mode: "+linkConfiguration.getMode() );
+		}
+	}
+
+	/**
+	 * Used to create the various types of WAN links. Should only be called if the mode is WAN.
+	 */
+	private static ILink createWanLink( LinkConfiguration linkConfiguration )
+	{
+		switch( linkConfiguration.getWanTransport() )
+		{
+			case TCP:
+				return new TcpWanLink( linkConfiguration );
+			case UDP:
+			default:
+				throw new IllegalArgumentException( "Unsupported Transport: "+linkConfiguration.getWanTransport() );
 		}
 	}
 }
