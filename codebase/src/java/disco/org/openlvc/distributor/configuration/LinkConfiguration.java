@@ -23,7 +23,7 @@ import java.util.Random;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.utils.StringUtils;
 import org.openlvc.distributor.Mode;
-import org.openlvc.distributor.links.relay.TransportType;
+import org.openlvc.distributor.TransportType;
 
 public class LinkConfiguration
 {
@@ -59,12 +59,16 @@ public class LinkConfiguration
 	public static final String LINK_DIS_LOG_FILE        = "dis.logfile";
 	public static final String LINK_DIS_LOG_TO_FILE     = "dis.logtofile";
 	
-	public static final String LINK_RELAY_ADDRESS         = "relay.address";
-	public static final String LINK_RELAY_PORT            = "relay.port";
-	public static final String LINK_RELAY_TRANSPORT       = "relay.transport"; // tcp|udp
-	public static final String LINK_RELAY_BUNDLING        = "relay.bundling";
-	public static final String LINK_RELAY_BUNDLING_SIZE   = "relay.bundling.maxSize";
-	public static final String LINK_RELAY_BUNDLING_TIME   = "relay.bundling.maxTime";
+	public static final String LINK_WAN_ADDRESS         = "wan.relay";
+	public static final String LINK_WAN_PORT            = "wan.port";
+	public static final String LINK_WAN_TRANSPORT       = "wan.transport"; // tcp|udp
+	public static final String LINK_WAN_BUNDLING        = "wan.bundling";
+	public static final String LINK_WAN_BUNDLING_SIZE   = "wan.bundling.maxSize";
+	public static final String LINK_WAN_BUNDLING_TIME   = "wan.bundling.maxTime";
+	
+	public static final String LINK_RELAY_ADDRESS       = "relay.address";
+	public static final String LINK_RELAY_PORT          = "relay.port"; // tcp|udp
+	public static final String LINK_RELAY_TRANSPORT     = "relay.transport";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -129,19 +133,19 @@ public class LinkConfiguration
 				this.setDisLogFile( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_DIS_LOG_TO_FILE) )
 				this.setDisLogToFile( value );
-			// Relay Settings
-			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_ADDRESS) )
-				this.setRelayAddress( value );
-			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_PORT) )
-				this.setRelayPort( value );
-			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_TRANSPORT) )
-				this.setRelayTransport( value );
-			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_BUNDLING) )
-				this.setRelayBundling( value );
-			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_BUNDLING_SIZE) )
-				this.setRelayBundlingSize( value );
-			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_BUNDLING_TIME) )
-				this.setRelayBundlingTime( value );
+			// WAN Settings
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_ADDRESS) )
+				this.setWanAddress( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_PORT) )
+				this.setWanPort( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_TRANSPORT) )
+				this.setWanTransport( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING) )
+				this.setWanBundling( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING_SIZE) )
+				this.setWanBundlingSize( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING_TIME) )
+				this.setWanBundlingTime( value );
 			else
 				; // skip
 		}
@@ -357,115 +361,115 @@ public class LinkConfiguration
 	////////////////////////////////////////////////////////////////////////////////////////////
 	// WAN Properties   ////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public String getRelayAddress()
+	public String getWanAddress()
 	{
-		return getAsString( LINK_RELAY_ADDRESS );
+		return getAsString( LINK_WAN_ADDRESS );
 	}
 	
-	public void setRelayAddress( String address )
+	public void setWanAddress( String address )
 	{
-		set( LINK_RELAY_ADDRESS, address );
+		set( LINK_WAN_ADDRESS, address );
 	}
 	
-	public int getRelayPort()
+	public int getWanPort()
 	{
-		return getAsInt( LINK_RELAY_PORT, 4919/*D-I-S*/ );
+		return getAsInt( LINK_WAN_PORT, 4919/*D-I-S*/ );
 	}
 
-	public void setRelayPort( int port )
+	public void setWanPort( int port )
 	{
 		if( port > 65536 )
-			throw new IllegalArgumentException( "Relay port must be less than 65536" );
+			throw new IllegalArgumentException( "WAN port must be less than 65536" );
 		else if( port < 1 )
-			throw new IllegalArgumentException( "Relay port must be positive number" );
+			throw new IllegalArgumentException( "WAN port must be positive number" );
 
-		set( LINK_RELAY_PORT, port );
+		set( LINK_WAN_PORT, port );
 	}
 	
-	public void setRelayPort( String port )
+	public void setWanPort( String port )
 	{
-		setRelayPort( Integer.parseInt(port) );
-	}
-
-	public TransportType getRelayTransport()
-	{
-		return TransportType.valueOfIgnoreCase( getAsString(LINK_RELAY_TRANSPORT,"udp") );
+		setWanPort( Integer.parseInt(port) );
 	}
 
-	public boolean isRelayTransportUdp()
+	public TransportType getWanTransport()
 	{
-		return getRelayTransport() == TransportType.UDP;
-	}
-	
-	public boolean isRelayTransportTcp()
-	{
-		return getRelayTransport() == TransportType.TCP;
+		return TransportType.valueOfIgnoreCase( getAsString(LINK_WAN_TRANSPORT,"udp") );
 	}
 
-	public void setRelayTransport( String transport )
+	public boolean isWanTransportUdp()
 	{
-		setRelayTransport( TransportType.valueOfIgnoreCase(transport) );
+		return getWanTransport() == TransportType.UDP;
 	}
 	
-	public void setRelayTransport( TransportType transport )
+	public boolean isWanTransportTcp()
 	{
-		set( LINK_RELAY_TRANSPORT, transport.name().toLowerCase() );
+		return getWanTransport() == TransportType.TCP;
 	}
 
-	public boolean isRelayBundling()
+	public void setWanTransport( String transport )
 	{
-		return getAsBoolean( LINK_RELAY_BUNDLING, false );
+		setWanTransport( TransportType.valueOfIgnoreCase(transport) );
 	}
 	
-	public void setRelayBundling( boolean enableBundling )
+	public void setWanTransport( TransportType transport )
 	{
-		set( LINK_RELAY_BUNDLING, enableBundling );
-	}
-	
-	public void setRelayBundling( String bundling )
-	{
-		setRelayBundling( StringUtils.stringToBoolean(bundling) );
-	}
-	
-	public String getRelayBundlingSize()
-	{
-		return getAsString( LINK_RELAY_BUNDLING_SIZE, "1400b" );
+		set( LINK_WAN_TRANSPORT, transport.name().toLowerCase() );
 	}
 
-	public int getRelayBundlingSizeBytes()
+	public boolean isWanBundling()
 	{
-		return (int)StringUtils.bytesFromString( getRelayBundlingSize() );
+		return getAsBoolean( LINK_WAN_BUNDLING, false );
 	}
 	
-	public void setRelayBundlingSize( String size )
+	public void setWanBundling( boolean enableBundling )
 	{
-		set( LINK_RELAY_BUNDLING_SIZE, size );
+		set( LINK_WAN_BUNDLING, enableBundling );
 	}
 	
-	public void setRelayBundlingSizeBytes( int bytes )
+	public void setWanBundling( String bundling )
 	{
-		set( LINK_RELAY_BUNDLING_SIZE, ""+bytes+"b" );
+		setWanBundling( StringUtils.stringToBoolean(bundling) );
 	}
 	
-	public int getRelayBundlingTime()
+	public String getWanBundlingSize()
 	{
-		return getAsInt( LINK_RELAY_BUNDLING_TIME );
+		return getAsString( LINK_WAN_BUNDLING_SIZE, "1400b" );
+	}
+
+	public int getWanBundlingSizeBytes()
+	{
+		return (int)StringUtils.bytesFromString( getWanBundlingSize() );
+	}
+	
+	public void setWanBundlingSize( String size )
+	{
+		set( LINK_WAN_BUNDLING_SIZE, size );
+	}
+	
+	public void setWanBundlingSizeBytes( int bytes )
+	{
+		set( LINK_WAN_BUNDLING_SIZE, ""+bytes+"b" );
+	}
+	
+	public int getWanBundlingTime()
+	{
+		return getAsInt( LINK_WAN_BUNDLING_TIME );
 	}
 	
 	/**
 	 * If there are no packets in this many milliseconds, flush any bundled set.
 	 */
-	public void setRelayBundlingTime( int millis )
+	public void setWanBundlingTime( int millis )
 	{
-		set( LINK_RELAY_BUNDLING_TIME, millis );
+		set( LINK_WAN_BUNDLING_TIME, millis );
 	}
 
 	/**
 	 * If there are no packets in this many milliseconds, flush any bundled set.
 	 */
-	public void setRelayBundlingTime( String millis )
+	public void setWanBundlingTime( String millis )
 	{
-		setRelayBundlingTime( Integer.parseInt(millis) );
+		setWanBundlingTime( Integer.parseInt(millis) );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

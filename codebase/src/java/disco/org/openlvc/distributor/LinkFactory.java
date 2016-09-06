@@ -20,6 +20,7 @@ package org.openlvc.distributor;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 import org.openlvc.distributor.links.dis.DisLink;
 import org.openlvc.distributor.links.relay.RelayLink;
+import org.openlvc.distributor.links.wan.WanLink;
 
 public class LinkFactory
 {
@@ -48,6 +49,8 @@ public class LinkFactory
 		{
 			case DIS:
 				return new DisLink( linkConfiguration );
+			case WAN:
+				return new WanLink( linkConfiguration );
 			case RELAY:
 				return new RelayLink( linkConfiguration );
 			default:

@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.distributor.links.relay;
+package org.openlvc.distributor.links.wan;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -65,8 +65,8 @@ public class TcpTransport implements ITransport
 		if( this.socket != null )
 			return;
 		
-		InetSocketAddress address = new InetSocketAddress( linkConfiguration.getRelayAddress(),
-		                                                   linkConfiguration.getRelayPort() );
+		InetSocketAddress address = new InetSocketAddress( linkConfiguration.getWanAddress(),
+		                                                   linkConfiguration.getWanPort() );
 		
 		try
 		{

@@ -228,12 +228,12 @@ public class Configuration
 			}
 			else
 			{
-				builder.append( "\n       Relay Adddress: "+config.getRelayAddress() );
-				builder.append( "\n           Relay Port: "+config.getRelayPort() );
+				builder.append( "\n       Relay Adddress: "+config.getWanAddress() );
+				builder.append( "\n           Relay Port: "+config.getWanPort() );
 				//builder.append( "\n            Relay NIC: "+config.getWanNic() );
-				builder.append( "\n       Relay Bundling: "+config.isRelayBundling() );
-				builder.append( "\n      Bundle Max Size: "+config.getRelayBundlingSizeBytes() );
-				builder.append( "\n      Bundle Max Time: "+config.getRelayBundlingTime() );
+				builder.append( "\n       Relay Bundling: "+config.isWanBundling() );
+				builder.append( "\n      Bundle Max Size: "+config.getWanBundlingSizeBytes() );
+				builder.append( "\n      Bundle Max Time: "+config.getWanBundlingTime() );
 				
 			}
 			builder.append( "\n" );

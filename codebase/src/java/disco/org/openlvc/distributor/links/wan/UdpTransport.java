@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.distributor.links.relay;
+package org.openlvc.distributor.links.wan;
 
 import java.io.IOException;
 
