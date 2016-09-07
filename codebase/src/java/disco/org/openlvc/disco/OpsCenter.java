@@ -138,6 +138,11 @@ public class OpsCenter
 	{
 		this.pduListener = receiver;
 	}
+	
+	public IPduListener getPduListener()
+	{
+		return this.pduListener;
+	}
 
 	/**
 	 * Hand the given PDU off to the {@link PduSender} to process and forward to the network

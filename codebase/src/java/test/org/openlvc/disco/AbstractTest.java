@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2016 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -15,17 +15,13 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.utils;
+package org.openlvc.disco;
 
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.openlvc.disco.common.CommonSetup;
+import org.openlvc.disco.common.TestListener;
+import org.openlvc.disco.configuration.DiscoConfiguration;
 
-@Test(groups={"utils","coordinates","lla"})
-public class LLATest
+public class AbstractTest
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -43,40 +39,14 @@ public class LLATest
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Test Class Setup/Tear Down   //////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
-	@BeforeClass(alwaysRun=true)
-	public void beforeClass()
+	protected OpsCenter newOpsCenter()
 	{
-	}
-	
-	@BeforeMethod(alwaysRun=true)
-	public void beforeMethod()
-	{
-	}
-
-	@AfterMethod(alwaysRun=true)
-	public void afterMethod()
-	{
-	}
-	
-	@AfterClass(alwaysRun=true)
-	public void afterClass()
-	{
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////
-	/// PDU Testing Methods   /////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
-	@Test
-	public void testDistanceBetweenTwoPoints()
-	{
-		LLA pointA = new LLA( 38.898556, -77.037852, 0 );
-		LLA pointB = new LLA( 38.897147, -77.043934, 0 );
-		double dist = pointB.distanceBetweenHavershine( pointA );
-		Assert.assertEquals( dist, 549.1557912038083 );
-		//System.out.println( "Distance between points: "+dist );
+		DiscoConfiguration configuration = new DiscoConfiguration();
+		configuration.getLoggingConfiguration().setLevel( CommonSetup.CONSOLE_LOG_LEVEL );
+		
+		OpsCenter opscenter = new OpsCenter( configuration );
+		opscenter.setListener( new TestListener() );
+		return opscenter;
 	}
 
 	//----------------------------------------------------------

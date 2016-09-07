@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2016 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -17,17 +17,19 @@
  */
 package org.openlvc.disco.pdu;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
 import org.openlvc.disco.AbstractTest;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups={"pdu","espdu","EntityState"})
-public class EntityStatePduTest extends AbstractTest
+@Test(groups={"stream","streams"})
+public class StreamTests extends AbstractTest
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -44,7 +46,6 @@ public class EntityStatePduTest extends AbstractTest
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Test Class Setup/Tear Down   //////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
@@ -69,27 +70,34 @@ public class EntityStatePduTest extends AbstractTest
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////
-	/// PDU Testing Methods   /////////////////////////////////////////////////////////
+	/// Stream Serialization Testing Methods   ////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-	@Test
-	public void testEntityStatePduSerialize() throws Exception
+
+	public void testDisStreamSerialize()
 	{
-		// turn an ESPDU into a byte[]
+		// Create a PDU to send
 		EntityStatePdu before = new EntityStatePdu();
-		byte[] beforeArray = before.toByteArray();
 		
-		// convert it back
-		EntityStatePdu after = (EntityStatePdu)PduFactory.create( beforeArray );
-		//Assert.assertEquals( after, before );
+		// Create the output stream and write the PDU
+		ByteArrayOutputStream baos = new ByteArrayOutputStream( PDU.MAX_SIZE );
+		DisOutputStream dos = new DisOutputStream( baos );
+		before.to( dos );
 		
-		// turn this one into a byte[]
-		byte[] afterArray = after.toByteArray();
+		// Read the PDU back in
+		ByteArrayInputStream bais = new ByteArrayInputStream( baos.toByteArray() );
+		DisInputStream dis = 
 		
-		// make sure the lengths are the same
-		Assert.assertEquals( afterArray.length, beforeArray.length, "Lengths do not match" );
-		Assert.assertEquals( afterArray, beforeArray );
+		before.t
 	}
 	
+
+	
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

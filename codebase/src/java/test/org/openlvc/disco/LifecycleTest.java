@@ -17,7 +17,7 @@
  */
 package org.openlvc.disco;
 
-import org.openlvc.disco.testapp.TestListener;
+import org.openlvc.disco.common.TestListener;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -53,7 +53,7 @@ public class LifecycleTest
 	
 	@BeforeMethod(alwaysRun=true)
 	public void beforeMethod()
-	{
+	{	
 	}
 
 	@AfterMethod(alwaysRun=true)
@@ -69,8 +69,8 @@ public class LifecycleTest
 	///////////////////////////////////////////////////////////////////////////////////
 	/// PDU Testing Methods   /////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-	@Test
-	public void testLifecycle()
+	@Test(enabled=false)
+	public void testEntityStatePduExchange()
 	{
 		try
 		{

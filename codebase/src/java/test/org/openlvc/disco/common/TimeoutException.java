@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2016 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -15,16 +15,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.testapp;
+package org.openlvc.disco.common;
 
-import org.openlvc.disco.IPduListener;
-import org.openlvc.disco.pdu.PDU;
-
-public class TestListener implements IPduListener
+public class TimeoutException extends RuntimeException
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static final long serialVersionUID = 98121116105109L;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -34,17 +32,43 @@ public class TestListener implements IPduListener
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 
+	/**
+     * Just create an empty exception
+     */
+    public TimeoutException()
+    {
+	    super();
+    }
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	@Override
-	public void receiver( PDU pdu )
+    /**
+	 * @param message The message to create the exception with
+	 */
+	public TimeoutException( String message )
 	{
-		
+		super( message );
 	}
 
-	//----------------------------------------------------------
+	/**
+	 * @param cause The cause of the exception
+	 */
+	public TimeoutException( Throwable cause )
+	{
+		super( cause );
+	}
+
+	/**
+	 * @param message The message to create the exception with
+	 * @param cause The cause of the exception
+	 */
+	public TimeoutException( String message, Throwable cause )
+	{
+		super( message, cause );
+	}
+
+	// ----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 }
