@@ -20,6 +20,7 @@ package org.openlvc.distributor;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 import org.openlvc.distributor.links.dis.DisLink;
 import org.openlvc.distributor.links.logger.LoggingLink;
+import org.openlvc.distributor.links.pulse.PulseLink;
 import org.openlvc.distributor.links.relay.RelayLink;
 import org.openlvc.distributor.links.wan.TcpWanLink;
 
@@ -54,6 +55,8 @@ public class LinkFactory
 				return createWanLink( linkConfiguration );
 			case RELAY:
 				return new RelayLink( linkConfiguration );
+			case PULSE:
+				return new PulseLink( linkConfiguration );
 			case LOGGING:
 				return new LoggingLink( linkConfiguration );
 			default:

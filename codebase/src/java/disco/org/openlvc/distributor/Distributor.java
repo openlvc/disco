@@ -17,7 +17,9 @@
  */
 package org.openlvc.distributor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -131,8 +133,11 @@ public class Distributor
 		reflector.down();
 		
 		// 2. Bring down all the separate links
+		//    Some may be removed because they are transient - can't iterate on
+		//    collection direct without concurrent mod, so make a copy
 		logger.info( "Brining all links down:" );
-		for( ILink link : links.values() )
+		List<ILink> tempList = new ArrayList<>( links.values() );
+		for( ILink link : tempList )
 			takeDown( link );
 	}
 

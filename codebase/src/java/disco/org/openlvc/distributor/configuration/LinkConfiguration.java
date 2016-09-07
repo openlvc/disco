@@ -49,6 +49,7 @@ public class LinkConfiguration
 	//
 	public static final String LINK_MODE                = "mode";
 	
+	// DIS Properties
 	public static final String LINK_DIS_ADDRESS         = "dis.address";
 	public static final String LINK_DIS_PORT            = "dis.port";
 	public static final String LINK_DIS_NIC             = "dis.nic";
@@ -58,22 +59,34 @@ public class LinkConfiguration
 	public static final String LINK_DIS_LOG_LEVEL       = "dis.loglevel";
 	public static final String LINK_DIS_LOG_FILE        = "dis.logfile";
 	public static final String LINK_DIS_LOG_TO_FILE     = "dis.logtofile";
-	
+
+	// WAN Properties
 	public static final String LINK_WAN_ADDRESS         = "wan.relay";
 	public static final String LINK_WAN_PORT            = "wan.port";
 	public static final String LINK_WAN_TRANSPORT       = "wan.transport"; // tcp|udp
 	public static final String LINK_WAN_BUNDLING        = "wan.bundling";
 	public static final String LINK_WAN_BUNDLING_SIZE   = "wan.bundling.maxSize";
 	public static final String LINK_WAN_BUNDLING_TIME   = "wan.bundling.maxTime";
-	
+
+	// Relay Properties
 	public static final String LINK_RELAY_ADDRESS       = "relay.address";
 	public static final String LINK_RELAY_PORT          = "relay.port"; // tcp|udp
 	public static final String LINK_RELAY_TRANSPORT     = "relay.transport";
-	
-	public static final String LINK_LOGGER_LEVEL        = "logger.level";
-	public static final String LINK_LOGGER_USE_FILE     = "logger.logtofile";
-	public static final String LINK_LOGGER_FILE         = "logger.logfile";
 
+	// Traffic Logger properties
+	public static final String LINK_LOGGER_LEVEL        = "logging.level";
+	public static final String LINK_LOGGER_USE_FILE     = "logging.logtofile";
+	public static final String LINK_LOGGER_FILE         = "logging.logfile";
+
+	// Pulse Link Properties
+	public static final String LINK_PULSE_INTERVAL      = "pulse.interval";
+	public static final String LINK_PULSE_MARKING       = "pulse.marking";
+	public static final String LINK_PULSE_ENUM          = "pulse.enumeration";
+	public static final String LINK_PULSE_EX_ID         = "pulse.exerciseId";
+	public static final String LINK_PULSE_SITE_ID       = "pulse.siteId";
+	public static final String LINK_PULSE_APP_ID        = "pulse.appId";
+
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -157,6 +170,19 @@ public class LinkConfiguration
 				this.setRelayPort( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_RELAY_TRANSPORT) )
 				this.setRelayTransport( value );
+			// Heartbeat Settings
+			else if( key.equalsIgnoreCase(prefix+LINK_PULSE_INTERVAL) )
+				this.setPulseInterval( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_PULSE_MARKING) )
+				this.setPulseMarking( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_PULSE_ENUM) )
+				this.setPulseEnumeration( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_PULSE_EX_ID) )
+				this.setPulseExerciseId( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_PULSE_SITE_ID) )
+				this.setPulseSiteId( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_PULSE_APP_ID) )
+				this.setPulseAppId( value );
 			else
 				; // skip
 		}
@@ -235,7 +261,7 @@ public class LinkConfiguration
 	
 	public short getDisExerciseId()
 	{
-		return (short)getAsInt( LINK_DIS_EXID, 1 );
+		return getAsShort( LINK_DIS_EXID, (short)1 );
 	}
 
 	public void setDisExerciseId( int id )
@@ -265,7 +291,7 @@ public class LinkConfiguration
 		if( properties.containsKey(LINK_DIS_SITE_ID) == false )
 			setDisSiteId( "<random>" );
 		
-		return getAsInt( LINK_DIS_SITE_ID );
+		return getAsInt( LINK_DIS_SITE_ID, 1 );
 	}
 	
 	public void setDisSiteId( int id )
@@ -296,7 +322,7 @@ public class LinkConfiguration
 		if( properties.containsKey(LINK_DIS_APP_ID) == false )
 			setDisSiteId( "<random>" );
 		
-		return getAsInt( LINK_DIS_APP_ID );
+		return getAsInt( LINK_DIS_APP_ID, 1 );
 	}
 	
 	public void setDisAppId( int id )
@@ -464,7 +490,7 @@ public class LinkConfiguration
 	
 	public int getWanBundlingTime()
 	{
-		return getAsInt( LINK_WAN_BUNDLING_TIME );
+		return getAsInt( LINK_WAN_BUNDLING_TIME, 30 );
 	}
 	
 	/**
@@ -528,13 +554,104 @@ public class LinkConfiguration
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
+	// Pulse Link Properties   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	private final int getAsInt( String key )
+	private void setPulseInterval( String millis )
 	{
-		return Integer.parseInt( properties.getProperty(key) );
+		Long.parseLong( millis );
+		set( LINK_PULSE_INTERVAL, millis );
 	}
 
+	public void setPulseInterval( int millis )
+	{
+		setPulseInterval( ""+millis );
+	}
+
+	public long getPulseInterval()
+	{
+		return getAsLong( LINK_PULSE_INTERVAL, 5000L );
+	}
+
+	public void setPulseMarking( String marking )
+	{
+		set( LINK_PULSE_MARKING, marking );
+	}
+
+	public String getPulseMarking()
+	{
+		return getAsString( LINK_PULSE_MARKING );
+	}
+	
+	public void setPulseEnumeration( String marking )
+	{
+		set( LINK_PULSE_ENUM, marking );
+	}
+
+	public String getPulseEnumeration()
+	{
+		return getAsString( LINK_PULSE_ENUM );
+	}
+
+	private void setPulseExerciseId( String id )
+	{
+		Short.parseShort( id );
+		set( LINK_PULSE_EX_ID, id );
+	}
+	
+	public void setPulseExerciseId( short id )
+	{
+		setPulseExerciseId( ""+id );
+	}
+	
+	public short getPulseExerciseId()
+	{
+		return getAsShort( LINK_PULSE_EX_ID, (short)1 );
+	}
+
+	private void setPulseSiteId( String id )
+	{
+		Integer.parseInt( id );
+		set( LINK_PULSE_SITE_ID, id );
+	}
+	
+	public void setPulseSiteId( int id )
+	{
+		setPulseSiteId( ""+id );
+	}
+	
+	public int getPulseAppId()
+	{
+		return getAsInt( LINK_PULSE_APP_ID, 0 );
+	}
+
+	private void setPulseAppId( String id )
+	{
+		Integer.parseInt( id );
+		set( LINK_PULSE_APP_ID, id );
+	}
+	
+	public void setPulseAppId( int id )
+	{
+		setPulseAppId( ""+id );
+	}
+	
+	public int getPulseSiteId()
+	{
+		return getAsInt( LINK_PULSE_APP_ID, 0 );
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	private final short getAsShort( String key, short defaultValue )
+	{
+		String value = properties.getProperty( key );
+		if( value == null )
+			return defaultValue;
+		else
+			return Short.parseShort( value );
+	}
+	
 	private final int getAsInt( String key, int defaultValue )
 	{
 		String value = properties.getProperty( key );
@@ -544,6 +661,15 @@ public class LinkConfiguration
 			return Integer.parseInt( value );
 	}
 	
+	private final long getAsLong( String key, long defaultValue )
+	{
+		String value = properties.getProperty( key );
+		if( value == null )
+			return defaultValue;
+		else
+			return Long.parseLong( value );
+	}
+
 	private final String getAsString( String key )
 	{
 		return properties.getProperty( key );
