@@ -204,7 +204,7 @@ public class StringUtils
 			{
 				newline = !newline;
 				if( newline )
-					appendRowSummary( builder, bytes, i );
+					appendRowSummary( builder, bytes, i, 16 );
 				else
 					builder.append( "  " );
 			}
@@ -212,7 +212,7 @@ public class StringUtils
 			builder.append( String.format(" %02X",bytes[i]) );
 		}
 		
-		appendRowSummary( builder, bytes, bytes.length );
+		appendRowSummary( builder, bytes, bytes.length, bytes.length % 16 );
 		return builder.toString();
 	}
 	
@@ -224,9 +224,24 @@ public class StringUtils
 	 * @param bytes The bytes to pull from
 	 * @param limit Read the last 16 bytes from this value backwards (non-inclusive)
 	 */
-	private static void appendRowSummary( StringBuilder builder, byte[] bytes, int limit )
+	private static void appendRowSummary( StringBuilder builder, byte[] bytes, int limit, int count )
 	{
-		for( int i = (limit-16); i < limit; i++ )
+		// write some padding in first
+		if( count != 16 )
+		{
+    		int padding = 15 - count;
+    		for( int i = 0; i < padding; i++ )
+    		{
+    			if( i % 8 == 0 )
+    				builder.append( "  " );
+    
+    			builder.append( "   " );
+    		}
+    		builder.append( " " );
+		}
+
+		// write the summary
+		for( int i = (limit-count); i < limit; i++ )
 		{
 			if( i % 8 == 0 )
 				builder.append( " " );

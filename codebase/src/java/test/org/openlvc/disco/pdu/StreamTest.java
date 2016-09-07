@@ -21,6 +21,12 @@ import java.io.ByteArrayOutputStream;
 
 import org.openlvc.disco.AbstractTest;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.ParameterTypeDesignator;
+import org.openlvc.disco.pdu.record.ArticulationParameter;
+import org.openlvc.disco.pdu.record.ParameterType;
+import org.openlvc.disco.pdu.record.ParameterTypeArticulatedParts;
+import org.openlvc.disco.utils.DisUnsignedInt64;
+import org.openlvc.disco.utils.StringUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -95,6 +101,38 @@ public class StreamTest extends AbstractTest
 		Assert.assertEquals( baos2.toByteArray(), baos.toByteArray() );
 	}
 	
+	@Test
+	public void testDisStreamSerializeWithArticulations() throws Exception
+	{
+		// Create a PDU to send
+		EntityStatePdu before = new EntityStatePdu();
+		ArticulationParameter param1 = new ArticulationParameter();
+		param1.setParameterTypeDesignator( ParameterTypeDesignator.ArticulatedPart );
+		param1.setParameterChangeIndicator( (short)0 );
+		param1.setArticulationAttachmentID( 0 );
+		param1.setParameterTypeVariant( new ParameterType(0,new ParameterTypeArticulatedParts(1,1)) );
+		param1.setArticulationParameterValue( DisUnsignedInt64.MAX_VALUE );
+		before.getArticulationParameter().add( param1 );
+		
+		// Create the output stream and write the PDU
+		ByteArrayOutputStream baos = new ByteArrayOutputStream( PDU.MAX_SIZE );
+		DisOutputStream dos = new DisOutputStream( baos );
+		before.writePdu( dos );
+		dos.flush();
+
+		System.out.println(StringUtils.formatAsWireshark(baos.toByteArray()) );
+		
+		// Read the PDU back in
+		// This call will create a DisInputStream and read through it for us
+		EntityStatePdu after = (EntityStatePdu)PduFactory.create( baos.toByteArray() );	
+		ByteArrayOutputStream baos2 = new ByteArrayOutputStream( PDU.MAX_SIZE );
+		dos = new DisOutputStream( baos2 );
+		after.writePdu( dos );
+		dos.flush();
+		
+		Assert.assertEquals( baos2.toByteArray(), baos.toByteArray() );
+		Assert.assertEquals( after.getPduLength(), before.getPduLength() );
+	}
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
