@@ -35,13 +35,13 @@ public class StringUtils
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Convert, Trim, Manipulate Methods   ////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////	
+
 	/**
 	 * Converts the given string value to a boolean.
 	 * <p/>
@@ -71,7 +71,10 @@ public class StringUtils
 	{
 		return characters > string.length() ? string : string.substring(0,characters);
 	}
-	
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Size Methods   /////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////	
 	/**
 	 * Returns a human readable character string for the given number of bytes. Can specify
 	 * whether this should display in SI units (decimal, 1000x) or binary (1024x).
@@ -164,4 +167,77 @@ public class StringUtils
 			return byteUnit.toBytes( Integer.valueOf(sizePortion) );
 	}
 	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Char Methods   /////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////	
+	public static boolean isAsciiPrintable( char ch )
+	{
+		return ch >= 32 && ch < 127;
+	}
+
+	public static boolean isAsciiPrintable( byte b )
+	{
+		// http://www.asciitable.com/
+		return b >= 0x20 && b < 0x7F;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Wireshark Formatting   /////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////	
+	/**
+	 * Convert the given byte[] into a "wireshark formatted" hex/ascii grid. Example output format
+	 * for single row:
+	 * <p/>
+	 * <code>00 11 22 33 44 55 66 77  88 99 AA BB CC DD EE FF  ........ ........</code>
+	 */
+	public static String formatAsWireshark( byte[] bytes )
+	{
+		StringBuilder builder = new StringBuilder();
+		// write the first one outside the loop otherwise the modulo check
+		// will pass on 0 and we'll have a leading "  "
+		builder.append( String.format(" %02X",bytes[0]) );
+		
+		boolean newline = true;
+		for( int i = 1; i < bytes.length; i++ )
+		{
+			if( i % 8 == 0 )
+			{
+				newline = !newline;
+				if( newline )
+					appendRowSummary( builder, bytes, i );
+				else
+					builder.append( "  " );
+			}
+			
+			builder.append( String.format(" %02X",bytes[i]) );
+		}
+		
+		appendRowSummary( builder, bytes, bytes.length );
+		return builder.toString();
+	}
+	
+	/**
+	 * Append a row summary that shows the bytes printed as ASCII characters.
+	 * Non-printable characters are represented with a "."
+	 * 
+	 * @param builder The builder to append to
+	 * @param bytes The bytes to pull from
+	 * @param limit Read the last 16 bytes from this value backwards (non-inclusive)
+	 */
+	private static void appendRowSummary( StringBuilder builder, byte[] bytes, int limit )
+	{
+		for( int i = (limit-16); i < limit; i++ )
+		{
+			if( i % 8 == 0 )
+				builder.append( " " );
+			
+			if( StringUtils.isAsciiPrintable(bytes[i]) )
+				builder.append( (char)bytes[i] );
+			else
+				builder.append( "." );
+		}
+		
+		builder.append( "\n" );
+	}
+
 }

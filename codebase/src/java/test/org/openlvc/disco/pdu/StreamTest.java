@@ -17,11 +17,11 @@
  */
 package org.openlvc.disco.pdu;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import org.openlvc.disco.AbstractTest;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -29,7 +29,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @Test(groups={"stream","streams"})
-public class StreamTests extends AbstractTest
+public class StreamTest extends AbstractTest
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -72,8 +72,8 @@ public class StreamTests extends AbstractTest
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Stream Serialization Testing Methods   ////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-
-	public void testDisStreamSerialize()
+	@Test
+	public void testDisStreamSerialize() throws Exception
 	{
 		// Create a PDU to send
 		EntityStatePdu before = new EntityStatePdu();
@@ -81,24 +81,23 @@ public class StreamTests extends AbstractTest
 		// Create the output stream and write the PDU
 		ByteArrayOutputStream baos = new ByteArrayOutputStream( PDU.MAX_SIZE );
 		DisOutputStream dos = new DisOutputStream( baos );
-		before.to( dos );
+		before.writePdu( dos );
+		dos.flush();
 		
 		// Read the PDU back in
-		ByteArrayInputStream bais = new ByteArrayInputStream( baos.toByteArray() );
-		DisInputStream dis = 
+		// This call will create a DisInputStream and read through it for us
+		EntityStatePdu after = (EntityStatePdu)PduFactory.create( baos.toByteArray() );	
+		ByteArrayOutputStream baos2 = new ByteArrayOutputStream( PDU.MAX_SIZE );
+		dos = new DisOutputStream( baos2 );
+		after.writePdu( dos );
+		dos.flush();
 		
-		before.t
+		Assert.assertEquals( baos2.toByteArray(), baos.toByteArray() );
 	}
 	
-
 	
-	
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	
 }
