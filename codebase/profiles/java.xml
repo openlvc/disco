@@ -245,7 +245,7 @@
 	     build because of the amount of time it takes -->
 	<target name="javadoc" depends="sandbox" if="build.release">
 		<!-- Make room in the sandbox for the javadoc. Create a property for shortcut purposes -->
-		<property name="javadoc.dir" value="${sandbox.dir}/documentation/javadoc"/>
+		<property name="javadoc.dir" value="${sandbox.dir}/docs/javadoc"/>
 		<mkdir dir="${javadoc.dir}"/>
 
 		<echo>Generating Open LVC Disco Javadoc</echo>
