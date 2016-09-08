@@ -78,4 +78,21 @@ public class ThreadUtils
 		}
 	}
 
+	/**
+	 * Join the provided thread, catching any interrupted exception and returning `false` if
+	 * it happens or the timeout occurs. Return `true` otherwise.
+	 */
+	public static boolean exceptionlessThreadJoin( Thread thread, long waitMillis )
+	{
+		try
+		{
+			thread.join( waitMillis );
+			return thread.isAlive();
+		}
+		catch( InterruptedException ie )
+		{
+			return false;
+		}
+	}
+	
 }

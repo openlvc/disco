@@ -127,7 +127,7 @@ public class PulseLink extends LinkBase implements ILink
 		
 		// shut the pulser thread down
 		this.pulserThread.interrupt();
-		ThreadUtils.exceptionlessThreadJoin( pulserThread );
+		ThreadUtils.exceptionlessThreadJoin( pulserThread, 3000 );
 		
 		logger.debug( "Link is down" );
 
@@ -206,17 +206,18 @@ public class PulseLink extends LinkBase implements ILink
 		private Pulser()
 		{
 			super( "Pulser" );
+			super.setDaemon( true );
 		}
 
 		public void run()
 		{
 			try
 			{
-    			while( !Thread.interrupted() )
-    			{
-    				pulse();
-    				ThreadUtils.exceptionlessSleep( interval );
-    			}
+				while( !Thread.interrupted() )
+				{
+					pulse();
+					Thread.sleep( 5000 );
+				}
 			}
 			catch( InterruptedException ie )
 			{
