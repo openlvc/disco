@@ -26,7 +26,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.Log4jConfiguration;
-import org.openlvc.distributor.Mode;
 
 
 public class Configuration
@@ -200,48 +199,6 @@ public class Configuration
 		}
 	}
 
-	@Override
-	public String toString()
-	{
-		StringBuilder builder = new StringBuilder();
-		builder.append( " Distributor - Bridging and filtering between DIS networks" );
-		builder.append( "\n Version 0.0" ); // FIXME
-		builder.append( "\n" );
-
-		builder.append( "\n    config file: "+configFile );
-		builder.append( "\n       log file: "+loggingConfiguration.getFile() );
-		builder.append( "\n      log level: "+loggingConfiguration.getLevel() );
-		builder.append( "\n" );
-		builder.append( "\n ======== Link Configuration ========" );
-		builder.append( "\n  "+links.size()+" links configured: "+links.keySet() );
-		builder.append( "\n" );
-		for( LinkConfiguration config : links.values() )
-		{
-			builder.append( "\n ----------------------------" );
-			builder.append( "\n Link Name: "+config.getName() );
-			builder.append( "\n                 Mode: "+config.getMode() );
-			if( config.getMode() == Mode.DIS )
-			{
-				builder.append( "\n     DIS Adddress: "+config.getDisAddress() );
-				builder.append( "\n         DIS Port: "+config.getDisPort() );
-				builder.append( "\n          DIS NIC: "+config.getDisNic() );
-			}
-			else
-			{
-				builder.append( "\n       Relay Adddress: "+config.getWanAddress() );
-				builder.append( "\n           Relay Port: "+config.getWanPort() );
-				//builder.append( "\n            Relay NIC: "+config.getWanNic() );
-				builder.append( "\n       Relay Bundling: "+config.isWanBundling() );
-				builder.append( "\n      Bundle Max Size: "+config.getWanBundlingSizeBytes() );
-				builder.append( "\n      Bundle Max Time: "+config.getWanBundlingTime() );
-				
-			}
-			builder.append( "\n" );
-		}
-		
-		return builder.toString();
-	}
-
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
@@ -251,19 +208,8 @@ public class Configuration
 		System.out.println( "Usage: bin/distributor [--args]" );
 		System.out.println( "" );
 
-		System.out.println( "  --config-file         integer  (optional)  Number of objects to create                (default: 100)" );
-		System.out.println( "  --objects             integer  (optional)  Number of objects to create                (default: 100)" );
-		System.out.println( "  --loops               integer  (optional)  Numbber of sim-loops to run                (default: 300)" );
-		System.out.println( "  --tick-interval       integer  (optional)  Millis between update tick cycle           (default: 1000)");
-		System.out.println( "  --simulation-address  string   (optional)  Simulation Address                         (default: 1-1-20913)" );
-		System.out.println( "  --log-level           string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE]    (default: INFO)" );
-		System.out.println( "  --dis-exercise-id     short    (optional)  Ex ID to send in outgoing and only recv on (default: 1)" );
-		System.out.println( "  --dis-address         string   (optional)  Where to send DIS traffic, or BROADCAST    (default: BROADCAST)" );
-		System.out.println( "  --dis-port            integer  (optional)  Port for DIS traffic                       (default: 3000)" );
-		System.out.println( "  --dis-interface       string   (optional)  NIC to use. Address or a special symbol:   (default: SITE_LOCAL)" );
-		System.out.println( "                                             LOOPBACK, LINK_LOCAL, SITE_LOCAL, GLOBAL" );
-		System.out.println( "  --pdu-sender          string   (optional)  single-thread, thread-pool, simple         (default: single-thread)" );
-		System.out.println( "  --pdu-receiver        string   (optional)  single-thread, thread-pool, simple         (default: single-thread)" );
+		System.out.println( "  --config-file      string   (optional)  Relative path to config file               (default: etc/distributor.config)" );
+		System.out.println( "  --log-level        string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE]    (default: INFO)" );
 		System.out.println( "" );
 	}
 }
