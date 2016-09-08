@@ -29,6 +29,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.openlvc.disco.DiscoException;
 
@@ -78,37 +79,44 @@ public class NetworkUtils
 	 */
 	public static InetAddress resolveInetAddress( String name ) throws DiscoException
 	{
-		if( name.equalsIgnoreCase("LOOPBACK" ) )
-			return InetAddress.getLoopbackAddress();
-
-		// Get a list of all the nics we have. The one we want will (hopefully) be in here somewhere!
-		List<InetAddress> pool = getListOfNetworkAddresses();
-
-		if( name.equalsIgnoreCase("LINK_LOCAL") )
+		try
 		{
-			return pool.stream()
-			           .filter( address -> address.isLinkLocalAddress() )
-			           .findFirst()
-			           .get();
+    		if( name.equalsIgnoreCase("LOOPBACK" ) )
+    			return InetAddress.getLoopbackAddress();
+    
+    		// Get a list of all the nics we have. The one we want will (hopefully) be in here somewhere!
+    		List<InetAddress> pool = getListOfNetworkAddresses();
+    
+    		if( name.equalsIgnoreCase("LINK_LOCAL") )
+    		{
+    			return pool.stream()
+    			           .filter( address -> address.isLinkLocalAddress() )
+    			           .findFirst()
+    			           .get();
+    		}
+    		
+    		if( name.equalsIgnoreCase("SITE_LOCAL") )
+    		{
+    			return pool.stream()
+    			           .filter( address -> address.isSiteLocalAddress() )
+    			           .findFirst()
+    			           .get();
+    		}
+    		
+    		if( name.equalsIgnoreCase("GLOBAL") )
+    		{
+    			return pool.stream()
+    			           .filter( address -> address.isLoopbackAddress() == false )
+    			           .filter( address -> address.isAnyLocalAddress() == false )
+    			           .filter( address -> address.isLinkLocalAddress() == false )
+    			           .filter( address -> address.isSiteLocalAddress() == false )
+    			           .findFirst()
+    			           .get();
+    		}
 		}
-		
-		if( name.equalsIgnoreCase("SITE_LOCAL") )
+		catch( NoSuchElementException no )
 		{
-			return pool.stream()
-			           .filter( address -> address.isSiteLocalAddress() )
-			           .findFirst()
-			           .get();
-		}
-		
-		if( name.equalsIgnoreCase("GLOBAL") )
-		{
-			return pool.stream()
-			           .filter( address -> address.isLoopbackAddress() == false )
-			           .filter( address -> address.isAnyLocalAddress() == false )
-			           .filter( address -> address.isLinkLocalAddress() == false )
-			           .filter( address -> address.isSiteLocalAddress() == false )
-			           .findFirst()
-			           .get();
+			throw new DiscoException( "Cannot find an address for setting: "+name );
 		}
 		
 		// Try a direct name match

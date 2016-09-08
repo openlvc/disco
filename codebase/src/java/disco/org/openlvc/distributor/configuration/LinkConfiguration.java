@@ -203,7 +203,10 @@ public class LinkConfiguration
 
 	public Mode getMode()
 	{
-		return Mode.valueOf( properties.getProperty(LINK_MODE) );
+		if( properties.containsKey(LINK_MODE) == false )
+			throw new IllegalArgumentException( "Cannot find mode for link: "+getName() );
+		else
+			return Mode.valueOf( properties.getProperty(LINK_MODE) );
 	}
 	
 	public void setMode( Mode mode )
