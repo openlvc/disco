@@ -123,7 +123,7 @@ public class EntityStatePdu extends PDU
 		capabilities.from( dis );
 
 		articulationParameters.clear();
-		for( int i = 0; i < numberOfArticulationParameters; ++i )
+		for( int i = 0; i < numberOfArticulationParameters; i++ )
 		{
 			ArticulationParameter articulationParameter = new ArticulationParameter();
 			articulationParameter.from( dis );

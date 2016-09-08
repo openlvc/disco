@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.utils;
 
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -74,7 +75,8 @@ public class LLATest
 		LLA pointA = new LLA( 38.898556, -77.037852, 0 );
 		LLA pointB = new LLA( 38.897147, -77.043934, 0 );
 		double dist = pointB.distanceBetweenHavershine( pointA );
-		System.out.println( "Distance between points: "+dist );
+		Assert.assertEquals( dist, 549.1557912038083 );
+		//System.out.println( "Distance between points: "+dist );
 	}
 
 	//----------------------------------------------------------

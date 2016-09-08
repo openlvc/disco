@@ -104,6 +104,12 @@ public abstract class PDU
 	{
 		this.received = received;
 	}
+	
+	public final void writePdu( DisOutputStream dos ) throws IOException
+	{
+		writeHeader( dos );
+		to( dos );
+	}
 
 	public final void writeHeader( DisOutputStream dos ) throws IOException
 	{
@@ -142,6 +148,13 @@ public abstract class PDU
 	 */
 	public abstract int getContentLength();
 
+	/**
+	 * Gets the full PDU length. Header + Content.
+	 */
+	public int getPduLength()
+	{
+		return header.getByteLength() + getContentLength();
+	}
 
 	/**
 	 * Convert the given PDU into a `byte[]`.

@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2016 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -15,9 +15,9 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.pdu;
+package org.openlvc.disco;
 
-import org.openlvc.disco.AbstractTest;
+import org.openlvc.disco.common.TestListener;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -26,8 +26,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups={"pdu","espdu","EntityState"})
-public class EntityStatePduTest extends AbstractTest
+@Test(groups={"opscenter"})
+public class OpsCenterTest extends AbstractTest
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -36,6 +36,10 @@ public class EntityStatePduTest extends AbstractTest
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private OpsCenter left;
+	private OpsCenter right;
+//	private TestListener leftListener;
+	private TestListener rightListener;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -56,11 +60,21 @@ public class EntityStatePduTest extends AbstractTest
 	@BeforeMethod(alwaysRun=true)
 	public void beforeMethod()
 	{
+		this.left = super.newOpsCenter();
+		this.right = super.newOpsCenter();
+		
+//		this.leftListener = (TestListener)left.getPduListener();
+		this.rightListener = (TestListener)right.getPduListener();
+
+		this.left.open();
+		this.right.open();
 	}
 
 	@AfterMethod(alwaysRun=true)
 	public void afterMethod()
 	{
+		this.left.close();
+		this.right.close();
 	}
 	
 	@AfterClass(alwaysRun=true)
@@ -71,25 +85,20 @@ public class EntityStatePduTest extends AbstractTest
 	///////////////////////////////////////////////////////////////////////////////////
 	/// PDU Testing Methods   /////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-	@Test
-	public void testEntityStatePduSerialize() throws Exception
+	@Test(enabled=false)
+	public void testEntityStatePduExchange() throws Exception
 	{
-		// turn an ESPDU into a byte[]
-		EntityStatePdu before = new EntityStatePdu();
-		byte[] beforeArray = before.toByteArray();
+		// create and send
+		EntityStatePdu sent = new EntityStatePdu();
+		sent.setMarking( "Testing" );
+		left.send( sent );
 		
-		// convert it back
-		EntityStatePdu after = (EntityStatePdu)PduFactory.create( beforeArray );
-		//Assert.assertEquals( after, before );
+		// wait for it on the other side
+		EntityStatePdu received = rightListener.waitForEntityState( "Testing" );
 		
-		// turn this one into a byte[]
-		byte[] afterArray = after.toByteArray();
-		
-		// make sure the lengths are the same
-		Assert.assertEquals( afterArray.length, beforeArray.length, "Lengths do not match" );
-		Assert.assertEquals( afterArray, beforeArray );
+		Assert.assertEquals( received, sent );
 	}
-	
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

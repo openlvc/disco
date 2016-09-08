@@ -15,6 +15,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
+package org.openlvc.disco.common;
+
 import org.openlvc.disco.configuration.Log4jConfiguration;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
@@ -36,7 +38,11 @@ public class CommonSetup
 	//private static final String FILE_LOG_LEVEL = System.getProperty( "test.fileLogLevel","no" );
 	
 	// set during commonBeforeSuiteSetup()
-	private static String CONSOLE_LOG_LEVEL = "OFF";
+	public static String CONSOLE_LOG_LEVEL = "OFF";
+	
+	// set during commonBeforeSuiteSetup()
+	public static long TIMEOUT = 1000;
+
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -64,7 +70,7 @@ public class CommonSetup
 		if( CONSOLE_LOG_LEVEL.equals("${test.loglevel}") )
 			CONSOLE_LOG_LEVEL = "OFF";
 		
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco.test" );
+		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
 		logConfiguration.activateConfiguration();
 
 		/////////////////////////////////////////
@@ -86,5 +92,6 @@ public class CommonSetup
 	public static void testStarting( String className, String methodName )
 	{
 	}
+	
 }
 

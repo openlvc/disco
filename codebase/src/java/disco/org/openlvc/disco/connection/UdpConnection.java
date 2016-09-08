@@ -50,7 +50,9 @@ public class UdpConnection implements IConnection
 	private Logger logger;
 	private OpsCenter opscenter;
 	private UdpConfiguration configuration;
-	private DatagramSocket socket;
+	private DatagramSocket sendSocket;
+	private DatagramSocket recvSocket;
+	private boolean broadcast; // are we using broadcast?
 	private Thread receiverThread;
 
 	// cache of details to assist with sending
@@ -65,7 +67,22 @@ public class UdpConnection implements IConnection
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-
+	public UdpConnection()
+	{
+		this.logger = null;          // set in configure()
+		this.opscenter = null;       // set in configure()
+		this.configuration = null;   // set in configure()
+		this.broadcast = false;      // set in open()
+		this.receiverThread = null;  // set in open()
+		
+		this.sendSocket = null;      // set in open()
+		this.recvSocket = null;      // set in open()
+		this.targetAddress = null;   // set in open()
+		this.exerciseId = -1;        // set in configure()
+		this.metrics = null;         // set in open()
+	}
+	
+	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -94,7 +111,7 @@ public class UdpConnection implements IConnection
 		this.targetAddress = new InetSocketAddress( configuration.getAddress(), configuration.getPort() );
 		
 		//
-		// Get a socket opened up
+		// Create Socket
 		//
 		InetAddress address = configuration.getAddress();
 		int port = configuration.getPort();
@@ -102,6 +119,7 @@ public class UdpConnection implements IConnection
 		if( address.isMulticastAddress() )
 		{
 			logger.info( "Connecting to multicast group - "+address+":"+port+" (interface: "+networkInterface+")" );
+			this.broadcast = false;
 			
 			//
 			// Create a MULTICAST socket
@@ -109,27 +127,35 @@ public class UdpConnection implements IConnection
 			SocketOptions options = new SocketOptions();
 			options.setSendBufferSize( configuration.getSendBufferSize() );
 			options.setRecvBufferSize( configuration.getRecvBufferSize() );
-			this.socket = NetworkUtils.createMulticast( address, port, networkInterface, options );
+			this.recvSocket = NetworkUtils.createMulticast( address, port, networkInterface, options );
+			this.sendSocket = this.recvSocket; // same for multicast - it has built-in loopback exclusion
 		}
 		else
 		{
 			//
 			// Create a BROADCAST socket
 			//
+			// Use the address of the NIC for the receive address
+			address = networkInterface.getInetAddresses().nextElement();
 			logger.info( "Connecting broadcast socket - %s:%d (interface: %s)", address, port, networkInterface );
+			this.broadcast = true;
+			
+			// Create the socket pair
 			SocketOptions options = new SocketOptions();
 			options.setSendBufferSize( configuration.getSendBufferSize() );
 			options.setRecvBufferSize( configuration.getRecvBufferSize() );
-			this.socket = NetworkUtils.createBroadcast( address, port, options );
+			DatagramSocket[] pair = NetworkUtils.createBroadcastPair( address, port, options );
+			this.sendSocket = pair[0];
+			this.recvSocket = pair[1];
 		}
 
 		try
 		{
 			logger.debug( "  -> Send Buffer: %s  (requested: %s)",
-			              StringUtils.humanReadableSize(socket.getSendBufferSize()),
+			              StringUtils.humanReadableSize(sendSocket.getSendBufferSize()),
 			              StringUtils.humanReadableSize(configuration.getSendBufferSize()) );
 			logger.debug( "  -> Recv Buffer: %s  (requested: %s)",
-			              StringUtils.humanReadableSize(socket.getReceiveBufferSize()),
+			              StringUtils.humanReadableSize(recvSocket.getReceiveBufferSize()),
 			              StringUtils.humanReadableSize(configuration.getRecvBufferSize()) );
 		}
 		catch( SocketException se )
@@ -150,12 +176,15 @@ public class UdpConnection implements IConnection
 	@Override
 	public void close() throws DiscoException
 	{
-		if( this.socket.isClosed() )
+		if( this.recvSocket.isClosed() )
 			return;
 		
 		// Close the socket we're listening on and the thread will drop out
 		this.receiverThread.interrupt();
-		this.socket.close();
+		this.sendSocket.close();
+		if( this.recvSocket.isClosed() == false )
+			// have to be careful - could be the same as the send socket
+			this.recvSocket.close();
 		
 		// Print some metrics while we wait
 		logger.info( "=== PDU Summary ===" );
@@ -193,7 +222,8 @@ public class UdpConnection implements IConnection
 	{
 		try
 		{
-			socket.send( new DatagramPacket(payload,0,payload.length,targetAddress) );
+			//socket.send( new DatagramPacket(payload,0,payload.length,targetAddress) );
+			sendSocket.send( new DatagramPacket(payload,0,payload.length,targetAddress) );
 			metrics.pduSent( payload.length );
 		}
 		catch( IOException ioex )
@@ -233,29 +263,38 @@ public class UdpConnection implements IConnection
 		public void run()
 		{
 			logger.debug( "UDP Provider receiver thread up and running" );
-			
+
+			// cache this for efficient lookup below
+			final int ourSendPort = sendSocket.getLocalPort();
+
 			while( Thread.interrupted() == false )
 			{
 				try
 				{
-					// receive the packet
+					// 1. Receive the packet
 					byte[] buffer = new byte[DisSizes.PDU_MAX_SIZE];
 					DatagramPacket packet = new DatagramPacket( buffer, buffer.length );
-					socket.receive( packet );
+					recvSocket.receive( packet );
+				
+					// 2. Discard if loopback packet (only relevant to broadcast for us)
+					if( broadcast && (packet.getPort() == ourSendPort) )
+						continue;
+					
+					// 3. Discard if outside our exercise (0=accept any exercise)
+					if( exerciseId == 0 || buffer[1] == exerciseId )
+					{
+						// hand it off to the receiver
+						if( logger.isTraceEnabled() )
+							logger.trace( "(Packet) size="+packet.getLength()+", source="+packet.getSocketAddress() );
 
-					// FILTER - throw away if outside our exercise
-					if( buffer[1] != exerciseId )
+						opscenter.getPduReceiver().receive( buffer );
+						metrics.pduReceived( packet.getLength() );
+					}
+					else
 					{
 						metrics.pduDiscarded();
 						continue;
 					}
-					
-					// hand it off to the receiver
-					if( logger.isTraceEnabled() )
-						logger.trace( "(Packet) size="+packet.getLength()+", source="+packet.getSocketAddress() );
-
-					opscenter.getPduReceiver().receive( buffer );
-					metrics.pduReceived( packet.getLength() );
 				}
 				catch( SocketException se )
 				{

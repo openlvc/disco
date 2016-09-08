@@ -15,12 +15,13 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.utils;
+package org.openlvc.disco;
 
-/**
- * Utility methods to do useful thread stuff!
- */
-public class ThreadUtils
+import org.openlvc.disco.common.CommonSetup;
+import org.openlvc.disco.common.TestListener;
+import org.openlvc.disco.configuration.DiscoConfiguration;
+
+public class AbstractTest
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -38,44 +39,17 @@ public class ThreadUtils
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	protected OpsCenter newOpsCenter()
+	{
+		DiscoConfiguration configuration = new DiscoConfiguration();
+		configuration.getLoggingConfiguration().setLevel( CommonSetup.CONSOLE_LOG_LEVEL );
+		
+		OpsCenter opscenter = new OpsCenter( configuration );
+		opscenter.setListener( new TestListener() );
+		return opscenter;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	/**
-	 * Sleep for the given millisecond count and swallow any exception.
-	 * 
-	 * @param millis Time to sleep
-	 * @return True if there was no exception, false if there was
-	 */
-	public static final boolean exceptionlessSleep( long millis )
-	{
-		try
-		{
-			Thread.sleep( millis );
-			return true;
-		}
-		catch( InterruptedException ie )
-		{
-			// ignore!
-			return false;
-		}
-	}
-	
-	/**
-	 * Join the provided thread, catching any interrupted exception and returning `false` if
-	 * it happens. Return `true` otherwise.
-	 */
-	public static boolean exceptionlessThreadJoin( Thread thread )
-	{
-		try
-		{
-			thread.join();
-			return true;
-		}
-		catch( InterruptedException ie )
-		{
-			return false;
-		}
-	}
-
 }

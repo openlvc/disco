@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.record;
 
 import java.io.IOException;
+import java.util.StringTokenizer;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -290,6 +291,33 @@ public class EntityType implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	/**
+	 * Turn the given String into an EntityType. Will take any in the form:
+	 * 
+	 * <ul>
+	 *   <li>1 2 3 4 5 6 7</li>
+	 *   <li>1.2.3.4.5.6.7</li>
+	 *   <li>1-2-3-4-5-6-7</li>
+	 * </ul>
+	 * 
+	 * @param string
+	 * @return
+	 */
+	public static EntityType fromString( String string )
+	{
+		string = string.trim().replace( "-", "." ).replace( " ", "." );
+		StringTokenizer tokenizer = new StringTokenizer( string, "." );
+		int[] values = new int[7];
+		for( int i = 0; i < values.length; i++ )
+		{
+			if( tokenizer.hasMoreTokens() )
+				values[i] = Integer.parseInt(tokenizer.nextToken());
+			else
+				values[i] = 0;
+		}
+		
+		return new EntityType( values[0], values[1], values[2], values[3], values[4], values[5], values[6] );
+	}
 
 }
 

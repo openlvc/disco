@@ -33,7 +33,11 @@ public class EntityId implements IPduComponent, Cloneable
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 	public static final int ALL_ENTITIES = 0xFFFF;
-		
+	public static final int ALL_SITES    = 0xFFFF;
+	public static final int ALL_APPS     = 0xFFFF;
+	public static final int MAX_SITE_ID  = 0xFFFD; // 2^16-1 (all), 2^16-2 (reserved)
+	public static final int MAX_APP_ID   = 0xFFFD; // 2^16-1 (all), 2^16-2 (reserved)
+
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------

@@ -46,7 +46,7 @@ public class PduHeader
 	//----------------------------------------------------------
 	public PduHeader()
 	{
-		this( ProtocolVersion.Version6, (short)0, PduType.Other, ProtocolFamily.Other, 0 );
+		this( ProtocolVersion.Version6, (short)1, PduType.Other, ProtocolFamily.Other, 0 );
 	}
 	
 	public PduHeader( ProtocolVersion version,

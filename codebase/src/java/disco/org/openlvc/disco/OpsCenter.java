@@ -138,6 +138,11 @@ public class OpsCenter
 	{
 		this.pduListener = receiver;
 	}
+	
+	public IPduListener getPduListener()
+	{
+		return this.pduListener;
+	}
 
 	/**
 	 * Hand the given PDU off to the {@link PduSender} to process and forward to the network
@@ -145,6 +150,15 @@ public class OpsCenter
 	public void send( PDU pdu ) throws DiscoException
 	{
 		pdu.setExerciseId( this.exerciseId );
+		this.pduSender.send( pdu );
+	}
+
+	/**
+	 * Sends the given PDU without making any modifications or additions (such as settings its
+	 * exercise/site/app ids or anything like that). Just send the PDU straight through as it is.
+	 */
+	public void sendRaw( PDU pdu ) throws DiscoException
+	{
 		this.pduSender.send( pdu );
 	}
 

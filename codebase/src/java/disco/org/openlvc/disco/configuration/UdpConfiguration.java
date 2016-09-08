@@ -80,7 +80,7 @@ public class UdpConfiguration
 	 *   +----------------+---------------+
 	 *   | BROADCAST      | 192.168.0.255 | << Depends on NIC
 	 *   +----------------+---------------+
-	 *   | 239.0.1.123    | 239.0.1.1233  | << Multicast
+	 *   | 239.0.1.123    | 239.0.1.123   | << Multicast
 	 *   +----------------+---------------+
 	 * 
 	 * @return Address that all packets we send should be addressed to.

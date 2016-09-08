@@ -92,6 +92,7 @@ public class ParameterType implements IPduComponent, Cloneable
     {
 		attachedParts = dis.readUI32();
 		articulatedParts.from( dis );
+		throw new RuntimeException( "This is incorrect -- " );
     }
 
 	@Override

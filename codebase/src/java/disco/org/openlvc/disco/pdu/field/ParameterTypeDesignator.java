@@ -24,19 +24,19 @@ public enum ParameterTypeDesignator
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	ArticulatedPart( (short)0 ),
-	AttachedPart( (short)1 ),
-	Invalid( Short.MAX_VALUE );
+	ArticulatedPart( (byte)0 ),
+	AttachedPart( (byte)1 ),
+	Invalid( Byte.MAX_VALUE );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private short value;
+	private byte value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private ParameterTypeDesignator( short value )
+	private ParameterTypeDesignator( byte value )
 	{
 		this.value = value;
 	}
