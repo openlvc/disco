@@ -41,11 +41,11 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private ParameterTypeDesignator parameterTypeDesignator;
-	private short parameterChangeIndicator;
-	private int articulationAttachmentID;
-	private ParameterType parameterTypeVariant;
-	private DisUnsignedInt64 articulationParameterValue;
+	private ParameterTypeDesignator typeDesignator;
+	private short changeIndicator;
+	private int attachedTo;
+	private long parameterType;
+	private DisUnsignedInt64 parameterValue;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -55,21 +55,21 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 		this( ParameterTypeDesignator.ArticulatedPart,
 		      (short)0, 
 		      0, 
-		      new ParameterType(),
+		      0L,
 		      new DisUnsignedInt64() );
 	}
 	
-	public ArticulationParameter( ParameterTypeDesignator parameterTypeDesignator,
-	                              short parameterChangeIndicator,
-	                              int articulationAttachmentID,
-	                              ParameterType parameterTypeVariant,
-	                              DisUnsignedInt64 articulationParameterValue )
+	public ArticulationParameter( ParameterTypeDesignator typeDesignator,
+	                              short changeIndicator,
+	                              int attachedTo,
+	                              long parameterType,
+	                              DisUnsignedInt64 parameterValue )
 	{
-		this.parameterTypeDesignator = parameterTypeDesignator;
-		this.parameterChangeIndicator = parameterChangeIndicator;
-		this.articulationAttachmentID = articulationAttachmentID;
-		this.parameterTypeVariant = parameterTypeVariant;
-		this.articulationParameterValue = articulationParameterValue;
+		this.typeDesignator = typeDesignator;
+		this.changeIndicator = changeIndicator;
+		this.attachedTo = attachedTo;
+		this.parameterType = parameterType;
+		this.parameterValue = parameterValue;
 	}
 	
 	//----------------------------------------------------------
@@ -84,11 +84,11 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 		if( other instanceof ArticulationParameter )
 		{
 			ArticulationParameter otherParam = (ArticulationParameter)other;
-			if( otherParam.parameterTypeDesignator == this.parameterTypeDesignator && 
-			    otherParam.parameterChangeIndicator == this.parameterChangeIndicator &&
-			    otherParam.articulationAttachmentID == this.articulationAttachmentID &&
-			    otherParam.parameterTypeVariant.equals(this.parameterTypeVariant) &&
-			    otherParam.articulationParameterValue.equals(this.articulationParameterValue) )
+			if( otherParam.typeDesignator == this.typeDesignator && 
+			    otherParam.changeIndicator == this.changeIndicator &&
+			    otherParam.attachedTo == this.attachedTo &&
+			    otherParam.parameterType == this.parameterType &&
+			    otherParam.parameterValue.equals(this.parameterValue) )
 			{
 				return true;
 			}
@@ -100,14 +100,11 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 	@Override
 	public ArticulationParameter clone()
 	{
-		ParameterType parameterTypeClone = parameterTypeVariant.clone();
-		DisUnsignedInt64 parameterValueClone = articulationParameterValue.clone();
-		
-		return new ArticulationParameter( parameterTypeDesignator, 
-		                                  parameterChangeIndicator, 
-		                                  articulationAttachmentID, 
-		                                  parameterTypeClone, 
-		                                  parameterValueClone );
+		return new ArticulationParameter( typeDesignator, 
+		                                  changeIndicator, 
+		                                  attachedTo, 
+		                                  parameterType, 
+		                                  parameterValue.clone() );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -116,21 +113,21 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 	@Override
     public void from( DisInputStream dis ) throws IOException
     {
-		parameterTypeDesignator = ParameterTypeDesignator.fromValue( dis.readUI8() );
-		parameterChangeIndicator = dis.readUI8();
-		articulationAttachmentID = dis.readUI16();
-		parameterTypeVariant.from( dis );
-		articulationParameterValue.from( dis );
+		typeDesignator = ParameterTypeDesignator.fromValue( dis.readUI8() );
+		changeIndicator = dis.readUI8();
+		attachedTo = dis.readUI16();
+		parameterType = dis.readUI32();
+		parameterValue.from( dis );
     }
 
 	@Override
     public void to( DisOutputStream dos ) throws IOException
     {
-		dos.writeUI8( parameterTypeDesignator.value() );
-		dos.writeUI8( parameterChangeIndicator );
-		dos.writeUI16( articulationAttachmentID );
-		parameterTypeVariant.to( dos );
-		articulationParameterValue.to( dos );
+		dos.writeUI8( typeDesignator.value() );
+		dos.writeUI8( changeIndicator );
+		dos.writeUI16( attachedTo );
+		dos.writeUI32( parameterType );
+		parameterValue.to( dos );
     }
 	
 	@Override
@@ -138,8 +135,8 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 	{
 		int size = DisSizes.UI8_SIZE * 2;
 		size += DisSizes.UI16_SIZE;
-		size += parameterTypeVariant.getByteLength();
-		size += articulationParameterValue.getByteLength();
+		size += DisSizes.UI32_SIZE;
+		size += parameterValue.getByteLength();
 		
 		return size;
 	}
@@ -147,54 +144,54 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public ParameterTypeDesignator getParameterTypeDesignator()
+	public ParameterTypeDesignator getTypeDesignator()
     {
-    	return parameterTypeDesignator;
+    	return typeDesignator;
     }
 
-	public void setParameterTypeDesignator( ParameterTypeDesignator parameterTypeDesignator )
+	public void setTypeDesignator( ParameterTypeDesignator typeDesignator )
     {
-    	this.parameterTypeDesignator = parameterTypeDesignator;
+    	this.typeDesignator = typeDesignator;
     }
 
-	public short getParameterChangeIndicator()
+	public short getChangeIndicator()
     {
-    	return parameterChangeIndicator;
+    	return changeIndicator;
     }
 
-	public void setParameterChangeIndicator( short parameterChangeIndicator )
+	public void setChangeIndicator( short changeIndicator )
     {
-    	this.parameterChangeIndicator = parameterChangeIndicator;
+    	this.changeIndicator = changeIndicator;
     }
 
-	public int getArticulationAttachmentID()
+	public int getAttachedTo()
     {
-    	return articulationAttachmentID;
+    	return attachedTo;
     }
 
-	public void setArticulationAttachmentID( int articulationAttachmentID )
+	public void setAttachedTo( int attachedTo )
     {
-    	this.articulationAttachmentID = articulationAttachmentID;
+    	this.attachedTo = attachedTo;
     }
 
-	public ParameterType getParameterTypeVariant()
+	public long getParameterType()
     {
-    	return parameterTypeVariant;
+    	return parameterType;
     }
 
-	public void setParameterTypeVariant( ParameterType parameterTypeVariant )
+	public void setParameterType( long parameterType )
     {
-    	this.parameterTypeVariant = parameterTypeVariant;
+    	this.parameterType = parameterType;
     }
 
-	public DisUnsignedInt64 getArticulationParameterValue()
+	public DisUnsignedInt64 getParameterValue()
     {
-    	return articulationParameterValue;
+    	return parameterValue;
     }
 
-	public void setArticulationParameterValue( DisUnsignedInt64 articulationParameterValue )
+	public void setParameterValue( DisUnsignedInt64 parameterValue )
     {
-    	this.articulationParameterValue = articulationParameterValue;
+    	this.parameterValue = parameterValue;
     }
 
 	//----------------------------------------------------------

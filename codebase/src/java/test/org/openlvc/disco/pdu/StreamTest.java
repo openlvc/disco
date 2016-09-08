@@ -23,8 +23,6 @@ import org.openlvc.disco.AbstractTest;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.ParameterTypeDesignator;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
-import org.openlvc.disco.pdu.record.ParameterType;
-import org.openlvc.disco.pdu.record.ParameterTypeArticulatedParts;
 import org.openlvc.disco.utils.DisUnsignedInt64;
 import org.openlvc.disco.utils.StringUtils;
 import org.testng.Assert;
@@ -101,17 +99,17 @@ public class StreamTest extends AbstractTest
 		Assert.assertEquals( baos2.toByteArray(), baos.toByteArray() );
 	}
 	
-	@Test(enabled=false)
+	@Test
 	public void testDisStreamSerializeWithArticulations() throws Exception
 	{
 		// Create a PDU to send
 		EntityStatePdu before = new EntityStatePdu();
 		ArticulationParameter param1 = new ArticulationParameter();
-		param1.setParameterTypeDesignator( ParameterTypeDesignator.ArticulatedPart );
-		param1.setParameterChangeIndicator( (short)0 );
-		param1.setArticulationAttachmentID( 0 );
-		param1.setParameterTypeVariant( new ParameterType(0,new ParameterTypeArticulatedParts(1,1)) );
-		param1.setArticulationParameterValue( DisUnsignedInt64.MAX_VALUE );
+		param1.setTypeDesignator( ParameterTypeDesignator.ArticulatedPart );
+		param1.setChangeIndicator( (short)0 );
+		param1.setAttachedTo( 0 );
+		param1.setParameterType( 0 );
+		param1.setParameterValue( DisUnsignedInt64.MAX_VALUE );
 		before.getArticulationParameter().add( param1 );
 		
 		// Create the output stream and write the PDU
