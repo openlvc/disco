@@ -101,7 +101,7 @@ public class StreamTest extends AbstractTest
 		Assert.assertEquals( baos2.toByteArray(), baos.toByteArray() );
 	}
 	
-	@Test
+	@Test(enabled=false)
 	public void testDisStreamSerializeWithArticulations() throws Exception
 	{
 		// Create a PDU to send

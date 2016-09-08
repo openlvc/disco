@@ -25,7 +25,27 @@
 	<!-- ================================================================================= -->
 	<!--                             Installer Creation Targets                            -->
 	<!-- ================================================================================= -->
-	<target name="installer" extensionOf="master.installer">
+	<target name="installer" extensionOf="master.installer" depends="zip.win64">
+	</target>
+
+	<!--                                    -->
+	<!-- Windows 64-bit Zip File Generation -->
+	<!--                                    -->
+	<target name="zip.win64"  if="platform.windows">
+		<!-- Verify we have a JRE we can bundle -->
+		<verifyJdk location="${jdk.home.win64}" arch="amd64"/>
+
+		<!-- generate the tarball with the sandbox and the JRE in it -->
+		<!-- we handle lib/bin separately so we can ensure only 64-bit stuff gets in -->
+		<zip destfile="${dist.dir}/${dist.name}-win64.zip">
+			<zipfileset dir="${sandbox.dir}"
+			            includes="**/*"
+			            excludes=""
+			            prefix="${dist.name}"/>
+			<zipfileset dir="${jdk.home.win64}/jre"
+			            includes="**/*"
+			            prefix="${dist.name}/jre"/>
+		</zip>
 	</target>
 
 </project>
