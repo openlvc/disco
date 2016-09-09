@@ -269,6 +269,9 @@ public class TcpWanLink extends LinkBase implements ILink
 			int length = instream.readInt();
 			payload = new byte[length];
 			instream.readFully( payload );
+			
+			if( logger.isTraceEnabled() )
+				logger.trace( "[%s] Received PDU, %d bytes", socket.getInetAddress().getHostAddress(), payload.length );
 		}
 		catch( EOFException eof )
 		{
