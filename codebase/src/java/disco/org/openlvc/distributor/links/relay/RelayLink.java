@@ -22,6 +22,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.utils.NetworkUtils;
@@ -213,6 +214,11 @@ public class RelayLink extends LinkBase implements ILink
 					socket = serverSocket.accept();
 					ip = socket.getInetAddress().getHostAddress();
 					logger.debug( "Incoming connection from "+ip );
+				}
+				catch( SocketException se )
+				{
+					// the other end hung up :( bai bai
+					return;
 				}
     			catch( IOException ioe )
     			{
