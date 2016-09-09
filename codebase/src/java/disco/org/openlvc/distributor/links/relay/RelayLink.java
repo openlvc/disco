@@ -113,7 +113,12 @@ public class RelayLink extends LinkBase implements ILink
 		
 		logger.debug( "Taking down link: "+super.getName() );
 
-		// 1. Close the server socket off from rest of the world
+		// 1. Shut down the acceptor thread to cease incoming connections
+		this.connectionAcceptor.interrupt();
+		ThreadUtils.exceptionlessThreadJoin( this.connectionAcceptor );
+		this.connectionAcceptor = null;
+		
+		// 2. Close the server socket off
 		try
 		{
 			this.serverSocket.close();
@@ -126,11 +131,6 @@ public class RelayLink extends LinkBase implements ILink
 		{
 			this.serverSocket = null;
 		}
-
-		// 2. End the acceptor thread
-		this.connectionAcceptor.interrupt();
-		ThreadUtils.exceptionlessThreadJoin( this.connectionAcceptor );
-		this.connectionAcceptor = null;
 
 		super.linkUp = false;
 	}
