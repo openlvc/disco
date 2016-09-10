@@ -36,6 +36,7 @@ public class Configuration
 	public static final String KEY_CONFIG_FILE     = "distributor.configfile";
 	public static final String KEY_LOG_LEVEL       = "distributor.loglevel";
 	public static final String KEY_LOG_FILE        = "distributor.logfile";
+	public static final String KEY_STATUS_INTERVAL = "distributor.statusInterval";
 	
 	// Link Configuration
 	public static final String KEY_LINKS           = "distributor.links";
@@ -47,6 +48,7 @@ public class Configuration
 	private Log4jConfiguration loggingConfiguration;
 	private Logger applicationLogger;
 	private String configFile = "etc/distributor.config";
+	private int statusInterval = 0;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -54,6 +56,7 @@ public class Configuration
 	public Configuration( String[] args )
 	{
 		this.links = new HashMap<>();
+		this.statusInterval = 0;
 
 		// logging configuration
 		this.loggingConfiguration = new Log4jConfiguration( "distributor" );
@@ -113,6 +116,30 @@ public class Configuration
 		return applicationLogger;
 	}
 
+	/**
+	 * Return the number of seconds between periodic logging of link status. 0 means disabled.
+	 */
+	public int getStatusLogInterval()
+	{
+		return this.statusInterval;
+	}
+
+	/**
+	 * Set the interval between periodic logging of link status. Set to 0 to disable logging.
+	 */
+	public void setStatusLogInterval( int seconds )
+	{
+		if( seconds >= 0 )
+			this.statusInterval = seconds;
+		else
+			throw new IllegalArgumentException( "Cannot set status logging interval to negative number" );
+	}
+
+	public boolean isStatusLoggingEnabled()
+	{
+		return this.statusInterval > 0;
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Command Line Argument Methods   ////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,6 +170,8 @@ public class Configuration
 				this.configFile = args[++i];
 			else if( argument.equalsIgnoreCase("--log-level") )
 				this.loggingConfiguration.setLevel( args[++i] );
+			else if( argument.equalsIgnoreCase("--status-interval") )
+				this.setStatusLogInterval( Integer.parseInt(args[++i]) );
 			else
 				throw new DiscoException( "Unknown argument: "+argument );
 		}
@@ -197,6 +226,14 @@ public class Configuration
 				this.links.put( linkName, linkConfiguration );
 			}
 		}
+		
+		//
+		// General Configuration Properties
+		//
+		if( properties.containsKey(KEY_STATUS_INTERVAL) )
+		{
+			this.statusInterval = Integer.parseInt( properties.getProperty(KEY_STATUS_INTERVAL) );
+		}
 	}
 
 	//----------------------------------------------------------
@@ -210,6 +247,7 @@ public class Configuration
 
 		System.out.println( "  --config-file      string   (optional)  Relative path to config file               (default: etc/distributor.config)" );
 		System.out.println( "  --log-level        string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE]    (default: INFO)" );
+		System.out.println( "  --status-interval  int      (optional)  Interval between status logging in seconds (default: 0)" );
 		System.out.println( "" );
 	}
 }

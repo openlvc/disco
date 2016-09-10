@@ -56,8 +56,7 @@ public class Main
 		distributor.up();
 		
 		// tear down
-		try{ Thread.sleep(10000000); } catch(Exception e) {e.printStackTrace();}
-		distributor.down();
+		//distributor.down();
 	}
 
 	//----------------------------------------------------------
@@ -82,6 +81,11 @@ public class Main
 	///////////////////////////////////////////////////////////////////////////////////
 	public class ShutdownHook extends Thread
 	{
+		public ShutdownHook()
+		{
+			super( "shutdown" );
+		}
+
 		@Override
 		public void run()
 		{

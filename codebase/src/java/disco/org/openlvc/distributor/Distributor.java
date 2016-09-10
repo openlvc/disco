@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.utils.StringUtils;
+import org.openlvc.disco.utils.ThreadUtils;
 import org.openlvc.distributor.configuration.Configuration;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 
@@ -42,6 +43,7 @@ public class Distributor
 	protected Map<String,ILink> links;
 	
 	private Reflector reflector;
+	private StatusLogger statusLogThread;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -58,6 +60,7 @@ public class Distributor
 		}
 
 		this.reflector = new Reflector( this );
+		this.statusLogThread = null;              // set in up()
 	}
 
 	//----------------------------------------------------------
@@ -92,6 +95,13 @@ public class Distributor
 		
 		logger.info( "" );
 		
+		// 4. Bring up the status logger if configured
+		if( configuration.isStatusLoggingEnabled() )
+		{
+			this.statusLogThread = new StatusLogger();
+			this.statusLogThread.start();
+		}
+		
 	}
 
 	/**
@@ -99,6 +109,14 @@ public class Distributor
 	 */
 	public void bringUp( ILink link )
 	{
+		// 1. Bring the status logger down
+		if( this.statusLogThread != null )
+		{
+			this.statusLogThread.interrupt();
+			ThreadUtils.exceptionlessThreadJoin( statusLogThread, 500 );
+		}
+		
+		// 2. Bring the links down
 		try
 		{
 			if( link.isUp() == false )
@@ -234,5 +252,51 @@ public class Distributor
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Status Summary Logger   ////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	private class StatusLogger extends Thread
+	{
+		private StatusLogger()
+		{
+			super( "tick" );
+			super.setDaemon( true );
+		}
+		
+		public void run()
+		{
+			while( !Thread.interrupted() )
+			{
+				try
+				{
+					// Sleep first
+					// We sleep for whatever the configured interval time is, or 10s.
+					// If the configured time is 0, we sleep for 10s and then don't print.
+					// That way, if it changes, we are already running.
+					
+					// sleep first
+					int sleepTime = configuration.getStatusLogInterval();
+					sleepTime = sleepTime == 0 ? 10 : sleepTime;
+					Thread.sleep( sleepTime * 1000 );
+
+					if( configuration.isStatusLoggingEnabled() == false )
+						continue;
+					
+					// print link status -- links could change, so take a copy to avoid CME
+					List<ILink> temp = new ArrayList<ILink>( links.values() );
+					long linksUp = temp.stream().filter(link -> link.isUp()).count();
+					logger.info( ">>> links status: %d up, %d down", linksUp, temp.size()-linksUp );
+					for( ILink link : temp )
+						logger.info( getStatusSummary(link) );
+				}
+				catch( InterruptedException ie )
+				{
+					
+				}
+			}
+		}
+	}
+
 
 }
