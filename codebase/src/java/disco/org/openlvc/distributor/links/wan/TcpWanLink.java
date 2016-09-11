@@ -29,6 +29,8 @@ import java.net.SocketTimeoutException;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.PduFactory;
+import org.openlvc.disco.pdu.UnsupportedPDU;
+import org.openlvc.disco.utils.BitHelpers;
 import org.openlvc.disco.utils.NetworkUtils;
 import org.openlvc.disco.utils.ThreadUtils;
 import org.openlvc.distributor.ILink;
@@ -51,6 +53,7 @@ public class TcpWanLink extends LinkBase implements ILink
 	private Socket socket;
 	private DataInputStream instream;
 	private DataOutputStream outstream;
+	private Bundler bundler;
 	private Receiver receiveThread;
 
 	//----------------------------------------------------------
@@ -64,6 +67,7 @@ public class TcpWanLink extends LinkBase implements ILink
 		this.socket        = null;   // set in up()
 		this.instream      = null;   // set in up()
 		this.outstream     = null;   // set in up()
+		this.bundler       = new Bundler( linkConfiguration, logger );
 		this.receiveThread = null;   // set in up()
 	}
 
@@ -71,9 +75,10 @@ public class TcpWanLink extends LinkBase implements ILink
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 	/**
-	 * This class is used on both ends. When a TcpWanLink connects to a Relay, internally the
-	 * relay will create a new TcpWanLink instance with the exception that the socket used will
-	 * be the incoming one, rather than a newly created one. This is how we set that socket.
+	 * This class is used on both ends of a connection. When a TcpWanLink connects to a Relay,
+	 * internally the relay will create a new TcpWanLink instance with the exception that the
+	 * socket used will be the incoming one, rather than a newly created one. This is how we
+	 * set that socket.
 	 * 
 	 * @throws DiscoException If the connection is already up (can't set socket on an active connection)
 	 */
@@ -146,6 +151,7 @@ public class TcpWanLink extends LinkBase implements ILink
 
 		//
 		// 3. Connect the Streams
+		//
 		try
 		{
 			this.instream = new DataInputStream( socket.getInputStream() );
@@ -159,9 +165,14 @@ public class TcpWanLink extends LinkBase implements ILink
 		}
 
 		//
-		// 4. Start the receiver processing thread
+		// 4. Start the Bundler
 		//
-		this.receiveThread = new Receiver();
+		this.bundler.up( outstream );
+
+		//
+		// 5. Start the receiver processing thread
+		//
+		this.receiveThread = new Receiver( linkConfiguration.getName() );
 		this.receiveThread.start();
 		
 		super.linkUp = true;
@@ -175,7 +186,12 @@ public class TcpWanLink extends LinkBase implements ILink
 		logger.debug( "Taking down link: "+super.getName() );
 		
 		//
-		// 1. Take the connection down
+		// 1. Flush the bundler
+		//
+		bundler.down();
+		
+		//
+		// 2. Take the connection down
 		//
 		try
 		{
@@ -194,7 +210,7 @@ public class TcpWanLink extends LinkBase implements ILink
 		}
 
 		//
-		// 2. Stop processing incoming messages
+		// 3. Stop processing incoming messages
 		//
 		if( this.receiveThread != null )
 		{
@@ -247,9 +263,10 @@ public class TcpWanLink extends LinkBase implements ILink
 	{
 		try
 		{
-			byte[] pdu = message.getPdu().toByteArray();
-			outstream.writeInt( pdu.length );
-			outstream.write( pdu );
+			bundler.submit( message.getPdu() );
+			//byte[] pdu = message.getPdu().toByteArray();
+			//outstream.writeInt( pdu.length );
+			//outstream.write( pdu );
 		}
 		catch( IOException ioex )
 		{
@@ -258,20 +275,22 @@ public class TcpWanLink extends LinkBase implements ILink
 	}
 
 	/**
-	 * Read the next PDU from the socket and process it.
+	 * Read the next PDU bundle from the socket and process it.
 	 */
 	private void receiveNext() throws IOException
 	{
-		// 1. Wait for the next message
-		byte[] payload = null;
 		try
 		{
+			// read the payload off the socket
 			int length = instream.readInt();
-			payload = new byte[length];
+			byte[] payload = new byte[length];
 			instream.readFully( payload );
 			
-			if( logger.isTraceEnabled() )
-				logger.trace( "[%s] Received PDU, %d bytes", socket.getInetAddress().getHostAddress(), payload.length );
+			if( logger.isDebugEnabled() )
+				logger.debug( "Read payload >> %d bytes", length );
+			
+			// process the bundle
+			processBundle( payload );
 		}
 		catch( EOFException eof )
 		{
@@ -280,24 +299,47 @@ public class TcpWanLink extends LinkBase implements ILink
 			reflector.getDistributor().takeDown( this );
 			throw eof;
 		}
+	}
 
-
-		// 2. Turn it into a PDU and hand-off for processings
+	private void processBundle( byte[] payload )
+	{
+		// Iterate over the bundle until there are now more pdus to read
 		try
 		{
-			// 1. Turn the payload into a PDU
-			PDU pdu = PduFactory.create( payload );
-
-			// 2. Hand the PDU off for processing
-			reflector.reflect( new Message(this,pdu) );
+			int position = 0;
+			while( position < payload.length )
+			{
+				// read the pdu size
+				int pduSize = BitHelpers.readIntBE( payload, position );
+				position += 4;
+				
+				// read the PDU straight off the buffer
+				PDU pdu = PduFactory.create( payload, position, pduSize );
+				position += pduSize;
+				
+				// reflect the PDU to the other links
+				reflector.reflect( new Message(this,pdu) );
+	
+				if( logger.isTraceEnabled() )
+					logger.trace( "Received >> "+pdu.getType() );
+			}
 		}
 		catch( InterruptedException ie )
 		{
+			// while reflecting the message to the other links
 			logger.warn( "PDU dropped, interrupted while offering to reflector: "+ie.getMessage() );
 		}
-		catch( IOException io )
+		catch( UnsupportedPDU unsupported )
 		{
-			logger.warn( "PDU dropped, error while converting from byte to pdu: "+io.getMessage() );
+			// pdu we don't care for
+			// This really shouldn't happen - to get to a WAN link the PDU has to come
+			// through the Disco conversion process before this, and if unsupported, it
+			// should fail there. However, this is a good sign of stream corruption.
+			logger.warn( "PDU dropped. "+unsupported.getMessage() );
+		}
+		catch( Exception e )
+		{
+			logger.warn( "PDU dropped, error while converting from byte to pdu: "+e.getMessage(), e );
 		}
 	}
 	
@@ -319,6 +361,11 @@ public class TcpWanLink extends LinkBase implements ILink
 	/** Class responsible for receiving messages from the remote host represented by this instance */
 	private class Receiver extends Thread
 	{
+		private Receiver( String parentName )
+		{
+			super( parentName+"-Recv" );
+		}
+		
 		public void run()
 		{
 			try

@@ -78,8 +78,17 @@ public class PduFactory
 	 */
 	public static PDU create( byte[] pdubytes ) throws IOException
 	{
+		return create( pdubytes, 0, pdubytes.length );
+	}
+
+	/**
+	 * Turn the given byte[] into a PDU and return it. Starting from <code>offset</code>
+	 * and extending <code>length</code> bytes.
+	 */
+	public static PDU create( byte[] buffer, int offset, int length ) throws IOException
+	{
 		// wrap the buffer in a stream we can read from
-		DisInputStream instream = new DisInputStream( pdubytes );
+		DisInputStream instream = new DisInputStream( buffer, offset, length );
 		
 		// 1. Read off the header first
 		PduHeader header = new PduHeader();

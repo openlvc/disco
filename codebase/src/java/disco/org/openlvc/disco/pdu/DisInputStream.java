@@ -40,15 +40,27 @@ public class DisInputStream extends DataInputStream
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	/**
-	 * Constructor for type DISInputStream with provided InputStream
-	 * 
-	 * @param inputStream the InputStream to read DIS types from
+	 * Consturct a new DisInputStream around the given byte[] (fully).
 	 */
 	public DisInputStream( byte[] bytes )
 	{
 		super( new ByteArrayInputStream(bytes) );
 	}
 
+	/**
+	 * Construct a new DisInputStream around the given byte[], starting at the offset
+	 * and spanning the given length. This is useful for reusing a larger buffer rather
+	 * than having to allocate a new byte[] to feed to the stream.
+	 * 
+	 * @param buffer  byte[] to read from 
+	 * @param offset  index to start reading at
+	 * @param length  length of the stream to cover
+	 */
+	public DisInputStream( byte[] buffer, int offset, int length )
+	{
+		super( new ByteArrayInputStream(buffer,offset,length) );
+	}
+	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------

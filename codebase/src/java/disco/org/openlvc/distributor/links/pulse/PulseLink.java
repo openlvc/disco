@@ -17,7 +17,6 @@
  */
 package org.openlvc.distributor.links.pulse;
 
-import org.apache.logging.log4j.Level;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.ForceId;
 import org.openlvc.disco.pdu.record.EntityType;
@@ -139,10 +138,12 @@ public class PulseLink extends LinkBase implements ILink
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void reflect( Message message )
 	{
-		logger.log( Level.INFO,
-		            "PDU from [%s] >> type=%s",
-		            message.getSouce().getName(),
-		            message.getPdu().getType() );
+		// disregard anything incoming
+		
+		//logger.log( Level.INFO,
+		//            "PDU from [%s] >> type=%s",
+		//            message.getSouce().getName(),
+		//            message.getPdu().getType() );
 	}
 
 	public void setReflector( Reflector reflector )
