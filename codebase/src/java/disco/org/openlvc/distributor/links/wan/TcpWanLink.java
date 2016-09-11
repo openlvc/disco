@@ -143,7 +143,7 @@ public class TcpWanLink extends LinkBase implements ILink
 				
 				// if auto reconnecting, schedule a reconnect
 				if( linkConfiguration.isWanAutoReconnect() )
-					new AutoReconnector(this).start();
+					scheduleReconnect();
 				
 				throw new DiscoException( "("+address+") "+se.getMessage() );
 			}
@@ -304,6 +304,7 @@ public class TcpWanLink extends LinkBase implements ILink
 			// if we hit EOF, the other end disconnected on us
 			logger.info( "Remote disconnection "+socket.getRemoteSocketAddress() );
 			reflector.getDistributor().takeDown( this );
+			scheduleReconnect();
 			throw eof;
 		}
 	}
@@ -358,6 +359,28 @@ public class TcpWanLink extends LinkBase implements ILink
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	private void scheduleReconnect()
+	{
+		Runnable reconnector = new Runnable()
+		{
+			public void run()
+			{
+				try
+				{
+					ThreadUtils.exceptionlessSleep(10000);
+					up();
+				}
+				catch( Exception e )
+				{
+					logger.debug( "Auto-reconnect for %s failed: %s", getName(), e.getMessage() );
+					if( linkConfiguration.isWanAutoReconnect() )
+						scheduleReconnect();
+				}
+			}
+		};
+		
+		new Thread(reconnector,getName()+"-reconnect").start();
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
@@ -386,30 +409,4 @@ public class TcpWanLink extends LinkBase implements ILink
 		}
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////////
-	/// Auto Reconnector  ///////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	private class AutoReconnector extends Thread
-	{
-		private ILink link;
-		private AutoReconnector( ILink link )
-		{
-			super( link.getName()+"-reconnect" );
-			this.link = link;
-		}
-		
-		public void run()
-		{
-			try
-			{
-				ThreadUtils.exceptionlessSleep(10000);
-				link.up();
-			}
-			catch( Exception e )
-			{
-				logger.debug( "Auto-reconnect for %s failed: %s", getName(), e.getMessage() );
-			}
-		}
-	}
-	
 }
