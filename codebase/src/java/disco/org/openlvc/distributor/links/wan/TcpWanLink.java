@@ -21,6 +21,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -136,9 +137,14 @@ public class TcpWanLink extends LinkBase implements ILink
     			// c. Connect to the socket
     			this.socket.connect( address, 5000/*timeout*/ );
 			}
-			catch( SocketTimeoutException se )
+			catch( ConnectException | SocketTimeoutException se )
 			{
 				this.socket = null;
+				
+				// if auto reconnecting, schedule a reconnect
+				if( linkConfiguration.isWanAutoReconnect() )
+					new AutoReconnector(this).start();
+				
 				throw new DiscoException( "("+address+") "+se.getMessage() );
 			}
 			catch( Exception e )
@@ -188,7 +194,8 @@ public class TcpWanLink extends LinkBase implements ILink
 		//
 		// 1. Flush the bundler
 		//
-		bundler.down();
+		if( bundler.isUp() )
+			bundler.down();
 		
 		//
 		// 2. Take the connection down
@@ -379,4 +386,30 @@ public class TcpWanLink extends LinkBase implements ILink
 		}
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////////
+	/// Auto Reconnector  ///////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////
+	private class AutoReconnector extends Thread
+	{
+		private ILink link;
+		private AutoReconnector( ILink link )
+		{
+			super( link.getName()+"-reconnect" );
+			this.link = link;
+		}
+		
+		public void run()
+		{
+			try
+			{
+				ThreadUtils.exceptionlessSleep(10000);
+				link.up();
+			}
+			catch( Exception e )
+			{
+				logger.debug( "Auto-reconnect for %s failed: %s", getName(), e.getMessage() );
+			}
+		}
+	}
+	
 }

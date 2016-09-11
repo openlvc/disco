@@ -64,6 +64,7 @@ public class LinkConfiguration
 	public static final String LINK_WAN_ADDRESS         = "wan.relay";
 	public static final String LINK_WAN_PORT            = "wan.port";
 	public static final String LINK_WAN_TRANSPORT       = "wan.transport"; // tcp|udp
+	public static final String LINK_WAN_AUTO_RECONNECT  = "wan.autoReconnect";
 	public static final String LINK_WAN_BUNDLING        = "wan.bundling";
 	public static final String LINK_WAN_BUNDLING_SIZE   = "wan.bundling.maxSize";
 	public static final String LINK_WAN_BUNDLING_TIME   = "wan.bundling.maxTime";
@@ -157,6 +158,8 @@ public class LinkConfiguration
 				this.setWanPort( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_TRANSPORT) )
 				this.setWanTransport( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_AUTO_RECONNECT) )
+				this.setWanAutoReconnect( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING) )
 				this.setWanBundling( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING_SIZE) )
@@ -454,6 +457,21 @@ public class LinkConfiguration
 	public void setWanTransport( TransportType transport )
 	{
 		set( LINK_WAN_TRANSPORT, transport.name().toLowerCase() );
+	}
+
+	public void setWanAutoReconnect( boolean autoReconnect )
+	{
+		set( LINK_WAN_AUTO_RECONNECT, autoReconnect );
+	}
+
+	public void setWanAutoReconnect( String autoReconnect )
+	{
+		setWanAutoReconnect( StringUtils.stringToBoolean(autoReconnect) );
+	}
+
+	public boolean isWanAutoReconnect()
+	{
+		return getAsBoolean( LINK_WAN_AUTO_RECONNECT, true );
 	}
 
 	public boolean isWanBundling()
