@@ -361,6 +361,7 @@ public class TcpWanLink extends LinkBase implements ILink
 	////////////////////////////////////////////////////////////////////////////////////////////
 	private void scheduleReconnect()
 	{
+		// schedule the reconnect to happen a bit later
 		Runnable reconnector = new Runnable()
 		{
 			public void run()
@@ -368,13 +369,12 @@ public class TcpWanLink extends LinkBase implements ILink
 				try
 				{
 					ThreadUtils.exceptionlessSleep(10000);
+					logger.debug( "Attempting Reconnect "+getConfigSummary() );
 					up();
 				}
 				catch( Exception e )
 				{
 					logger.debug( "Auto-reconnect for %s failed: %s", getName(), e.getMessage() );
-					if( linkConfiguration.isWanAutoReconnect() )
-						scheduleReconnect();
 				}
 			}
 		};
