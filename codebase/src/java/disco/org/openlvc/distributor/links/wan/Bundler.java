@@ -264,8 +264,16 @@ public class Bundler
 	/** Conencts to the given output stream and starts the sender thread */
 	protected void up( DataOutputStream outstream )
 	{
-		logger.debug( "[Bundler] Starting. Max bundle size="+StringUtils.humanReadableSize(sizeLimit)+
-		              ", max bundle time="+timeLimit+"ms" );
+		if( bundleMessages )
+		{
+			logger.debug( "[Bundler] Starting... bundling enabled, max bundle=%s, max wait=%dms",
+			              StringUtils.humanReadableSize(sizeLimit),
+			              timeLimit );
+		}
+		else
+		{
+			logger.debug( "[Bundler] Starting... bundling disabled, immediately flush all messages." );
+		}
 
 		this.outstream = outstream;
 
