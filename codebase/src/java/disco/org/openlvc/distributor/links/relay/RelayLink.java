@@ -199,6 +199,11 @@ public class RelayLink extends LinkBase implements ILink
 	/** Class responsible for receiving messages from the remote host represented by this instance */
 	private class ConnectionAcceptor extends Thread
 	{
+		private ConnectionAcceptor()
+		{
+			super( linkConfiguration.getName() );
+		}
+		
 		public void run()
 		{
 			while( !Thread.interrupted() )
