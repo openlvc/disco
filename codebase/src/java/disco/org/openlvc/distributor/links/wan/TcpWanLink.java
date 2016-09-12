@@ -25,6 +25,7 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 import org.openlvc.disco.DiscoException;
@@ -361,6 +362,12 @@ public class TcpWanLink extends LinkBase implements ILink
 	////////////////////////////////////////////////////////////////////////////////////////////
 	private void scheduleReconnect()
 	{
+		if( linkConfiguration.isWanAutoReconnect() == false )
+		{
+			logger.error( "Attempted to schedule a reconnect, but reconnect not configured - ignoring" );
+			return;
+		}
+		
 		// schedule the reconnect to happen a bit later
 		Runnable reconnector = new Runnable()
 		{
@@ -404,8 +411,17 @@ public class TcpWanLink extends LinkBase implements ILink
 				while( Thread.interrupted() == false )
 					receiveNext();
 			}
+			catch( SocketException se )
+			{
+				// connection was reset
+				logger.debug( "Remote connection was closed, scheduling reconnect" );
+				down();
+				scheduleReconnect();
+			}
 			catch( IOException ioe )
-			{}
+			{
+				ioe.printStackTrace();
+			}
 		}
 	}
 
