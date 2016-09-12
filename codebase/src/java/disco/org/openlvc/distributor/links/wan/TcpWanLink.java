@@ -362,13 +362,32 @@ public class TcpWanLink extends LinkBase implements ILink
 	////////////////////////////////////////////////////////////////////////////////////////////
 	private void scheduleReconnect()
 	{
+		// Only schedule a reconnect if we are not transient
+		// When a WAN link connects to a relay, it creates another WAN Link in the receiver around
+		// the incoming stream. Just because this exists doesn't mean we can connect back from server
+		// to client. Auto-connect attemps should only trigger from the client to the relay, not the
+		// other way around.
+		//
+		// Thankfully, the Relay marks the links it creates as transient so that the distributor removes
+		// them from its store when taking them down (they are not persisent over restarts as they are
+		// not part of the relay's configuration).
+		//
+		// As such, Relay embedded/created WAN links will be marked transient, so we can detect this
+		// and ignore connections from server->client
+		if( this.isTransient() )
+		{
+			logger.debug( "[%s] is transient, not scheduling a reconnect", getName() );
+			return;
+		}
+		
+		// Only schedule a reconnect if we are configured to
 		if( linkConfiguration.isWanAutoReconnect() == false )
 		{
 			logger.error( "Attempted to schedule a reconnect, but reconnect not configured - ignoring" );
 			return;
 		}
 		
-		// schedule the reconnect to happen a bit later
+		// Schedule the reconnect to happen a bit later
 		Runnable reconnector = new Runnable()
 		{
 			public void run()
