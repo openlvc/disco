@@ -1,4 +1,4 @@
-DISCO: DIS Central Operations
+DISCO: DIS Command Operator
 ===================
 -------------------
 
