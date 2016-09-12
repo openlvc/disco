@@ -304,7 +304,7 @@ public class TcpWanLink extends LinkBase implements ILink
 		{
 			// if we hit EOF, the other end disconnected on us
 			logger.info( "Remote disconnection "+socket.getRemoteSocketAddress() );
-			reflector.getDistributor().takeDown( this );
+			takeDownAndRemove();
 			scheduleReconnect();
 			throw eof;
 		}
@@ -389,6 +389,11 @@ public class TcpWanLink extends LinkBase implements ILink
 		new Thread(reconnector,getName()+"-reconnect").start();
 	}
 
+	private void takeDownAndRemove()
+	{
+		reflector.getDistributor().takeDown( this );
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
@@ -415,7 +420,7 @@ public class TcpWanLink extends LinkBase implements ILink
 			{
 				// connection was reset
 				logger.debug( "Remote connection was closed, scheduling reconnect" );
-				down();
+				takeDownAndRemove();
 				scheduleReconnect();
 			}
 			catch( IOException ioe )
