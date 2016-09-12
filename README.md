@@ -1,12 +1,12 @@
-DISCO: DIS Command Operator
+DISCO: DIS Combined Offensive
 ===================
 -------------------
 
 Welcome to OpenLVC's Disco project!
 
-Disco is a library and a set of tools for working with IEEE-1278 **D**istributed **I**nteractive **S**imulation networks.
+Disco is a library and a set of tools for working with and wrangling IEEE-1278 **D**istributed **I**nteractive **S**imulation networks.
 
-The project began as a clean, simple, high-performance DIS library designed to make writing DIS applications simple. It has since grown to add a number of additional tools including PDU logging, load testing, bridging, filtering and more.
+The project began as a clean, simple, high-performance DIS library designed to make writing DIS applications simple. It has since grown to add a number of additional tools including PDU logging, load testing, bridging, filtering and more. Everything you need to stage your DIS-based offensive!
 
 The project itself can be broken down into the following pieces:
 
