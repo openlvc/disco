@@ -60,4 +60,10 @@ public interface ILink
 	public String getConfigSummary();
 	public String getStatusSummary();
 
+	// Filtering
+//	public void addFilter();
+//	public void removeFilter();
+//	public List<IFilter> getFilters();
+//	public boolean filterOut( )
+	
 }

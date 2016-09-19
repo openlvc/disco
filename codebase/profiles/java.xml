@@ -135,9 +135,9 @@
 	-->
 	<target name="test"
 	        extensionOf="master.test"
-	        depends="test.disco"/>
+	        depends="test.disco,test.distributor"/>
 
-	<!-- Run the core DIsco test suite -->
+	<!-- Run the core Disco test suite -->
 	<target name="test.disco" depends="compile.tests">
 		<java-test suite="org/openlvc/disco"
 		           groups="${test.groups}"
@@ -149,6 +149,20 @@
 			<jvmarg value="-Dtest.root.dir=${test.root.dir}"/>
 	     </java-test>
 	</target>
+
+	<!-- Run the Distributor test suite -->
+	<target name="test.distributor" depends="compile.tests">
+		<java-test suite="org/openlvc/distributor"
+		           groups="${test.groups}"
+		           classdir="${test.classes.dir}"
+		           outdir="${test.reports.dir}"
+		           classpath="test.classpath">
+			<jvmarg value="-Dtest.loglevel=${test.loglevel}"/>
+			<jvmarg value="-Dtest.fileLogLevel=${test.fileLogLevel}"/>
+			<jvmarg value="-Dtest.root.dir=${test.root.dir}"/>
+	     </java-test>
+	</target>
+
 
 	<!-- ================================================================================= -->
 	<!--                                  Sandbox Targets                                  -->
