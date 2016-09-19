@@ -60,24 +60,10 @@ public abstract class LinkBase
 		this.inboundFilter = null;
 		this.outboundFilter = null;
 		if( linkConfiguration.isInboundFiltering() )
-		{
 			this.inboundFilter = FilterFactory.parse( linkConfiguration.getInboundFilter() );
-			this.logger.debug( "Inbound Filtering: "+inboundFilter );
-		}
-		else
-		{
-			this.logger.debug( "Inbound Filters: <none>" );
-		}
 		
 		if( linkConfiguration.isOutboundFiltering() )
-		{
 			this.outboundFilter = FilterFactory.parse( linkConfiguration.getOutboundFilter() );
-			this.logger.debug( "Outbound Filtering: "+outboundFilter );
-		}
-		else
-		{
-			this.logger.debug( "Outbound Filters: <none>" );
-		}
 	}
 
 	//----------------------------------------------------------

@@ -96,6 +96,7 @@ public class FilterFactory
 		ExpressionGroup currentGroup = new ExpressionGroup();
 		
 		StringBuilder builder = new StringBuilder();
+		boolean lastCharWasWhitespace = false; // need this to avoid Land triggering "and"
 		while( filterString.isEmpty() == false )
 		{
 			char character = filterString.remove();
@@ -109,7 +110,7 @@ public class FilterFactory
 			{
 				break;
 			}
-			else if( isOrString(character,filterString) )
+			else if( lastCharWasWhitespace && isOrString(character,filterString) )
 			{
 				// we've reached the end of the previous expression, store it
 				if( builder.length() > 0 )
@@ -139,7 +140,7 @@ public class FilterFactory
 				// remove the consumed characters
 				filterString.remove(); // 'r' or '|'
 			}
-			else if( isAndString(character,filterString) )
+			else if( lastCharWasWhitespace && isAndString(character,filterString) )
 			{
 				// we've reached the end of the previous expression, store it
 				if( builder.length() > 0 )
@@ -177,6 +178,7 @@ public class FilterFactory
 			else if( Character.isWhitespace(character) || character == '"' || character == '\'' )
 			{
 				// ignore
+				lastCharWasWhitespace = true;
 				continue;
 			}
 			else
@@ -184,6 +186,7 @@ public class FilterFactory
 				builder.append( character );
 			}
 
+			lastCharWasWhitespace = false;
 		}
 
 		// add the last expression to the group
@@ -230,7 +233,8 @@ public class FilterFactory
 		if( Character.toLowerCase(first) == 'a' )
 		{
 			Character[] chars = queue.stream().limit(3).toArray( Character[]::new );
-			return Character.toLowerCase(chars[0]) == 'n' &&
+			return chars.length == 3 &&
+			       Character.toLowerCase(chars[0]) == 'n' &&
 			       Character.toLowerCase(chars[1]) == 'd' &&
 			       Character.toLowerCase(chars[2]) == ' ';
 		}
@@ -257,7 +261,8 @@ public class FilterFactory
 		if( Character.toLowerCase(first) == 'o' )
 		{
 			Character[] chars = queue.stream().limit(2).toArray( Character[]::new );
-			return Character.toLowerCase(chars[0]) == 'r' &&
+			return chars.length == 2 &&
+			       Character.toLowerCase(chars[0]) == 'r' &&
 			       Character.toLowerCase(chars[1]) == ' ';
 		}
 		else

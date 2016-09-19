@@ -21,8 +21,10 @@ import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openlvc.distributor.filters.espdu.EntityDomainFilter;
 import org.openlvc.distributor.filters.espdu.EntityForceFilter;
 import org.openlvc.distributor.filters.espdu.EntityIdFilter;
+import org.openlvc.distributor.filters.espdu.EntityKindFilter;
 import org.openlvc.distributor.filters.espdu.EntityMarkingFilter;
 import org.openlvc.distributor.filters.espdu.EntityTypeFilter;
 
@@ -45,6 +47,8 @@ public class FilterRegistry
 		implementations.put( EntityMarkingFilter.FILTER_KEY, EntityMarkingFilter.class );
 		implementations.put( EntityTypeFilter.FILTER_KEY,    EntityTypeFilter.class );
 		implementations.put( EntityForceFilter.FILTER_KEY,   EntityForceFilter.class );
+		implementations.put( EntityDomainFilter.FILTER_KEY,  EntityDomainFilter.class );
+		implementations.put( EntityKindFilter.FILTER_KEY,    EntityKindFilter.class );
 	}
 
 	//----------------------------------------------------------
