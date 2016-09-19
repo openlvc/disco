@@ -49,9 +49,9 @@ public class FilterTest
 	public void testEntityForceIdFilter()
 	{
 		String filterString = "entity.force == Friendly";
-		FilterGroup directFilter = FilterConstructor.parse( filterString );
+		FilterGroup directFilter = FilterFactory.parse( filterString );
 		filterString = "entity.force == Friendly || entity.force == Neutral";
-		FilterGroup choiceFilter = FilterConstructor.parse( filterString );
+		FilterGroup choiceFilter = FilterFactory.parse( filterString );
 		
 		EntityStatePdu espdu = new EntityStatePdu();
 		

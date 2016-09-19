@@ -26,7 +26,7 @@ import java.util.Queue;
  * Parses a given filter string and returns a {@link FilterGroup} that represents the appropriate
  * filter construction for the contains clauses.
  */
-public class FilterConstructor
+public class FilterFactory
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -75,7 +75,7 @@ public class FilterConstructor
 
 		// Get the operand for the expression so that we can then find its
 		// local and split the expression on it
-		Operand operand = Operand.fromString( expression.string );
+		Operator operand = Operator.fromString( expression.string );
 		int index = string.indexOf( operand.text );
 		String field = string.substring( 0, index );
 		String value = string.substring( index+2 );
@@ -285,7 +285,7 @@ public class FilterConstructor
 			queue.add( character );
 
 		// do the expression parsing
-		FilterConstructor constructor = new FilterConstructor();
+		FilterFactory constructor = new FilterFactory();
 		ExpressionGroup expressionGroup = constructor.parse( queue );
 
 		// turn the expression group into a filter group

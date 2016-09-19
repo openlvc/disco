@@ -17,7 +17,7 @@
  */
 package org.openlvc.distributor.filters;
 
-public enum Operand
+public enum Operator
 {
 	//----------------------------------------------------------
 	//                    ENUMERATED VALUES
@@ -59,7 +59,7 @@ public enum Operand
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private Operand( String text )
+	private Operator( String text )
 	{
 		this.text = text;
 	}
@@ -72,10 +72,10 @@ public enum Operand
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static Operand fromValue( String type )
+	public static Operator fromValue( String type )
 	{
 		type = type.trim();
-		for( Operand value : Operand.values() )
+		for( Operator value : Operator.values() )
 		{
 			if( value.text.equals(type) )
 				return value;
@@ -84,9 +84,9 @@ public enum Operand
 		throw new IllegalArgumentException( "Unknown comparision type: "+type );
 	}
 	
-	public static Operand fromString( String filterString )
+	public static Operator fromString( String filterString )
 	{
-		for( Operand value : Operand.values() )
+		for( Operator value : Operator.values() )
 		{
 			if( filterString.contains(value.text) )
 				return value;

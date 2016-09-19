@@ -17,6 +17,15 @@
  */
 package org.openlvc.distributor.filters;
 
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openlvc.distributor.filters.espdu.EntityForceFilter;
+import org.openlvc.distributor.filters.espdu.EntityIdFilter;
+import org.openlvc.distributor.filters.espdu.EntityMarkingFilter;
+import org.openlvc.distributor.filters.espdu.EntityTypeFilter;
+
 /**
  * This class provides a static list of all filter types. You can simply ask it for a new
  * filter of a specific type and it will return you the approrpiate one.
@@ -26,6 +35,17 @@ public class FilterRegistry
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static Map<String,Class<? extends IFilter>> implementations = new HashMap<>();
+	static
+	{
+		//
+		// NOTE: All types need a constructor of the form: Constructor(Operator,String)
+		//
+		implementations.put( EntityIdFilter.FILTER_KEY,      EntityIdFilter.class );
+		implementations.put( EntityMarkingFilter.FILTER_KEY, EntityMarkingFilter.class );
+		implementations.put( EntityTypeFilter.FILTER_KEY,    EntityTypeFilter.class );
+		implementations.put( EntityForceFilter.FILTER_KEY,   EntityForceFilter.class );
+	}
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -42,11 +62,43 @@ public class FilterRegistry
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static IFilter create( String name, Operand assessment, String value )
+	/**
+	 * Create a new instance of the named filter with the given operator and value to use
+	 * when assessing whether PDUs meet the conditions.
+	 * <p/>
+	 * Typical filter definitions are of the form: <code>name operator value</code>. We use
+	 * the name to locate the filter class inside the internal static registry and pass the
+	 * operator and value as constructor arguments. As such, a constructor of the form
+	 * <code>Constructor(Operator,String)</code> is required to be present for all filter
+	 * implementations. If not, an exception will be thrown.
+	 * 
+	 * @param name Name of the filter
+	 * @param operator Operator applied to the filter in configuration
+	 * @param value The value against which to apply the operator when assessing individual PDUs
+	 * @return A new instance of the named filter with the given operator and value
+	 * @throws IllegalArgumentException If there is no filter for the given name, or the filter
+	 *                                  implementation doesn't have an appropriate constructor
+	 * @throws RuntimeException If there is a problem creating the filter
+	 */
+	public static IFilter create( String name, Operator operator, String value )
 	{
-		if( name.startsWith("entity.") )
-			return new EspduFilter( name, assessment, value );
-		else
-			throw new IllegalArgumentException( "Unknown filter type: "+name );
+		Class<? extends IFilter> clazz = implementations.get( name );
+		if( clazz == null )
+			throw new IllegalArgumentException( "Filter type not known: "+name );
+		
+		try
+		{
+			Constructor<? extends IFilter> constructor = clazz.getConstructor( Operator.class, String.class );
+			return constructor.newInstance( operator, value );
+		}
+		catch( NoSuchMethodException nsm )
+		{
+			throw new IllegalArgumentException( "Filter type must declare constructor(Operator,String): "+name );
+		}
+		catch( Exception e )
+		{
+			throw new RuntimeException( "Problem creating filter ("+name+"): "+e.getMessage(), e );
+		}
 	}
+	
 }
