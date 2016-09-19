@@ -140,7 +140,7 @@ public class LinkConfiguration
 			else if( key.equalsIgnoreCase(prefix+LINK_FILTER_INBOUND) )
 				this.setInboundFilter( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_FILTER_OUTBOUND) )
-				this.setoutboundFilter( value );
+				this.setOutboundFilter( value );
 			// DIS Settings
 			else if( key.equalsIgnoreCase(prefix+LINK_DIS_ADDRESS) )
 				this.setDisAddress( value );
@@ -236,32 +236,54 @@ public class LinkConfiguration
 	//
 	private void setInboundFilter( String value )
 	{
+		if( value == null )
+			value = "<none>";
+		
 		set( LINK_FILTER_INBOUND, value );
 	}
 	
-	private void setoutboundFilter( String value )
+	private void setOutboundFilter( String value )
 	{
+		if( value == null )
+			value = "<none>";
+		
 		set( LINK_FILTER_OUTBOUND, value );
 	}
 	
 	public String getInboundFilter()
 	{
-		return getAsString( LINK_FILTER_INBOUND, null );
+		String value = getAsString( LINK_FILTER_INBOUND, "<none>" );
+		if( value == null || value.equals("<none>") )
+			return null;
+		else
+			return value;
 	}
 	
 	public String getOutboundFilter()
 	{
-		return getAsString( LINK_FILTER_OUTBOUND, null );
+		String value = getAsString( LINK_FILTER_OUTBOUND, "<none>" );
+		if( value == null || value.equals("<none>") )
+			return null;
+		else
+			return value;
 	}
 
 	public boolean isInboundFiltering()
 	{
-		return properties.containsKey( LINK_FILTER_INBOUND );
+		String temp = getInboundFilter();
+		if( temp == null || temp.equals("<none>") )
+			return false;
+		else
+			return true;
 	}
 	
 	public boolean isOutboundFiltering()
 	{
-		return properties.containsKey( LINK_FILTER_OUTBOUND );
+		String temp = getOutboundFilter();
+		if( temp == null || temp.equals("<none>") )
+			return false;
+		else
+			return true;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

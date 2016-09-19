@@ -60,10 +60,24 @@ public abstract class LinkBase
 		this.inboundFilter = null;
 		this.outboundFilter = null;
 		if( linkConfiguration.isInboundFiltering() )
+		{
 			this.inboundFilter = FilterFactory.parse( linkConfiguration.getInboundFilter() );
+			this.logger.debug( "Inbound Filtering: "+inboundFilter );
+		}
+		else
+		{
+			this.logger.debug( "Inbound Filters: <none>" );
+		}
 		
 		if( linkConfiguration.isOutboundFiltering() )
+		{
 			this.outboundFilter = FilterFactory.parse( linkConfiguration.getOutboundFilter() );
+			this.logger.debug( "Outbound Filtering: "+outboundFilter );
+		}
+		else
+		{
+			this.logger.debug( "Outbound Filters: <none>" );
+		}
 	}
 
 	//----------------------------------------------------------
@@ -108,10 +122,13 @@ public abstract class LinkBase
 	 */
 	public void setOutboundFilter( FilterGroup filterGroup ) { this.outboundFilter = filterGroup; }
 	
-	public FilterGroup getInboundFilter()  { return this.inboundFilter; }
-	public FilterGroup getOutboundFilter() { return this.outboundFilter; }
-	public boolean isInboundFiltering()    { return inboundFilter != null; }
-	public boolean isOutboundFiltering()   { return outboundFilter != null; }
+	public FilterGroup getInboundFilter()   { return this.inboundFilter; }
+	public FilterGroup getOutboundFilter()  { return this.outboundFilter; }
+	public boolean isInboundFiltering()     { return inboundFilter != null; }
+	public boolean isOutboundFiltering()    { return outboundFilter != null; }
+	protected String getInboundFilterDesc() { return inboundFilter == null ? "<none>" : inboundFilter.toString(); }
+	protected String getOutboundFilterDesc(){ return outboundFilter == null ? "<none>" : outboundFilter.toString(); }
+	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////

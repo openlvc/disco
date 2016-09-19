@@ -99,8 +99,6 @@ public class FilterFactory
 		while( filterString.isEmpty() == false )
 		{
 			char character = filterString.remove();
-			if( Character.isWhitespace(character) )
-				continue;
 			
 			if( character == '(' )
 			{
@@ -176,6 +174,11 @@ public class FilterFactory
 				if( character != '&' )
 					filterString.remove(); // if a-n-d we have to remove the d as well
 			}
+			else if( Character.isWhitespace(character) || character == '"' || character == '\'' )
+			{
+				// ignore
+				continue;
+			}
 			else
 			{
 				builder.append( character );
@@ -229,7 +232,7 @@ public class FilterFactory
 			Character[] chars = queue.stream().limit(3).toArray( Character[]::new );
 			return Character.toLowerCase(chars[0]) == 'n' &&
 			       Character.toLowerCase(chars[1]) == 'd' &&
-			       Character.toLowerCase(chars[1]) == ' ';
+			       Character.toLowerCase(chars[2]) == ' ';
 		}
 		else
 		{
