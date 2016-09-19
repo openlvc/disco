@@ -83,7 +83,7 @@ public class PduHeader
 	{
 		int totalLength = getByteLength() + contentLength;
 		
-		dos.writeUI8( this.version.getValue() );
+		dos.writeUI8( this.version.value() );
 		dos.writeUI8( exerciseId );
 		dos.writeUI8( pduType.value() );
 		dos.writeUI8( family.value() );

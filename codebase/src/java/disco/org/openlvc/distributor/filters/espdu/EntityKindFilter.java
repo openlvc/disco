@@ -20,10 +20,11 @@ package org.openlvc.distributor.filters.espdu;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.Kind;
+import org.openlvc.distributor.filters.AbstractFilter;
 import org.openlvc.distributor.filters.IFilter;
 import org.openlvc.distributor.filters.Operator;
 
-public class EntityKindFilter extends AbstractEntityStateFilter implements IFilter
+public class EntityKindFilter extends AbstractFilter implements IFilter
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -33,7 +34,7 @@ public class EntityKindFilter extends AbstractEntityStateFilter implements IFilt
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Kind kind;
+	private final short kind;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -41,7 +42,7 @@ public class EntityKindFilter extends AbstractEntityStateFilter implements IFilt
 	public EntityKindFilter( Operator operator, String value )
 	{
 		super( FILTER_KEY, operator, value );
-		this.kind = Kind.valueOf( value );
+		this.kind = Kind.valueOf(value).value();
 	}
 
 	//----------------------------------------------------------
@@ -53,11 +54,11 @@ public class EntityKindFilter extends AbstractEntityStateFilter implements IFilt
 	 */
 	public final boolean matches( PDU pdu )
 	{
-		EntityStatePdu espdu = cast(pdu);
+		EntityStatePdu espdu = asEntityState(pdu);
 		if( espdu == null )
 			return false;
 		else
-			return kind.value() == espdu.getEntityType().getKind();
+			return operator.compare( kind, espdu.getEntityType().getKind() );
 	}
 
 	//----------------------------------------------------------

@@ -21,11 +21,12 @@ import java.util.regex.Pattern;
 
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.distributor.filters.AbstractFilter;
 import org.openlvc.distributor.filters.IFilter;
 import org.openlvc.distributor.filters.Operator;
 import org.openlvc.distributor.filters.Wildcards;
 
-public class EntityTypeFilter extends AbstractEntityStateFilter implements IFilter
+public class EntityTypeFilter extends AbstractFilter implements IFilter
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -35,7 +36,7 @@ public class EntityTypeFilter extends AbstractEntityStateFilter implements IFilt
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Pattern pattern;
+	private final Pattern pattern;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -52,7 +53,7 @@ public class EntityTypeFilter extends AbstractEntityStateFilter implements IFilt
 
 	public final boolean matches( PDU pdu )
 	{
-		EntityStatePdu espdu = cast(pdu);
+		EntityStatePdu espdu = asEntityState(pdu);
 		if( espdu == null )
 			return false;
 		

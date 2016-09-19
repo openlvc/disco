@@ -15,34 +15,33 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.distributor.filters.espdu;
+package org.openlvc.distributor.filters.pdu;
 
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.disco.pdu.field.Domain;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.distributor.filters.AbstractFilter;
 import org.openlvc.distributor.filters.IFilter;
 import org.openlvc.distributor.filters.Operator;
 
-public class EntityDomainFilter extends AbstractFilter implements IFilter
+public class PduTypeFilter extends AbstractFilter implements IFilter
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	public static final String FILTER_KEY = "entity.domain";
+	public static final String FILTER_KEY = "pdu.type";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private final short domain;
+	private final short type;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public EntityDomainFilter( Operator operator, String value )
+	public PduTypeFilter( Operator operator, String value )
 	{
 		super( FILTER_KEY, operator, value );
-		this.domain = Domain.valueOf(value).value();
+		this.type = PduType.valueOf(value).value();
 	}
 
 	//----------------------------------------------------------
@@ -54,11 +53,7 @@ public class EntityDomainFilter extends AbstractFilter implements IFilter
 	 */
 	public final boolean matches( PDU pdu )
 	{
-		EntityStatePdu espdu = asEntityState(pdu);
-		if( espdu == null )
-			return false;
-		else
-			return operator.compare( domain, espdu.getEntityType().getDomain() );
+		return operator.compare( type, pdu.getType().value() );
 	}
 
 	//----------------------------------------------------------

@@ -20,10 +20,11 @@ package org.openlvc.distributor.filters.espdu;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.ForceId;
+import org.openlvc.distributor.filters.AbstractFilter;
 import org.openlvc.distributor.filters.IFilter;
 import org.openlvc.distributor.filters.Operator;
 
-public class EntityForceFilter extends AbstractEntityStateFilter implements IFilter
+public class EntityForceFilter extends AbstractFilter implements IFilter
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -33,6 +34,7 @@ public class EntityForceFilter extends AbstractEntityStateFilter implements IFil
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private final short forceId;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -40,6 +42,7 @@ public class EntityForceFilter extends AbstractEntityStateFilter implements IFil
 	public EntityForceFilter( Operator operator, String value )
 	{
 		super( FILTER_KEY, operator, value );
+		this.forceId = ForceId.valueOf(value).value();
 	}
 
 	//----------------------------------------------------------
@@ -51,11 +54,11 @@ public class EntityForceFilter extends AbstractEntityStateFilter implements IFil
 	 */
 	public final boolean matches( PDU pdu )
 	{
-		EntityStatePdu espdu = cast(pdu);
+		EntityStatePdu espdu = asEntityState(pdu);
 		if( espdu == null )
 			return false;
 		else
-			return operator.compare( ForceId.valueOf(value), espdu.getForceID() );
+			return operator.compare( forceId, espdu.getForceID().value() );
 	}
 	
 	//----------------------------------------------------------

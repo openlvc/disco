@@ -50,7 +50,7 @@ public enum ProtocolVersion
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public short getValue()
+	public short value()
 	{
 		return this.value;
 	}

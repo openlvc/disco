@@ -15,16 +15,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.distributor.filters.espdu;
+package org.openlvc.distributor.filters;
 
 import java.util.regex.Pattern;
 
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.distributor.filters.IFilter;
-import org.openlvc.distributor.filters.Operator;
 
-public abstract class AbstractEntityStateFilter implements IFilter
+public abstract class AbstractFilter implements IFilter
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -40,7 +38,7 @@ public abstract class AbstractEntityStateFilter implements IFilter
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected AbstractEntityStateFilter( String fieldName, Operator operator, String value )
+	protected AbstractFilter( String fieldName, Operator operator, String value )
 	{
 		this.fieldName = fieldName;
 		this.operator = operator;
@@ -70,7 +68,7 @@ public abstract class AbstractEntityStateFilter implements IFilter
 		return getFilterString();
 	}
 	
-	protected final EntityStatePdu cast( PDU pdu )
+	protected final EntityStatePdu asEntityState( PDU pdu )
 	{
 		if( pdu instanceof EntityStatePdu )
 			return (EntityStatePdu)pdu;

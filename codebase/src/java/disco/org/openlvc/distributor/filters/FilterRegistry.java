@@ -27,6 +27,10 @@ import org.openlvc.distributor.filters.espdu.EntityIdFilter;
 import org.openlvc.distributor.filters.espdu.EntityKindFilter;
 import org.openlvc.distributor.filters.espdu.EntityMarkingFilter;
 import org.openlvc.distributor.filters.espdu.EntityTypeFilter;
+import org.openlvc.distributor.filters.pdu.PduExerciseIdFilter;
+import org.openlvc.distributor.filters.pdu.PduFamilyFilter;
+import org.openlvc.distributor.filters.pdu.PduTypeFilter;
+import org.openlvc.distributor.filters.pdu.PduVersionFilter;
 
 /**
  * This class provides a static list of all filter types. You can simply ask it for a new
@@ -43,6 +47,13 @@ public class FilterRegistry
 		//
 		// NOTE: All types need a constructor of the form: Constructor(Operator,String)
 		//
+		// PDU
+		implementations.put( PduTypeFilter.FILTER_KEY,       PduTypeFilter.class );
+		implementations.put( PduFamilyFilter.FILTER_KEY,     PduFamilyFilter.class );
+		implementations.put( PduVersionFilter.FILTER_KEY,    PduVersionFilter.class );
+		implementations.put( PduExerciseIdFilter.FILTER_KEY, PduExerciseIdFilter.class );
+		
+		// Entity State PDU
 		implementations.put( EntityIdFilter.FILTER_KEY,      EntityIdFilter.class );
 		implementations.put( EntityMarkingFilter.FILTER_KEY, EntityMarkingFilter.class );
 		implementations.put( EntityTypeFilter.FILTER_KEY,    EntityTypeFilter.class );
