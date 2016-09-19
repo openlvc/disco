@@ -41,6 +41,8 @@ public class Configuration
 	// Link Configuration
 	public static final String KEY_LINKS           = "distributor.links";
 	
+	// Link Filtering -- 
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------

@@ -19,8 +19,16 @@ package org.openlvc.distributor;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openlvc.disco.pdu.PDU;
 import org.openlvc.distributor.configuration.LinkConfiguration;
+import org.openlvc.distributor.filters.FilterFactory;
+import org.openlvc.distributor.filters.FilterGroup;
 
+/**
+ * Base class for all {@link ILink} implementations. Manages the tasks and tracking that is
+ * common across all links. This includes caching of configuration, logging, link status,
+ * transient status, inbound/outbound filtering, etc...
+ */
 public abstract class LinkBase
 {
 	//----------------------------------------------------------
@@ -34,6 +42,9 @@ public abstract class LinkBase
 	protected Logger logger;
 	protected boolean linkUp;
 	protected boolean isTransient;
+	
+	protected FilterGroup inboundFilter;
+	protected FilterGroup outboundFilter;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -44,6 +55,15 @@ public abstract class LinkBase
 		this.logger = LogManager.getFormatterLogger( "distributor."+linkConfiguration.getName() );
 		this.linkUp = false;
 		this.isTransient = false;
+		
+		// pull the filter information out of the config
+		this.inboundFilter = null;
+		this.outboundFilter = null;
+		if( linkConfiguration.isInboundFiltering() )
+			this.inboundFilter = FilterFactory.parse( linkConfiguration.getInboundFilter() );
+		
+		if( linkConfiguration.isOutboundFiltering() )
+			this.outboundFilter = FilterFactory.parse( linkConfiguration.getOutboundFilter() );
 	}
 
 	//----------------------------------------------------------
@@ -60,6 +80,39 @@ public abstract class LinkBase
 	public abstract void reflect( Message message );
 	public abstract String getStatusSummary();
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Filtering Methods   ////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/** Return true if the PDU passes inbound filtering and should be passed to reflector */
+	public boolean passesInboundFilter( PDU pdu )
+	{
+		return inboundFilter == null ? true : inboundFilter.matches(pdu);
+	}
+	
+	/** Return true if the PDU passes outbound filtering and should be passed to us by reflector */
+	public boolean passesOutboundFilter( PDU pdu )
+	{
+		return outboundFilter == null ? true : outboundFilter.matches(pdu);
+	}
+
+
+	/**
+	 * Inbound filtering: <code>network -> reflector</code><p/>
+	 * Defines which messages are forwarded to the reflector.
+	 */
+	public void setInboundFilter( FilterGroup filterGroup ) { this.inboundFilter = filterGroup; }
+
+	/**
+	 * Outbound filtering: <code>reflector -> network</code><p/>
+	 * Defines which messages the reflector will forward to us.
+	 */
+	public void setOutboundFilter( FilterGroup filterGroup ) { this.outboundFilter = filterGroup; }
+	
+	public FilterGroup getInboundFilter()  { return this.inboundFilter; }
+	public FilterGroup getOutboundFilter() { return this.outboundFilter; }
+	public boolean isInboundFiltering()    { return inboundFilter != null; }
+	public boolean isOutboundFiltering()   { return outboundFilter != null; }
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

@@ -51,10 +51,28 @@ public class Reflector
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
+	/**
+	 * Queue the message for reflection to all other attached links, but first check to see if
+	 * it passes the outbound filter of the link that is sending it to us.
+	 * <p/>
+	 * 
+	 * We do this explicitly here, rather than leaving it to each of the Link implementations
+	 * so that it is applied in a consistent manner. This method is typically called from the
+	 * primary processing thread used by the link, so the cost of executing it is loaded onto
+	 * the link and not the reflector.
+	 * <p/>
+	 * 
+	 * An internal queue is maintained by the reflector. If this queue is out of space, calls
+	 * to this method will block until the message can be inserted.
+	 * 
+	 * @param message The message to queue for reflection
+	 * @throws InterruptedException If the thread was interrupted while waiting as part of the
+	 *                              queue submission operation.
+	 */
 	public void reflect( Message message ) throws InterruptedException
 	{
-		this.queue.put( message );
+		if( message.getSouce().passesInboundFilter(message.getPdu()) )
+			this.queue.put( message );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,6 +150,7 @@ public class Reflector
 					                 .stream()
 					                 .filter( link -> link.isUp() )
 					                 .filter( link -> link != message.getSouce() )
+					                 .filter( link -> link.passesOutboundFilter(message.getPdu()) )
 					                 .forEach( link -> link.reflect(message) );
 				}
 				catch( InterruptedException ie )

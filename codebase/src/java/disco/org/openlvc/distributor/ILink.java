@@ -17,7 +17,9 @@
  */
 package org.openlvc.distributor;
 
+import org.openlvc.disco.pdu.PDU;
 import org.openlvc.distributor.configuration.LinkConfiguration;
+import org.openlvc.distributor.filters.FilterGroup;
 
 /**
  * Represents a links to a particular site/network.
@@ -61,9 +63,29 @@ public interface ILink
 	public String getStatusSummary();
 
 	// Filtering
-//	public void addFilter();
-//	public void removeFilter();
-//	public List<IFilter> getFilters();
-//	public boolean filterOut( )
+	/**
+	 * Inbound filtering: <code>network -> reflector</code><p/>
+	 * Defines which messages are forwarded to the reflector.
+	 */
+	public void setInboundFilter( FilterGroup filterGroup );
+
+	/**
+	 * Outbound filtering: <code>reflector -> network</code><p/>
+	 * Defines which messages the reflector has that it should forward to us. If a message
+	 * does not pass this filter, the reflector does not give it to us (but may give it to
+	 * others).
+	 */
+	public void setOutboundFilter( FilterGroup filterGroup );
+
+	/** Return true if the PDU passes inbound filtering and should be passed to reflector */
+	public boolean passesInboundFilter( PDU pdu );
+	
+	/** Return true if the PDU passes outbound filtering and should be passed to us by reflector */
+	public boolean passesOutboundFilter( PDU pdu );
+	
+	public FilterGroup getInboundFilter();
+	public FilterGroup getOutboundFilter();
+	public boolean isInboundFiltering();
+	public boolean isOutboundFiltering();
 	
 }

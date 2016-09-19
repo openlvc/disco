@@ -59,8 +59,7 @@ public class EntityMarkingFilter extends AbstractEntityStateFilter implements IF
 		if( espdu == null )
 			return false;
 		
-		String incoming = espdu.getMarking().toString();
-		return patternMatches( pattern, incoming );
+		return patternMatches( pattern, espdu.getMarking() );
 	}
 
 	//----------------------------------------------------------

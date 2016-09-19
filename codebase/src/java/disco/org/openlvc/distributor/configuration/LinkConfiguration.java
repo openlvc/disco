@@ -49,6 +49,10 @@ public class LinkConfiguration
 	//
 	public static final String LINK_MODE                = "mode";
 	
+	// Filtering Properties
+	public static final String LINK_FILTER_INBOUND      = "filter.in";
+	public static final String LINK_FILTER_OUTBOUND     = "filter.out";
+
 	// DIS Properties
 	public static final String LINK_DIS_ADDRESS         = "dis.address";
 	public static final String LINK_DIS_PORT            = "dis.port";
@@ -132,6 +136,11 @@ public class LinkConfiguration
 			String value = properties.getProperty( key );
 			if( key.equalsIgnoreCase(prefix+LINK_MODE) )
 				this.setMode( value );
+			// Filter Settings
+			else if( key.equalsIgnoreCase(prefix+LINK_FILTER_INBOUND) )
+				this.setInboundFilter( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_FILTER_OUTBOUND) )
+				this.setoutboundFilter( value );
 			// DIS Settings
 			else if( key.equalsIgnoreCase(prefix+LINK_DIS_ADDRESS) )
 				this.setDisAddress( value );
@@ -220,6 +229,39 @@ public class LinkConfiguration
 	private void setMode( String value )
 	{
 		setMode( Mode.valueOfIgnoreCase(value) );
+	}
+
+	//
+	// Filter Options
+	//
+	private void setInboundFilter( String value )
+	{
+		set( LINK_FILTER_INBOUND, value );
+	}
+	
+	private void setoutboundFilter( String value )
+	{
+		set( LINK_FILTER_OUTBOUND, value );
+	}
+	
+	public String getInboundFilter()
+	{
+		return getAsString( LINK_FILTER_INBOUND, null );
+	}
+	
+	public String getOutboundFilter()
+	{
+		return getAsString( LINK_FILTER_OUTBOUND, null );
+	}
+
+	public boolean isInboundFiltering()
+	{
+		return properties.containsKey( LINK_FILTER_INBOUND );
+	}
+	
+	public boolean isOutboundFiltering()
+	{
+		return properties.containsKey( LINK_FILTER_OUTBOUND );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
