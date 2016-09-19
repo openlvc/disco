@@ -128,6 +128,8 @@ distributor.local.dis.appId      = <random>
 distributor.local.dis.loglevel   = ERROR
 distributor.local.dis.logtofile  = on
 distributor.local.dis.logfile    = logs/distributor.<name>.log
+distributor.local.filtering.in   = <none>
+distributor.local.filtering.out  = <none>
 
 # Long haul connection to the relay
 distributor.longhaul.mode                 = wan
@@ -181,6 +183,70 @@ Site and Application IDs can be directly specified, or the symbol `<random>` can
 ##### File Path Configuration
 File path configurations should use `/`as the directory separator and can include the `<name>` symbol, which will be substitued for the name of the link.
 
+Filtering
+---------------
+Filtering can be applied to all PDUs processed by the distributor in one of two directions:
+
+  - **Inbound**: `Link->Reflector` - Filter out packets received by the native souce, preventing them from being passed to the reflector for forwarding. Prevents Reflector ever receiving them.
+  - **Outbound**: `Reflector->Link` - Filter out packets being passed from the reflector to a link. Prevents a single link receiving non-matching packets.
+
+In configuration, filtering is applied at the top level of a link much like the `mode` parameter:
+
+```
+distributor.[link].filtering.in  = entity.id == 1.1.*.1.2.3.4
+distributor.[link].filtering.out = entity.domain == Air or entity.domain == Land
+```
+ > The special value of `<none>` can be used to signal no filtering, or the clause can be left out
+
+
+### Filtering Clauses
+A filtering clause has the standard format of `[field] [operator] [value]`
+
+  - Field: The field to query on (see below)
+  - Operator: The type of filter we are applying
+	  - Equals: `==`
+	  - Does not Equal: `!=`
+  - Value: The value to check for. Can include wildcards
+
+A filtering clause is a query string kind of like what is present in Wireshark. You can include a number of clauses inside a query string, linked together via `and` or `or` declarations.
+
+#### Types, Values and Wildcards
+The value part of a clause can include wild cards. How these are applied depends on the type of field that is being interrogated:
+
+  - **String**: `*Tim*` - match any string with "Tim" in it
+  - **ID**: `1-7-*` - match any entity ID with a site id of `1` and an app id of `7`
+  - **Enumeration**: `1.1.*.1.2.3.4` - match an enum with any country code and the other values as specified
+	  - Alternate format: `1 1 * 1 2 3 4`
+	  - Alternate format: `1-1-*-1-2-3-4`
+  - **Special** - Choose from a pre-defined set of values. Treated as string, with valid values limited to those in the set. Wildcards not supported.
+
+Note that for IDs and Enumerations you must specifiy the full format (three digits for IDs and seven for enumerations).
+
+#### Combining Clauses
+You can link multiple clauses together with `and` or `or` clauses:
+
+  - `and`, `&&` - must match both clauses before and after
+  - `or`, `||` - must match at least one of the clauses before and after
+  - `()` - group clauses so that they are assessed as a single block
+
+
+### Available Fields
+The list below describes all the fields that can be filtered on and the valid types/values for them:
+
+  - **PDU Fields**
+	  - `pdu.type` - EntityState, Fire, Detonation, Signal, Transmitter, Designator, Emission, Data, SetData, ... (see `PduType.java`)
+	  - `pdu.version` - String (1-7)
+	  - `pdu.exerciseId` - String (number)
+	  - `pdu.family` - Entity, Warfare, Logistics, Radio, SimManagement, Emission
+  - **Entity State Fields**
+	  - `entity.id` - id
+	  - `entity.type` - enumeration
+	  - `entity.marking` - string
+	  - `entity.kind` - Platform, Lifeform, Munition, Radio, Emitter
+	  - `entity.domain` - Land, Surface, Air, Subsurface, Space
+	  - `entity.force` - Friendly, Opposing, Neutral, Other
+
+
 
 Example Configurations
 ----------------------
@@ -205,6 +271,8 @@ distributor.networkA.dis.appId      = <random>
 distributor.networkA.dis.loglevel   = ERROR
 distributor.networkA.dis.logtofile  = on
 distributor.networkA.dis.logfile    = logs/distributor.<name>.log
+distributor.networkA.filtering.in   = <none>
+distributor.networkA.filtering.out  = <none>
 
 # Multicast Network
 distributor.networkB.mode           = dis
@@ -217,6 +285,8 @@ distributor.networkB.dis.appId      = <random>
 distributor.networkB.dis.loglevel   = ERROR
 distributor.networkB.dis.logtofile  = on
 distributor.networkB.dis.logfile    = logs/distributor.<name>.log
+distributor.networkB.filtering.in   = <none>
+distributor.networkB.filtering.out  = <none>
 
 ```
 
