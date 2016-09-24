@@ -35,6 +35,7 @@ import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.utils.NetworkUtils;
+import org.openlvc.disco.utils.Platform;
 import org.openlvc.disco.utils.SocketOptions;
 import org.openlvc.disco.utils.StringUtils;
 
@@ -135,8 +136,15 @@ public class UdpConnection implements IConnection
 			//
 			// Create a BROADCAST socket
 			//
-			// Use the address of the NIC for the receive address
-			address = networkInterface.getInetAddresses().nextElement();
+			// If we are only linux, we have to use the broadcast address. However if we are on
+			// windows, we cannot bind to the broadcast address, we have to bind to the actual
+			// NIC address.
+			// 
+			if( Platform.getOperatingSystem() == Platform.OS.Linux )
+				address = networkInterface.getInterfaceAddresses().get(0).getBroadcast();
+			else
+				address = networkInterface.getInetAddresses().nextElement();
+
 			logger.info( "Connecting broadcast socket - %s:%d (interface: %s)", address, port, networkInterface );
 			this.broadcast = true;
 			
