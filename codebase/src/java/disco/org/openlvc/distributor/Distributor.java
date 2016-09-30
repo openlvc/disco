@@ -18,9 +18,8 @@
 package org.openlvc.distributor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.configuration.DiscoConfiguration;
@@ -40,7 +39,7 @@ public class Distributor
 	//----------------------------------------------------------
 	private Configuration configuration;
 	private Logger logger;
-	protected Map<String,ILink> links;
+	protected List<ILink> links;
 	
 	private Reflector reflector;
 	private StatusLogger statusLogThread;
@@ -52,15 +51,15 @@ public class Distributor
 	{
 		this.configuration = configuration;
 		this.logger = this.configuration.getApplicationLogger();
-		this.links = new HashMap<String,ILink>();
+		this.links = new CopyOnWriteArrayList<ILink>();
 		for( LinkConfiguration linkConfiguration : configuration.getLinks().values() )
 		{
 			ILink link = LinkFactory.createLink( linkConfiguration );
-			this.links.put( link.getName(), link );
+			this.links.add( link );
 		}
 
 		this.reflector = new Reflector( this );
-		this.statusLogThread = null;              // set in up()
+		this.statusLogThread = null; // set in up()
 	}
 
 	//----------------------------------------------------------
@@ -90,7 +89,7 @@ public class Distributor
 		// 3. Bring the links up. Brace yoursef; the PDUs are coming.
 		logger.info( "Bringing all links up:" );
 
-		for( ILink link : links.values() )
+		for( ILink link : links )
 			bringUp( link );
 		
 		logger.info( "" );
@@ -154,7 +153,7 @@ public class Distributor
 		//    Some may be removed because they are transient - can't iterate on
 		//    collection direct without concurrent mod, so make a copy
 		logger.info( "Brining all links down:" );
-		List<ILink> tempList = new ArrayList<>( links.values() );
+		List<ILink> tempList = new ArrayList<>( links );
 		for( ILink link : tempList )
 			takeDown( link );
 	}
@@ -192,13 +191,13 @@ public class Distributor
 	/** @return true if any contained links are up */
 	public boolean areAnyLinksUp()
 	{
-		return links.values().stream().anyMatch( link -> link.isUp() );
+		return links.stream().anyMatch( link -> link.isUp() );
 	}
 	
 	/** @return true if any contained links are down */
 	public boolean areAnyLinksDown()
 	{
-		return links.values().stream().anyMatch( link -> link.isDown() );
+		return links.stream().anyMatch( link -> link.isDown() );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -206,8 +205,13 @@ public class Distributor
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void addAndBringUp( ILink link )
 	{
-		links.put( link.getName(), link );
+		links.add( link );
 		bringUp( link );
+	}
+
+	public Logger getLogger()
+	{
+		return this.logger;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -226,8 +230,9 @@ public class Distributor
 		logger.info( "Version "+DiscoConfiguration.getVersion() );
 		logger.info("");
 
-		logger.info( links.size()+" links configured: "+links.keySet() );
-		for( ILink link : links.values() )
+		
+		logger.info( links.size()+" links configured: "+links );
+		for( ILink link : links )
 			logger.info( getConfigSummary(link) );
 
 		logger.info( "" );
@@ -284,7 +289,7 @@ public class Distributor
 						continue;
 					
 					// print link status -- links could change, so take a copy to avoid CME
-					List<ILink> temp = new ArrayList<ILink>( links.values() );
+					List<ILink> temp = new ArrayList<ILink>( links );
 					long linksUp = temp.stream().filter(link -> link.isUp()).count();
 					logger.info( ">>> links status: %d up, %d down", linksUp, temp.size()-linksUp );
 					for( ILink link : temp )

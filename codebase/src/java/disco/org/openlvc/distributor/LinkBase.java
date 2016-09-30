@@ -124,6 +124,12 @@ public abstract class LinkBase
 		return linkConfiguration.getName();
 	}
 	
+	@Override
+	public String toString()
+	{
+		return linkConfiguration.getName();
+	}
+	
 	public LinkConfiguration getConfiguration()
 	{
 		return this.linkConfiguration;

@@ -17,6 +17,7 @@
  */
 package org.openlvc.distributor;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -35,6 +36,7 @@ public class Reflector
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private Distributor distributor;
+	private List<ILink> links;
 	private BlockingQueue<Message> queue;
 	private Thread workerThread;
 
@@ -44,6 +46,7 @@ public class Reflector
 	protected Reflector( Distributor distributor )
 	{
 		this.distributor = distributor;
+		this.links = distributor.links;
 		this.queue = new LinkedBlockingQueue<>();
 		this.workerThread = null; // set when brought online
 	}
@@ -146,16 +149,19 @@ public class Reflector
 				try
 				{
 					Message message = queue.take();
-					distributor.links.values()
-					                 .stream()
-					                 .filter( link -> link.isUp() )
-					                 .filter( link -> link != message.getSouce() )
-					                 .filter( link -> link.passesOutboundFilter(message.getPdu()) )
-					                 .forEach( link -> link.reflect(message) );
+					links.stream().filter( link -> link.isUp() )
+					              .filter( link -> link != message.getSouce() )
+					              .filter( link -> link.passesOutboundFilter(message.getPdu()) )
+					              .forEach( link -> link.reflect(message) );
 				}
 				catch( InterruptedException ie )
 				{
 					return;
+				}
+				catch( Exception e )
+				{
+					distributor.getLogger().warn( "Exception in reflector, skipping PDU. Message: "+
+					                              e.getMessage(), e );
 				}
 			}
 		}
