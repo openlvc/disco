@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.field.TdlType;
@@ -116,20 +115,20 @@ public class SignalPdu extends PDU
 	}
 	
 	@Override
-	public int getContentLength()
+	public final int getContentLength()
 	{
-		int size = entityID.getByteLength();
-		size += DisSizes.UI16_SIZE;	// Radio ID
+		return 19 + data.length;
+		
+		// int size = entityID.getByteLength();              // 6
+		// size += DisSizes.UI16_SIZE;	// Radio ID          // 2
 
-		size += encodingScheme.getByteLength();
-		size += TdlType.getByteLength();
-		size += DisSizes.UI32_SIZE;		// Sample Rate
-		size += DisSizes.UI16_SIZE;		// Data Length
-		size += DisSizes.UI16_SIZE;		// Samples
-		size += data.length;
-
-
-		return size;
+		// size += encodingScheme.getByteLength();           // 2
+		// size += TdlType.getByteLength();                  // 1
+		// size += DisSizes.UI32_SIZE;		// Sample Rate   // 4
+		// size += DisSizes.UI16_SIZE;		// Data Length   // 2
+		// size += DisSizes.UI16_SIZE;		// Samples       // 2
+		// size += data.length;                              // Variable
+		// return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

@@ -109,7 +109,7 @@ public class EntityId implements IPduComponent, Cloneable
     }
 	
 	@Override
-    public int getByteLength()
+    public final int getByteLength()
 	{
 		return 6;
 	}

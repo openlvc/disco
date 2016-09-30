@@ -109,7 +109,7 @@ public class DisUnsignedInt64 extends Number implements IPduComponent, Cloneable
     }
 	
 	@Override
-	public int getByteLength()
+	public final int getByteLength()
 	{
 		return DisSizes.UI64_SIZE;
 	}

@@ -83,7 +83,7 @@ public enum CryptoSystem
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static int getByteLength()
+	public static final int getByteLength()
 	{
 		return DisSizes.UI16_SIZE;
 	}

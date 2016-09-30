@@ -160,23 +160,27 @@ public class EntityStatePdu extends PDU
 	}
 
 	@Override
-	public int getContentLength()
+	public final int getContentLength()
 	{
-		int size = entityID.getByteLength();
-		size += ForceId.getByteLength();
-		size += DisSizes.UI8_SIZE; // ParamCount
-		size += entityType.getByteLength();
-		size += alternativeEntityType.getByteLength();
-		size += linearVelocity.getByteLength();
-		size += location.getByteLength();
-		size += orientation.getByteLength();
-		size += DisSizes.UI32_SIZE; // Appearance
-		size += deadReckoningParams.getByteLength();
-		size += 12; // Marking
-		size += capabilities.getByteLength();
+		return 132 + DisSizes.getByteLengthOfCollection(articulationParameters);
+
+		/*
+		int size = entityID.getByteLength();            // 6
+		size += ForceId.getByteLength();                // 1
+		size += DisSizes.UI8_SIZE; // ParamCount        // 1
+		size += entityType.getByteLength();             // 8
+		size += alternativeEntityType.getByteLength();  // 8
+		size += linearVelocity.getByteLength();         // 12
+		size += location.getByteLength();               // 24
+		size += orientation.getByteLength();            // 12
+		size += DisSizes.UI32_SIZE; // Appearance       // 4
+		size += deadReckoningParams.getByteLength();    // 40
+		size += 12; // Marking                          // 12
+		size += capabilities.getByteLength();           // 4
 		size += DisSizes.getByteLengthOfCollection( articulationParameters );
 
 		return size;
+		*/
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

@@ -22,11 +22,8 @@ import java.util.StringTokenizer;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
-import org.openlvc.disco.pdu.field.Country;
 import org.openlvc.disco.pdu.field.Domain;
-import org.openlvc.disco.pdu.field.EntityKind;
 import org.openlvc.disco.pdu.field.Kind;
 
 /**
@@ -186,8 +183,11 @@ public class EntityType implements IPduComponent, Cloneable
 	}
 
 	@Override
-	public int getByteLength()
+	public final int getByteLength()
 	{
+		return 8;
+
+		/*
 		int size = EntityKind.getByteLength();
 		size += Domain.getByteLength();
 		size += Country.getByteLength();
@@ -195,8 +195,8 @@ public class EntityType implements IPduComponent, Cloneable
 		size += DisSizes.UI8_SIZE; // Sub Category
 		size += DisSizes.UI8_SIZE; // Specific
 		size += DisSizes.UI8_SIZE; // Extra
-
 		return size;
+		*/
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

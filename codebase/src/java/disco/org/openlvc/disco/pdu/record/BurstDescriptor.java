@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
 import org.openlvc.disco.pdu.field.Fuse;
 import org.openlvc.disco.pdu.field.Warhead;
@@ -120,12 +119,13 @@ public class BurstDescriptor implements IPduComponent, Cloneable
 	}
 	
 	@Override
-	public int getByteLength()
+	public final int getByteLength()
 	{
-		int size = munition.getByteLength();
-		size += DisSizes.UI16_SIZE * 4;
-		
-		return size;
+		return 16;
+
+		// int size = munition.getByteLength();   // 8
+		// size += DisSizes.UI16_SIZE * 4;        // 8
+		// return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

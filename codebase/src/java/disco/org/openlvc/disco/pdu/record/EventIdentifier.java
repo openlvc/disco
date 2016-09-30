@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
 
 /**
@@ -105,11 +104,13 @@ public class EventIdentifier implements IPduComponent, Cloneable
 	}
 
 	@Override
-	public int getByteLength()
+	public final int getByteLength()
 	{
-		int size = simulationAddress.getByteLength();
-		size += DisSizes.UI16_SIZE;
-		return size;
+		return 6;
+
+		// int size = simulationAddress.getByteLength();  // 4
+		// size += DisSizes.UI16_SIZE;                    // 2
+		// return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

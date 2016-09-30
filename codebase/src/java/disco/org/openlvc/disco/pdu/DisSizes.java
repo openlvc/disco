@@ -69,11 +69,11 @@ public class DisSizes
 	 * 
 	 * @return An int representing the size, in bytes, of the specified collection
 	 */
-	public static int getByteLengthOfCollection( Collection<? extends IPduComponent> collection )
+	public static final int getByteLengthOfCollection( Collection<? extends IPduComponent> collection )
 	{
 		int size = 0;
 		
-		for ( IPduComponent component : collection )
+		for( IPduComponent component : collection )
 			size += component.getByteLength();
 			
 		return size;

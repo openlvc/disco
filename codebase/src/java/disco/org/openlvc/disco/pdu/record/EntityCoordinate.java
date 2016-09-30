@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
 import org.openlvc.disco.utils.FloatingPointUtils;
 
@@ -112,9 +111,9 @@ public class EntityCoordinate implements IPduComponent, Cloneable
 	}
 
 	@Override
-	public int getByteLength()
+	public final int getByteLength()
 	{
-		return DisSizes.FLOAT32_SIZE * 3;
+		return 12; // DisSizes.FLOAT32_SIZE * 3;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
 import org.openlvc.disco.pdu.field.Country;
 import org.openlvc.disco.pdu.field.Domain;
@@ -134,16 +133,17 @@ public class RadioEntityType implements IPduComponent, Cloneable
     }
 	
 	@Override
-    public int getByteLength()
+    public final int getByteLength()
 	{
-		int size = EntityKind.getByteLength();
-		size += Domain.getByteLength();
-		size += Country.getByteLength();
-		size += DisSizes.UI8_SIZE;		// Category
-		size += DisSizes.UI8_SIZE;		// Nomenclature Version
-		size += DisSizes.UI16_SIZE;		// Nomenclature
+		return 8;
 		
-		return size;
+		// int size = EntityKind.getByteLength();
+		// size += Domain.getByteLength();
+		// size += Country.getByteLength();
+		// size += DisSizes.UI8_SIZE;		// Category
+		// size += DisSizes.UI8_SIZE;		// Nomenclature Version
+		// size += DisSizes.UI16_SIZE;		// Nomenclature
+		// return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

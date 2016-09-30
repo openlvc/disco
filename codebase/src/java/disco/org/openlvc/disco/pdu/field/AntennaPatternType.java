@@ -52,9 +52,9 @@ public enum AntennaPatternType
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static int getByteLength()
+	public static final int getByteLength()
 	{
-		return DisSizes.UI8_SIZE;
+		return DisSizes.UI16_SIZE;
 	}
 
 	public static AntennaPatternType fromValue( int value )

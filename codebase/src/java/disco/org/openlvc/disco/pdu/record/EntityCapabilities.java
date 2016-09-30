@@ -140,7 +140,7 @@ public class EntityCapabilities implements IPduComponent, Cloneable
 	}
 
 	@Override
-    public int getByteLength()
+    public final int getByteLength()
 	{
 		return DisSizes.UI32_SIZE;
 	}

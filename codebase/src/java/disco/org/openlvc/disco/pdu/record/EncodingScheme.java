@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
 import org.openlvc.disco.pdu.field.EncodingClass;
 import org.openlvc.disco.pdu.field.EncodingType;
@@ -138,10 +137,10 @@ public class EncodingScheme implements IPduComponent, Cloneable
     }
 	
 	@Override
-    public int getByteLength()
+    public final int getByteLength()
 	{
 		// Two bytes
-		return DisSizes.UI8_SIZE * 2;
+		return 2; //DisSizes.UI8_SIZE * 2;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

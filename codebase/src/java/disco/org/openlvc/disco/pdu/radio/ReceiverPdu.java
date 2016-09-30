@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.EntityId;
@@ -82,12 +81,13 @@ public class ReceiverPdu extends PDU
 	}
 	
 	@Override
-	public int getContentLength()
+	public final int getContentLength()
 	{
-		int size = entityID.getByteLength();
-		size += DisSizes.UI16_SIZE;	// Radio ID
-
-		return size;
+		return 8;
+		
+		// int size = entityID.getByteLength();
+		// size += DisSizes.UI16_SIZE;	// Radio ID
+		// return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

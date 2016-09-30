@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
 import org.openlvc.disco.utils.CoordinateUtils;
 import org.openlvc.disco.utils.FloatingPointUtils;
@@ -137,9 +136,9 @@ public class WorldCoordinate implements IPduComponent, Cloneable
 	}
 	
 	@Override
-	public int getByteLength()
+	public final int getByteLength()
 	{
-		return DisSizes.FLOAT64_SIZE * 3;
+		return 24; // DisSizes.FLOAT64_SIZE * 3;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

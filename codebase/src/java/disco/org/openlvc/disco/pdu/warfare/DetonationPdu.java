@@ -142,22 +142,23 @@ public class DetonationPdu extends PDU
 	}
 
 	@Override
-	public int getContentLength()
+	public final int getContentLength()
 	{
-		int size = firingEntityID.getByteLength();
-		size += targetEntityID.getByteLength();
-		size += munitionID.getByteLength();
-		size += eventID.getByteLength();
-		size += velocity.getByteLength();
-		size += locationInWorld.getByteLength();
-		size += burstDescriptor.getByteLength();
-		size += locationInEntityCoordinates.getByteLength();
-		size += DisSizes.UI8_SIZE;      // DetonationResult
-		size += DisSizes.UI8_SIZE;		// Parameter Count
-		size += 2;						// Padding
-		size += DisSizes.getByteLengthOfCollection( articulationParameters );
-
-		return size;
+		return 92 + DisSizes.getByteLengthOfCollection( articulationParameters );
+		
+		// int size = firingEntityID.getByteLength();              // 6
+		// size += targetEntityID.getByteLength();                 // 6
+		// size += munitionID.getByteLength();                     // 6
+		// size += eventID.getByteLength();                        // 6
+		// size += velocity.getByteLength();                       // 12
+		// size += locationInWorld.getByteLength();                // 24
+		// size += burstDescriptor.getByteLength();                // 16
+		// size += locationInEntityCoordinates.getByteLength();    // 12
+		// size += DisSizes.UI8_SIZE;      // DetonationResult     // 1
+		// size += DisSizes.UI8_SIZE;		// Parameter Count      // 1
+		// size += 2;						// Padding              // 2
+		// size += DisSizes.getByteLengthOfCollection( articulationParameters );
+		// return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

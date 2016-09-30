@@ -75,7 +75,7 @@ public enum TdlType
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static int getByteLength()
+	public static final int getByteLength()
 	{
 		return DisSizes.UI8_SIZE;
 	}

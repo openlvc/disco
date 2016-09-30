@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
 import org.openlvc.disco.pdu.field.MajorModulationType;
 
@@ -158,9 +157,9 @@ public class ModulationType implements IPduComponent, Cloneable
     }
 	
 	@Override
-    public int getByteLength()
+    public final int getByteLength()
 	{
-		return DisSizes.UI16_SIZE * 4;
+		return 8; //DisSizes.UI16_SIZE * 4;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

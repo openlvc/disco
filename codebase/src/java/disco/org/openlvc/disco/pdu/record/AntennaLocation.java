@@ -116,11 +116,13 @@ public class AntennaLocation implements IPduComponent, Cloneable
     }
 	
 	@Override
-    public int getByteLength()
+    public final int getByteLength()
 	{
-		int size = antennaLocation.getByteLength();
-		size += relativeAntennaLocation.getByteLength();
-		return size;
+		return 36;
+		
+		// int size = antennaLocation.getByteLength();       // 24
+		// size += relativeAntennaLocation.getByteLength();  // 12
+		// return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

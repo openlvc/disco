@@ -168,27 +168,30 @@ public class TransmitterPdu extends PDU
 	@Override
 	public int getContentLength()
 	{
-		int size = entityID.getByteLength();
-		size += DisSizes.UI16_SIZE;	// Radio ID
-		size += radioEntityType.getByteLength();
-		size += TransmitState.getByteLength();
-		size += InputSource.getByteLength();
-		size += 2;								// Padding
-		size += antennaLocation.getByteLength();
-		size += AntennaPatternType.getByteLength();
-		size += DisSizes.UI16_SIZE;				// Antenna Pattern Parameter Length
-		size += transmissionFrequency.getByteLength();
-		size += DisSizes.FLOAT32_SIZE;			// Bandwidth
-		size += DisSizes.FLOAT32_SIZE;			// Power
-		size += modulationType.getByteLength();
-		size += CryptoSystem.getByteLength();
-		size += DisSizes.UI16_SIZE;				// Crypto Key
-		size += DisSizes.UI8_SIZE;				// Modulation Parameter Length
-		size += 3;								// Padding
-		size += modulationParameter.length;
-		size += antennaPatternParameter.length;
-
-		return size;
+		return 92 +
+		       modulationParameter.length +
+		       antennaPatternParameter.length;
+		
+		// int size = entityID.getByteLength();                                           // 6
+		// size += DisSizes.UI16_SIZE;	// Radio ID                                       // 2
+		// size += radioEntityType.getByteLength();                                       // 8
+		// size += TransmitState.getByteLength();                                         // 1
+		// size += InputSource.getByteLength();                                           // 1
+		// size += 2;								// Padding                            // 2
+		// size += antennaLocation.getByteLength();                                       // 36
+		// size += AntennaPatternType.getByteLength();                                    // 2
+		// size += DisSizes.UI16_SIZE;				// Antenna Pattern Parameter Length   // 2
+		// size += transmissionFrequency.getByteLength();                                 // 8
+		// size += DisSizes.FLOAT32_SIZE;			// Bandwidth                          // 4
+		// size += DisSizes.FLOAT32_SIZE;			// Power                              // 4
+		// size += modulationType.getByteLength();                                        // 8
+		// size += CryptoSystem.getByteLength();                                          // 2
+		// size += DisSizes.UI16_SIZE;				// Crypto Key                         // 2
+		// size += DisSizes.UI8_SIZE;				// Modulation Parameter Length        // 1 
+		// size += 3;								// Padding                            // 3
+		// size += modulationParameter.length;                                            // x
+		// size += antennaPatternParameter.length;                                        // x
+		// return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

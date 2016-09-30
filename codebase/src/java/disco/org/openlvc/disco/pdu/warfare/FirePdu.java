@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.BurstDescriptor;
@@ -118,20 +117,22 @@ public class FirePdu extends PDU
 	}
 
 	@Override
-	public int getContentLength()
+	public final int getContentLength()
 	{
-		int size = firingEntityID.getByteLength();
-		size += targetEntityID.getByteLength();
-		size += munitionID.getByteLength();
-		size += eventID.getByteLength();
+		return 78;
 
-		size += DisSizes.UI32_SIZE;	// Fire Mission Index
-		size += locationInWorld.getByteLength();
-		size += burstDescriptor.getByteLength();
-		size += velocity.getByteLength();
-		size += DisSizes.FLOAT32_SIZE;	// Range
+		// int size = firingEntityID.getByteLength();          // 6
+		// size += targetEntityID.getByteLength();             // 6
+		// size += munitionID.getByteLength();                 // 6
+		// size += eventID.getByteLength();
+
+		// size += DisSizes.UI32_SIZE;	// Fire Mission Index  // 4
+		// size += locationInWorld.getByteLength();            // 24
+		// size += burstDescriptor.getByteLength();            // 16
+		// size += velocity.getByteLength();                   // 12
+		// size += DisSizes.FLOAT32_SIZE;	// Range           // 4
 		
-		return size;
+		// return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

@@ -128,14 +128,17 @@ public class DeadReckoningParameter implements IPduComponent, Cloneable
 	}
 	
 	@Override
-	public int getByteLength()
+	public final int getByteLength()
 	{
+		return 40; // make it fast
+		
+		/*
 		int size = DeadReckoningAlgorithm.getByteLength();
 		size += OTHER_PARAMETERS_ARRAY_SIZE;
 		size += entityLinearAcceleration.getByteLength();
 		size += entityAngularVelocity.getByteLength();
-		
 		return size;
+		*/
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
