@@ -263,6 +263,18 @@ public class DetonationPdu extends PDU
 	{
 		this.articulationParameters = articulationParameters;
 	}
+	
+	@Override
+	public int getSiteId()
+	{
+		return firingEntityID.getSiteId();
+	}
+	
+	@Override
+	public int getAppId()
+	{
+		return firingEntityID.getAppId();
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

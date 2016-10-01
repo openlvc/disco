@@ -27,8 +27,10 @@ import org.openlvc.distributor.filters.espdu.EntityIdFilter;
 import org.openlvc.distributor.filters.espdu.EntityKindFilter;
 import org.openlvc.distributor.filters.espdu.EntityMarkingFilter;
 import org.openlvc.distributor.filters.espdu.EntityTypeFilter;
+import org.openlvc.distributor.filters.pdu.PduAppIdFilter;
 import org.openlvc.distributor.filters.pdu.PduExerciseIdFilter;
 import org.openlvc.distributor.filters.pdu.PduFamilyFilter;
+import org.openlvc.distributor.filters.pdu.PduSiteIdFilter;
 import org.openlvc.distributor.filters.pdu.PduTypeFilter;
 import org.openlvc.distributor.filters.pdu.PduVersionFilter;
 
@@ -52,6 +54,8 @@ public class FilterRegistry
 		implementations.put( PduFamilyFilter.FILTER_KEY,     PduFamilyFilter.class );
 		implementations.put( PduVersionFilter.FILTER_KEY,    PduVersionFilter.class );
 		implementations.put( PduExerciseIdFilter.FILTER_KEY, PduExerciseIdFilter.class );
+		implementations.put( PduSiteIdFilter.FILTER_KEY,     PduSiteIdFilter.class );
+		implementations.put( PduAppIdFilter.FILTER_KEY,      PduAppIdFilter.class );
 		
 		// Entity State PDU
 		implementations.put( EntityIdFilter.FILTER_KEY,      EntityIdFilter.class );

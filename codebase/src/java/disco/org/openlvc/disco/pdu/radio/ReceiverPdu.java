@@ -112,6 +112,18 @@ public class ReceiverPdu extends PDU
 	{
 		this.radioID = radioID;
 	}
+	
+	@Override
+	public int getSiteId()
+	{
+		return this.entityID.getSiteId();
+	}
+	
+	@Override
+	public int getAppId()
+	{
+		return this.entityID.getAppId();
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

@@ -195,6 +195,18 @@ public class EntityStatePdu extends PDU
 	{
 		return entityType.getDomainEnum();
 	}
+	
+	@Override
+	public int getSiteId()
+	{
+		return entityID.getSiteId();
+	}
+	
+	@Override
+	public int getAppId()
+	{
+		return entityID.getAppId();
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////

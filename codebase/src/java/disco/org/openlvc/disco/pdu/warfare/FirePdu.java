@@ -227,6 +227,18 @@ public class FirePdu extends PDU
 	{
 		this.range = range;
 	}
+	
+	@Override
+	public int getSiteId()
+	{
+		return this.firingEntityID.getSiteId();
+	}
+	
+	@Override
+	public int getAppId()
+	{
+		return this.firingEntityID.getAppId();
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

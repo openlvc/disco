@@ -224,6 +224,18 @@ public class SignalPdu extends PDU
 		this.dataLength = dataLength;
 		this.data = data;
 	}
+	
+	@Override
+	public int getSiteId()
+	{
+		return entityID.getSiteId();
+	}
+	
+	@Override
+	public int getAppId()
+	{
+		return entityID.getAppId();
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

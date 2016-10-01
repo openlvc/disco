@@ -361,6 +361,18 @@ public class TransmitterPdu extends PDU
 	{
 		this.cryptoKey = cryptoKey;
 	}
+	
+	@Override
+	public int getSiteId()
+	{
+		return entityID.getSiteId();
+	}
+	
+	@Override
+	public int getAppId()
+	{
+		return entityID.getAppId();
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

@@ -168,6 +168,34 @@ public abstract class PDU
 		return baos.toByteArray();
 	}
 
+	/**
+	 * Return the Site ID for the system from which this PDU originates.
+	 * <p/>
+	 * This information isn't in the header, but some concept of it seems to be in each PDU
+	 * in some form or another. In an ESPDU, it is in the entity ID. For a designator, it is
+	 * in the originating entity. This source of this information will differ from PDU to PDU,
+	 * but the intent is that it will return the Site ID of the originating site.
+	 * the children.
+	 * 
+	 * @return Site ID from which which PDU came, or -1 if it can not be determined for the
+	 *         PDU type.
+	 */
+	public abstract int getSiteId();
+	
+	/**
+	 * Return the App ID for the system from which this PDU originates.
+	 * <p/>
+	 * This information isn't in the header, but some concept of it seems to be in each PDU
+	 * in some form or another. In an ESPDU, it is in the entity ID. For a designator, it is
+	 * in the originating entity. This source of this information will differ from PDU to PDU,
+	 * but the intent is that it will return the App ID of the originating site.
+	 * the children.
+	 * 
+	 * @return App ID from which which PDU came, or -1 if it can not be determined for the
+	 *         PDU type.
+	 */
+	public abstract int getAppId();
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
