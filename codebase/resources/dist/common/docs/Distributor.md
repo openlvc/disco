@@ -235,8 +235,10 @@ The list below describes all the fields that can be filtered on and the valid ty
 
   - **PDU Fields**
 	  - `pdu.type` - EntityState, Fire, Detonation, Signal, Transmitter, Designator, Emission, Data, SetData, ... (see `PduType.java`)
-	  - `pdu.version` - String (1-7)
-	  - `pdu.exerciseId` - String (number)
+	  - `pdu.version` - Number (1-7)
+	  - `pdu.exerciseId` - Number
+	  - `pdu.siteId` - Number
+	  - `pdu.appId` - Number
 	  - `pdu.family` - Entity, Warfare, Logistics, Radio, SimManagement, Emission
   - **Entity State Fields**
 	  - `entity.id` - id
