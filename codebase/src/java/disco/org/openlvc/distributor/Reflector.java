@@ -153,6 +153,11 @@ public class Reflector
 					              .filter( link -> link != message.getSouce() )
 					              .filter( link -> link.passesOutboundFilter(message.getPdu()) )
 					              .forEach( link -> link.reflect(message) );
+
+					// Queue debugging
+					// if( queue.size() % 1000 == 0 )
+					//	 distributor.getLogger().info( "Queue is at "+queue.size() );
+
 				}
 				catch( InterruptedException ie )
 				{

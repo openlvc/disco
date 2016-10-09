@@ -83,6 +83,7 @@ public class Bundler
 	private DataOutputStream outstream; // connection to the router
 	private Lock lock;                  // lock the send/receive processing
 	private Condition armCondition;     // tell the timer that it should be ready to flush soon
+	private Condition armedCondition;   // tell the main thread that the timer is armed
 	private Condition flushCondition;   // triggered when it is time to flush
 	private Condition returnCondition;  // triggered when the flush is over
 	private Thread senderThread;        // thread that will do all our sending work
@@ -114,6 +115,7 @@ public class Bundler
 		// output writing
 		this.lock = new ReentrantLock();
 		this.armCondition = this.lock.newCondition();
+		this.armedCondition = this.lock.newCondition();
 		this.flushCondition = this.lock.newCondition();
 		this.returnCondition = this.lock.newCondition();
 		this.senderThread = null; // set in up()
@@ -171,6 +173,16 @@ public class Bundler
 				this.oldestMessage = System.currentTimeMillis();
 				// arm the timer
 				armCondition.signalAll();
+				
+				// Wait for it to arm.
+				// If we don't, submit() may be called many times before the thread is interrupted.
+				// Possibly enough to hit the size limit, causing us to signal the flush condition and
+				// then wait for it. This waiting then lets the sender wake up. The first thing it does
+				// is arm itself and then wait for the flush condition (which we've signalled already
+				// but that is lost now). It'll wait for max_flush_time, then trigger the flush and
+				// signal the return we are waiting on. POW. Instant pause.
+				// This solves the problem by ensuring the Sender is armed before continuing.
+				armedCondition.await();
 			}
 
 			// check to see if we've hit the size trigger
@@ -327,9 +339,9 @@ public class Bundler
 		return senderThread != null && senderThread.isAlive();
 	}
 
-    ////////////////////////////////////////////////////////////////////////////////////////////
-    /// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 	public long getSentMessageCount()
 	{
 		return this.totalMessagesSent;
@@ -367,6 +379,7 @@ public class Bundler
 					// Wait for someone to arm us for sending.
 					// We don't want to just busy-loop - we only arm when there are messages
 					armCondition.await();
+					armedCondition.signalAll();
 					
 					// The flush condition we were waiting for has triggered.
 					// Either our wait time expired, or we reached our size threshold
