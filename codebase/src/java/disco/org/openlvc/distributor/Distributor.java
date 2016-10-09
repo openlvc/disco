@@ -176,7 +176,7 @@ public class Distributor
 			// if transient, dump it
 			if( link.isTransient() )
 			{
-				links.remove( link.getName() );
+				links.remove( link );
 				logger.debug( "Removed transient link "+link.getName() );
 			}
 		}
