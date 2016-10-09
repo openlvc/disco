@@ -287,27 +287,16 @@ public class TcpWanLink extends LinkBase implements ILink
 	 */
 	private void receiveNext() throws IOException
 	{
-		try
-		{
-			// read the payload off the socket
-			int length = instream.readInt();
-			byte[] payload = new byte[length];
-			instream.readFully( payload );
-			
-			if( logger.isDebugEnabled() )
-				logger.debug( "Read payload >> %d bytes", length );
-			
-			// process the bundle
-			processBundle( payload );
-		}
-		catch( EOFException eof )
-		{
-			// if we hit EOF, the other end disconnected on us
-			logger.info( "Remote disconnection "+socket.getRemoteSocketAddress() );
-			takeDownAndRemove();
-			scheduleReconnect();
-			throw eof;
-		}
+		// read the payload off the socket
+		int length = instream.readInt();
+		byte[] payload = new byte[length];
+		instream.readFully( payload );
+		
+		if( logger.isDebugEnabled() )
+			logger.debug( "Read payload >> %d bytes", length );
+		
+		// process the bundle
+		processBundle( payload );
 	}
 
 	private void processBundle( byte[] payload )
@@ -437,8 +426,13 @@ public class TcpWanLink extends LinkBase implements ILink
 			}
 			catch( SocketException se )
 			{
-				// connection was reset
-				logger.debug( "Remote connection was closed, scheduling reconnect" );
+				// we are shutting down - someone has closed the socket intentionally on us
+				logger.debug( "Socket closed, shutting down" );
+			}
+			catch( EOFException eof )
+			{
+				// if we hit EOF, the other end disconnected on us
+				logger.info( "Remote connection was closed "+socket.getRemoteSocketAddress() );
 				takeDownAndRemove();
 				scheduleReconnect();
 			}
