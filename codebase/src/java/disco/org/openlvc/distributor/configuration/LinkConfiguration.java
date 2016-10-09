@@ -17,6 +17,7 @@
  */
 package org.openlvc.distributor.configuration;
 
+import java.io.Serializable;
 import java.util.Properties;
 import java.util.Random;
 
@@ -25,11 +26,13 @@ import org.openlvc.disco.utils.StringUtils;
 import org.openlvc.distributor.Mode;
 import org.openlvc.distributor.TransportType;
 
-public class LinkConfiguration
+public class LinkConfiguration implements Serializable
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static final long serialVersionUID = 98121116105109L;
+
 	//
 	// Link Specific Snippets
 	//
@@ -68,6 +71,7 @@ public class LinkConfiguration
 	public static final String LINK_WAN_ADDRESS         = "wan.relay";
 	public static final String LINK_WAN_PORT            = "wan.port";
 	public static final String LINK_WAN_TRANSPORT       = "wan.transport"; // tcp|udp
+	public static final String LINK_WAN_SITE_NAME       = "wan.siteName";
 	public static final String LINK_WAN_AUTO_RECONNECT  = "wan.autoReconnect";
 	public static final String LINK_WAN_BUNDLING        = "wan.bundling";
 	public static final String LINK_WAN_BUNDLING_SIZE   = "wan.bundling.maxSize";
@@ -167,6 +171,8 @@ public class LinkConfiguration
 				this.setWanPort( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_TRANSPORT) )
 				this.setWanTransport( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_SITE_NAME) )
+				this.setWanSiteName( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_AUTO_RECONNECT) )
 				this.setWanAutoReconnect( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_BUNDLING) )
@@ -234,7 +240,7 @@ public class LinkConfiguration
 	//
 	// Filter Options
 	//
-	private void setReceiveFilter( String value )
+	public void setReceiveFilter( String value )
 	{
 		if( value == null )
 			value = "<none>";
@@ -242,7 +248,7 @@ public class LinkConfiguration
 		set( LINK_FILTER_RECV, value );
 	}
 	
-	private void setSendFilter( String value )
+	public void setSendFilter( String value )
 	{
 		if( value == null )
 			value = "<none>";
@@ -521,6 +527,24 @@ public class LinkConfiguration
 	public void setWanTransport( TransportType transport )
 	{
 		set( LINK_WAN_TRANSPORT, transport.name().toLowerCase() );
+	}
+
+	/**
+	 * A WAN connection can have a site name that is used to identify it on the other end.
+	 * This can be used to help us specify configuration properties for individual incoming
+	 * connections, or to just identify the connection in logs on the other side.
+	 * <p/>
+	 * The special name "<auto>" tells the Relay on the other end to just choose a generic
+	 * name for us.
+	 */
+	public void setWanSiteName( String name )
+	{
+		set( LINK_WAN_SITE_NAME, name );
+	}
+	
+	public String getWanSiteName()
+	{
+		return getAsString( LINK_WAN_SITE_NAME, "<auto>" );
 	}
 
 	public void setWanAutoReconnect( boolean autoReconnect )

@@ -25,6 +25,12 @@ public enum TransportType
 	TCP,
 	UDP;
 
+	@Override
+	public String toString()
+	{
+		return name().toLowerCase();
+	}
+
 	public static TransportType valueOfIgnoreCase( String string )
 	{
 		for( TransportType transport : TransportType.values() )

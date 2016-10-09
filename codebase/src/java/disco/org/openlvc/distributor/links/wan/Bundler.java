@@ -278,13 +278,13 @@ public class Bundler
 	{
 		if( bundleMessages )
 		{
-			logger.debug( "[Bundler] Starting... bundling enabled, max bundle=%s, max wait=%dms",
+			logger.trace( "[Bundler] Starting... bundling enabled, max bundle=%s, max wait=%dms",
 			              StringUtils.humanReadableSize(sizeLimit),
 			              timeLimit );
 		}
 		else
 		{
-			logger.debug( "[Bundler] Starting... bundling disabled, immediately flush all messages." );
+			logger.trace( "[Bundler] Starting... bundling disabled, immediately flush all messages." );
 		}
 
 		this.outstream = outstream;
@@ -331,7 +331,7 @@ public class Bundler
 			logger.warn( "Bundler sending thread did not shut down cleanly (2 sec wait)" );
 		}
 
-		logger.debug( "Bundler has been shut down" );
+		logger.trace( "Bundler has been shut down" );
 	}
 
 	protected boolean isUp()
@@ -372,7 +372,7 @@ public class Bundler
 			lock.lock();
 			try
 			{
-				logger.debug( "WAN Sender thread has started up inside the Bundler" );
+				logger.trace( "Sender thread has started up inside the Bundler" );
 				
 				while( true )
 				{
@@ -399,7 +399,7 @@ public class Bundler
 			catch( InterruptedException ie )
 			{
 				// We are shutting down and that's cool
-				logger.debug( "WAN Sender thread interrupted; shutting down" );
+				logger.trace( "Sender thread interrupted; shutting down" );
 			}
 			finally
 			{

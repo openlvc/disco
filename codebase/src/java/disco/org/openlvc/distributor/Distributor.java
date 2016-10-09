@@ -200,6 +200,14 @@ public class Distributor
 		return links.stream().anyMatch( link -> link.isDown() );
 	}
 
+	/**
+	 * Returns true if there is a link with the given name contained in the distributor, false otherwise.
+	 */
+	public boolean containsLinkWithName( String name )
+	{
+		return links.stream().anyMatch( link -> link.getName().equals(name) );
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

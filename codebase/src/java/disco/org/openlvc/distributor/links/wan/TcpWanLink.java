@@ -17,10 +17,12 @@
  */
 package org.openlvc.distributor.links.wan;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -41,6 +43,29 @@ import org.openlvc.distributor.Message;
 import org.openlvc.distributor.Reflector;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 
+/**
+ * The TCP WAN link makes a connection to a remote RELAY link for the purposes of enabling
+ * point-to-point connection. This supports site-to-site connectivity.<p/>
+ * 
+ * When a new WAN link it created, it reaches out to a remote RELAY listening link in another location.
+ * This link handshakes with us and creates a new WAN link on the other end to service the connection.
+ * There is no reverse connection made, rather, the existing connection is used to send and receive
+ * messages at either end, thus reducing the need for additional firewall configuration or any special
+ * NAT settings.<p/>
+ * 
+ * The link supports:
+ * <ul>
+ *   <li>Ingress and Egress filtering</li>
+ *   <li>Message Bundling</li>
+ *   <li>Auto-Reconnect if the server disconnects</li>
+ *   <li>Remote site name configuration (tell the remote connection what our name is)</li>
+ * </ul> 
+ * 
+ * Connection properties set on the local link are sent to the remote link so that they can be mirrored 
+ * or used appropriately for the reverse connection. For example, the bundling values we use locally are
+ * sent to the RELAY which then configures the WAN link it creates back to us with the same values so that
+ * the same settings are used in both directions.
+ */
 public class TcpWanLink extends LinkBase implements ILink
 {
 	//----------------------------------------------------------
@@ -137,6 +162,11 @@ public class TcpWanLink extends LinkBase implements ILink
     		
     			// c. Connect to the socket
     			this.socket.connect( address, 5000/*timeout*/ );
+
+				// d. Handshake
+				//    We have to do this here and not later because if the socket already exists, the
+				//    handshake should have already been done (see RelayLink).
+				this.handshake();
 			}
 			catch( ConnectException | SocketTimeoutException se )
 			{
@@ -152,7 +182,10 @@ public class TcpWanLink extends LinkBase implements ILink
 			{
 				this.linkUp = true; /* otherwise will short-circuit */
 				down();
-				throw new DiscoException( "Error bringing TCP link up: "+e.getMessage(), e );
+				if( e instanceof DiscoException )
+					throw (DiscoException)e;
+				else
+					throw new DiscoException( "Error bringing TCP link up: "+e.getMessage(), e );
 			}
 		}
 
@@ -168,7 +201,7 @@ public class TcpWanLink extends LinkBase implements ILink
 		{
 			this.linkUp = true; /* otherwise will short-circuit */
 			down();
-			throw new DiscoException( "Error bringing TCP link up: "+e.getMessage(), e );
+			throw new DiscoException( "Error bringing WAN link up: "+e.getMessage(), e );
 		}
 
 		//
@@ -227,7 +260,7 @@ public class TcpWanLink extends LinkBase implements ILink
     		this.receiveThread = null;
 		}
 
-		logger.debug( "Link is down" );
+		logger.trace( "Link is down" );
 		super.linkUp = false;
 	}
 
@@ -262,6 +295,58 @@ public class TcpWanLink extends LinkBase implements ILink
 			                      linkConfiguration.getWanAddress(),
 			                      linkConfiguration.getWanPort() );
 		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Handshake/Connection Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Complete the handshake with the RELAY endpoint for all new connections. This will send our
+	 * site name to the remote connection as well as our configuration.
+	 */
+	private void handshake() throws IOException
+	{
+		logger.debug( "Connected, commencing handshake" );
+		
+		// Step 0. Set up some stream reader/writers to use
+		DataInputStream in = new DataInputStream( socket.getInputStream() );
+		DataOutputStream out = new DataOutputStream( socket.getOutputStream() );
+
+		// Step 1. Send Name
+		//         We send our name to confirm the connection and its availability.
+		//         Sender will respond with one of the following values:
+		//           >1: Length of the name, confirms it is OK
+		//           -1: Name is taken and cannot be used
+		//           -2: Could not turn the name into a string
+		out.writeUTF( linkConfiguration.getWanSiteName() );
+		logger.trace( "Wrote name (%s), waiting for confirmation", linkConfiguration.getWanSiteName() );
+
+		int responseCode = in.readInt();
+		if( responseCode == -1 )
+			throw new DiscoException( "Could not connect to Relay - name in use ("+getName()+")" );
+		else
+			logger.trace( "Name is available, serialize configuration and send" );
+
+		// Step 2. Send our configuration
+		//         On the other side the Relay will pull key pieces out of our configuration and
+		//         replicate it so that we have some control over the settings the other side of
+		//         the link uses to communicate with us, not just the settings we use to talk to
+		//         it. This includes things like bundling.
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream( baos );
+		oos.writeObject( linkConfiguration );
+		byte[] bytes = baos.toByteArray();
+		
+		out.writeInt( bytes.length );
+		out.write( bytes );
+		
+		logger.trace( "Wrote link configuration, waiting for confirmation" );
+		
+		responseCode = in.readInt();
+		if( responseCode == -1 )
+			throw new DiscoException( "Unknown error sending link configuration to RELAY." );
+		else
+			logger.trace( "Handshake complete" );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

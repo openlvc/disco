@@ -17,7 +17,11 @@
  */
 package org.openlvc.distributor.links.relay;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -213,12 +217,23 @@ public class RelayLink extends LinkBase implements ILink
 				//
 				Socket socket = null;
 				String ip = "unknown";
+				LinkConfiguration remoteConfiguration = null;
 				try
 				{ 				
 	                // Process new connection requests from clients
 					socket = serverSocket.accept();
 					ip = socket.getInetAddress().getHostAddress();
 					logger.debug( "Incoming connection from "+ip );
+					
+					// Complete handshake with the new connection
+					remoteConfiguration = handshake( socket );
+				}
+				catch( DiscoException de )
+				{
+					// handshake failed
+					logger.debug( "Connection rejected. Handshake failed: "+de.getMessage() );
+					try { socket.close(); } catch( Exception e ) {}
+					continue;
 				}
 				catch( SocketException se )
 				{
@@ -232,22 +247,117 @@ public class RelayLink extends LinkBase implements ILink
     			}
 				
 				//
+				// Create the LinkConfiguration for the new WAN connection we'll be creating
+				//
+				String linkName = remoteConfiguration.getWanSiteName();
+				if( linkName.equalsIgnoreCase("<auto>") )
+					linkName = "wan"+(++linkCounter);
+				LinkConfiguration localConfiguration = new LinkConfiguration( linkName );
+				localConfiguration.setWanAddress( ip );
+				localConfiguration.setWanPort( socket.getPort() );
+				localConfiguration.setWanTransport( TransportType.TCP );
+				
+				// copy the relevant settings from the remote to the local configuration
+				copyConnectionSettings( localConfiguration, remoteConfiguration );
+				
+				//
 				// Bring a link online for the new connection
 				//
-				// Create the configuration details for the link based on the incoming socket
-				LinkConfiguration config = new LinkConfiguration( ip );
-				config.setName( "wan"+(++linkCounter) );
-				config.setWanAddress( ip );
-				config.setWanPort( socket.getPort() );
-				config.setWanTransport( TransportType.TCP );
-
-				// Create the link and push the socket in
 				logger.debug( "Creating TcpWanLink for connection (%s)", ip );
-				TcpWanLink link = new TcpWanLink( config );
+				TcpWanLink link = new TcpWanLink( localConfiguration );
 				link.setTransient( true );
 				link.setSocket( socket );
 				reflector.getDistributor().addAndBringUp( link );
 			}
+		}
+
+		/**
+		 * When a new connection is made, we wait for it to send us its configuration so that
+		 * we can ensure the local link is set up the same way with regard to the key properties
+		 * required to send it traffic. Not all properties are copied from the link configuration,
+		 * only those necessary to replicate for traffic that is egressed to it. These include:
+		 * 
+		 * <ul>
+		 *   <li>Connection Name</li>
+		 *   <li>Bundling settings</li>
+		 *   <li>Filtering (we flip the sender side filters)</li>
+		 * </ul>
+		 * 
+		 * @return If the handshake is successful, return the {@link LinkConfiguration}
+		 * @throws DiscoException If there was a problem with the handshake, such as the name of
+		 *         the link already being in use, or an error while reading the remote config.
+		 */
+		private LinkConfiguration handshake( Socket socket )
+		{
+			try
+			{
+				// Step 0. Set up read/write pipelines for handshake
+				DataInputStream in = new DataInputStream( socket.getInputStream() );
+				DataOutputStream out = new DataOutputStream( socket.getOutputStream() );
+
+				// Step 1. Read the link's site name
+				//         The link will send us their site name first. We will use this for the link name.
+				//         If the name is already in use, send an error code back. Otherwise, send an int
+				//         that is the same as the length of the string they sent us.
+				String name = in.readUTF();
+				if( reflector.getDistributor().containsLinkWithName(name) )
+				{
+					// link name is in use
+					out.writeInt( -1 );
+					throw new DiscoException( "Name in use ("+name+")" );
+				}
+				else
+				{
+					// send confirmation that it was received
+					out.writeInt( name.hashCode() );
+				}
+
+
+				// Step 2. Read the remote link's configuration
+				//         We need their configuration information so we can steal some of the
+				//         connection properties and duplicate them for the use of the return link.
+				try
+				{
+					int length = in.readInt();
+					byte[] bytes = new byte[length];
+					in.read( bytes );
+
+					ObjectInputStream ois = new ObjectInputStream( new ByteArrayInputStream(bytes) );
+					LinkConfiguration remoteConfiguration = (LinkConfiguration)ois.readObject();
+					out.writeInt( 1 );
+					return remoteConfiguration;
+				}
+				catch( Exception e )
+				{
+					out.writeInt( -1 );
+					throw new DiscoException( "Error reading link configuration - "+e.getMessage(), e );
+				}
+			}
+			catch( Exception e )
+			{
+				throw new DiscoException( "Exception during handshake - "+e.getMessage(), e );
+			}
+		}
+
+		/**
+		 * Take the relevant settings from the remote configuration and apply them to the local
+		 * configuration. We'll use this config to control the local WAN link we create to wrap
+		 * this end of the connection.
+		 * 
+		 * @param local  The configuration object we will use locally
+		 * @param remote The configuration object the remote connection uses
+		 */
+		private void copyConnectionSettings( LinkConfiguration local, LinkConfiguration remote )
+		{
+			// Bundling
+			local.setWanBundling( remote.isWanBundling() );
+			local.setWanBundlingSize( remote.getWanBundlingSizeBytes() );
+			local.setWanBundlingTime( remote.getWanBundlingTime() );
+			
+			// Filtering
+			// Set remote's ingress as our egress to prevent unnecessary sending.
+			// No need to set receive filtering, as it will have been applied before it gets to us
+			local.setSendFilter( remote.getReceiveFilter() );
 		}
 	}
 }
