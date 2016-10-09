@@ -128,8 +128,9 @@ distributor.local.dis.appId      = <random>
 distributor.local.dis.loglevel   = ERROR
 distributor.local.dis.logtofile  = on
 distributor.local.dis.logfile    = logs/distributor.<name>.log
-distributor.local.filtering.in   = <none>
-distributor.local.filtering.out  = <none>
+distributor.local.filter.recv    = <none>
+distributor.local.filter.send    = <none>
+
 
 # Long haul connection to the relay
 distributor.longhaul.mode                 = wan
@@ -139,6 +140,8 @@ distributor.longhaul.wan.transport        = tcp
 distributor.longhaul.wan.bundling         = false
 distributor.longhaul.wan.bundling.maxSize = 1400b
 distributor.longhaul.wan.bundling.maxTime = 30
+distributor.longhaul.filter.recv          = <none>
+distributor.longhaul.filter.send          = <none>
 
 ```
 
@@ -187,14 +190,18 @@ Filtering
 ---------------
 Filtering can be applied to all PDUs processed by the distributor in one of two directions:
 
-  - **Inbound**: `Link->Reflector` - Filter out packets received by the native souce, preventing them from being passed to the reflector for forwarding. Prevents Reflector ever receiving them.
-  - **Outbound**: `Reflector->Link` - Filter out packets being passed from the reflector to a link. Prevents a single link receiving non-matching packets.
+  - **Receive**: Filter applied to all packets received from the primary mode.
+  For example, if the link mode is DIS, this will filter all packets received from the DIS network
+  - **Send**: Filter applied to all packets passed to the link for sending by its primary mode.
+  For example, if the mode is DIS, this affects all packets to be sent to DIS network.
 
 In configuration, filtering is applied at the top level of a link much like the `mode` parameter:
 
+The decision about whether to use send or receive filtering will depend on where you want to filter the data out. Receive filtering will cause messages to be removed before they hit the internal reflector bus, and thus any PDUs that do not pass will never be handed off to any other link. This is effective in removing traffic that will not be of interest to anyone. Send filtering is useful for knocking out traffic that isn't of interest to a specific link. It is only filtered at the point of the link on its way to be sent out. Any filtering applied here will not prevent the PDU from being given to other links.
+
 ```
-distributor.[link].filtering.in  = entity.id == 1.1.*.1.2.3.4
-distributor.[link].filtering.out = entity.domain == Air or entity.domain == Land
+distributor.[link].filter.recv = entity.id == 1.1.*.1.2.3.4
+distributor.[link].filter.send = entity.domain == Air or entity.domain == Land
 ```
  > The special value of `<none>` can be used to signal no filtering, or the clause can be left out
 

@@ -43,8 +43,8 @@ public abstract class LinkBase
 	protected boolean linkUp;
 	protected boolean isTransient;
 	
-	protected FilterGroup inboundFilter;
-	protected FilterGroup outboundFilter;
+	protected FilterGroup receiveFilter;
+	protected FilterGroup sendFilter;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -57,13 +57,13 @@ public abstract class LinkBase
 		this.isTransient = false;
 		
 		// pull the filter information out of the config
-		this.inboundFilter = null;
-		this.outboundFilter = null;
-		if( linkConfiguration.isInboundFiltering() )
-			this.inboundFilter = FilterFactory.parse( linkConfiguration.getInboundFilter() );
+		this.receiveFilter = null;
+		this.sendFilter = null;
+		if( linkConfiguration.isReceiveFiltering() )
+			this.receiveFilter = FilterFactory.parse( linkConfiguration.getReceiveFilter() );
 		
-		if( linkConfiguration.isOutboundFiltering() )
-			this.outboundFilter = FilterFactory.parse( linkConfiguration.getOutboundFilter() );
+		if( linkConfiguration.isSendFiltering() )
+			this.sendFilter = FilterFactory.parse( linkConfiguration.getSendFilter() );
 	}
 
 	//----------------------------------------------------------
@@ -83,16 +83,16 @@ public abstract class LinkBase
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Filtering Methods   ////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/** Return true if the PDU passes inbound filtering and should be passed to reflector */
-	public boolean passesInboundFilter( PDU pdu )
+	/** Return true if the PDU passes receive filtering and should be passed to reflector */
+	public boolean passesReceiveFilter( PDU pdu )
 	{
-		return inboundFilter == null ? true : inboundFilter.matches(pdu);
+		return receiveFilter == null ? true : receiveFilter.matches(pdu);
 	}
 	
-	/** Return true if the PDU passes outbound filtering and should be passed to us by reflector */
-	public boolean passesOutboundFilter( PDU pdu )
+	/** Return true if the PDU passes send filtering and should be passed to us by reflector */
+	public boolean passesSendFilter( PDU pdu )
 	{
-		return outboundFilter == null ? true : outboundFilter.matches(pdu);
+		return sendFilter == null ? true : sendFilter.matches(pdu);
 	}
 
 
@@ -100,20 +100,20 @@ public abstract class LinkBase
 	 * Inbound filtering: <code>network -> reflector</code><p/>
 	 * Defines which messages are forwarded to the reflector.
 	 */
-	public void setInboundFilter( FilterGroup filterGroup ) { this.inboundFilter = filterGroup; }
+	public void setReceiveFilter( FilterGroup filterGroup ) { this.receiveFilter = filterGroup; }
 
 	/**
 	 * Outbound filtering: <code>reflector -> network</code><p/>
 	 * Defines which messages the reflector will forward to us.
 	 */
-	public void setOutboundFilter( FilterGroup filterGroup ) { this.outboundFilter = filterGroup; }
+	public void setSendFilter( FilterGroup filterGroup ) { this.sendFilter = filterGroup; }
 	
-	public FilterGroup getInboundFilter()   { return this.inboundFilter; }
-	public FilterGroup getOutboundFilter()  { return this.outboundFilter; }
-	public boolean isInboundFiltering()     { return inboundFilter != null; }
-	public boolean isOutboundFiltering()    { return outboundFilter != null; }
-	protected String getInboundFilterDesc() { return inboundFilter == null ? "<none>" : inboundFilter.toString(); }
-	protected String getOutboundFilterDesc(){ return outboundFilter == null ? "<none>" : outboundFilter.toString(); }
+	public FilterGroup getReceiveFilter()   { return this.receiveFilter; }
+	public FilterGroup getSendFilter()      { return this.sendFilter; }
+	public boolean isReceiveFiltering()     { return receiveFilter != null; }
+	public boolean isSendFiltering()        { return sendFilter != null; }
+	protected String getReceiveFilterDesc() { return receiveFilter == null ? "<none>" : receiveFilter.toString(); }
+	protected String getSendFilterDesc()    { return sendFilter == null ? "<none>" : sendFilter.toString(); }
 	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

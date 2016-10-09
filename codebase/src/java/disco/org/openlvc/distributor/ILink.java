@@ -67,7 +67,7 @@ public interface ILink
 	 * Inbound filtering: <code>network -> reflector</code><p/>
 	 * Defines which messages are forwarded to the reflector.
 	 */
-	public void setInboundFilter( FilterGroup filterGroup );
+	public void setReceiveFilter( FilterGroup filterGroup );
 
 	/**
 	 * Outbound filtering: <code>reflector -> network</code><p/>
@@ -75,17 +75,17 @@ public interface ILink
 	 * does not pass this filter, the reflector does not give it to us (but may give it to
 	 * others).
 	 */
-	public void setOutboundFilter( FilterGroup filterGroup );
+	public void setSendFilter( FilterGroup filterGroup );
 
 	/** Return true if the PDU passes inbound filtering and should be passed to reflector */
-	public boolean passesInboundFilter( PDU pdu );
+	public boolean passesReceiveFilter( PDU pdu );
 	
 	/** Return true if the PDU passes outbound filtering and should be passed to us by reflector */
-	public boolean passesOutboundFilter( PDU pdu );
+	public boolean passesSendFilter( PDU pdu );
 	
-	public FilterGroup getInboundFilter();
-	public FilterGroup getOutboundFilter();
-	public boolean isInboundFiltering();
-	public boolean isOutboundFiltering();
+	public FilterGroup getReceiveFilter();
+	public FilterGroup getSendFilter();
+	public boolean isReceiveFiltering();
+	public boolean isSendFiltering();
 	
 }

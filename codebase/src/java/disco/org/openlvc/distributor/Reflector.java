@@ -74,7 +74,7 @@ public class Reflector
 	 */
 	public void reflect( Message message ) throws InterruptedException
 	{
-		if( message.getSouce().passesInboundFilter(message.getPdu()) )
+		if( message.getSouce().passesReceiveFilter(message.getPdu()) )
 			this.queue.put( message );
 	}
 	
@@ -151,7 +151,7 @@ public class Reflector
 					Message message = queue.take();
 					links.stream().filter( link -> link.isUp() )
 					              .filter( link -> link != message.getSouce() )
-					              .filter( link -> link.passesOutboundFilter(message.getPdu()) )
+					              .filter( link -> link.passesSendFilter(message.getPdu()) )
 					              .forEach( link -> link.reflect(message) );
 
 					// Queue debugging

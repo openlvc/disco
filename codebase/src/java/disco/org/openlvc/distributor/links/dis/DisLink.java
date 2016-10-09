@@ -68,8 +68,8 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 		
 		logger.debug( "Bringing up link: "+super.getName() );
 		logger.debug( "Link Mode: DIS" );
-		logger.debug( "Inbound Filtering:  "+super.getInboundFilterDesc() );
-		logger.debug( "Outbound Filtering: "+super.getOutboundFilterDesc() );
+		logger.debug( "Inbound Filtering:  "+super.getReceiveFilterDesc() );
+		logger.debug( "Outbound Filtering: "+super.getSendFilterDesc() );
 		
 		// Create the Disco configuration from our link configuration
 		this.opsCenter = new OpsCenter( turnIntoDiscoConfiguration(linkConfiguration) );

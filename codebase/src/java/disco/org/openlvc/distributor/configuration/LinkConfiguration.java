@@ -50,8 +50,8 @@ public class LinkConfiguration
 	public static final String LINK_MODE                = "mode";
 	
 	// Filtering Properties
-	public static final String LINK_FILTER_INBOUND      = "filter.in";
-	public static final String LINK_FILTER_OUTBOUND     = "filter.out";
+	public static final String LINK_FILTER_RECV         = "filter.recv";
+	public static final String LINK_FILTER_SEND         = "filter.send";
 
 	// DIS Properties
 	public static final String LINK_DIS_ADDRESS         = "dis.address";
@@ -137,10 +137,10 @@ public class LinkConfiguration
 			if( key.equalsIgnoreCase(prefix+LINK_MODE) )
 				this.setMode( value );
 			// Filter Settings
-			else if( key.equalsIgnoreCase(prefix+LINK_FILTER_INBOUND) )
-				this.setInboundFilter( value );
-			else if( key.equalsIgnoreCase(prefix+LINK_FILTER_OUTBOUND) )
-				this.setOutboundFilter( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_FILTER_RECV) )
+				this.setReceiveFilter( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_FILTER_SEND) )
+				this.setSendFilter( value );
 			// DIS Settings
 			else if( key.equalsIgnoreCase(prefix+LINK_DIS_ADDRESS) )
 				this.setDisAddress( value );
@@ -234,52 +234,52 @@ public class LinkConfiguration
 	//
 	// Filter Options
 	//
-	private void setInboundFilter( String value )
+	private void setReceiveFilter( String value )
 	{
 		if( value == null )
 			value = "<none>";
 		
-		set( LINK_FILTER_INBOUND, value );
+		set( LINK_FILTER_RECV, value );
 	}
 	
-	private void setOutboundFilter( String value )
+	private void setSendFilter( String value )
 	{
 		if( value == null )
 			value = "<none>";
 		
-		set( LINK_FILTER_OUTBOUND, value );
+		set( LINK_FILTER_SEND, value );
 	}
 	
-	public String getInboundFilter()
+	public String getReceiveFilter()
 	{
-		String value = getAsString( LINK_FILTER_INBOUND, "<none>" );
+		String value = getAsString( LINK_FILTER_RECV, "<none>" );
 		if( value == null || value.equals("<none>") )
 			return null;
 		else
 			return value;
 	}
 	
-	public String getOutboundFilter()
+	public String getSendFilter()
 	{
-		String value = getAsString( LINK_FILTER_OUTBOUND, "<none>" );
+		String value = getAsString( LINK_FILTER_SEND, "<none>" );
 		if( value == null || value.equals("<none>") )
 			return null;
 		else
 			return value;
 	}
 
-	public boolean isInboundFiltering()
+	public boolean isReceiveFiltering()
 	{
-		String temp = getInboundFilter();
+		String temp = getReceiveFilter();
 		if( temp == null || temp.equals("<none>") )
 			return false;
 		else
 			return true;
 	}
 	
-	public boolean isOutboundFiltering()
+	public boolean isSendFiltering()
 	{
-		String temp = getOutboundFilter();
+		String temp = getSendFilter();
 		if( temp == null || temp.equals("<none>") )
 			return false;
 		else
