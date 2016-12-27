@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.openlvc.disco.DiscoException;
 
@@ -377,6 +378,23 @@ public class NetworkUtils
 		}
 		
 		return pool;
+	}
+
+	/**
+	 * Return the first IPv4 address associated with the given network interface.
+	 * Return null if one could not be found.
+	 */
+	public static Inet4Address getFirstIPv4Address( NetworkInterface nic )
+	{
+		Optional<Inet4Address> found = nic.getInterfaceAddresses().stream()
+			   .filter( addr -> (addr.getAddress() instanceof Inet4Address) )
+			   .map( addr -> (Inet4Address)addr.getAddress() )
+			   .findFirst();
+		
+		if( found.isPresent() )
+			return found.get();
+		else
+			return null;
 	}
 	
 	/**

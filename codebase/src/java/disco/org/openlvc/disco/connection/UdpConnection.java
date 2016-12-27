@@ -136,14 +136,14 @@ public class UdpConnection implements IConnection
 			//
 			// Create a BROADCAST socket
 			//
-			// If we are only linux, we have to use the broadcast address. However if we are on
+			// If we are linux or mac, we have to use the broadcast address. However if we are on
 			// windows, we cannot bind to the broadcast address, we have to bind to the actual
 			// NIC address.
 			// 
-			if( Platform.getOperatingSystem() == Platform.OS.Linux )
-				address = networkInterface.getInterfaceAddresses().get(0).getBroadcast();
+			if( Platform.getOperatingSystem() == Platform.OS.Windows )
+				address = NetworkUtils.getFirstIPv4Address( networkInterface );
 			else
-				address = networkInterface.getInetAddresses().nextElement();
+				address = networkInterface.getInterfaceAddresses().get(0).getBroadcast();
 
 			logger.info( "Connecting broadcast socket - %s:%d (interface: %s)", address, port, networkInterface );
 			this.broadcast = true;
