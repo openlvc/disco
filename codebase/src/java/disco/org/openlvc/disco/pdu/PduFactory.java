@@ -18,8 +18,11 @@
 package org.openlvc.disco.pdu;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.radio.ReceiverPdu;
 import org.openlvc.disco.pdu.radio.SignalPdu;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
@@ -52,6 +55,25 @@ public class PduFactory
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	/**
+	 * Return the set of PDU Types that we currently support decoding.
+	 */
+	public static List<PduType> getSupportedPduTypes()
+	{
+		PduType[] array = { PduType.EntityState, PduType.Fire, PduType.Detonation,
+		                    PduType.Transmitter, PduType.Signal, PduType.Receiver };
+		
+		return Arrays.asList( array );
+	}
+
+	/**
+	 * Return a string listing the set of PDU types that we currently support decoding.
+	 */
+	public static String getSupportedPduTypesString()
+	{
+		return getSupportedPduTypes().toString();
+	}
+	
 	public static PDU create( PduHeader header )
 	{
 		switch( header.getPduType() )

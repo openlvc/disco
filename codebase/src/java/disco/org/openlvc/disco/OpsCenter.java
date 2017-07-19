@@ -23,6 +23,7 @@ import org.openlvc.disco.connection.ConnectionFactory;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.connection.Metrics;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.PduFactory;
 
 public class OpsCenter
 {
@@ -205,6 +206,7 @@ public class OpsCenter
 		if( logger.isDebugEnabled() )
 		{
 			// print debug information like number of threads, or settings from config file?
+			logger.debug( "Supported PDU Types: "+PduFactory.getSupportedPduTypesString() );
 		}
 	}
 
