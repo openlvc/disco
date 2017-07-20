@@ -22,6 +22,7 @@ import java.util.HashMap;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.emissions.DesignatorPdu;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.radio.ReceiverPdu;
 import org.openlvc.disco.pdu.radio.SignalPdu;
@@ -58,7 +59,7 @@ public enum PduType
 	EventReport       ( (short)21 ),
 	Comment           ( (short)22 ),
 	Emission          ( (short)23 ),
-	Designator        ( (short)24 ),
+	Designator        ( (short)24, DesignatorPdu.class ),
 	Transmitter       ( (short)25, TransmitterPdu.class ),
 	Signal            ( (short)26, SignalPdu.class ),
 	Receiver          ( (short)27, ReceiverPdu.class ),
