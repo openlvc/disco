@@ -83,6 +83,12 @@ public class Main
 			return;
 		}
 
+		if( args.length > 0 && args[0].equalsIgnoreCase("--app:disassembler") )
+		{
+			org.openlvc.disassembler.Main.main( Arrays.copyOfRange(args,1,args.length) );
+			return;
+		}
+
 		// print out some information about us
 		new Main().run();
 	}
