@@ -63,6 +63,7 @@
 	     when defining paths and the like later in the build file -->
 	<property name="testng.dir"            location="${lib.dir}/testng/testng-6.8"/>
 	<property name="log4j.dir"             location="${lib.dir}/log4j/apache-log4j-2.4.1-bin"/>
+	<property name="json-simple.dir"       location="${lib.dir}/json-simple/1.1.1"/>
 
 	<!-- Classpaths for individual libraries -->
 	<path id="lib.testng.classpath">
@@ -73,11 +74,16 @@
 		<fileset dir="${log4j.dir}" includes="**/*.jar"/>
 	</path>
 
+	<path id="lib.json-simple.classpath">
+		<fileset dir="${json-simple.dir}" includes="**/*.jar"/>
+	</path>
+
 	<!-- ========================== -->
 	<!-- Classpath Set Declarations -->
 	<!-- ========================== -->
 	<path id="compile.classpath">
 		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.json-simple.classpath"/>
 	</path>
 
 	<path id="test.classpath">
@@ -182,6 +188,7 @@
 		<copy todir="${sandbox.dir}/lib">
 			<fileset dir="${lib.dir}">
 				<include name="log4j/**/*"/>
+				<include name="json-simple/**/*"/>
 			</fileset>
 		</copy>
 

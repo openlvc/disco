@@ -17,6 +17,11 @@
  */
 package org.openlvc.disassembler.configuration;
 
+import org.openlvc.disassembler.analyzers.IAnalyzer;
+import org.openlvc.disassembler.analyzers.enums.EnumerationAnalyzer;
+import org.openlvc.disassembler.analyzers.none.Nonealyzer;
+import org.openlvc.disco.DiscoException;
+
 /**
  * Represents the particular disassembly mode/analyzer we are going to run.
  */
@@ -25,20 +30,42 @@ public enum AnalyzerMode
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	None,              // no mode specified - wot!?
-	Enumeration;       // analysis of enumerations in recording
+	None(Nonealyzer.class),                       // no mode specified - wot!?
+	Enumeration(EnumerationAnalyzer.class);       // analysis of enumerations in recording
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private Class<? extends IAnalyzer> clazz;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private AnalyzerMode( Class<? extends IAnalyzer> clazz )
+	{
+		this.clazz = clazz;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	/**
+	 * Create a new instance of the {@link IAnalyzer} represented by this {@link AnalyzerMode}.
+	 * We REQUIRE that the referenced type has a public, no-arg constructor, or else throw an
+	 * exception. If there is any other error or internal exception while creating the new
+	 * instance, we throw an exception.
+	 */
+	public IAnalyzer newInstance() throws DiscoException
+	{
+		try
+		{
+			return this.clazz.newInstance();
+		}
+		catch( Exception e )
+		{
+			throw new DiscoException( "Error creating new analyzer of type "+name(), e );
+		}
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
@@ -59,4 +86,6 @@ public enum AnalyzerMode
 		// give up; go home
 		throw new IllegalArgumentException( "Unknown analyzer mode: "+string );
 	}
+	
+	
 }

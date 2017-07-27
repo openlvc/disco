@@ -15,18 +15,19 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disassembler.configuration;
+package org.openlvc.disassembler.analyzers.none;
 
-import org.apache.logging.log4j.Logger;
 import org.openlvc.disassembler.analyzers.IAnalyzer;
 import org.openlvc.disassembler.analyzers.IResultSet;
+import org.openlvc.disassembler.configuration.AnalyzerMode;
+import org.openlvc.disassembler.configuration.Configuration;
 import org.openlvc.disco.DiscoException;
 
 /**
- * Main gateway class used to run the Disassembler. Call {@link Disassembler#execute(Configuration)}
- * to generate and run a disassembler/analyzer for a given configuration and return a result set.
+ * Fallback that is only called if no analyzer is specified in a configuration.
+ * Throws exceptions for execution and results calls.
  */
-public class Disassembler
+public class Nonealyzer implements IAnalyzer
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -39,28 +40,31 @@ public class Disassembler
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private Disassembler()
-	{
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	/**
+	 * Return the mode type for this analyzer
+	 */
+	@Override
+	public AnalyzerMode getMode()
+	{
+		return AnalyzerMode.None;
+	}
 
+	/**
+	 * Run the analyzer over the given configuration. Return the results wrapped up
+	 * in a results interface.
+	 */
+	@Override
+	public IResultSet execute( Configuration configuration ) throws DiscoException
+	{
+		throw new DiscoException( "Analyzer mode is set to None." );
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static IResultSet execute( Configuration configuration ) throws DiscoException
-	{
-		Logger logger = configuration.getDisassemblerLogger();
-		
-		logger.info( configuration.toString() );
-		
-		// create and run the analyzer
-		IAnalyzer analyzer = configuration.getAnalyzerMode().newInstance();
-		IResultSet results = analyzer.execute( configuration );
-		return results;
-	}
-	
 }

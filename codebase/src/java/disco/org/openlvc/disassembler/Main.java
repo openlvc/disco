@@ -17,8 +17,11 @@
  */
 package org.openlvc.disassembler;
 
+import org.apache.logging.log4j.Logger;
+import org.openlvc.disassembler.analyzers.IResultSet;
 import org.openlvc.disassembler.configuration.Configuration;
 import org.openlvc.disassembler.configuration.Disassembler;
+import org.openlvc.disco.configuration.DiscoConfiguration;
 
 public class Main
 {
@@ -33,6 +36,7 @@ public class Main
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private Logger logger;
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
@@ -43,9 +47,48 @@ public class Main
 		// Load configuration
 		Configuration configuration = new Configuration( args );
 
+		// Print a welcome message
+		this.logger = configuration.getDisassemblerLogger();
+		printWelcome();
+		
 		// Run the Disassembler
-		Disassembler disassembler = new Disassembler( configuration );
-		disassembler.execute();
+		IResultSet results = Disassembler.execute( configuration );
+		
+		// Output the results
+		switch( configuration.getOutputFormat() )
+		{
+			case TEXT:
+				printResults( results.toPrintableString() );
+				break;
+			case JSON:
+				printResults( results.toJson().toJSONString() );
+				break;
+			case CSV:
+				results.dumpTo( configuration.getOutFile(), configuration.getOutputFormat() );
+				break;
+		}
+	}
+
+	private void printResults( String results )
+	{
+		logger.info( results );
+	}
+
+	private void printWelcome()
+	{
+		logger.info( "Welcome to the OpenLVC DISassembler" );
+		logger.info( "" );
+		logger.info( "8888888b. 8888888 .d8888b.                                                    888      888" );                  
+		logger.info( "888  \"Y88b  888  d88P  Y88b                                                   888      888                  " );
+		logger.info( "888    888  888  Y88b.                                                        888      888                  " );
+		logger.info( "888    888  888   \"Y888b.    8888b.  .d8888b  .d8888b   .d88b.  88888b.d88b.  88888b.  888  .d88b.  888d888 " );
+		logger.info( "888    888  888      \"Y88b.     \"88b 88K      88K      d8P  Y8b 888 \"888 \"88b 888 \"88b 888 d8P  Y8b 888P\"   " );
+		logger.info( "888    888  888        \"888 .d888888 \"Y8888b. \"Y8888b. 88888888 888  888  888 888  888 888 88888888 888     " );
+		logger.info( "888  .d88P  888  Y88b  d88P 888  888      X88      X88 Y8b.     888  888  888 888 d88P 888 Y8b.     888     " );
+		logger.info( "8888888P\" 8888888 \"Y8888P\"  \"Y888888  88888P'  88888P'  \"Y8888  888  888  888 88888P\"  888  \"Y8888  888     " );
+		logger.info( "" );
+		logger.info( "Version: "+DiscoConfiguration.getVersion() );
+		logger.info( "" );
 	}
 
 	//----------------------------------------------------------
@@ -64,4 +107,5 @@ public class Main
 		
 		new Main().run( args );
 	}
+	
 }

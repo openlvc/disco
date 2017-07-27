@@ -15,18 +15,16 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disassembler.configuration;
+package org.openlvc.disassembler.analyzers.enums;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disassembler.analyzers.IAnalyzer;
 import org.openlvc.disassembler.analyzers.IResultSet;
+import org.openlvc.disassembler.configuration.AnalyzerMode;
+import org.openlvc.disassembler.configuration.Configuration;
 import org.openlvc.disco.DiscoException;
 
-/**
- * Main gateway class used to run the Disassembler. Call {@link Disassembler#execute(Configuration)}
- * to generate and run a disassembler/analyzer for a given configuration and return a result set.
- */
-public class Disassembler
+public class EnumerationAnalyzer implements IAnalyzer
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -35,32 +33,43 @@ public class Disassembler
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private Configuration configuration;
+	private Logger logger;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private Disassembler()
-	{
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	@Override
+	public IResultSet execute( Configuration configuration ) throws DiscoException
+	{
+		// initialize outselves from the configuration
+		initialize( configuration );
+		
+		logger.info( "Running enumerations analysis on Duplicator session: "+configuration.getInFile().getAbsolutePath() );
+		
+		return new EnumerationResultSet();
+	}
+	
+	private void initialize( Configuration configuration )
+	{
+		this.configuration = configuration;
+		this.logger = this.configuration.getDisassemblerLogger();
+	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public AnalyzerMode getMode()
+	{
+		return AnalyzerMode.Enumeration;
+	}
 
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static IResultSet execute( Configuration configuration ) throws DiscoException
-	{
-		Logger logger = configuration.getDisassemblerLogger();
-		
-		logger.info( configuration.toString() );
-		
-		// create and run the analyzer
-		IAnalyzer analyzer = configuration.getAnalyzerMode().newInstance();
-		IResultSet results = analyzer.execute( configuration );
-		return results;
-	}
-	
 }
