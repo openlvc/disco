@@ -120,7 +120,7 @@ public class EntityType implements IPduComponent, Cloneable
 				otherType.specific == specific &&
 				otherType.extra == extra )
 			{
-				return false;
+				return true;
 			}
 		}
 
@@ -133,6 +133,7 @@ public class EntityType implements IPduComponent, Cloneable
 		return new EntityType( kind, domain, country, category, subcategory, specific, extra );
 	}
 
+	@Override
 	public String toString()
 	{
 		if( cached != null )
@@ -153,6 +154,12 @@ public class EntityType implements IPduComponent, Cloneable
 		builder.append( "." );
 		builder.append( extra );
 		return builder.toString();
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return toString().hashCode();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
