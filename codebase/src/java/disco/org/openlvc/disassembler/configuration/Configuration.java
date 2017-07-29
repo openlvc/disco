@@ -253,13 +253,22 @@ public class Configuration
 	 */
 	public void setLogLevel( String level )
 	{
-		loggingConfiguration.setLevel( level );
+		properties.setProperty( KEY_LOG_LEVEL, level );
 	}
 	
 	@Override
 	public String toString()
 	{
 		return properties.toString();
+	}
+
+	/**
+	 * Return _a copy_ of the underlying property set that is serving this configuration.
+	 * Any changes to this set will not affect the configuration. 
+	 */
+	public final Properties getProperties()
+	{
+		return new Properties( this.properties );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -303,7 +312,7 @@ public class Configuration
 			if( argument.equalsIgnoreCase("--config-file") )
 				this.configFile = args[++i];
 			else if( argument.equalsIgnoreCase("--log-level") )
-				this.loggingConfiguration.setLevel( args[++i] );
+				this.setLogLevel( args[++i] );
 			else if( argument.equalsIgnoreCase("--infile") )
 				this.setInFile( args[++i] );
 			else if( argument.equalsIgnoreCase("--outfile") )

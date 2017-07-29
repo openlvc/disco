@@ -17,6 +17,8 @@
  */
 package org.openlvc.disassembler.configuration;
 
+import java.util.Properties;
+
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disassembler.analyzers.IAnalyzer;
 import org.openlvc.disassembler.analyzers.IResultSet;
@@ -55,8 +57,16 @@ public class Disassembler
 	{
 		Logger logger = configuration.getDisassemblerLogger();
 		
-		logger.info( configuration.toString() );
-		
+		// log the configuration information for later use
+		logger.debug( "Loading..." );
+		logger.debug( "Configuration:" );
+		Properties properties = configuration.getProperties();
+		for( String key : properties.stringPropertyNames() )
+			logger.debug( "\t%s = %s", key, properties.getProperty(key) );
+
+		// log startup information
+		logger.info( "Running analyzer: "+configuration.getAnalyzerMode() );
+
 		// create and run the analyzer
 		IAnalyzer analyzer = configuration.getAnalyzerMode().newInstance();
 		IResultSet results = analyzer.execute( configuration );

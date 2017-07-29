@@ -23,6 +23,8 @@ import org.openlvc.disassembler.analyzers.IResultSet;
 import org.openlvc.disassembler.configuration.AnalyzerMode;
 import org.openlvc.disassembler.configuration.Configuration;
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.pdu.PDU;
+import org.openlvc.duplicator.SessionReader;
 
 public class EnumerationAnalyzer implements IAnalyzer
 {
@@ -49,9 +51,37 @@ public class EnumerationAnalyzer implements IAnalyzer
 		// initialize outselves from the configuration
 		initialize( configuration );
 		
-		logger.info( "Running enumerations analysis on Duplicator session: "+configuration.getInFile().getAbsolutePath() );
+		// log some startup information
+		logger.info( "Analyzing Duplicator session: "+configuration.getInFile().getAbsolutePath() );
+
+		// run the analysis
+		SessionReader session = new SessionReader( configuration.getInFile() );
+		session.open();
 		
-		return new EnumerationResultSet();
+		EnumerationResultSet resultset = new EnumerationResultSet();
+		long startTime = System.currentTimeMillis();
+		long pduCount = 0;
+		for( PDU pdu : session )
+		{
+			switch( pdu.getType() )
+			{
+				case EntityState:
+				case Fire:
+				case Detonation:
+					resultset.add( pdu );
+					break;
+				default:
+					break;
+			}
+			
+			if( ++pduCount % 100000 == 0 )
+				logger.info( "Analyzed %,d pdus", pduCount );
+		}
+		
+		resultset.setBenchmarkTime( System.currentTimeMillis()-startTime );
+		session.close();
+		
+		return resultset;
 	}
 	
 	private void initialize( Configuration configuration )

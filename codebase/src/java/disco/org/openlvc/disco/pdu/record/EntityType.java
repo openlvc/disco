@@ -49,8 +49,6 @@ public class EntityType implements IPduComponent, Cloneable
 	private short specific;
 	private short extra;
 	
-	private String cached;
-	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -74,8 +72,6 @@ public class EntityType implements IPduComponent, Cloneable
 		this.subcategory = subcategory;
 		this.specific = specific;
 		this.extra = extra;
-		
-		this.cached = toString();
 	}
 
 	/**
@@ -136,9 +132,6 @@ public class EntityType implements IPduComponent, Cloneable
 	@Override
 	public String toString()
 	{
-		if( cached != null )
-			return cached;
-
 		StringBuilder builder = new StringBuilder();
 		builder.append( kind );
 		builder.append( "." );
