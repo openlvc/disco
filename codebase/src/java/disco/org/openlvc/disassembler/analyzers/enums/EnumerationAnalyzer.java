@@ -58,7 +58,7 @@ public class EnumerationAnalyzer implements IAnalyzer
 		SessionReader session = new SessionReader( configuration.getInFile() );
 		session.open();
 		
-		EnumerationResultSet resultset = new EnumerationResultSet();
+		EnumerationResultSet resultset = new EnumerationResultSet( configuration );
 		long startTime = System.currentTimeMillis();
 		long pduCount = 0;
 		for( PDU pdu : session )

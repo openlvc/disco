@@ -163,6 +163,11 @@ public class EntityId implements IPduComponent, Cloneable
 		return siteId+"-"+appId+"-"+entityId;
 	}
 	
+	public String getSiteAndAppId()
+	{
+		return siteId+"-"+appId;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

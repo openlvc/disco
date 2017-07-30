@@ -18,14 +18,22 @@
 package org.openlvc.disassembler.analyzers.enums;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.openlvc.disassembler.analyzers.IResultSet;
 import org.openlvc.disassembler.configuration.AnalyzerMode;
+import org.openlvc.disassembler.configuration.Configuration;
+import org.openlvc.disassembler.configuration.EnumAnalyzerConfiguration;
 import org.openlvc.disassembler.configuration.OutputFormat;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.PDU;
@@ -45,6 +53,11 @@ public class EnumerationResultSet implements IResultSet
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private Configuration configuration;
+	private EnumAnalyzerConfiguration enumConfiguration;
+
+	// Full Records
+	// ------------------
 	// EntityStatePDU
 	//   1.2.3.4.5.6.7
 	//     EntityID
@@ -53,6 +66,12 @@ public class EnumerationResultSet implements IResultSet
 	private Map<EntityType,EnumerationRecord> espdus;
 	private Map<EntityType,EnumerationRecord> firepdus;
 	private Map<EntityType,EnumerationRecord> detpdus;
+	
+	// Summary Information
+	// -------------------
+	private Map<EntityType,EnumerationSummary> esSummaries;
+	private Map<EntityType,EnumerationSummary> fireSummaries;
+	private Map<EntityType,EnumerationSummary> detSummaries;
 
 	private long totalPdus;
 	private long benchmarkMillis;
@@ -60,11 +79,18 @@ public class EnumerationResultSet implements IResultSet
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected EnumerationResultSet()
+	protected EnumerationResultSet( Configuration configuration )
 	{
+		this.configuration = configuration;
+		this.enumConfiguration = configuration.getEnumAnalyzerConfiguration();
+		
 		this.espdus   = new HashMap<>();
 		this.firepdus = new HashMap<>();
 		this.detpdus  = new HashMap<>();
+		
+		this.esSummaries = new HashMap<>();
+		this.fireSummaries = new HashMap<>();
+		this.detSummaries = new HashMap<>();
 
 		this.totalPdus = 0;
 		this.benchmarkMillis = -1;
@@ -93,7 +119,7 @@ public class EnumerationResultSet implements IResultSet
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	/// PDU Recording Methods   ////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void add( PDU pdu )
 	{
@@ -130,6 +156,10 @@ public class EnumerationResultSet implements IResultSet
 		
 		// update the stats
 		entityRecord.count.incrementAndGet();
+		
+		// Summary Recording
+		EnumerationSummary summary = getOrCreate( enumeration );
+		summary.observe( pdu.getEntityID() );
 	}
 	
 	private void observe( FirePdu pdu )
@@ -169,17 +199,62 @@ public class EnumerationResultSet implements IResultSet
 		return record;
 	}
 	
+	private EnumerationSummary getOrCreate( EntityType enumeration )
+	{
+		EnumerationSummary summary = esSummaries.get( enumeration );
+		if( summary == null )
+		{
+			summary = new EnumerationSummary();
+			summary.enumeration = enumeration;
+			esSummaries.put( enumeration, summary );
+		}
+
+		return summary;
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	/// Ouput Generation Methods   /////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////
+	/// Plain Text Generation Methods                    ///
+	////////////////////////////////////////////////////////
 	/**
 	 * Convert the results to a pretty-printed string that can be dumped to the command line.
 	 */
 	public String toPrintableString() throws DiscoException
 	{
-		return "Enumerations Analysis";
+		Collection<EnumerationSummary> summaries = esSummaries.values();
+		summaries = summaries.stream()
+		                     .sorted( (left,right) -> left.compareTo(right,enumConfiguration.getOrderBy()) )
+		                     .collect( Collectors.toList() );
+
+		StringBuilder builder = new StringBuilder();
+		builder.append( "\n" );
+		builder.append( " -- Enumeration Usage Summary --\n" );
+		builder.append( "\n" );
+		builder.append( " Entity State PDU Breakdown\n" );
+		builder.append( "\n" );
+		builder.append( " -----------------------------------------------------------------\n" );
+		builder.append( "     Enumeration      |  PDU Count  | Obj Count | Site-App IDs\n" );
+		builder.append( " -----------------------------------------------------------------\n" );
+
+		for( EnumerationSummary summary : summaries )
+		{
+			String line = String.format( "  %19s | %,11d | %,9d | %s \n",
+			                             summary.enumeration.toString(),
+			                             summary.pduCount.get(),
+			                             summary.entities.size(),
+			                             summary.appIds );
+			builder.append( line );
+		}
+		
+		return builder.toString();
 	}
 	
+	////////////////////////////////////////////////////////
+	/// JSON Generation Methods                          ///
+	////////////////////////////////////////////////////////
 	/**
 	 * Convert the results to a JSON object. It it expected that object will have a top-level
 	 * metadata property providing some common information conforming to the following format:
@@ -251,6 +326,12 @@ public class EnumerationResultSet implements IResultSet
 		jsonRecord.put( "count", entityRecord.getPduCount() );
 		return jsonRecord;
 	}
+	
+	
+	////////////////////////////////////////////////////////
+	/// File Dump Generation Methods                     ///
+	////////////////////////////////////////////////////////
+
 
 	/**
 	 * Write the result to the specified file using the specified output format.
@@ -263,9 +344,41 @@ public class EnumerationResultSet implements IResultSet
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////
-	///                           Inner Class: ObservedEnumeration                           /// 
+	///                           Inner Class: EnumerationSummary                            /// 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public class EnumerationSummary
+	{
+		protected EntityType enumeration  = null;
+		protected AtomicLong pduCount     = new AtomicLong(0);
+		protected Set<EntityId> entities  = new HashSet<>();
+		protected Set<String> appIds      = new HashSet<>();
+		
+		public void observe( EntityId entityId )
+		{
+			pduCount.incrementAndGet();
+			entities.add( entityId );
+			appIds.add( entityId.getSiteAndAppId() );
+		}
+		
+		public int compareTo( EnumerationSummary other, String field )
+		{
+			if( field.equals("enumeration") )
+				return enumeration.toString().compareTo( other.toString() );
+			else if( field.equals("site-id") )
+				return appIds.size() > other.appIds.size() ? 1 : -1;
+			else if( field.equals("pdu-count") )
+				return pduCount.get() > other.pduCount.get() ? 1 : -1;
+			else if( field.equals("obj-count") )
+				return entities.size() > other.entities.size() ? 1 : -1;
+			else
+				throw new DiscoException( "Unknown field for order-by: "+field );
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	///                            Inner Class: EnumerationRecord                            /// 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public class EnumerationRecord
 	{
@@ -291,6 +404,9 @@ public class EnumerationResultSet implements IResultSet
 		}
 	}
 	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	///                              Inner Class: EntityRecord                               /// 
+	////////////////////////////////////////////////////////////////////////////////////////////
 	public class EntityRecord
 	{
 		protected EntityId entityId;

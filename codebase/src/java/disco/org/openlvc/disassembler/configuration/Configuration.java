@@ -72,6 +72,9 @@ public class Configuration
 	private Log4jConfiguration loggingConfiguration;
 	
 	private String configFile = "etc/disassembler.config";
+	
+	// Analyzer Configs
+	private EnumAnalyzerConfiguration enumConfiguration;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -97,6 +100,10 @@ public class Configuration
 		
 		// pull out any command line args and use them to override all values
 		this.applyCommandLine( args );
+		
+		// pass on to all the analyzers
+		this.enumConfiguration = new EnumAnalyzerConfiguration( this );
+		this.enumConfiguration.applyCommandLine( args );
 	}
 
 	//----------------------------------------------------------
@@ -240,11 +247,6 @@ public class Configuration
 	}
 
 	//
-	// Enumerations Analyzer
-	//
-
-
-	//
 	// Logging Settings
 	//
 	/**
@@ -262,6 +264,17 @@ public class Configuration
 		return properties.toString();
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Sub-Configuration Methods   ////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public EnumAnalyzerConfiguration getEnumAnalyzerConfiguration()
+	{
+		return this.enumConfiguration;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Property Get & Set Methods   ///////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Return _a copy_ of the underlying property set that is serving this configuration.
 	 * Any changes to this set will not affect the configuration. 
@@ -270,7 +283,17 @@ public class Configuration
 	{
 		return new Properties( this.properties );
 	}
-
+	
+	protected void setProperty( String key, String value )
+	{
+		this.properties.setProperty( key, value );
+	}
+	
+	protected String getProperty( String key, String defaultValue )
+	{
+		return this.properties.getProperty( key, defaultValue );
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Command Line Argument Methods   ////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
