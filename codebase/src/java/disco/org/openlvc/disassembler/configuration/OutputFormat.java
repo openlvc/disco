@@ -55,3 +55,4 @@ public enum OutputFormat
 		throw new IllegalArgumentException( "Unknown value: "+string );
 	}
 }
+

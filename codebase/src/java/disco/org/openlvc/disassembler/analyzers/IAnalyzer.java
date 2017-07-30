@@ -17,7 +17,7 @@
  */
 package org.openlvc.disassembler.analyzers;
 
-import org.openlvc.disassembler.configuration.AnalyzerMode;
+import org.openlvc.disassembler.configuration.AnalyzerType;
 import org.openlvc.disassembler.configuration.Configuration;
 import org.openlvc.disco.DiscoException;
 
@@ -41,14 +41,14 @@ public interface IAnalyzer
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 	/**
-	 * Return the mode type for this analyzer
+	 * Return the type of this analyzer
 	 */
-	public AnalyzerMode getMode();
+	public AnalyzerType getAnalyzerType();
 
 	/**
 	 * Run the analyzer over the given configuration. Return the results wrapped up
 	 * in a results interface.
 	 */
-	public IResultSet execute( Configuration configuration ) throws DiscoException;
-	
+	public IResults execute( Configuration configuration ) throws DiscoException;
+
 }

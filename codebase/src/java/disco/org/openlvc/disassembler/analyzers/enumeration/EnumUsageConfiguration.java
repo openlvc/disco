@@ -15,42 +15,46 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disassembler.configuration;
+package org.openlvc.disassembler.analyzers.enumeration;
 
+import java.util.Queue;
+
+import org.openlvc.disassembler.configuration.Configuration;
 import org.openlvc.disco.DiscoException;
 
-public class EnumAnalyzerConfiguration
+public class EnumUsageConfiguration extends Configuration
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 	// Analyzer Enumeration Usage
-	public static final String KEY_ENUM_ORDER_BY   = "disassembler.analyzer.enum.orderby";
+	public static final String KEY_ENUM_ORDER_BY   = "disassembler.analyzer.enum-usage.orderby";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Configuration configuration;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected EnumAnalyzerConfiguration( Configuration parent )
+	public EnumUsageConfiguration( String[] commandline )
 	{
-		this.configuration = parent;
+		super( commandline );
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	protected void applyCommandLine( String[] args ) throws DiscoException
+	@Override
+	protected boolean applyCommandLineArgument( String argument, Queue<String> arguments )
 	{
-		for( int i = 0; i < args.length; i++ )
-		{
-			String argument = args[i];
-			if( argument.equalsIgnoreCase("--order-by") )
-				setOrderBy( args[++i] );
-		}
+		if( argument.equalsIgnoreCase("--order-by") )
+			setOrderBy( arguments.remove() );
+		else
+			return super.applyCommandLineArgument( argument, arguments );
+		
+		// we processed it above which means we're all cool
+		return true;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,7 +71,7 @@ public class EnumAnalyzerConfiguration
 	 */
 	public String getOrderBy()
 	{
-		return configuration.getProperty( KEY_ENUM_ORDER_BY, "pdu-count" );
+		return getProperty( KEY_ENUM_ORDER_BY, "pdu-count" );
 	}
 
 	/**
@@ -88,7 +92,7 @@ public class EnumAnalyzerConfiguration
 			field.equalsIgnoreCase("pdu-count")   ||
 			field.equalsIgnoreCase("obj-count") )
 		{
-			configuration.setProperty( KEY_ENUM_ORDER_BY, field );
+			setProperty( KEY_ENUM_ORDER_BY, field );
 		}
 		else
 		{
@@ -96,7 +100,4 @@ public class EnumAnalyzerConfiguration
 		}
 	}
 
-	//----------------------------------------------------------
-	//                     STATIC METHODS
-	//----------------------------------------------------------
 }

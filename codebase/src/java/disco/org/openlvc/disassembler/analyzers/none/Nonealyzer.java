@@ -18,8 +18,8 @@
 package org.openlvc.disassembler.analyzers.none;
 
 import org.openlvc.disassembler.analyzers.IAnalyzer;
-import org.openlvc.disassembler.analyzers.IResultSet;
-import org.openlvc.disassembler.configuration.AnalyzerMode;
+import org.openlvc.disassembler.analyzers.IResults;
+import org.openlvc.disassembler.configuration.AnalyzerType;
 import org.openlvc.disassembler.configuration.Configuration;
 import org.openlvc.disco.DiscoException;
 
@@ -49,9 +49,9 @@ public class Nonealyzer implements IAnalyzer
 	 * Return the mode type for this analyzer
 	 */
 	@Override
-	public AnalyzerMode getMode()
+	public AnalyzerType getAnalyzerType()
 	{
-		return AnalyzerMode.None;
+		return AnalyzerType.None;
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class Nonealyzer implements IAnalyzer
 	 * in a results interface.
 	 */
 	@Override
-	public IResultSet execute( Configuration configuration ) throws DiscoException
+	public IResults execute( Configuration configuration ) throws DiscoException
 	{
 		throw new DiscoException( "Analyzer mode is set to None." );
 	}

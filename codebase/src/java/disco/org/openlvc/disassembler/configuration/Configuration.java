@@ -18,7 +18,10 @@
 package org.openlvc.disassembler.configuration;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.Properties;
+import java.util.Queue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +29,16 @@ import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.Log4jConfiguration;
 
 /**
- * Build up the configuration for this disassembler run.
+ * Build up the configuration for this Disassembler run.
+ * 
+ * This class contains all the global configuration options that apply to the Disassembler.
+ * Each analyzer may have specific configuration properties that it supports. If so, it will
+ * support a sub-class of {@link Configuration} that will pass general calls up to here for
+ * processing but will cut in to grab its specific properties where it can.
+ * 
+ * For example, it will override {@link #applyCommandLine(String[])} to first check for
+ * its own properties before deferring up to the method in the parent if there is no
+ * analyzer-specific match.
  * 
  * There are a number of global options to be aware of, including:
  * 
@@ -58,11 +70,11 @@ public class Configuration
 	public static final String KEY_LOG_LEVEL       = "disassembler.loglevel";
 	public static final String KEY_LOG_FILE        = "disassembler.logfile";
 	
-	public static final String KEY_ANALYZER_MODE   = "disassembler.analyzer";
+	public static final String KEY_ANALYZER_TYPE   = "disassembler.analyzer";
 	public static final String KEY_INFILE          = "disassembler.infile";  // duplicator.session
 	public static final String KEY_OUTFILE         = "disassembler.outfile"; // STDOUT or file path
 	public static final String KEY_OUTPUT_FORMAT   = "disassembler.output";  // text, json, csv
-	
+
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -73,8 +85,6 @@ public class Configuration
 	
 	private String configFile = "etc/disassembler.config";
 	
-	// Analyzer Configs
-	private EnumAnalyzerConfiguration enumConfiguration;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -95,21 +105,16 @@ public class Configuration
 		this.loggingConfiguration.setLevel( "INFO" );
 
 		// see if the user specified a config file on the command line before we process it
-		this.checkArgsForConfigFile( args );
-		this.loadConfigFile();
+		checkArgsForConfigFile( args );
+		loadConfigFile();
 		
 		// pull out any command line args and use them to override all values
-		this.applyCommandLine( args );
-		
-		// pass on to all the analyzers
-		this.enumConfiguration = new EnumAnalyzerConfiguration( this );
-		this.enumConfiguration.applyCommandLine( args );
+		applyCommandLine( args );
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
 	private void loadConfigFile()
 	{
 		File configurationFile = new File( this.configFile );
@@ -129,6 +134,12 @@ public class Configuration
     		// store the loaded configuration
     		this.properties.putAll( fileProperties );
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return properties.toString();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -151,20 +162,20 @@ public class Configuration
 	/**
 	 * Return the type of analyzer we are going to run
 	 */
-	public AnalyzerMode getAnalyzerMode()
+	public AnalyzerType getAnalyzerType()
 	{
-		return AnalyzerMode.fromValue( properties.getProperty(KEY_ANALYZER_MODE,"none") );
+		return AnalyzerType.fromValue( properties.getProperty(KEY_ANALYZER_TYPE,"none") );
 	}
 	
-	public void setAnalyzerMode( AnalyzerMode analyzer )
+	public void setAnalyzerMode( AnalyzerType analyzer )
 	{
-		properties.setProperty( KEY_ANALYZER_MODE, analyzer.name().toLowerCase() );
+		properties.setProperty( KEY_ANALYZER_TYPE, analyzer.name().toLowerCase() );
 	}
 	
 	public void setAnalyzerMode( String analyzer ) throws IllegalArgumentException
 	{
 		// validate the given mode by turning in into its enumerated version first
-		setAnalyzerMode( AnalyzerMode.fromValue(analyzer) );
+		setAnalyzerMode( AnalyzerType.fromValue(analyzer) );
 	}
 
 	/**
@@ -258,20 +269,6 @@ public class Configuration
 		properties.setProperty( KEY_LOG_LEVEL, level );
 	}
 	
-	@Override
-	public String toString()
-	{
-		return properties.toString();
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Sub-Configuration Methods   ////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	public EnumAnalyzerConfiguration getEnumAnalyzerConfiguration()
-	{
-		return this.enumConfiguration;
-	}
-
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Property Get & Set Methods   ///////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -294,6 +291,7 @@ public class Configuration
 		return this.properties.getProperty( key, defaultValue );
 	}
 	
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Command Line Argument Methods   ////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -313,56 +311,77 @@ public class Configuration
 	}
 
 	/**
-	 * Apply the given command line args to override any defaults that we have
+	 * Process the whole command line and extract configuration information from it.
+	 * 
+	 * @throws DiscoException If any of the arguments are unknown or have missing params
 	 */
-	private void applyCommandLine( String[] args ) throws DiscoException
+	private final void applyCommandLine( String[] commandline ) throws DiscoException
 	{
-		// We can specify the particular analyzer we want to run one of a few ways.
+		// read the arguments into a queue so we can process them
+		Queue<String> arguments = new LinkedList<>();
+		for( String argument : commandline )
+			arguments.add( argument );
 		
-		// The first argument _SHOULD_ specify the analyzer we want to run.
-		// This isn't mandatory, especially if we are constructing this configuration
-		// via code rather than from command line, but we should check for it
-		if( args.length > 0 )
+		while( arguments.isEmpty() == false )
 		{
-			if( args[0].startsWith("--") == false )
-				this.setAnalyzerMode(args[0]);
-		}
-			
-		
-		for( int i = 0; i < args.length; i++ )
-		{
-			String argument = args[i];
-			if( argument.equalsIgnoreCase("--config-file") )
-				this.configFile = args[++i];
-			else if( argument.equalsIgnoreCase("--log-level") )
-				this.setLogLevel( args[++i] );
-			else if( argument.equalsIgnoreCase("--infile") )
-				this.setInFile( args[++i] );
-			else if( argument.equalsIgnoreCase("--outfile") )
-				this.setOutFile( args[++i] );
-			// Analyzer Mode
-			else if( argument.equalsIgnoreCase("--analyzer") )
-				this.setAnalyzerMode( args[++i] );
-			else if( argument.equalsIgnoreCase("--enum") || argument.equalsIgnoreCase("--enumeration") )
-				this.setAnalyzerMode( AnalyzerMode.Enumeration );
-			else if( argument.equalsIgnoreCase("--tba") )
-				;
-			// Output Formats
-			else if( argument.equalsIgnoreCase("--text") )
-				this.setOutputFormat( OutputFormat.TEXT );
-			else if( argument.equalsIgnoreCase("--json") )
-				this.setOutputFormat( OutputFormat.JSON );
-			else if( argument.equalsIgnoreCase("--csv") )
-				this.setOutputFormat( OutputFormat.CSV );
-			else
-				throw new DiscoException( "Unknown argument: "+argument );
+			String argument = arguments.remove();
+
+			try
+			{
+				if( applyCommandLineArgument(argument,arguments) == false )
+					throw new DiscoException( "Unknown argument: "+argument );
+			}
+			catch( NoSuchElementException nse )
+			{
+				throw new DiscoException( "Argument ["+argument+"] missing a parameter" );
+			}
 		}
 	}
 
-	//----------------------------------------------------------
-	//                     STATIC METHODS
-	//----------------------------------------------------------
-	public static void printHelp()
+	/**
+	 * Assess the given command line argument and extract the configuration is represents.
+	 * Return `true` if we processed it, `false` if it is unknown.
+	 * 
+	 * _NOTE: We expect sub-classes to override this so they can search for their own arguments._
+	 * 
+	 * @param argument  The argument under consideration
+	 * @param arguments The rest of the command line, with anything up to this point stripped
+	 * @return `true` if the argument was processed, `false` otherwise
+	 */
+	protected boolean applyCommandLineArgument( String argument, Queue<String> arguments )
+	{
+		if( argument.equalsIgnoreCase("--config-file") )
+			this.configFile = arguments.remove();
+		else if( argument.equalsIgnoreCase("--log-level") )
+			this.setLogLevel( arguments.remove() );
+		else if( argument.equalsIgnoreCase("--infile") )
+			this.setInFile( arguments.remove() );
+		else if( argument.equalsIgnoreCase("--outfile") )
+			this.setOutFile( arguments.remove() );
+		// Analyzer Mode
+		else if( argument.equalsIgnoreCase("--analyzer") )
+			this.setAnalyzerMode( arguments.remove() );
+		else if( argument.equalsIgnoreCase("--enum") || argument.equalsIgnoreCase("--enumeration") )
+			this.setAnalyzerMode( AnalyzerType.EnumUsage );
+		else if( argument.equalsIgnoreCase("--tba") )
+			;
+		// Output Formats
+		else if( argument.equalsIgnoreCase("--text") )
+			this.setOutputFormat( OutputFormat.TEXT );
+		else if( argument.equalsIgnoreCase("--json") )
+			this.setOutputFormat( OutputFormat.JSON );
+		else if( argument.equalsIgnoreCase("--csv") )
+			this.setOutputFormat( OutputFormat.CSV );
+		else
+			return false;
+		
+		return true;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Usage Printing Methods   ///////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void printUsage()
 	{
 		System.out.println( "Disassembler - Packet analysis for DIS recordings" );
 		System.out.println( "Usage: bin/disassembler [analyzer mode] [--args]" );
@@ -391,4 +410,8 @@ public class Configuration
 		System.out.println( "" );
 	}
 	
+	//----------------------------------------------------------
+	//                     STATIC METHODS
+	//----------------------------------------------------------
+
 }
