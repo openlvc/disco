@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -249,29 +248,35 @@ public class EnumUsageResults implements IResults
 		metadata.put( "summary", "Successful" );
 		rootObject.put( "metadata", metadata );
 		
+		// Resutls body
 		JSONArray results = new JSONArray();
-		results.add( toJson(PduType.EntityState,espdus) );
-//		results.add( toJson(PduType.Fire,firepdus) );
-//		results.add( toJson(PduType.Detonation,detpdus) );
+		results.add( toJson(PduType.EntityState,espdus.values()) );
+		results.add( toJson(PduType.Fire,firepdus.values()) );
+		results.add( toJson(PduType.Detonation,detpdus.values()) );
 		rootObject.put( "results", results );
 		
 		return rootObject;
 	}
 
 	@SuppressWarnings("unchecked")
-	private JSONObject toJson( PduType pduType, Map<EntityType,EnumerationSummary> map )
+	private JSONObject toJson( PduType pduType, Collection<EnumerationSummary> summaries )
 	{
 		JSONObject rootObject = new JSONObject();
 		rootObject.put( "type", pduType );
 		
+		// sort the enumerations first
+		summaries = CollectionUtils.sort( summaries, configuration.getOrderBy(), false );
+		
+		// add the enumeration array
 		JSONArray enumerations = new JSONArray();
-		for( EnumerationSummary summary : map.values() )
+		for( EnumerationSummary summary : summaries )
 		{
 			JSONObject json = new JSONObject();
 			json.put( "enumeration", summary.enumeration.toString() );
 			json.put( "pdu_count", summary.pduCount.get() );
 			json.put( "obj_count", summary.entities.size() );
 			json.put( "app_ids", summary.entities.toString() );
+			enumerations.add( json );
 		}
 		
 		rootObject.put( "enumerations", enumerations );
