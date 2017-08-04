@@ -30,6 +30,7 @@ public class EnumUsageConfiguration extends Configuration
 	// Analyzer Enumeration Usage
 	public static final String KEY_ENUM_ORDER_BY   = "disassembler.analyzer.enum-usage.orderby";
 	public static final String KEY_ENUM_ASCENDING  = "disassembler.analyzer.enum-usage.ascending";
+	public static final String KEY_ENUM_FILTER     = "disassembler.analyzer.enum-usage.filterby";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -55,6 +56,8 @@ public class EnumUsageConfiguration extends Configuration
 			setAscending();
 		else if( argument.equals("--descending") )
 			setDescending();
+		else if( argument.equals("--filter-by") )
+			setFilterBy( arguments.remove(), arguments.remove() );
 		else
 			return super.applyCommandLineArgument( argument, arguments );
 		
@@ -118,6 +121,22 @@ public class EnumUsageConfiguration extends Configuration
 	public void setDescending()
 	{
 		setProperty( KEY_ENUM_ASCENDING, "false" );
+	}
+	
+	public void setFilterBy( String field, String value )
+	{
+		setProperty( KEY_ENUM_FILTER, field+" "+value );
+
+	}
+	
+	public String getFilterBy()
+	{
+		return getProperty( KEY_ENUM_FILTER, "" );
+	}
+	
+	public boolean hasFilterBy()
+	{
+		return hasProperty( KEY_ENUM_FILTER );
 	}
 	
 }

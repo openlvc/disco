@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.json.simple.JSONArray;
@@ -32,6 +33,7 @@ import org.openlvc.disassembler.configuration.AnalyzerType;
 import org.openlvc.disassembler.configuration.OutputFormat;
 import org.openlvc.disassembler.utils.CollectionUtils;
 import org.openlvc.disassembler.utils.FieldComparable;
+import org.openlvc.disassembler.utils.Searchable;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
@@ -197,6 +199,9 @@ public class EnumUsageResults implements IResults
 	{
 		// 1. Order the PDUs by the field we want to
 		summaries = CollectionUtils.sort( summaries, configuration.getOrderBy(), configuration.getAscending() );
+		
+		if( configuration.hasFilterBy() )
+			summaries = CollectionUtils.search( summaries, configuration.getFilterBy() );
 
 		// 2. Build prefix
 		builder.append( "\n" );
@@ -266,7 +271,9 @@ public class EnumUsageResults implements IResults
 		
 		// sort the enumerations first
 		summaries = CollectionUtils.sort( summaries, configuration.getOrderBy(), configuration.getAscending() );
-		
+		if( configuration.hasFilterBy() )
+			summaries = CollectionUtils.search( summaries, configuration.getFilterBy() );
+
 		// add the enumeration array
 		JSONArray enumerations = new JSONArray();
 		for( EnumerationSummary summary : summaries )
@@ -302,7 +309,8 @@ public class EnumUsageResults implements IResults
 	////////////////////////////////////////////////////////////////////////////////////////////
 	///                           Inner Class: EnumerationSummary                            /// 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public class EnumerationSummary implements FieldComparable<EnumerationSummary>
+	public class EnumerationSummary implements FieldComparable<EnumerationSummary>,
+	                                           Searchable<EnumerationSummary>
 	{
 		protected EntityType enumeration  = null;
 		protected AtomicLong pduCount     = new AtomicLong(0);
@@ -314,6 +322,30 @@ public class EnumUsageResults implements IResults
 			pduCount.incrementAndGet();
 			entities.add( entityId );
 			appIds.add( entityId.getSiteAndAppId() );
+		}
+		
+		@Override
+		public boolean matches( String searchString )
+		{
+			StringTokenizer tokens = new StringTokenizer( searchString, " " );
+			if( tokens.countTokens() != 2 )
+				throw new DiscoException( "Filter-by requires 2 values: <field-id> <match-value>: "+searchString );
+
+			String field = tokens.nextToken();
+			String value = tokens.nextToken();
+			
+			if( field.equals("enumeration") )
+			{
+				return enumeration.toString().contains(value);
+			}
+			else if( field.equals("site-id") )
+			{
+				return appIds.stream().filter( id -> id.contains(value) ).findFirst().isPresent();
+			}
+			else
+			{
+				throw new DiscoException( "Unknown field for filter-by: "+field );
+			}
 		}
 		
 		@Override

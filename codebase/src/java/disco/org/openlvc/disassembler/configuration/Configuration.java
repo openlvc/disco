@@ -291,6 +291,11 @@ public class Configuration
 		return this.properties.getProperty( key, defaultValue );
 	}
 	
+	protected boolean hasProperty( String key )
+	{
+		return this.properties.containsKey( key );
+	}
+	
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Command Line Argument Methods   ////////////////////////////////////////////////////////
