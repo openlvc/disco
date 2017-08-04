@@ -31,6 +31,8 @@ import org.json.simple.JSONObject;
 import org.openlvc.disassembler.analyzers.IResults;
 import org.openlvc.disassembler.configuration.AnalyzerType;
 import org.openlvc.disassembler.configuration.OutputFormat;
+import org.openlvc.disassembler.utils.CollectionUtils;
+import org.openlvc.disassembler.utils.FieldComparable;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
@@ -140,26 +142,34 @@ public class EnumUsageResults implements IResults
 		EntityType enumeration = pdu.getEntityType();
 		
 		// Summary Recording
-		EnumerationSummary summary = getOrCreate( enumeration );
+		EnumerationSummary summary = getOrCreate( espdus, enumeration );
 		summary.observe( pdu.getEntityID() );
 	}
-	
+
 	private void observe( FirePdu pdu )
 	{
+		// get the record for the enumeration
+		EntityType enumeration = pdu.getBurstDescriptor().getMunition();
+		EnumerationSummary summary = getOrCreate( firepdus, enumeration );
+		summary.observe( pdu.getFiringEntityID() );
 	}
 
 	private void observe( DetonationPdu pdu )
 	{
+		EntityType enumeration = pdu.getBurstDescriptor().getMunition();
+		EnumerationSummary summary = getOrCreate( detpdus, enumeration );
+		summary.observe( pdu.getFiringEntityID() );
 	}
 
-	private EnumerationSummary getOrCreate( EntityType enumeration )
+	private EnumerationSummary getOrCreate( Map<EntityType,EnumerationSummary> store,
+	                                        EntityType enumeration )
 	{
-		EnumerationSummary summary = espdus.get( enumeration );
+		EnumerationSummary summary = store.get( enumeration );
 		if( summary == null )
 		{
 			summary = new EnumerationSummary();
 			summary.enumeration = enumeration;
-			espdus.put( enumeration, summary );
+			store.put( enumeration, summary );
 		}
 
 		return summary;
@@ -177,21 +187,27 @@ public class EnumUsageResults implements IResults
 	 */
 	public String toPrintableString() throws DiscoException
 	{
-		Collection<EnumerationSummary> summaries = espdus.values();
-		summaries = summaries.stream()
-		                     .sorted( (left,right) -> left.compareTo(right,configuration.getOrderBy()) )
-		                     .collect( Collectors.toList() );
-
 		StringBuilder builder = new StringBuilder();
+		buildTextSummary( builder, "Entity State PDU Usage Summary", espdus.values() );
+		buildTextSummary( builder, "Fire PDU Usage Summary", firepdus.values() );
+		buildTextSummary( builder, "Detonation PDU Usage Summary", detpdus.values() );
+		return builder.toString();
+	}
+	
+	private void buildTextSummary( StringBuilder builder, String prefix, Collection<EnumerationSummary> summaries )
+	{
+		// 1. Order the PDUs by the field we want to
+		summaries = CollectionUtils.sort( summaries, configuration.getOrderBy(), false );
+
+		// 2. Build prefix
 		builder.append( "\n" );
-		builder.append( " -- Enumeration Usage Summary --\n" );
-		builder.append( "\n" );
-		builder.append( " Entity State PDU Breakdown\n" );
+		builder.append( " -- "+prefix+" --\n" );
 		builder.append( "\n" );
 		builder.append( " -----------------------------------------------------------------\n" );
 		builder.append( "     Enumeration      |  PDU Count  | Obj Count | Site-App IDs\n" );
 		builder.append( " -----------------------------------------------------------------\n" );
 
+		// 3. Write table of results
 		for( EnumerationSummary summary : summaries )
 		{
 			String line = String.format( "  %19s | %,11d | %,9d | %s \n",
@@ -201,8 +217,6 @@ public class EnumUsageResults implements IResults
 			                             summary.appIds );
 			builder.append( line );
 		}
-		
-		return builder.toString();
 	}
 
 	////////////////////////////////////////////////////////
@@ -283,7 +297,7 @@ public class EnumUsageResults implements IResults
 	////////////////////////////////////////////////////////////////////////////////////////////
 	///                           Inner Class: EnumerationSummary                            /// 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public class EnumerationSummary
+	public class EnumerationSummary implements FieldComparable<EnumerationSummary>
 	{
 		protected EntityType enumeration  = null;
 		protected AtomicLong pduCount     = new AtomicLong(0);
@@ -297,6 +311,7 @@ public class EnumUsageResults implements IResults
 			appIds.add( entityId.getSiteAndAppId() );
 		}
 		
+		@Override
 		public int compareTo( EnumerationSummary other, String field )
 		{
 			if( field.equals("enumeration") )
