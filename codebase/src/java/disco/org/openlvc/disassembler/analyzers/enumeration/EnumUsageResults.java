@@ -196,7 +196,7 @@ public class EnumUsageResults implements IResults
 	private void buildTextSummary( StringBuilder builder, String prefix, Collection<EnumerationSummary> summaries )
 	{
 		// 1. Order the PDUs by the field we want to
-		summaries = CollectionUtils.sort( summaries, configuration.getOrderBy(), false );
+		summaries = CollectionUtils.sort( summaries, configuration.getOrderBy(), configuration.getAscending() );
 
 		// 2. Build prefix
 		builder.append( "\n" );
@@ -265,7 +265,7 @@ public class EnumUsageResults implements IResults
 		rootObject.put( "type", pduType );
 		
 		// sort the enumerations first
-		summaries = CollectionUtils.sort( summaries, configuration.getOrderBy(), false );
+		summaries = CollectionUtils.sort( summaries, configuration.getOrderBy(), configuration.getAscending() );
 		
 		// add the enumeration array
 		JSONArray enumerations = new JSONArray();

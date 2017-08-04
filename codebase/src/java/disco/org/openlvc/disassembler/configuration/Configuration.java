@@ -378,17 +378,19 @@ public class Configuration
 		return true;
 	}
 
+	//----------------------------------------------------------
+	//                     STATIC METHODS
+	//----------------------------------------------------------
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Usage Printing Methods   ///////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void printUsage()
+	public static void printUsage()
 	{
 		System.out.println( "Disassembler - Packet analysis for DIS recordings" );
-		System.out.println( "Usage: bin/disassembler [analyzer mode] [--args]" );
+		System.out.println( "Usage: bin/disassembler [--args]" );
 		System.out.println( "" );
-		System.out.println( "  The first argument, if specified without '--' is the analyzer mode to run." );
-		System.out.println( "  Alternatively, this can be specified explicitly using --analyzer [arg] or one " );
-		System.out.println( "  of the direct arguments like --enum" );
+		System.out.println( "  You can specify the type of analyzer to run using either the explicit" );
+		System.out.println( "  --analyzer [value] command, or the shortcuts like --enum" );
 		System.out.println( "" );
 
 		System.out.println( "  --config-file         string   (optional)  Path to config file                        (default: etc/disassembler.config)" );
@@ -398,20 +400,22 @@ public class Configuration
 		System.out.println( "  --text                         (optional)  Print output as pretty-printed text (default)" );
 		System.out.println( "  --json                         (optional)  Print output as JSON text" );
 		System.out.println( "  --csv                          (optional)  Print output as CSV text" );
-		System.out.println( "" );
-
-		System.out.println( "Analyzer Mode" );
-		System.out.println( "  Either specify one of the first forms below, or use the same name as first arg." );
-		System.out.println( "  Can also use --analyzer [analyzer mode] to specify the analyzer to run" );
-		System.out.println( "" );
-		System.out.println( "  --enum | --enumeration         (optional)  Run the enumeration analyzer" );
 		System.out.println( "  --analyzer                     (required)  Analyzer module to run. Required only if not specified as" );
 		System.out.println( "                                             first arg of command line or one of the above forms used." );
+		System.out.println( "  --enum | --enumeration         (optional)  Run the enumeration summary analyzer" );
 		System.out.println( "" );
+
+		System.out.println( "Enumerations Summary Arguments" );
+		System.out.println( "  The following arguments only apply to the Enumeration Summary analyzer" );
+		System.out.println( "  Run with either --enum or --enumeration" );
+		System.out.println( "" );	
+		System.out.println( "  --order-by            string   (optional)  enumeration | site-id | pdu-count | obj-count (default: pdu-count)" );
+		System.out.println( "  --ascending                    (optional)  results values should be in ascending order   (default: no)" );
+		System.out.println( "  --descending                   (optional)  results values should be in descending order  (default: yes)" );
+
+		
+		System.out.println( "" );	
 	}
 	
-	//----------------------------------------------------------
-	//                     STATIC METHODS
-	//----------------------------------------------------------
 
 }

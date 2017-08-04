@@ -19,7 +19,6 @@ package org.openlvc.disassembler;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disassembler.analyzers.IResults;
-import org.openlvc.disassembler.configuration.AnalyzerType;
 import org.openlvc.disassembler.configuration.Configuration;
 
 /**
@@ -101,7 +100,8 @@ public class Main
 		if( printHelp )
 		{
 			// load the analyzer and create a config so we can ask it for analyzer-specific usage
-			AnalyzerType.fromArgs(args).newConfiguration(args).printUsage();
+			//AnalyzerType.fromArgs(args).newConfiguration(args).printUsage();
+			Configuration.printUsage();
 			return;
 		}
 		else

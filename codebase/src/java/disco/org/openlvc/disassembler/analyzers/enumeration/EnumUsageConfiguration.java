@@ -29,6 +29,7 @@ public class EnumUsageConfiguration extends Configuration
 	//----------------------------------------------------------
 	// Analyzer Enumeration Usage
 	public static final String KEY_ENUM_ORDER_BY   = "disassembler.analyzer.enum-usage.orderby";
+	public static final String KEY_ENUM_ASCENDING  = "disassembler.analyzer.enum-usage.ascending";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -50,6 +51,10 @@ public class EnumUsageConfiguration extends Configuration
 	{
 		if( argument.equalsIgnoreCase("--order-by") )
 			setOrderBy( arguments.remove() );
+		else if( argument.equals("--ascending") )
+			setAscending();
+		else if( argument.equals("--descending") )
+			setDescending();
 		else
 			return super.applyCommandLineArgument( argument, arguments );
 		
@@ -100,4 +105,19 @@ public class EnumUsageConfiguration extends Configuration
 		}
 	}
 
+	public boolean getAscending()
+	{
+		return getProperty(KEY_ENUM_ASCENDING,"false").equalsIgnoreCase( "true" );
+	}
+	
+	public void setAscending()
+	{
+		setProperty( KEY_ENUM_ASCENDING, "true" );
+	}
+	
+	public void setDescending()
+	{
+		setProperty( KEY_ENUM_ASCENDING, "false" );
+	}
+	
 }
