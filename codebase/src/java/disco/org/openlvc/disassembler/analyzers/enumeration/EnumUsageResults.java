@@ -42,6 +42,7 @@ import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.EntityType;
 import org.openlvc.disco.pdu.warfare.DetonationPdu;
 import org.openlvc.disco.pdu.warfare.FirePdu;
+import org.openlvc.disco.utils.StringUtils;
 
 public class EnumUsageResults implements IResults
 {
@@ -205,8 +206,8 @@ public class EnumUsageResults implements IResults
 
 		// 2. Build prefix
 		builder.append( "\n" );
-		builder.append( " -- "+prefix+" --\n" );
-		builder.append( "\n" );
+		builder.append( " -----------------------------------------------------------------\n" );
+		builder.append( " "+StringUtils.center("*** "+prefix+" ***",65)+"\n" );
 		builder.append( " -----------------------------------------------------------------\n" );
 		builder.append( "     Enumeration      |  PDU Count  | Obj Count | Site-App IDs\n" );
 		builder.append( " -----------------------------------------------------------------\n" );
@@ -221,6 +222,9 @@ public class EnumUsageResults implements IResults
 			                             summary.appIds );
 			builder.append( line );
 		}
+		
+		builder.append( "\n" );
+
 	}
 
 	////////////////////////////////////////////////////////

@@ -255,4 +255,30 @@ public class StringUtils
 		builder.append( "\n" );
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// General Formatting   ///////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////	
+	/**
+	 * Return a string that is of the given `width` where the contained `text` is centered with
+	 * empty padding left and right.
+	 */
+	public static String center( String text, int width )
+	{
+		int textLength = text.length();
+		if( textLength > width )
+			throw new IllegalArgumentException( "Cannot center text. Given text ["+text+"] wider than given width ["+width+"]" );
+		
+		if( textLength == width )
+			return text;
+
+		int paddingTotal = width - textLength;
+		if( paddingTotal == 1 )
+			return text+" ";
+
+		int paddingLeft = Math.floorDiv( paddingTotal, 2 );
+		int paddingRight = paddingTotal - paddingLeft;
+		
+		String formatString = "%"+paddingLeft+"s%s%"+paddingRight+"s";
+		return String.format(formatString," ",text," ");
+	}
 }
