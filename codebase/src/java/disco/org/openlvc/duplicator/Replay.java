@@ -57,8 +57,6 @@ public class Replay implements IPduListener
 	private OpsCenter opscenter;
 
 	// Packet management
-	private long startTime;
-	private long pduCount;
 	private Queue<Track> queue;
 	
 
@@ -81,8 +79,6 @@ public class Replay implements IPduListener
 		this.opscenter = null;            // set in execute()
 		
 		// Packet management
-		this.startTime = 0;               // set in execute()
-		this.pduCount = 0;
 		this.queue = new LinkedList<>();
 		
 		// Session Writing
@@ -101,11 +97,6 @@ public class Replay implements IPduListener
 	public void execute()
 	{
 		logger.info( "Mode: Replay" );
-		
-		//
-		// Get Session file access all set up
-		//
-		this.openSession();
 
 		//
 		// Set up the DIS properties
@@ -120,22 +111,46 @@ public class Replay implements IPduListener
 		
 		this.opscenter = new OpsCenter( discoConfiguration );
 		this.opscenter.setListener( this );
-		
-		//
-		// Kick things off
-		//
-		this.startTime = System.currentTimeMillis();
-		this.opscenter.open();
 
 		//
-		// Do the replay
+		// Run the replay
 		//
-		this.replaySession();
-		
-		//
-		// All done! Let's shut ourselves down (nobody else will do it)
-		//
-		this.shutdown();
+		this.opscenter.open();
+
+		try
+		{
+			runReplay( configuration.getLoopCount() );
+		}
+		finally
+		{
+    		//
+    		// All done! Let's shut ourselves down (nobody else will do it)
+    		//
+    		this.shutdown();
+		}
+	}
+
+	/**
+	 * Run a replay `loopCount` times. Specify `{@link Configuration#LOOP_INFINITELY} to run it
+	 * indefinitely.
+	 */
+	private void runReplay( int loopCount )
+	{
+		// Looping - play it some number of times
+		String loopString = loopCount == Configuration.LOOP_INFINITELY ? "INDEFINITE" : ""+loopCount;
+		logger.info( "Replay the session %s times", loopString );
+
+		boolean loopAgain = true;
+		int loopsCompleted = 0;
+		do
+		{
+			logger.info( "Starting replay loop %d of %s", loopsCompleted+1, loopString );
+
+			this.replaySession();
+			if( ++loopsCompleted >= loopCount )
+				loopAgain = false;
+		}
+		while( loopAgain );
 	}
 
 	public void shutdown()
@@ -146,8 +161,10 @@ public class Replay implements IPduListener
 		// close off our session file
 		try
 		{
-			this.bis.close();
-			this.fis.close();
+			if( this.bis != null )
+				this.bis.close();
+			if( this.fis != null )
+				this.fis.close();
 		}
 		catch( Exception e )
 		{
@@ -185,7 +202,7 @@ public class Replay implements IPduListener
 		
 		this.bis = new BufferedInputStream( this.fis );
 		this.dis = new DataInputStream( this.bis );
-		logger.info( "Session file is open and ready for reading" );
+		logger.debug( "Session file is open and ready for reading" );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -194,11 +211,15 @@ public class Replay implements IPduListener
 
 	private void replaySession()
 	{
+		// Open up the session file
+		this.openSession();
+		
 		// fill the buffer initially to make sure we have something to work on
 		this.refillBuffer();
 		
-		// record start time for logging later
-		this.startTime = System.currentTimeMillis();
+		// record start time and pdu count for logging later
+		long startTime = System.currentTimeMillis();
+		long pduCount  = 0;
 		
 		// iterate over all PDUs, waiting the appropriate time if we are running in real time
 		long lastPacketTimestamp = 0;

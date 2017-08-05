@@ -27,6 +27,7 @@ public class Configuration
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	public static final int LOOP_INFINITELY = 0;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -51,6 +52,7 @@ public class Configuration
 
 	// Replay Settings
 	private boolean replayRealtime; // Should replay proceed in real time (with waits between PDUs)
+	private int loopCount;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -79,6 +81,7 @@ public class Configuration
 		
 		// Replay Settings
 		this.replayRealtime = true;
+		this.loopCount = 1;
 	}
 
 	public Configuration( String[] commandline ) throws DiscoException
@@ -122,6 +125,22 @@ public class Configuration
 				this.setPduSender( args[++i] );
 			else if( argument.equalsIgnoreCase("--pdu-receiver") )
 				this.setPduReceiver( args[++i] );
+			else if( argument.equalsIgnoreCase("--loop") )
+			{
+				// test to see if next arg is an integer
+				// if this is the end of the args or the next isn't an integer, we assume
+				// it isn't for us and that they supplied --loop standalone (do infinite)
+				try
+				{
+					Integer.parseInt( args[i+1] ); 
+					this.setLoopCount( Integer.parseInt(args[++i]) );	
+				}
+				catch( Exception e )
+				{
+					this.setLoopCount( 0 );	
+				}
+				
+			}
 			else
 				throw new DiscoException( "Unknown argument: "+argument );
 		}
@@ -252,6 +271,44 @@ public class Configuration
 		this.appLoggerConfiguration.setLevel( level );
 	}
 
+	/**
+	 * @return `true` if we've been asked to loop the replay of a session more than once
+	 */
+	public boolean isLooping()
+	{
+		return this.loopCount != 1;
+	}
+
+	/**
+	 * @return `true` if we are looping indefinitely, `false` otherwise.
+	 */
+	public boolean isLoopingIndefinitely()
+	{
+		return this.loopCount == LOOP_INFINITELY;
+	}
+
+	/**
+	 * Set the number of times we should loop a replay. Setting to `0` ({@link #LOOP_INFINITELY})
+	 * will cause us to loop forever. Setting to a negative number will generate an exception.
+	 */
+	public void setLoopCount( int number )
+	{
+		if( number < 0 )
+			throw new IllegalArgumentException( "Cannot set a loop count less than 0" );
+		else
+			this.loopCount = number;
+	}
+
+	/**
+	 * Get the number of times we will replay a session in succession. Default it to play the
+	 * session once. If `0` is returned ({@link #LOOP_INFINITELY}) we will keep looping until
+	 * someone shuts us down.
+	 */
+	public int getLoopCount()
+	{
+		return this.loopCount;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
@@ -264,12 +321,13 @@ public class Configuration
 		builder.append( "   --record                    Make a recording (default)\n" );
 		builder.append( "   --replay                    Replay from a previous recording\n" );
 		builder.append( "   --file            (string)  File name to read from/write to\n" );
-		builder.append( "   --dis-address     (string)  Multicast address to use or BROADCAST (default)\n" );
-		builder.append( "   --dis-port        (int)     DIS port to listen/send on. Default: 3000\n" );
 		builder.append( "   --dis-interface   (string)  NIC to use. LOOPBACK, LINK_LOCAL, SITE_LOCAL*, GLOBAL\n" );
-		builder.append( "   --dis-exercise-id (short)   Exercise ID to send in outgoing and only recv on (default: 1)\n" );
+		builder.append( "   --dis-address     (string)  Multicast address to use or BROADCAST (default)\n" );
+		builder.append( "   --dis-port        (number)  DIS port to listen/send on. Default: 3000\n" );
+		builder.append( "   --dis-exercise-id (number)  Exercise ID to send in outgoing and only recv on (default: 1)\n" );
 		builder.append( "   --replay-realtime           Replay as PDus happened. Delay PDUs if there was receive delay\n" );
 		builder.append( "   --replay-fast               Replay all stored PDUs as fast as possible\n" );
+		builder.append( "   --loop            (number)  Number of times to replay a session. 0 for infinite (default: 1)\n" );
 		builder.append( "   --log-level       (string)  Set the log level: OFF, ERROR, WARN, INFO(default), DEBUG, TRACE\n" );
 		builder.append( "   --pdu-receiver    (string)  PDU receive processor: single-thread (def), thread-pool, simple\n" );
 		builder.append( "   --pdu-sender      (string)  PDU send processor: single-thread (def), thread-pool, simple\n" );
