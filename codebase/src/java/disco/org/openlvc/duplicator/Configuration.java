@@ -283,6 +283,7 @@ public class Configuration
 	public void setReplayRealtime( boolean replayRealtime )
 	{
 		this.replayRealtime = replayRealtime;
+		this.setToReplaying();
 	}
 
 	/**
