@@ -22,6 +22,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -30,7 +33,9 @@ import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.utils.BitHelpers;
+import org.openlvc.disco.utils.StringUtils;
 
 public class Recorder implements IPduListener
 {
@@ -57,8 +62,17 @@ public class Recorder implements IPduListener
 	private Thread sessionWriter;
 	private FileOutputStream fos;
 	private BufferedOutputStream bos;
+	
+	// PDU Metrics
 	private long pdusWritten;
 	private long bytesWritten;
+	private long[] pduCounter;          // index is ordinal of PduType
+	private Queue<Long> lastTenSeconds; // pdu count for each of the last 10 seconds
+	
+	// Other Things
+	private Timer activityTimer;
+	private ActivityLogger activityLogger; // timer task
+	private PduRateLogger pduRateLogger;   // timer task
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -81,8 +95,17 @@ public class Recorder implements IPduListener
 		this.sessionWriter = new Thread( new SessionWriter(), "SessionWriter" );
 		this.fos = null;                  // set in execute()
 		this.bos = null;                  // set in execute()
+		
+		// PDU Metrics
 		this.pdusWritten = 0;
 		this.bytesWritten = 0;
+		this.pduCounter = new long[PduType.values().length];
+		this.lastTenSeconds = new LinkedList<Long>();
+		
+		// Other Things
+		this.activityTimer = null;        // set in execute()
+		this.activityLogger = null;       // set in execute()
+		this.pduRateLogger = null;        // set in execute()
 	}
 
 	//----------------------------------------------------------
@@ -125,6 +148,15 @@ public class Recorder implements IPduListener
 		this.sessionWriter.start();
 		this.opscenter.open();
 		logger.info( "Recorder is active - DO YOUR WORST" );
+		
+		// Start the activity logger
+		this.activityTimer =  new Timer( "Activity" );
+		this.activityLogger = new ActivityLogger();
+		long interval = configuration.getRecordLogInterval();
+		this.activityTimer.scheduleAtFixedRate( activityLogger, interval, interval );
+		
+		this.pduRateLogger = new PduRateLogger();
+		this.activityTimer.scheduleAtFixedRate( pduRateLogger, 1000, 1000 );
 	}
 
 	/**
@@ -154,6 +186,9 @@ public class Recorder implements IPduListener
 		{
 			logger.warn( "Exception while closing session file: "+ioex.getMessage(), ioex );
 		}
+		
+		// Kill the activity logger
+		this.activityTimer.cancel();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,6 +196,10 @@ public class Recorder implements IPduListener
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void receiver( PDU pdu )
 	{
+		// increment count for this PDU type
+		int typeIndex = pdu.getType().ordinal();
+		pduCounter[typeIndex] += 1;
+		
 		this.buffer.add( new Track(pdu) ); // non-blocking call
 	}
 
@@ -266,4 +305,56 @@ public class Recorder implements IPduListener
 			}
 		}
 	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Private Class: Activity Logger   ///////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	private class PduRateLogger extends TimerTask
+	{
+		public void run()
+		{
+			// Get PDU average
+			lastTenSeconds.add( pdusWritten );
+			if( lastTenSeconds.size() > 10 )
+				lastTenSeconds.remove();
+		}
+	}
+
+	private class ActivityLogger extends TimerTask
+	{
+		public void run()
+		{
+			// Format: "(192.168.0.1:3000) pdus=123,456; bytes=17.8MB [e=1,234; f=1,234; d=1,234]";
+			
+			// Get network information
+			String ip = opscenter.getConfiguration().getUdpConfiguration().getAddress().toString();
+			int port = opscenter.getConfiguration().getUdpConfiguration().getPort();
+
+			// Get PDU received breakdown
+			long espduCount = pduCounter[PduType.EntityState.ordinal()];
+			long firepduCount = pduCounter[PduType.Fire.ordinal()];
+			long detpduCount = pduCounter[PduType.Detonation.ordinal()];
+
+			// Get PDU average
+			Long[] stream = lastTenSeconds.toArray( new Long[]{} );
+			long lastTenTotal = 0;
+			for( int i = 1; i < stream.length; i++ )
+				lastTenTotal += (stream[i] - stream[i-1]);
+
+			// Generate the log
+			String line = String.format( "(%s:%d) pdus=%,d (%,d/s); bytes=%s [e=%,d; f=%,d; d=%,d]",
+			                             ip,
+			                             port,
+			                             pdusWritten,
+			                             (lastTenTotal/9),
+			                             StringUtils.humanReadableSize(bytesWritten),
+			                             espduCount,
+			                             firepduCount,
+			                             detpduCount );
+			
+			// Log the log!
+			logger.info( line );
+		}
+	}
+
 }

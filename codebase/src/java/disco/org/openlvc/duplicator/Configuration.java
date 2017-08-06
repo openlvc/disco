@@ -50,6 +50,9 @@ public class Configuration
 	private String pduSender;
 	private String pduReceiver;
 
+	// Recording Settings
+	private long recordLogIntervalMs;
+	
 	// Replay Settings
 	private boolean replayRealtime; // Should replay proceed in real time (with waits between PDUs)
 	private int loopCount;
@@ -78,6 +81,9 @@ public class Configuration
 		// PDU Processing
 		this.pduSender = null;
 		this.pduReceiver = null;
+		
+		// Recordings Settings
+		this.recordLogIntervalMs = 30000; // how frequently to log status info during recording
 		
 		// Replay Settings
 		this.replayRealtime = true;
@@ -115,7 +121,9 @@ public class Configuration
 				this.setDisInterface( args[++i] );
 			else if( argument.equalsIgnoreCase("--dis-exercise-id") || argument.equalsIgnoreCase("--dis-exerciseId") )
 				this.setDisExerciseId(Short.parseShort(args[++i]) );
-			else if( argument.equalsIgnoreCase("--replay-realtime") )
+			else if( argument.equalsIgnoreCase("--log-interval") )
+				this.setRecordLogInterval( Long.parseLong(args[++i]) * 1000 ); // value in seconds
+			else if( argument.equalsIgnoreCase("--replay-realtime") ) // 
 				this.setReplayRealtime( true );
 			else if( argument.equalsIgnoreCase("--replay-fast") )
 				this.setReplayRealtime( false );
@@ -132,17 +140,18 @@ public class Configuration
 				// it isn't for us and that they supplied --loop standalone (do infinite)
 				try
 				{
-					Integer.parseInt( args[i+1] ); 
-					this.setLoopCount( Integer.parseInt(args[++i]) );	
+					Integer.parseInt( args[i+1] ); // make sure it is cool before incrementing
+					this.setLoopCount( Integer.parseInt(args[++i]) ); // we're good, increment
 				}
 				catch( Exception e )
 				{
 					this.setLoopCount( 0 );	
 				}
-				
 			}
 			else
+			{
 				throw new DiscoException( "Unknown argument: "+argument );
+			}
 		}
 	}
 	
@@ -250,6 +259,27 @@ public class Configuration
 		return this.pduReceiver;
 	}
 
+	//////////////////////////////////////////////////////////////////
+	/// Recording Settings ///////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////
+	public void setRecordLogInterval( long milliseconds )
+	{
+		// Just making sure it is positive, but really, if it's less than 100ms it's just stupid
+		// Even less than 1000 is stupid
+		if( milliseconds < 100 )
+			return;
+
+		this.recordLogIntervalMs = milliseconds;
+	}
+	
+	public long getRecordLogInterval()
+	{
+		return this.recordLogIntervalMs;
+	}
+
+	//////////////////////////////////////////////////////////////////
+	/// Replay Settings //////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////
 	public void setReplayRealtime( boolean replayRealtime )
 	{
 		this.replayRealtime = replayRealtime;
@@ -325,6 +355,7 @@ public class Configuration
 		builder.append( "   --dis-address     (string)  Multicast address to use or BROADCAST (default)\n" );
 		builder.append( "   --dis-port        (number)  DIS port to listen/send on. Default: 3000\n" );
 		builder.append( "   --dis-exercise-id (number)  Exercise ID to send in outgoing and only recv on (default: 1)\n" );
+		builder.append( "   --log-interval    (seconds) When recording, log stats ever x seconds (default: 30)\n" );
 		builder.append( "   --replay-realtime           Replay as PDus happened. Delay PDUs if there was receive delay\n" );
 		builder.append( "   --replay-fast               Replay all stored PDUs as fast as possible\n" );
 		builder.append( "   --loop            (number)  Number of times to replay a session. 0 for infinite (default: 1)\n" );
