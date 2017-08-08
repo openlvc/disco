@@ -333,8 +333,16 @@ public class Configuration
 
 			try
 			{
-				if( applyCommandLineArgument(argument,arguments) == false )
+				// give the sub-class a chance to handle this
+				if( applyCommandLineArgument(argument,arguments) )
+					continue;
+
+				// maybe it's the definition of an analyzer
+				AnalyzerType type = AnalyzerType.fromArg( argument );
+				if( type == null )
 					throw new DiscoException( "Unknown argument: "+argument );
+				else
+					setAnalyzerMode( type );
 			}
 			catch( NoSuchElementException nse )
 			{
@@ -405,16 +413,19 @@ public class Configuration
 		System.out.println( "  --text                         (optional)  Print output as pretty-printed text (default)" );
 		System.out.println( "  --json                         (optional)  Print output as JSON text" );
 		System.out.println( "  --csv                          (optional)  Print output as CSV text" );
-		System.out.println( "  --analyzer                     (required)  Analyzer module to run. Required only if not specified as" );
-		System.out.println( "                                             first arg of command line or one of the above forms used." );
-		System.out.println( "  --enum | --enumeration         (optional)  Run the enumeration summary analyzer" );
+		System.out.println( "" );
+		System.out.println( "  --analyzer            string   (required)  Analyzer module to run. Required only if not using options below." );
+		System.out.println( "  --enum | --enumeration         (optional)  Run the Enumeration Summary Analyzer" );
+		System.out.println( "  --pdu-count                    (optional)  Run the PDU Count Analyzer" );
 		System.out.println( "" );
 
 		System.out.println( "Enumerations Summary Arguments" );
-		System.out.println( "  The following arguments only apply to the Enumeration Summary analyzer" );
-		System.out.println( "  Run with either --enum or --enumeration" );
-		System.out.println( "" );	
 		System.out.println( "  --order-by            string   (optional)  enumeration | site-id | pdu-count | obj-count (default: pdu-count)" );
+		System.out.println( "  --ascending                    (optional)  results values should be in ascending order   (default: no)" );
+		System.out.println( "  --descending                   (optional)  results values should be in descending order  (default: yes)" );
+		System.out.println( "" );	
+		System.out.println( "PDU Count Analyzer Arguments" );
+		System.out.println( "  --order-by            string   (optional)  type | pdu-type | count | pdu-count           (default: pdu-count)" );
 		System.out.println( "  --ascending                    (optional)  results values should be in ascending order   (default: no)" );
 		System.out.println( "  --descending                   (optional)  results values should be in descending order  (default: yes)" );
 

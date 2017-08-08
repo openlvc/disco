@@ -99,7 +99,7 @@ public class EnumUsageResults implements IResults
 		return this.benchmarkMillis;
 	}
 	
-	public void setBenchmarkTime( long millis )
+	protected void setBenchmarkTime( long millis )
 	{
 		this.benchmarkMillis = millis;
 	}

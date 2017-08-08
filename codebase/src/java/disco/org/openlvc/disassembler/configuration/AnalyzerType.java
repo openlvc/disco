@@ -25,6 +25,8 @@ import org.openlvc.disassembler.analyzers.IAnalyzer;
 import org.openlvc.disassembler.analyzers.enumeration.EnumUsageAnalyzer;
 import org.openlvc.disassembler.analyzers.enumeration.EnumUsageConfiguration;
 import org.openlvc.disassembler.analyzers.none.Nonealyzer;
+import org.openlvc.disassembler.analyzers.pducount.PduCountAnalyzer;
+import org.openlvc.disassembler.analyzers.pducount.PduCountConfiguration;
 import org.openlvc.disco.DiscoException;
 
 public enum AnalyzerType
@@ -33,7 +35,8 @@ public enum AnalyzerType
 	//                        VALUES
 	//----------------------------------------------------------
 	None("--none",Nonealyzer.class,Configuration.class),                        // no mode specified - wot!?
-	EnumUsage("--enum",EnumUsageAnalyzer.class,EnumUsageConfiguration.class);   // analysis of enumerations used in recording
+	EnumUsage("--enum",EnumUsageAnalyzer.class,EnumUsageConfiguration.class),   // analysis of enumerations used in recording
+	PduCount("--pdu-count",PduCountAnalyzer.class,PduCountConfiguration.class); // breakdown of pdu types
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -149,6 +152,23 @@ public enum AnalyzerType
 		}
 		
 		throw new DiscoException( "Analyzer not specified; supported="+supported );
+	}
+
+	/**
+	 * Find the given {@link AnalyzerType} for this argument, returning `null` if one
+	 * cannot be found. You can supply the argument with or without the `--`.
+	 */
+	public static AnalyzerType fromArg( String arg )
+	{
+		for( AnalyzerType type : AnalyzerType.values() )
+		{
+			String local = arg.startsWith("--") ? type.argument : type.argument.substring(2);
+			if( local.equalsIgnoreCase(arg) )
+				return type;
+		}
+		
+		// didn't find one :(
+		return null;
 	}
 
 }
