@@ -82,9 +82,9 @@ public abstract class PduSender
 	/**
 	 * Creates a new sender based on the name. Valid values are:
 	 * 
-	 *   - single-thread    -> SingleThreadSender
-	 *   - thread-pool      -> ThreadPoolSender
-	 *   - simple           -> SimpleSender
+	 *   - single-thread creates {@link SingleThreadSender}
+	 *   - thread-pool   creates {@link ThreadPoolSender}
+	 *   - simple        creates {@link SimpleSender}
 	 */
 	public static PduSender create( String name, OpsCenter opscenter, IConnection connection )
 		throws DiscoException

@@ -190,7 +190,8 @@
 		<attribute name="windowtitle" default="${javadoc.windowtitle}"/>
 		<attribute name="header"      default="${javadoc.header}"/>
 		<attribute name="footer"      default="${javadoc.footer}"/>
-		
+		<attribute name="additionalParams" default=""/>
+
 		<!-- Task Definition -->
 		<sequential>
 			<!-- make sure the directory exists -->
@@ -206,7 +207,7 @@
 			        windowtitle="@{windowtitle}"
 			        header="@{header}"
 			        footer="@{footer}"
-			        additionalparam="-quiet">
+			        additionalparam="-quiet @{additionalParams}">
 				<classpath refid="@{classpath}"/>
 			</javadoc>
 		</sequential>

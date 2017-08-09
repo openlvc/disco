@@ -105,9 +105,9 @@ public abstract class PduReceiver
 	/**
 	 * Creates a new receiver based on the name. Valid values are:
 	 * 
-	 *   - single-thread    -> SingleThreadReceiver
-	 *   - thread-pool      -> ThreadPoolReceiver
-	 *   - simple           -> SimpleReceiver
+	 *   - single-thread creates {@link SingleThreadReceiver}
+	 *   - thread-pool   creates {@link ThreadPoolReceiver}
+	 *   - simple        creates {@link SimpleReceiver}
 	 */
 	public static PduReceiver create( String name,
 	                                  OpsCenter opscenter,
