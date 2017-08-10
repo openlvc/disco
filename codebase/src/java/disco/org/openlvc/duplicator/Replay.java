@@ -147,7 +147,7 @@ public class Replay implements IPduListener
 			logger.info( "Starting replay loop %d of %s", loopsCompleted+1, loopString );
 
 			this.replaySession();
-			if( ++loopsCompleted >= loopCount )
+			if( loopCount != 0 && (++loopsCompleted >= loopCount) )
 				loopAgain = false;
 		}
 		while( loopAgain );
