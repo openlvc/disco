@@ -29,6 +29,7 @@ import org.openlvc.disco.pdu.field.appearance.PlatformAppearance;
 import org.openlvc.disco.pdu.record.EntityType;
 import org.openlvc.disco.utils.CoordinateUtils;
 import org.openlvc.disco.utils.LLA;
+import org.openlvc.disco.utils.NetworkUtils;
 
 public class Disruptor
 {
@@ -201,6 +202,9 @@ public class Disruptor
 		logger.info("");
 		logger.info( "Welcome to the Disruptor - Breaking things since Two-Oh-One-Six" );
 		logger.info("");
+		
+		// Log information about the available network interfaces
+		NetworkUtils.logNetworkInterfaceInformation( logger );
 	}
 	
 	private void sleep( long ms )

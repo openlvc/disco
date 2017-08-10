@@ -20,6 +20,7 @@ package org.openlvc.disco.utils;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 
 public class NetworkUtils
@@ -285,7 +287,54 @@ public class NetworkUtils
 			throw new DiscoException( "Cannot connect to "+address+":"+port+" - "+e.getMessage() , e );
 		}
 	}
+
+	/**
+	 * Return a list of all the {@link NetworkInterface}s in the machine, regardless of whether
+	 * they are up or not at the moment.
+	 */
+	public static List<NetworkInterface> getAllNetworkInterfaces()
+	{
+		try
+		{
+			Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
+    		List<NetworkInterface> list = new ArrayList<>();
+    		while( nics.hasMoreElements() )
+    			list.add( nics.nextElement() );
+    		
+    		return list;
+		}
+		catch( IOException ioex )
+		{
+			throw new DiscoException( "Exception while fetching all network interfaces: "+
+			                          ioex.getMessage(), ioex );
+		}
+	}
 	
+	/**
+	 * Return a list of all the {@link NetworkInterface}s in the machine that are currently up
+	 * and active.
+	 */
+	public static List<NetworkInterface> getAllNetworkInterfacesUp()
+	{
+		try
+		{
+			Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
+    		List<NetworkInterface> list = new ArrayList<>();
+    		while( nics.hasMoreElements() )
+    		{
+    			NetworkInterface nic = nics.nextElement();
+    			if( nic.isUp() )
+    				list.add( nic );
+    		}
+    		
+    		return list;
+		}
+		catch( IOException ioex )
+		{
+			throw new DiscoException( "Exception while fetching all network interfaces: "+
+			                          ioex.getMessage(), ioex );
+		}		
+	}
 	
 	/**
 	 * Takes the given name and converts it into a {@link InetAddress}. This will exchange
@@ -396,6 +445,32 @@ public class NetworkUtils
 		else
 			return null;
 	}
+
+	/**
+	 * Return the first {@link InterfaceAddress} for IPv4 in the given NIC.
+	 * Return null if none could be found.
+	 */
+	public static InterfaceAddress getFirstIPv4InterfaceAddress( NetworkInterface nic )
+	{
+		for( InterfaceAddress ifaddress : nic.getInterfaceAddresses() )
+		{
+			if( ifaddress.getAddress() instanceof Inet4Address )
+				return ifaddress;
+		}
+		
+		return null;
+	}
+	
+	public static InterfaceAddress getFirstIPv6InterfaceAddress( NetworkInterface nic )
+	{
+		for( InterfaceAddress ifaddress : nic.getInterfaceAddresses() )
+		{
+			if( ifaddress.getAddress() instanceof Inet6Address )
+				return ifaddress;
+		}
+		
+		return null;
+	}
 	
 	/**
 	 * Wraps up `InetAddress.getByName(String)` so that it throws a `DiscoException`
@@ -436,4 +511,56 @@ public class NetworkUtils
 		}
 	}
 	
+	/**
+	 * Log some information on startup about all the available NICs to the DEBUG level
+	 */
+	public static void logNetworkInterfaceInformation( Logger logger )
+	{
+		logger.debug( "List of Available Network Interfaces" );
+		logger.debug( "------------------------------------" );
+
+		for( NetworkInterface nic : NetworkUtils.getAllNetworkInterfacesUp() )
+		{
+			InterfaceAddress if4addr = getFirstIPv4InterfaceAddress( nic );
+			String ipv4   = if4addr == null ? "" : ((Inet4Address)if4addr.getAddress()).getHostAddress();
+			String subnet = if4addr == null ? "" : getSubnetMaskString( if4addr.getNetworkPrefixLength() );
+			String bcast  = if4addr == null ? "" : if4addr.getBroadcast().getHostAddress();
+
+			InterfaceAddress if6addr = getFirstIPv6InterfaceAddress( nic );
+			String ipv6   = if6addr == null ? "" : ((Inet6Address)if6addr.getAddress()).getHostAddress();
+			
+			logger.debug( nic.getDisplayName()+" ("+nic.getName()+")" );
+			logger.debug( "  Link-local IPv6 Address . . . . . : "+ipv6 );
+			logger.debug( "  IPv4 Address. . . . . . . . . . . : "+ipv4 );
+			logger.debug( "  Subnet Mask . . . . . . . . . . . : "+subnet );
+			logger.debug( "  Broadcast . . . . . . . . . . . . : "+bcast );
+			logger.debug( "" ); // spacer
+			logger.debug( "" ); // spacer
+		}
+	}
+
+	/**
+	 * Returns the IPv4 subnet mask string for the given prefix length. If there is a problem the
+	 * string `<exception:message>` is returned.
+	 * @param prefix
+	 * @return
+	 */
+	public static String getSubnetMaskString( short prefix )
+	{
+	    int mask = 0xffffffff << (32 - prefix);
+	    int value = mask;
+	    byte[] bytes = new byte[]{ 
+	            (byte)(value >>> 24), (byte)(value >> 16 & 0xff), (byte)(value >> 8 & 0xff), (byte)(value & 0xff) };
+
+	    try
+	    {
+	    	InetAddress netAddr = InetAddress.getByAddress(bytes);
+	    	return netAddr.getHostAddress();
+	    }
+	    catch( Exception e )
+	    {
+	    	return "<exception:"+e.getMessage()+">";
+	    }
+	}
 }
+

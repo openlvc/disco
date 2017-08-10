@@ -108,7 +108,8 @@ public class UdpConfiguration
 			// if we are using the loopback adapter, just assign the proper IP and exit
 			if( NetworkUtils.isLoopback(nic) )
 			{
-				this.targetAddress = NetworkUtils.getAddress( "127.0.0.1" );
+				this.targetAddress = NetworkUtils.getFirstIPv4InterfaceAddress(nic).getBroadcast();
+				//this.targetAddress = NetworkUtils.getAddress( "127.0.0.1" );
 				return this.targetAddress;
 			}
 

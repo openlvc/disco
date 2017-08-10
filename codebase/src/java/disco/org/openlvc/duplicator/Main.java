@@ -19,6 +19,7 @@ package org.openlvc.duplicator;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.utils.NetworkUtils;
 
 /**
  * The DIS Recorder will gather up all DIS traffic on its configured network and save it to
@@ -113,6 +114,9 @@ public class Main
 		logger.info( " The Duplicator is part of the Open LVC DIS family " );
 		logger.info( " Version: "+DiscoConfiguration.getVersion() );
 		logger.info( "" );
+		
+		// Log some network interface information
+		NetworkUtils.logNetworkInterfaceInformation( logger );
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////

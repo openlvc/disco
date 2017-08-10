@@ -23,6 +23,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.utils.NetworkUtils;
 import org.openlvc.disco.utils.StringUtils;
 import org.openlvc.disco.utils.ThreadUtils;
 import org.openlvc.distributor.configuration.Configuration;
@@ -238,7 +239,10 @@ public class Distributor
 		logger.info( "Version "+DiscoConfiguration.getVersion() );
 		logger.info("");
 
-		
+		// Log some NIC information
+		NetworkUtils.logNetworkInterfaceInformation( logger );
+
+		// Log information about each of the links we have
 		logger.info( links.size()+" links configured: "+links );
 		for( ILink link : links )
 			logger.info( getConfigSummary(link) );
