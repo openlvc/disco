@@ -56,7 +56,7 @@
 	<property name="build.number"           value="0"/>       <!-- overridden from command line -->
 	<property name="license"                location="resources/dist/common/LICENSE.${ant.project.name}"/>
 	<!-- Distribution Name - compiled from information above -->
-	<property name="dist.name"              value="${build.shortname}-${build.version}"/>
+	<property name="dist.name"              value="${build.shortname}-${build.version}.${build.number}"/>
 	<echo>Build Version: ${build.shortname}-${build.version} (build ${build.number})</echo>
 
 	<!-- Platform Determination Properties -->
