@@ -94,7 +94,7 @@ public class TcpWanLink extends LinkBase implements ILink
 		this.socket        = null;   // set in up()
 		this.instream      = null;   // set in up()
 		this.outstream     = null;   // set in up()
-		this.bundler       = new Bundler( linkConfiguration, logger );
+		this.bundler       = new Bundler( this, logger );
 		this.receiveThread = null;   // set in up()
 	}
 
@@ -482,7 +482,7 @@ public class TcpWanLink extends LinkBase implements ILink
 		new Thread(reconnector,getName()+"-reconnect").start();
 	}
 
-	private void takeDownAndRemove()
+	protected void takeDownAndRemove()
 	{
 		reflector.getDistributor().takeDown( this );
 	}

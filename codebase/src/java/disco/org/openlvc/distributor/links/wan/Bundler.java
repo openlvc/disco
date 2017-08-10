@@ -69,6 +69,7 @@ public class Bundler
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private Logger logger;
+	private TcpWanLink link;
 	private LinkConfiguration linkConfiguration;
 
 	// message queuing
@@ -99,9 +100,10 @@ public class Bundler
 	 * Create a new Bundler around the given output stream. Sender thread will be started
 	 * immediately (as a daemon).
 	 */
-	protected Bundler( LinkConfiguration linkConfiguration, Logger logger )
+	protected Bundler( TcpWanLink link, Logger logger )
 	{
-		this.linkConfiguration = linkConfiguration;
+		this.link = link;
+		this.linkConfiguration = link.getConfiguration();
 		this.logger = logger;
 
 		// message queuing
@@ -192,6 +194,11 @@ public class Bundler
 				returnCondition.await();
 			}
 		}
+		catch( IOException ioex )
+		{
+			// the connection is dead, kill it
+			link.takeDownAndRemove();
+		}
 		catch( InterruptedException ie )
 		{
 			// only when we're exiting - ignore
@@ -232,7 +239,7 @@ public class Bundler
 	 * This method can be called from the thread that invokes `submit()` when the size trigger is
 	 * tripped, or from the Sender-thread when the time trigger is tripped.
 	 */
-	private void flush()
+	private void flush() throws IOException
 	{
 		// make sure the socket is still open - it could have disconnected on the other end 
 		
@@ -256,6 +263,7 @@ public class Bundler
 		catch( IOException ioex )
 		{
 			logger.error( "Error while sending messages to WAN: "+ioex.getMessage() );
+			throw ioex;
 		}
 		finally
 		{
@@ -395,6 +403,11 @@ public class Bundler
 					// Do the actual work
 					flush();
 				}
+			}
+			catch( IOException ioex )
+			{
+				// the connection is dead, kill it
+				link.takeDownAndRemove();
 			}
 			catch( InterruptedException ie )
 			{
