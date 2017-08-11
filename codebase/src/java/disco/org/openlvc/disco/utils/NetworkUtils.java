@@ -520,23 +520,52 @@ public class NetworkUtils
 		logger.debug( "------------------------------------" );
 
 		for( NetworkInterface nic : NetworkUtils.getAllNetworkInterfacesUp() )
-		{
-			InterfaceAddress if4addr = getFirstIPv4InterfaceAddress( nic );
-			String ipv4   = if4addr == null ? "" : ((Inet4Address)if4addr.getAddress()).getHostAddress();
-			String subnet = if4addr == null ? "" : getSubnetMaskString( if4addr.getNetworkPrefixLength() );
-			String bcast  = if4addr == null ? "" : if4addr.getBroadcast().getHostAddress();
+			logNetworkInterfaceInformation( logger, nic );
+	}
 
-			InterfaceAddress if6addr = getFirstIPv6InterfaceAddress( nic );
-			String ipv6   = if6addr == null ? "" : ((Inet6Address)if6addr.getAddress()).getHostAddress();
-			
-			logger.debug( nic.getDisplayName()+" ("+nic.getName()+")" );
-			logger.debug( "  Link-local IPv6 Address . . . . . : "+ipv6 );
-			logger.debug( "  IPv4 Address. . . . . . . . . . . : "+ipv4 );
-			logger.debug( "  Subnet Mask . . . . . . . . . . . : "+subnet );
-			logger.debug( "  Broadcast . . . . . . . . . . . . : "+bcast );
-			logger.debug( "" ); // spacer
-			logger.debug( "" ); // spacer
+	/**
+	 * Return a string in a format much like `ipconfig` on Windows
+	 * 
+	 * ```
+	 * Network Interface Display Name (short name)
+	 * 
+	 *   Link-local IPv6 Address . . . . . : fe80::abb2:b5cb:8c7:f16f%10
+	 *   IPv4 Address. . . . . . . . . . . : 192.168.7.1
+	 *   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+	 *   Broadcast . . . . . . . . . . . . : 192.168.7.255
+	 * ```
+	 * 
+	 * @param nic The interface to pull the address information from
+	 */
+	private static void logNetworkInterfaceInformation( Logger logger, NetworkInterface nic )
+	{
+		String ipv4 = "", subnet = "", bcast = "";
+		String ipv6 = "";
+		
+		// Get the IPv4 Information
+		InterfaceAddress if4addr = getFirstIPv4InterfaceAddress( nic );
+		if( if4addr != null )
+		{
+			ipv4 = ((Inet4Address)if4addr.getAddress()).getHostAddress();
+			subnet = getSubnetMaskString( if4addr.getNetworkPrefixLength() );
 		}
+		
+		// Sometimes the broadcast can be null (Linux loopback seems to be)
+		if( if4addr != null && if4addr.getBroadcast() != null )
+			bcast = if4addr.getBroadcast().getHostAddress();
+
+		// Get IPv6 Information
+		InterfaceAddress if6addr = getFirstIPv6InterfaceAddress( nic );
+		if( if6addr != null )
+			ipv6 = ((Inet6Address)if6addr.getAddress()).getHostAddress();
+		
+		logger.debug( nic.getDisplayName()+" ("+nic.getName()+")" );
+		logger.debug( "  Link-local IPv6 Address . . . . . : "+ipv6 );
+		logger.debug( "  IPv4 Address. . . . . . . . . . . : "+ipv4 );
+		logger.debug( "  Subnet Mask . . . . . . . . . . . : "+subnet );
+		logger.debug( "  Broadcast . . . . . . . . . . . . : "+bcast );
+		logger.debug( "" ); // spacer
+		logger.debug( "" ); // spacer
 	}
 
 	/**
