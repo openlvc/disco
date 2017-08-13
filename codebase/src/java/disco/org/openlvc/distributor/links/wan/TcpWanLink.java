@@ -31,6 +31,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.connection.Metrics;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.pdu.UnsupportedPDU;
@@ -82,6 +83,9 @@ public class TcpWanLink extends LinkBase implements ILink
 	private DataOutputStream outstream;
 	private Bundler bundler;
 	private Receiver receiveThread;
+	
+	// metrics gathering
+	private Metrics metrics;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -96,6 +100,8 @@ public class TcpWanLink extends LinkBase implements ILink
 		this.outstream     = null;   // set in up()
 		this.bundler       = new Bundler( this, logger );
 		this.receiveThread = null;   // set in up()
+		
+		this.metrics       = new Metrics();
 	}
 
 	//----------------------------------------------------------
@@ -269,8 +275,15 @@ public class TcpWanLink extends LinkBase implements ILink
 		// if link has never been up, return configuration information
 		if( isUp() )
 		{
-			// TODO Replace with metrics
-			return getConfigSummary();
+			String string = metrics.getSummaryString();
+			// put out special marker on the front so that if fits with all the
+			// other distributor summary strings
+			//string = string.replaceFirst( "\\{ ", "\\{ WAN, tcp/%s:%d, " );
+			string = string.replaceFirst( "\\{ ", "\\{ WAN, " );
+			string = string.replaceFirst( "\\ }", "\\, %s }" );
+			return String.format( string,
+			                      socket.getInetAddress().getHostAddress(),
+			                      socket.getPort() );
 		}
 		else
 		{
@@ -356,10 +369,10 @@ public class TcpWanLink extends LinkBase implements ILink
 	{
 		try
 		{
+			// all sending goes via the bundler, even if bundling isn't enabled (in which
+			// case it will just be flushed immediately)
 			bundler.submit( message.getPdu() );
-			//byte[] pdu = message.getPdu().toByteArray();
-			//outstream.writeInt( pdu.length );
-			//outstream.write( pdu );
+			metrics.pduSent( message.getPdu().getPduLength() );
 		}
 		catch( IOException ioex )
 		{
@@ -402,6 +415,7 @@ public class TcpWanLink extends LinkBase implements ILink
 				
 				// reflect the PDU to the other links
 				reflector.reflect( new Message(this,pdu) );
+				metrics.pduReceived( pduSize );
 	
 				if( logger.isTraceEnabled() )
 					logger.trace( "Received >> "+pdu.getType() );

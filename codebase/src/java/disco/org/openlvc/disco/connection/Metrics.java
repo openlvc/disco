@@ -107,12 +107,12 @@ public class Metrics
 
 	/**
 	 * Returns metrics summary in the form:
-	 * <code>{ pduSent=123 (10.44KB), pduRecv=123 (10.44KB), pduDiscard=0 }</code>
+	 * <code>{ pduSent=123 (10.44KB), pduRecv=123 (10.44KB), pduDisc=0 }</code>
 	 */
 	public String getSummaryString()
 	{
 		return
-		String.format( "{ pduSent=%d (%s), pduRecv=%d (%s), pduDiscard=%d } ",
+		String.format( "{ pSent=%d (%s), pRecv=%d (%s), pDisc=%d } ",
 		               pdusSent,
 		               StringUtils.humanReadableSize(bytesSent),
 		               pdusReceived,
