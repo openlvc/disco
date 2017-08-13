@@ -139,7 +139,10 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 		// last metrics values that were present
 		if( opsCenter != null )
 		{
-			return opsCenter.getMetrics().getSummaryString();
+			String metrics = opsCenter.getMetrics().getSummaryString();
+			// put out special marker on the front so that if fits with all the
+			// other distributor summary strings
+			return metrics.replaceFirst( "\\{ ", "\\{ DIS, " );
 		}
 		else
 		{
