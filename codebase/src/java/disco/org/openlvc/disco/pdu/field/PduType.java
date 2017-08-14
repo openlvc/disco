@@ -27,6 +27,7 @@ import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.radio.ReceiverPdu;
 import org.openlvc.disco.pdu.radio.SignalPdu;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disco.pdu.simman.CommentPdu;
 import org.openlvc.disco.pdu.warfare.DetonationPdu;
 import org.openlvc.disco.pdu.warfare.FirePdu;
 
@@ -57,7 +58,7 @@ public enum PduType
 	SetData           ( (short)19 ),
 	Data              ( (short)20 ),
 	EventReport       ( (short)21 ),
-	Comment           ( (short)22 ),
+	Comment           ( (short)22, CommentPdu.class ),
 	Emission          ( (short)23 ),
 	Designator        ( (short)24, DesignatorPdu.class ),
 	Transmitter       ( (short)25, TransmitterPdu.class ),

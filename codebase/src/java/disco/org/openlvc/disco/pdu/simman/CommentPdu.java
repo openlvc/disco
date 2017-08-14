@@ -18,12 +18,17 @@
 package org.openlvc.disco.pdu.simman;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.record.EntityId;
+import org.openlvc.disco.pdu.record.FixedDatum;
 import org.openlvc.disco.pdu.record.PduHeader;
+import org.openlvc.disco.pdu.record.VariableDatum;
 
 public class CommentPdu extends PDU
 {
@@ -36,8 +41,9 @@ public class CommentPdu extends PDU
 	//----------------------------------------------------------
 	private EntityId originatingEntity;
 	private EntityId receivingEntity;
-	private long fixedRecordCount;
-	private long variableRecordCount;
+	
+	private List<FixedDatum> fixedRecords;
+	private List<VariableDatum> variableRecords;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -48,8 +54,8 @@ public class CommentPdu extends PDU
 		
 		this.originatingEntity = new EntityId();
 		this.receivingEntity = new EntityId();
-		this.fixedRecordCount = 0;
-		this.variableRecordCount = 0;
+		this.fixedRecords = new ArrayList<>();
+		this.variableRecords = new ArrayList<>();
 	}
 
 	//----------------------------------------------------------
@@ -63,16 +69,42 @@ public class CommentPdu extends PDU
 	{
 		this.originatingEntity.from( dis );
 		this.receivingEntity.from( dis );
-		this.fixedRecordCount = dis.readUI32();
-		this.variableRecordCount = dis.readUI32();
+
+		int fixedCount = (int)dis.readUI32();
+		int variableCount = (int)dis.readUI32();
+		
+		fixedRecords.clear();
+		for( int i = 0; i < fixedCount; i++ )
+		{
+			FixedDatum record = new FixedDatum();
+			record.from( dis );
+			fixedRecords.add( record );
+		}
+
+		variableRecords.clear();
+		for( int i = 0; i < variableCount; i++ )
+		{
+			VariableDatum record = new VariableDatum();
+			record.from( dis );
+			variableRecords.add( record );
+		}
 	}
 	
 	public void to( DisOutputStream dos ) throws IOException
 	{
 		originatingEntity.to( dos );
 		receivingEntity.to( dos );
-		dos.writeUI32( fixedRecordCount );
-		dos.writeUI32( variableRecordCount );
+		
+		// write the number of fixed and variable datums
+		dos.writeUI32( this.fixedRecords.size() );
+		dos.writeUI32( this.variableRecords.size() );
+		
+		// write the actual records
+		for( FixedDatum record : this.fixedRecords )
+			record.to( dos );
+		
+		for( VariableDatum record : this.variableRecords )
+			record.to( dos );
 	}
 
 	public int getContentLength()
@@ -82,21 +114,29 @@ public class CommentPdu extends PDU
 		size += receivingEntity.getByteLength();                 // 6
 		size += DisSizes.UI32_SIZE; // FixedCount                // 4
 		size += DisSizes.UI32_SIZE; // VariableCount             // 4
-		size += FIXED & VARIABLE LENGTH
+
+		size += 64-bit * FIXED COUNT                             // (8*FIXED)
+		size += forEach( VARIABLE.byteLength )                   // NFI
 		return size;
 		*/
 		
-		return 20 + /*FIXED & VAR PARAMS*/0;
+		int size = 20 + (8*fixedRecords.size());
+		for( VariableDatum record : variableRecords )
+			size += record.getByteLength();
+		
+		return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Misc PDU Methods   /////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
 	public int getSiteId()
 	{
 		return originatingEntity.getSiteId();
 	}
-	
+
+	@Override
 	public int getAppId()
 	{
 		return originatingEntity.getAppId();
@@ -105,8 +145,84 @@ public class CommentPdu extends PDU
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public EntityId getOriginatingEntity()
+	{
+		return this.originatingEntity;
+	}
+	
+	public void setOriginatingEntity( EntityId id )
+	{
+		this.originatingEntity = id;
+	}
+	
+	public EntityId getReceivingEntity()
+	{
+		return this.receivingEntity;
+	}
+	
+	public void setReceivingEntity( EntityId id )
+	{
+		this.receivingEntity = id;
+	}
+
+	public int getFixedDatumCount()
+	{
+		return this.fixedRecords.size();
+	}
+	
+	public int getVariableDatumCount()
+	{
+		return this.variableRecords.size();
+	}
+
+	public void add( FixedDatum fixedRecord )
+	{
+		if( fixedRecord != null )
+			fixedRecords.add( fixedRecord );
+	}
+	
+	public void add( VariableDatum variableRecord )
+	{
+		if( variableRecord != null )
+			variableRecords.add( variableRecord );
+	}
+
+	/**
+	 * @return Remove the datum at the given index and return, or null if there wasn't one there
+	 * @throws ArrayIndexOutOfBoundsException if the index is beyond stored bounds for the list
+	 */
+	public FixedDatum removeFixedDatum( int index ) throws ArrayIndexOutOfBoundsException
+	{
+		return fixedRecords.remove( index );
+	}
+
+	/**
+	 * @return Remove the datum at the given index and return, or null if there wasn't one there
+	 * @throws ArrayIndexOutOfBoundsException if the index is beyond stored bounds for the list
+	 */
+	public VariableDatum removeVariableDatum( int index ) throws ArrayIndexOutOfBoundsException
+	{
+		return variableRecords.remove( index );
+	}
+
+	/**
+	 * @return Unmodifiable list of all contained fixed datum records
+	 */
+	public List<FixedDatum> getFixedDatumRecords()
+	{
+		return Collections.unmodifiableList( this.fixedRecords );
+	}
+	
+	/**
+	 * @return Unmodifiable list of all contained variable datum records
+	 */
+	public List<VariableDatum> getVariableDatumRecords()
+	{
+		return Collections.unmodifiableList( this.variableRecords );
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+
 }
