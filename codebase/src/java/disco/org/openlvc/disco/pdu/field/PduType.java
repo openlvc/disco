@@ -17,8 +17,12 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
@@ -27,6 +31,7 @@ import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.radio.ReceiverPdu;
 import org.openlvc.disco.pdu.radio.SignalPdu;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.simman.CommentPdu;
 import org.openlvc.disco.pdu.warfare.DetonationPdu;
 import org.openlvc.disco.pdu.warfare.FirePdu;
@@ -127,6 +132,7 @@ public enum PduType
 	//----------------------------------------------------------
 	private short value;
 	private Class<? extends PDU> type;
+	private Constructor<? extends PDU> constructor;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -135,12 +141,28 @@ public enum PduType
 	{
 		this.value = value;
 		store( value );
+
+		this.type = null;
+		this.constructor = null;
 	}
 	
 	private PduType( short value, Class<? extends PDU> type )
 	{
 		this.value = value;
 		this.type = type;
+		this.constructor = null;
+		if( type != null )
+		{
+    		try
+    		{
+    			this.constructor = type.getConstructor( PduHeader.class );
+    		}
+    		catch( Exception e )
+    		{
+    			throw new DiscoException( "PDU Class is missing constructor `Class(PduHeader)`", e );
+    		}
+		}
+		
 		store( value );
 	}
 
@@ -160,12 +182,25 @@ public enum PduType
 		return this.type;
 	}
 	
+	public Constructor<? extends PDU> getImplementationConstructor()
+	{
+		return this.constructor;
+	}
+	
 	private void store( short value )
 	{
 		if( CACHE == null )
 			CACHE = new HashMap<>();
 
 		CACHE.put( value, this );
+	}
+
+	/**
+	 * @return `true` if we have an associated Disco class/type for this PduType. `false` otherwise.
+	 */
+	public boolean isSupported()
+	{
+		return this.constructor != null;
 	}
 
 	//----------------------------------------------------------
@@ -187,5 +222,21 @@ public enum PduType
 			throw new IllegalArgumentException( value+" not a valid PDUType number" );
 		else
 			return Other;
+	}
+
+	/**
+	 * @return A list of all the types that we can instantiate. This is only the PDU types for which
+	 *         we have a Class and Constructor cached.
+	 */
+	public static List<PduType> getSupportedPduTypes()
+	{
+		LinkedList<PduType> list = new LinkedList<>();
+		for( PduType type : values() )
+		{
+			if( type.isSupported() )
+				list.add( type );
+		}
+		
+		return list;
 	}
 }

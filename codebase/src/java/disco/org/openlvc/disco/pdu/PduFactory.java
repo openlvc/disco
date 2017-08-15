@@ -18,7 +18,7 @@
 package org.openlvc.disco.pdu;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.lang.reflect.Constructor;
 import java.util.List;
 
 import org.openlvc.disco.DiscoException;
@@ -55,10 +55,13 @@ public class PduFactory
 	 */
 	public static List<PduType> getSupportedPduTypes()
 	{
+		return PduType.getSupportedPduTypes();
+		/*
 		PduType[] array = { PduType.EntityState, PduType.Fire, PduType.Detonation,
 		                    PduType.Transmitter, PduType.Signal, PduType.Receiver };
 		
 		return Arrays.asList( array );
+		*/
 	}
 
 	/**
@@ -73,16 +76,14 @@ public class PduFactory
 	{
 		// Get the implementation class for this PDU type, thorwing an exception if we don't support it
 		PduType pduType = header.getPduType();
-		Class<? extends PDU> pduClass = pduType.getImplementationClass();
+		Constructor<? extends PDU> pduClass = pduType.getImplementationConstructor();
 		if( pduClass == null )
 			throw new UnsupportedPDU( "PDU Type not currently supported: "+pduType );
 		
 		// turn the class into an instance and return it
 		try
 		{
-			PDU pdu = pduClass.newInstance();
-			pdu.setHeader( header );
-			return pdu;
+			return pduClass.newInstance( header );
 		}
 		catch( Exception e )
 		{
