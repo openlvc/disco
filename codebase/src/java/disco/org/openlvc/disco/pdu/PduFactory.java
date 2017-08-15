@@ -21,14 +21,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.pdu.radio.ReceiverPdu;
-import org.openlvc.disco.pdu.radio.SignalPdu;
-import org.openlvc.disco.pdu.radio.TransmitterPdu;
 import org.openlvc.disco.pdu.record.PduHeader;
-import org.openlvc.disco.pdu.warfare.DetonationPdu;
-import org.openlvc.disco.pdu.warfare.FirePdu;
 
 /**
  * Methods to help quickly create certain types of PDU's, or to create PDUs from an
@@ -76,6 +71,28 @@ public class PduFactory
 	
 	public static PDU create( PduHeader header )
 	{
+		// Get the implementation class for this PDU type, thorwing an exception if we don't support it
+		PduType pduType = header.getPduType();
+		Class<? extends PDU> pduClass = pduType.getImplementationClass();
+		if( pduClass == null )
+			throw new UnsupportedPDU( "PDU Type not currently supported: "+pduType );
+		
+		// turn the class into an instance and return it
+		try
+		{
+			PDU pdu = pduClass.newInstance();
+			pdu.setHeader( header );
+			return pdu;
+		}
+		catch( Exception e )
+		{
+			throw new DiscoException( "Error creating PDU of type: "+pduType, e );
+		}
+		
+		// Old hard-coded way of supporting PDU instantiation. Still open question on whether
+		// this is much (if at all) faster than the .newInstance() approach above. Leaving here
+		// to remind me to check
+		/*
 		switch( header.getPduType() )
 		{
 			case EntityState:
@@ -92,7 +109,7 @@ public class PduFactory
 				return new ReceiverPdu( header );
 			default:
 				throw new UnsupportedPDU( "PDU Type not currently supported: "+header.getPduType() );
-		}
+		}*/
 	}
 
 	/**
