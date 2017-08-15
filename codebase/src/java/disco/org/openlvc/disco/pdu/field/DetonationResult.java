@@ -17,8 +17,6 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.HashMap;
-
 import org.openlvc.disco.configuration.DiscoConfiguration;
 
 public enum DetonationResult
@@ -28,6 +26,14 @@ public enum DetonationResult
 	//----------------------------------------------------------
 	Other                               ( (short)0 ),
 	EntityImpact                        ( (short)1 ),
+	EntityProximateDetonation           ( (short)2 ),
+	GroundImpact                        ( (short)3 ),
+	GroundProximateDetonation           ( (short)4 ),
+	Detonation                          ( (short)5 ),
+	None                                ( (short)6 ),
+	HeHitSmall                          ( (short)7 ),
+	HeHitMedium                         ( (short)8 ),
+	HeHitLarge                          ( (short)9 ),
 	ArmorpiercingHit                    ( (short)10 ),
 	DirtBlastSmall                      ( (short)11 ),
 	DirtBlastMedium                     ( (short)12 ),
@@ -38,26 +44,16 @@ public enum DetonationResult
 	AirHit                              ( (short)17 ),
 	BuildingHitSmall                    ( (short)18 ),
 	BuildingHitMedium                   ( (short)19 ),
-	EntityProximateDetonation           ( (short)2 ),
 	BuildingHitLarge                    ( (short)20 ),
 	MineclearingLineCharge              ( (short)21 ),
 	EnvironmentObjectImpact             ( (short)22 ),
 	EnvironmentObjectProximateDetonation( (short)23 ),
 	WaterImpact                         ( (short)24 ),
-	AirBurst                            ( (short)25 ),
-	GroundImpact                        ( (short)3 ),
-	GroundProximateDetonation           ( (short)4 ),
-	Detonation                          ( (short)5 ),
-	None                                ( (short)6 ),
-	HeHitSmall                          ( (short)7 ),
-	HeHitMedium                         ( (short)8 ),
-	HeHitLarge                          ( (short)9 );
+	AirBurst                            ( (short)25 );
 
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	// Cache for speed
-	private static HashMap<Short,DetonationResult> CACHE = new HashMap<>();
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -70,7 +66,6 @@ public enum DetonationResult
 	private DetonationResult( short value )
 	{
 		this.value = value;
-		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -81,23 +76,15 @@ public enum DetonationResult
 		return this.value;
 	}
 
-	private void store( short value )
-	{
-		if( CACHE == null )
-			CACHE = new HashMap<>();
-
-		CACHE.put( value, this );
-	}
-
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	public static DetonationResult fromValue( short value )
 	{
-		DetonationResult result = CACHE.get( value );
-		if( result != null )
-			return result;
-
+		DetonationResult[] all = values();
+		if( value >= 0 && value < all.length )
+			return DetonationResult.values()[value];
+		
 		if( DiscoConfiguration.STRICT_MODE )
 			throw new IllegalArgumentException( value+" not a valid DetonationResult" );
 		else
