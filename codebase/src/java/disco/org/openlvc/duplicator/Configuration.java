@@ -340,6 +340,15 @@ public class Configuration
 		return this.loopCount;
 	}
 
+	/**
+	 * Return a string representing the number of loops we will make. This will either be a number
+	 * or the text "INDEFINIATE".
+	 */
+	public String getLoopCountString()
+	{
+		return loopCount == Configuration.LOOP_INFINITELY ? "INDEFINITE" : ""+loopCount;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

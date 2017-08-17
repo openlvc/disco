@@ -22,6 +22,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.NetworkInterface;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -97,6 +98,7 @@ public class Replay implements IPduListener
 	public void execute()
 	{
 		logger.info( "Mode: Replay" );
+		logger.info( "" );
 
 		//
 		// Set up the DIS properties
@@ -136,10 +138,11 @@ public class Replay implements IPduListener
 	 */
 	private void runReplay( int loopCount )
 	{
+		// Log some startup information and metadata
+		printWelcome();
+		
 		// Looping - play it some number of times
 		String loopString = loopCount == Configuration.LOOP_INFINITELY ? "INDEFINITE" : ""+loopCount;
-		logger.info( "Replay the session %s times", loopString );
-
 		boolean loopAgain = true;
 		int loopsCompleted = 0;
 		do
@@ -205,10 +208,27 @@ public class Replay implements IPduListener
 		logger.debug( "Session file is open and ready for reading" );
 	}
 
+	/**
+	 * Log some information about the network settings that will be used for replay, in addition
+	 * to some further metadata about the session itself
+	 */
+	private void printWelcome()
+	{
+		String address = opscenter.getConfiguration().getUdpConfiguration().getAddress().getHostAddress() +
+		                 ":"+opscenter.getConfiguration().getUdpConfiguration().getPort();
+		
+		NetworkInterface nic = opscenter.getConfiguration().getUdpConfiguration().getNetworkInterface();
+		
+		logger.info( "      Address: %s", address );
+		logger.info( "    Interface: (%s) %s", nic.getName(), nic.getDisplayName() );
+		logger.info( " Session File: %s", configuration.getFilename() );
+		logger.info( "   Loop Count: %s", configuration.getLoopCountString() );
+		logger.info( "" );
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	/// Session Management Methods   ///////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-
 	private void replaySession()
 	{
 		// Open up the session file
