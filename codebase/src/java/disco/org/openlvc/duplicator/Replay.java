@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.net.NetworkInterface;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.IPduListener;
@@ -32,6 +34,7 @@ import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.PduFactory;
+import org.openlvc.disco.utils.StringUtils;
 
 public class Replay implements IPduListener
 {
@@ -60,12 +63,21 @@ public class Replay implements IPduListener
 	// Packet management
 	private Queue<Track> queue;
 	
-
 	// Session Writing
 	private File sessionFile;
 	private FileInputStream fis;
 	private BufferedInputStream bis;
 	private DataInputStream dis;
+
+	// Metrics
+	private long pdusWritten;
+	private long pdusWrittenSize;
+	private Queue<Long> lastTenSeconds;
+	
+	// Status Logging and Timer Tasks
+	private Timer timer;
+	private StatusLogger statusLogger;
+	private PduRateLogger pduRateLogger;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -86,6 +98,16 @@ public class Replay implements IPduListener
 		this.sessionFile = new File( configuration.getFilename() );
 		this.fis = null;                  // set in execute()
 		this.bis = null;                  // set in execute()
+		
+		// Metrics
+		this.pdusWritten = 0;
+		this.pdusWrittenSize = 0;
+		this.lastTenSeconds = new LinkedList<Long>();
+		
+		// Timer Tasks
+		this.timer = null;                // set in execute()
+		this.statusLogger = null;         // set in execute()
+		this.pduRateLogger = null;        // set in execute()
 	}
 
 	//----------------------------------------------------------
@@ -99,6 +121,16 @@ public class Replay implements IPduListener
 	{
 		logger.info( "Mode: Replay" );
 		logger.info( "" );
+		
+		//
+		// Set up the status logger
+		//
+		this.timer = new Timer( "tick", true );
+		this.statusLogger = new StatusLogger();
+		this.pduRateLogger = new PduRateLogger();
+		long interval = configuration.getStatusLogInterval();
+		this.timer.scheduleAtFixedRate( this.statusLogger, interval, interval );
+		this.timer.scheduleAtFixedRate( this.pduRateLogger, 1000, 1000 );
 
 		//
 		// Set up the DIS properties
@@ -173,6 +205,9 @@ public class Replay implements IPduListener
 		{
 			logger.error( "Exception in shutdown: "+e.getMessage(), e );
 		}
+		
+		// kill the timer
+		this.timer.cancel();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -231,6 +266,11 @@ public class Replay implements IPduListener
 	////////////////////////////////////////////////////////////////////////////////////////////
 	private void replaySession()
 	{
+		// Clean up any counters
+		this.pdusWritten = 0;
+		this.pdusWrittenSize = 0;
+		this.lastTenSeconds.clear();
+		
 		// Open up the session file
 		this.openSession();
 		
@@ -239,7 +279,6 @@ public class Replay implements IPduListener
 		
 		// record start time and pdu count for logging later
 		long startTime = System.currentTimeMillis();
-		long pduCount  = 0;
 		
 		// iterate over all PDUs, waiting the appropriate time if we are running in real time
 		long lastPacketTimestamp = 0;
@@ -267,12 +306,13 @@ public class Replay implements IPduListener
 			// Send the PDU to the network
 			opscenter.send( next.pdu );
 			lastPacketTimestamp = next.timestamp;
-			pduCount++;
+			pdusWritten++;
+			pdusWrittenSize += next.pdu.getPduLength();
 		}
 
 		// queue should never get empty - getNextTrack() will refill it. If we get here we are done
 		logger.info( "No more tracks to replay. Session over." );
-		logger.info( "Sent %d PDUs in %dms", pduCount, System.currentTimeMillis()-startTime );
+		logger.info( "Sent %d PDUs in %dms", pdusWritten, System.currentTimeMillis()-startTime );
 	}
 
 	private Track getNextTrack()
@@ -360,4 +400,49 @@ public class Replay implements IPduListener
 		}
 	}
 
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Private Class: Status Summary Logger   /////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	private class StatusLogger extends TimerTask
+	{
+		public void run()
+		{
+			// Format: "(192.168.0.1:3000) pdus=123,456 (123/s); bytes=17.8MB";
+			
+			// Get network information
+			String ip = opscenter.getConfiguration().getUdpConfiguration().getAddress().toString();
+			int port = opscenter.getConfiguration().getUdpConfiguration().getPort();
+
+			// Get PDU average
+			Long[] stream = lastTenSeconds.toArray( new Long[]{} );
+			long lastTenTotal = 0;
+			for( int i = 1; i < stream.length; i++ )
+				lastTenTotal += (stream[i] - stream[i-1]);
+
+			// Generate the log
+			String line = String.format( "(%s:%d) pdus=%,d (%,d/s); bytes=%s",
+			                             ip,
+			                             port,
+			                             pdusWritten,
+			                             (lastTenTotal/9),
+			                             StringUtils.humanReadableSize(pdusWrittenSize),
+			                             pdusWritten );
+			
+			// Log the log!
+			logger.info( line );
+		}
+	}
+
+	// Watches the number of pdus sent over time to calculate a series
+	private class PduRateLogger extends TimerTask
+	{
+		public void run()
+		{
+			// Get PDU average
+			lastTenSeconds.add( pdusWritten );
+			if( lastTenSeconds.size() > 10 )
+				lastTenSeconds.remove();
+		}
+	}
 }

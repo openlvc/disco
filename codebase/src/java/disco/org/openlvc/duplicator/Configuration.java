@@ -38,6 +38,7 @@ public class Configuration
 	// Logging
 	private Log4jConfiguration appLoggerConfiguration;
 	private Logger applicationLogger;
+	private long statusLogIntervalMs;
 	
 	// DIS Settings
 	private String disAddress;      // address or "BROADCAST"
@@ -50,9 +51,6 @@ public class Configuration
 	private String pduSender;
 	private String pduReceiver;
 
-	// Recording Settings
-	private long recordLogIntervalMs;
-	
 	// Replay Settings
 	private boolean replayRealtime; // Should replay proceed in real time (with waits between PDUs)
 	private int loopCount;
@@ -71,6 +69,7 @@ public class Configuration
 		this.appLoggerConfiguration.setConsoleOn( true );
 		this.appLoggerConfiguration.setLevel( "INFO" );
 		this.applicationLogger = null; // set on first access
+		this.statusLogIntervalMs = 30000; // how frequently to log status info during recording
 		
 		// DIS Settings
 		this.disAddress    = "BROADCAST";
@@ -81,9 +80,6 @@ public class Configuration
 		// PDU Processing
 		this.pduSender = null;
 		this.pduReceiver = null;
-		
-		// Recordings Settings
-		this.recordLogIntervalMs = 30000; // how frequently to log status info during recording
 		
 		// Replay Settings
 		this.replayRealtime = true;
@@ -121,8 +117,8 @@ public class Configuration
 				this.setDisInterface( args[++i] );
 			else if( argument.equalsIgnoreCase("--dis-exercise-id") || argument.equalsIgnoreCase("--dis-exerciseId") )
 				this.setDisExerciseId(Short.parseShort(args[++i]) );
-			else if( argument.equalsIgnoreCase("--log-interval") )
-				this.setRecordLogInterval( Long.parseLong(args[++i]) * 1000 ); // value in seconds
+			else if( argument.equalsIgnoreCase("--status-interval") )
+				this.setStatusLogInterval( Long.parseLong(args[++i]) * 1000 ); // value in seconds
 			else if( argument.equalsIgnoreCase("--replay-realtime") ) // 
 				this.setReplayRealtime( true );
 			else if( argument.equalsIgnoreCase("--replay-fast") )
@@ -262,19 +258,19 @@ public class Configuration
 	//////////////////////////////////////////////////////////////////
 	/// Recording Settings ///////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////
-	public void setRecordLogInterval( long milliseconds )
+	public void setStatusLogInterval( long milliseconds )
 	{
 		// Just making sure it is positive, but really, if it's less than 100ms it's just stupid
 		// Even less than 1000 is stupid
 		if( milliseconds < 100 )
 			return;
 
-		this.recordLogIntervalMs = milliseconds;
+		this.statusLogIntervalMs = milliseconds;
 	}
 	
-	public long getRecordLogInterval()
+	public long getStatusLogInterval()
 	{
-		return this.recordLogIntervalMs;
+		return this.statusLogIntervalMs;
 	}
 
 	//////////////////////////////////////////////////////////////////
@@ -370,6 +366,7 @@ public class Configuration
 		builder.append( "   --replay-fast               Replay all stored PDUs as fast as possible\n" );
 		builder.append( "   --loop            (number)  Number of times to replay a session. 0 for infinite (default: 1)\n" );
 		builder.append( "   --log-level       (string)  Set the log level: OFF, ERROR, WARN, INFO(default), DEBUG, TRACE\n" );
+		builder.append( "   --status-interval (number)  Time in seconds between logging of status information (default:30)\n" );
 		builder.append( "   --pdu-receiver    (string)  PDU receive processor: single-thread (def), thread-pool, simple\n" );
 		builder.append( "   --pdu-sender      (string)  PDU send processor: single-thread (def), thread-pool, simple\n" );
 		builder.append( "\n" );

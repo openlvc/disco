@@ -152,7 +152,7 @@ public class Recorder implements IPduListener
 		// Start the activity logger
 		this.activityTimer =  new Timer( "Activity" );
 		this.activityLogger = new ActivityLogger();
-		long interval = configuration.getRecordLogInterval();
+		long interval = configuration.getStatusLogInterval();
 		this.activityTimer.scheduleAtFixedRate( activityLogger, interval, interval );
 		
 		this.pduRateLogger = new PduRateLogger();
