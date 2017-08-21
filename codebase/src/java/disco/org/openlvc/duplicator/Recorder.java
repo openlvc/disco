@@ -35,6 +35,7 @@ import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.utils.BitHelpers;
+import org.openlvc.disco.utils.FileUtils;
 import org.openlvc.disco.utils.StringUtils;
 
 public class Recorder implements IPduListener
@@ -213,6 +214,8 @@ public class Recorder implements IPduListener
 	{
 		if( this.sessionFile.exists() )
 			logger.warn( "Session file exists. Will overwrite: "+sessionFile );
+		else
+			FileUtils.createFile( sessionFile );
 		
 		try
 		{
