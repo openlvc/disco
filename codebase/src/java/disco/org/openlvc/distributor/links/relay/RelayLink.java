@@ -39,6 +39,11 @@ import org.openlvc.distributor.TransportType;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 import org.openlvc.distributor.links.wan.TcpWanLink;
 
+/**
+ * The {@link RelayLink} accepts incoming connections from remote sites and creates
+ * new {@link TcpWanLink} connections for them. This binds together the local side
+ * of the site with the remote end that initiated the connection.
+ */
 public class RelayLink extends LinkBase implements ILink
 {
 	//----------------------------------------------------------
@@ -198,9 +203,14 @@ public class RelayLink extends LinkBase implements ILink
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	/////////////////////////////////////////////////////////////////////////////////////
-	/// Receive Processing  /////////////////////////////////////////////////////////////
+	/// Private Inner-Class: ConnectionAcceptor  ////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
 	/** Class responsible for receiving messages from the remote host represented by this instance */
+	/**
+	 * This class is responsible for listening for new connections and then kicking off
+	 * the establishment of those connections on a separate thread. This is done to ensure
+	 * that any issues creating a new connection don't prevent others from being started.
+	 */
 	private class ConnectionAcceptor extends Thread
 	{
 		private ConnectionAcceptor()
@@ -212,28 +222,13 @@ public class RelayLink extends LinkBase implements ILink
 		{
 			while( !Thread.interrupted() )
 			{
-				//
-				// Wait for the next socket connection
-				//
-				Socket socket = null;
-				String ip = "unknown";
-				LinkConfiguration remoteConfiguration = null;
 				try
-				{ 				
-	                // Process new connection requests from clients
-					socket = serverSocket.accept();
-					ip = socket.getInetAddress().getHostAddress();
-					logger.debug( "Incoming connection from "+ip );
-					
-					// Complete handshake with the new connection
-					remoteConfiguration = handshake( socket );
-				}
-				catch( DiscoException de )
 				{
-					// handshake failed
-					logger.debug( "Connection rejected. Handshake failed: "+de.getMessage() );
-					try { socket.close(); } catch( Exception e ) {}
-					continue;
+					Socket socket = serverSocket.accept();
+					String name = "Establisher-"+socket.getInetAddress().getHostAddress();
+					Thread establisher = new Thread( new ConnectionEstablisher(socket), name );
+					establisher.setDaemon( true );
+					establisher.start();
 				}
 				catch( SocketException se )
 				{
@@ -245,32 +240,69 @@ public class RelayLink extends LinkBase implements ILink
     				// time to go!
     				continue;
     			}
-				
-				//
-				// Create the LinkConfiguration for the new WAN connection we'll be creating
-				//
-				String linkName = remoteConfiguration.getWanSiteName();
-				if( linkName.equalsIgnoreCase("<auto>") )
-					linkName = "wan"+(++linkCounter);
-				LinkConfiguration localConfiguration = new LinkConfiguration( linkName );
-				localConfiguration.setWanAddress( ip );
-				localConfiguration.setWanPort( socket.getPort() );
-				localConfiguration.setWanTransport( TransportType.TCP );
-				
-				// copy the relevant settings from the remote to the local configuration
-				copyConnectionSettings( localConfiguration, remoteConfiguration );
-				
-				//
-				// Bring a link online for the new connection
-				//
-				logger.debug( "Creating TcpWanLink for connection (%s)", ip );
-				TcpWanLink link = new TcpWanLink( localConfiguration );
-				link.setTransient( true );
-				link.setSocket( socket );
-				reflector.getDistributor().addAndBringUp( link );
 			}
 		}
+	}
+	
+	/////////////////////////////////////////////////////////////////////////////////////
+	/// Private Inner-Class: ConnectionEstablisher  /////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * This class does the work of establishing a connection after the socket creation has
+	 * been initiated. It will perform the handshake operation with the remote end on a
+	 * separate thread so that issues establishing one connection don't affect others.
+	 */
+	private class ConnectionEstablisher implements Runnable
+	{
+		private Socket socket;
+		public ConnectionEstablisher( Socket socket )
+		{
+			this.socket = socket;
+		}
+		
+		public void run()
+		{
+			String ip = socket.getInetAddress().getHostAddress();
+			logger.debug( "Incoming connection from "+ip );
+			LinkConfiguration remoteConfiguration = null;
 
+			try
+			{ 				
+				// Complete handshake with the new connection
+				remoteConfiguration = handshake( socket );
+			}
+			catch( DiscoException de )
+			{
+				// handshake failed
+				logger.debug( "Connection rejected. Handshake failed: "+de.getMessage() );
+				try { socket.close(); } catch( Exception e ) {}
+				return;
+			}
+			
+			//
+			// Create the LinkConfiguration for the new WAN connection we'll be creating
+			//
+			String linkName = remoteConfiguration.getWanSiteName();
+			if( linkName.equalsIgnoreCase("<auto>") )
+				linkName = "wan"+(++linkCounter);
+			LinkConfiguration localConfiguration = new LinkConfiguration( linkName );
+			localConfiguration.setWanAddress( ip );
+			localConfiguration.setWanPort( socket.getPort() );
+			localConfiguration.setWanTransport( TransportType.TCP );
+			
+			// copy the relevant settings from the remote to the local configuration
+			copyConnectionSettings( localConfiguration, remoteConfiguration );
+			
+			//
+			// Bring a link online for the new connection
+			//
+			logger.debug( "Creating TcpWanLink for connection (%s)", ip );
+			TcpWanLink link = new TcpWanLink( localConfiguration );
+			link.setTransient( true );
+			link.setSocket( socket );
+			reflector.getDistributor().addAndBringUp( link );
+		}
+		
 		/**
 		 * When a new connection is made, we wait for it to send us its configuration so that
 		 * we can ensure the local link is set up the same way with regard to the key properties
@@ -330,8 +362,12 @@ public class RelayLink extends LinkBase implements ILink
 				catch( Exception e )
 				{
 					out.writeInt( -1 );
-					throw new DiscoException( "Error reading link configuration - "+e.getMessage(), e );
+					throw e;
 				}
+			}
+			catch( DiscoException de )
+			{
+				throw de;
 			}
 			catch( Exception e )
 			{
@@ -360,4 +396,5 @@ public class RelayLink extends LinkBase implements ILink
 			local.setSendFilter( remote.getReceiveFilter() );
 		}
 	}
+
 }
