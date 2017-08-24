@@ -48,6 +48,15 @@ public class DiscoException extends RuntimeException
 	}
 
 	/**
+	 * @param formatString Format string to use for the message
+	 * @param arguments Format arguments
+	 */
+	public DiscoException( String formatString, Object... arguments )
+	{
+		super( String.format(formatString,arguments) );
+	}
+
+	/**
 	 * @param cause The cause of the exception
 	 */
 	public DiscoException( Throwable cause )

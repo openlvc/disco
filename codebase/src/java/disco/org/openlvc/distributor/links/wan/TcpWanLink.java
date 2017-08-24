@@ -1,5 +1,5 @@
 /*
- *   Copyright 2016 Open LVC Project.
+ *   Copyright 2017 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -17,12 +17,10 @@
  */
 package org.openlvc.distributor.links.wan;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -37,6 +35,7 @@ import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.pdu.UnsupportedPDU;
 import org.openlvc.disco.utils.BitHelpers;
 import org.openlvc.disco.utils.NetworkUtils;
+import org.openlvc.disco.utils.SerializationUtils;
 import org.openlvc.disco.utils.ThreadUtils;
 import org.openlvc.distributor.ILink;
 import org.openlvc.distributor.LinkBase;
@@ -44,29 +43,6 @@ import org.openlvc.distributor.Message;
 import org.openlvc.distributor.Reflector;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 
-/**
- * The TCP WAN link makes a connection to a remote RELAY link for the purposes of enabling
- * point-to-point connection. This supports site-to-site connectivity.<p/>
- * 
- * When a new WAN link it created, it reaches out to a remote RELAY listening link in another location.
- * This link handshakes with us and creates a new WAN link on the other end to service the connection.
- * There is no reverse connection made, rather, the existing connection is used to send and receive
- * messages at either end, thus reducing the need for additional firewall configuration or any special
- * NAT settings.<p/>
- * 
- * The link supports:
- * <ul>
- *   <li>Ingress and Egress filtering</li>
- *   <li>Message Bundling</li>
- *   <li>Auto-Reconnect if the server disconnects</li>
- *   <li>Remote site name configuration (tell the remote connection what our name is)</li>
- * </ul> 
- * 
- * Connection properties set on the local link are sent to the remote link so that they can be mirrored 
- * or used appropriately for the reverse connection. For example, the bundling values we use locally are
- * sent to the RELAY which then configures the WAN link it creates back to us with the same values so that
- * the same settings are used in both directions.
- */
 public class TcpWanLink extends LinkBase implements ILink
 {
 	//----------------------------------------------------------
@@ -77,7 +53,7 @@ public class TcpWanLink extends LinkBase implements ILink
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private Reflector reflector;
-
+	
 	private Socket socket;
 	private DataInputStream instream;
 	private DataOutputStream outstream;
@@ -107,38 +83,15 @@ public class TcpWanLink extends LinkBase implements ILink
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	/**
-	 * This class is used on both ends of a connection. When a TcpWanLink connects to a Relay,
-	 * internally the relay will create a new TcpWanLink instance with the exception that the
-	 * socket used will be the incoming one, rather than a newly created one. This is how we
-	 * set that socket.
-	 * 
-	 * @throws DiscoException If the connection is already up (can't set socket on an active connection)
-	 */
-	public void setSocket( Socket socket ) throws DiscoException
-	{
-		if( isUp() )
-			throw new DiscoException( "Link is already up, cannot set socket" );
-		
-		this.socket = socket;
-	}
-	
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
+	/// Lifecycle Methods: Bring Connection Up   ///////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/**
-	 * Open a new socket to the next relay and start the thread
-	 * that will process incoming messages.
-	 * 
-	 * @throws DiscoException If there is a timeout trying to connect to the relay, or it can't
-	 *                        be contacted
-	 */
 	public void up()
 	{
 		if( isUp() )
 			return;
-
+		
 		//
 		// 1. Make sure we have everything we need
 		//
@@ -149,55 +102,81 @@ public class TcpWanLink extends LinkBase implements ILink
 		logger.debug( "Link Mode: WAN" );
 
 		//
-		// 2. Create Socket
-		//    If we don't aleady have a socket, create one and connect to the relay
-		//    If we are running inside a relay, the socket will be set externally
+		// 2. Socket Connection
 		//
-		if( this.socket == null )
+		// The socket might have already been set using setSocket(), so just be wary
+		if( this.socket != null )
 		{
-			// a. Resolve the address, it may be one of the symbolic values
-			InetAddress relayAddress = NetworkUtils.resolveInetAddress( linkConfiguration.getWanAddress() );
-			InetSocketAddress address = new InetSocketAddress( relayAddress, linkConfiguration.getWanPort() );
-
-			try
-			{
-    			// b. Create the socket and set its options
-    			this.socket = new Socket();
-    			this.socket.setTcpNoDelay( true );
-    			this.socket.setPerformancePreferences( 0, 1, 1 );
-    		
-    			// c. Connect to the socket
-    			this.socket.connect( address, 5000/*timeout*/ );
-
-				// d. Handshake
-				//    We have to do this here and not later because if the socket already exists, the
-				//    handshake should have already been done (see RelayLink).
-				this.handshake();
-			}
-			catch( ConnectException | SocketTimeoutException se )
-			{
-				this.socket = null;
-				
-				// if auto reconnecting, schedule a reconnect
-				if( linkConfiguration.isWanAutoReconnect() )
-					scheduleReconnect();
-				
-				throw new DiscoException( "("+address+") "+se.getMessage() );
-			}
-			catch( Exception e )
-			{
-				this.linkUp = true; /* otherwise will short-circuit */
-				down();
-				if( e instanceof DiscoException )
-					throw (DiscoException)e;
-				else
-					throw new DiscoException( "Error bringing TCP link up: "+e.getMessage(), e );
-			}
+			// We do have a socket, no need to connect. Just get reference to the streams
+			openStreams();
+		}
+		else
+		{
+			openSocket();
+			openStreams(); // presumed done if socket is externally set
+			handshake();   // presumed done if socket is externally set
 		}
 
+
 		//
-		// 3. Connect the Streams
+		// 3. Bring the message processing infrastructure up
 		//
+		this.bundler.up( outstream );
+		
+		// Start the receiver processing thread
+		this.receiveThread = new Receiver( linkConfiguration.getName() );
+		this.receiveThread.start();
+		
+		super.linkUp = true;
+	}
+
+	/**
+	 * Establish a connection to the remote socket 
+	 */
+	private void openSocket()
+	{
+		// a. Resolve the address, it may be one of the symbolic values
+		InetAddress relayAddress = NetworkUtils.resolveInetAddress( linkConfiguration.getWanAddress() );
+		InetSocketAddress address = new InetSocketAddress( relayAddress, linkConfiguration.getWanPort() );
+
+		try
+		{
+			// b. Create the socket and set its options
+			this.socket = new Socket();
+			this.socket.setTcpNoDelay( true );
+			this.socket.setPerformancePreferences( 0, 1, 1 );
+		
+			// c. Connect to the socket
+			this.socket.connect( address, 5000/*timeout*/ );
+		}
+		catch( ConnectException | SocketTimeoutException se )
+		{
+			this.socket = null;
+			this.instream = null;
+			this.outstream = null;
+			
+			// if auto reconnecting, schedule a reconnect
+			if( linkConfiguration.isWanAutoReconnect() )
+				scheduleReconnect();
+			
+			throw new DiscoException( "("+address+") "+se.getMessage() );
+		}
+		catch( Exception e )
+		{
+			this.linkUp = true; /* otherwise will short-circuit */
+			down();
+			if( e instanceof DiscoException )
+				throw (DiscoException)e;
+			else
+				throw new DiscoException( "Error bringing TCP link up [openSocket()]: "+e.getMessage(), e );
+		}
+	}
+
+	/**
+	 * Fetch wrappers for the incoming and outgoing streams and store them locally
+	 */
+	private void openStreams()
+	{
 		try
 		{
 			this.instream = new DataInputStream( socket.getInputStream() );
@@ -207,28 +186,76 @@ public class TcpWanLink extends LinkBase implements ILink
 		{
 			this.linkUp = true; /* otherwise will short-circuit */
 			down();
-			throw new DiscoException( "Error bringing WAN link up: "+e.getMessage(), e );
+			throw new DiscoException( "Error bringing WAN link up [openStreams()]: "+e.getMessage(), e );
 		}
-
-		//
-		// 4. Start the Bundler
-		//
-		this.bundler.up( outstream );
-
-		//
-		// 5. Start the receiver processing thread
-		//
-		this.receiveThread = new Receiver( linkConfiguration.getName() );
-		this.receiveThread.start();
-		
-		super.linkUp = true;
 	}
 
+	/**
+	 * When connecting with the Relay we need to exchange some information first.
+	 * This includes providing some details about ourselves such as our site name
+	 * so that conflicts can be avoided, and then our full configuration so that
+	 * the relay can adapt.
+	 */
+	private void handshake()
+	{
+		logger.debug( "Connected, commencing handshake" );
+		
+		try
+		{	
+    		// Step 1. Send Name
+    		//         We send our name to confirm the connection and its availability.
+    		//         Sender will respond with one of the following values:
+    		//           >1: Length of the name, confirms it is OK
+    		//           -1: Name is taken and cannot be used
+    		//           -2: Could not turn the name into a string
+    		String siteName = linkConfiguration.getWanSiteName();
+			logger.debug( "Writing name (%s), waiting for confirmation", siteName );
+    		outstream.writeUTF( siteName );
+    
+    		logger.debug( "Waiting for reception from end server" );
+    		int responseCode = instream.readInt();
+    		if( responseCode == -1 )
+    			throw new DiscoException( "[Link: %s] Relay connect failure. Site name in use (%s)",
+    			                          getName(), siteName );
+    		else
+    			logger.debug( "Site name is available, serialize configuration and send" );
+    
+    		// Step 2. Send our configuration
+    		//         On the other side the Relay will pull key pieces out of our configuration and
+    		//         replicate it so that we have some control over the settings the other side of
+    		//         the link uses to communicate with us, not just the settings we use to talk to
+    		//         it. This includes things like bundling.
+    		byte[] configurationBytes = SerializationUtils.objectToBytes( linkConfiguration );
+    		outstream.writeInt( configurationBytes.length );
+    		outstream.write( configurationBytes );
+    		
+    		logger.debug( "Wrote link configuration, waiting for confirmation" );
+    		
+    		responseCode = instream.readInt();
+    		if( responseCode == -1 )
+    			throw new DiscoException( "Unknown error sending link configuration to RELAY." );
+    		else
+    			logger.debug( "Handshake complete" );
+		}
+		catch( Exception e )
+		{
+			this.linkUp = true; /* otherwise will short-circuit */
+			down();
+			if( e instanceof DiscoException )
+				throw (DiscoException)e;
+			else
+				throw new DiscoException( "Error bringing TCP link up: "+e.getMessage(), e );
+		}
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Lifecycle Methods: Take Connection Down   //////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 	public void down()
 	{
 		if( isDown() )
 			return;
-		
+
 		logger.debug( "Taking down link: "+super.getName() );
 		
 		//
@@ -238,7 +265,7 @@ public class TcpWanLink extends LinkBase implements ILink
 			bundler.down();
 		
 		//
-		// 2. Take the connection down
+		// 2. Close the socket to stop the messages
 		//
 		try
 		{
@@ -257,7 +284,7 @@ public class TcpWanLink extends LinkBase implements ILink
 		}
 
 		//
-		// 3. Stop processing incoming messages
+		// 3. Kill the local processing thread
 		//
 		if( this.receiveThread != null )
 		{
@@ -269,102 +296,15 @@ public class TcpWanLink extends LinkBase implements ILink
 		logger.trace( "Link is down" );
 		super.linkUp = false;
 	}
-
-	public String getStatusSummary()
-	{
-		// if link has never been up, return configuration information
-		if( isUp() )
-		{
-			String string = metrics.getSummaryString();
-			// put out special marker on the front so that if fits with all the
-			// other distributor summary strings
-			//string = string.replaceFirst( "\\{ ", "\\{ WAN, tcp/%s:%d, " );
-			string = string.replaceFirst( "\\{ ", "\\{ WAN, " );
-			string = string.replaceFirst( "\\ }", "\\, %s }" );
-			return String.format( string,
-			                      socket.getInetAddress().getHostAddress(),
-			                      socket.getPort() );
-		}
-		else
-		{
-			return getConfigSummary();
-		}
-	}
 	
-	public String getConfigSummary()
-	{
-		// if link has never been up, return configuration information
-		if( isUp() )
-		{
-			// return live, resolved connection information
-			return String.format( "{ WAN, address:%s, port:%d, transport:tcp }",
-			                      socket.getInetAddress(),
-			                      socket.getPort() );
-		}
-		else
-		{
-			// return raw configuration data
-			return String.format( "{ WAN, address:%s, port:%d, transport:tcp }",
-			                      linkConfiguration.getWanAddress(),
-			                      linkConfiguration.getWanPort() );
-		}
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Handshake/Connection Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/**
-	 * Complete the handshake with the RELAY endpoint for all new connections. This will send our
-	 * site name to the remote connection as well as our configuration.
-	 */
-	private void handshake() throws IOException
-	{
-		logger.debug( "Connected, commencing handshake" );
-		
-		// Step 0. Set up some stream reader/writers to use
-		DataInputStream in = new DataInputStream( socket.getInputStream() );
-		DataOutputStream out = new DataOutputStream( socket.getOutputStream() );
-
-		// Step 1. Send Name
-		//         We send our name to confirm the connection and its availability.
-		//         Sender will respond with one of the following values:
-		//           >1: Length of the name, confirms it is OK
-		//           -1: Name is taken and cannot be used
-		//           -2: Could not turn the name into a string
-		out.writeUTF( linkConfiguration.getWanSiteName() );
-		logger.trace( "Wrote name (%s), waiting for confirmation", linkConfiguration.getWanSiteName() );
-
-		int responseCode = in.readInt();
-		if( responseCode == -1 )
-			throw new DiscoException( "Could not connect to Relay - name in use ("+getName()+")" );
-		else
-			logger.trace( "Name is available, serialize configuration and send" );
-
-		// Step 2. Send our configuration
-		//         On the other side the Relay will pull key pieces out of our configuration and
-		//         replicate it so that we have some control over the settings the other side of
-		//         the link uses to communicate with us, not just the settings we use to talk to
-		//         it. This includes things like bundling.
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ObjectOutputStream oos = new ObjectOutputStream( baos );
-		oos.writeObject( linkConfiguration );
-		byte[] bytes = baos.toByteArray();
-		
-		out.writeInt( bytes.length );
-		out.write( bytes );
-		
-		logger.trace( "Wrote link configuration, waiting for confirmation" );
-		
-		responseCode = in.readInt();
-		if( responseCode == -1 )
-			throw new DiscoException( "Unknown error sending link configuration to RELAY." );
-		else
-			logger.trace( "Handshake complete" );
-	}
-
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Message Processing Methods   ///////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Submit the message to be sent down the point-to-point connection to the relay so that it
+	 * can be re-sent to other connections from there. We submit everything to the {@link Bundler}
+	 * for processing. If enabled, it will batch messages, otherwise it will send immediately.
+	 */
 	public void reflect( Message message )
 	{
 		try
@@ -442,6 +382,7 @@ public class TcpWanLink extends LinkBase implements ILink
 	
 	public void setReflector( Reflector reflector )
 	{
+		// store to hand off to incoming connections
 		this.reflector = reflector;
 	}
 
@@ -501,6 +442,65 @@ public class TcpWanLink extends LinkBase implements ILink
 		reflector.getDistributor().takeDown( this );
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public String getStatusSummary()
+	{
+		// if link has never been up, return configuration information
+		if( isUp() )
+		{
+			String string = metrics.getSummaryString();
+			// put out special marker on the front so that if fits with all the
+			// other distributor summary strings
+			//string = string.replaceFirst( "\\{ ", "\\{ WAN, tcp/%s:%d, " );
+			string = string.replaceFirst( "\\{ ", "\\{ WAN, " );
+			string = string.replaceFirst( "\\ }", "\\, %s }" );
+			return String.format( string,
+			                      socket.getInetAddress().getHostAddress(),
+			                      socket.getPort() );
+		}
+		else
+		{
+			return getConfigSummary();
+		}
+	}
+	
+	public String getConfigSummary()
+	{
+		// if link has never been up, return configuration information
+		if( isUp() )
+		{
+			// return live, resolved connection information
+			return String.format( "{ WAN, address:%s, port:%d, transport:tcp }",
+			                      socket.getInetAddress(),
+			                      socket.getPort() );
+		}
+		else
+		{
+			// return raw configuration data
+			return String.format( "{ WAN, address:%s, port:%d, transport:tcp }",
+			                      linkConfiguration.getWanAddress(),
+			                      linkConfiguration.getWanPort() );
+		}
+	}
+
+	/**
+	 * This class is used on both ends of a connection. When a TcpWanLink connects to a Relay,
+	 * internally the relay will create a new TcpWanLink instance with the exception that the
+	 * socket used will be the incoming one, rather than a newly created one. This is how we
+	 * set that socket.
+	 * 
+	 * @throws DiscoException If the connection is already up (can't set socket on an active connection)
+	 */
+	public void setSocket( Socket socket ) throws DiscoException
+	{
+		if( isUp() )
+			throw new DiscoException( "Link is already up, cannot set socket" );
+		
+		this.socket = socket;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
@@ -521,7 +521,7 @@ public class TcpWanLink extends LinkBase implements ILink
 			{
 				// Process requests from the client
 				while( Thread.interrupted() == false )
-					receiveNext();
+					receiveNext(); // back in main class
 			}
 			catch( SocketException se )
 			{
@@ -541,5 +541,4 @@ public class TcpWanLink extends LinkBase implements ILink
 			}
 		}
 	}
-
 }
