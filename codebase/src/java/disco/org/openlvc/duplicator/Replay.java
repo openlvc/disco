@@ -71,6 +71,9 @@ public class Replay implements IPduListener
 
 	// Metrics
 	private long pdusWritten;
+	private long esPdusWritten;
+	private long firePdusWritten;
+	private long detPdusWritten;
 	private long pdusWrittenSize;
 	private Queue<Long> lastTenSeconds;
 	
@@ -101,6 +104,9 @@ public class Replay implements IPduListener
 		
 		// Metrics
 		this.pdusWritten = 0;
+		this.esPdusWritten = 0;
+		this.firePdusWritten = 0;
+		this.detPdusWritten = 0;
 		this.pdusWrittenSize = 0;
 		this.lastTenSeconds = new LinkedList<Long>();
 		
@@ -308,6 +314,13 @@ public class Replay implements IPduListener
 			lastPacketTimestamp = next.timestamp;
 			pdusWritten++;
 			pdusWrittenSize += next.pdu.getPduLength();
+			switch( next.pdu.getType() )
+			{
+				case EntityState: esPdusWritten++;   break;
+				case Fire:        firePdusWritten++; break;
+				case Detonation:  detPdusWritten++;  break;
+				default: break;
+			}
 		}
 
 		// queue should never get empty - getNextTrack() will refill it. If we get here we are done
@@ -411,7 +424,7 @@ public class Replay implements IPduListener
 			// Format: "(192.168.0.1:3000) pdus=123,456 (123/s); bytes=17.8MB";
 			
 			// Get network information
-			String ip = opscenter.getConfiguration().getUdpConfiguration().getAddress().toString();
+			String ip = opscenter.getConfiguration().getUdpConfiguration().getAddress().getHostAddress();
 			int port = opscenter.getConfiguration().getUdpConfiguration().getPort();
 
 			// Get PDU average
@@ -421,13 +434,15 @@ public class Replay implements IPduListener
 				lastTenTotal += (stream[i] - stream[i-1]);
 
 			// Generate the log
-			String line = String.format( "(%s:%d) pdus=%,d (%,d/s); bytes=%s",
+			String line = String.format( "(Replay >> %s:%d) pdus=%,d (%,d/s); bytes=%s [e=%,d; f=%,d; d=%,d]",
 			                             ip,
 			                             port,
 			                             pdusWritten,
 			                             (lastTenTotal/9),
 			                             StringUtils.humanReadableSize(pdusWrittenSize),
-			                             pdusWritten );
+			                             esPdusWritten,
+			                             firePdusWritten,
+			                             detPdusWritten );
 			
 			// Log the log!
 			logger.info( line );

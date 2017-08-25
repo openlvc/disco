@@ -69,7 +69,7 @@ public class Configuration
 		this.appLoggerConfiguration.setConsoleOn( true );
 		this.appLoggerConfiguration.setLevel( "INFO" );
 		this.applicationLogger = null; // set on first access
-		this.statusLogIntervalMs = 30000; // how frequently to log status info during recording
+		this.statusLogIntervalMs = 10000; // how frequently to log status info during recording
 		
 		// DIS Settings
 		this.disAddress    = "BROADCAST";
