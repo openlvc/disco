@@ -62,19 +62,25 @@ public class FileUtils
 
 		try
 		{
-    		if( path.isDirectory() )
-    		{
-    			path.mkdirs();
-    			return;
-    		}
-    		
-    		File parentDirectory = path.getParentFile();
-    		parentDirectory.mkdirs();
-    		path.createNewFile();
+			if( path.isDirectory() )
+			{
+				path.mkdirs();
+				return;
+			}
+
+			// Try to get the directory we're in. This won't work if we have a path
+			// like "file.txt" that is relative and missing any prefix. In that case,
+			// getParent() will return null. Check for that first and then only try
+			// to create the parent structure if we need to
+			if( path.getParentFile() != null )
+				path.getParentFile().mkdirs();
+
+			// create the file
+			path.createNewFile();
 		}
 		catch( Exception e )
 		{
-			throw new DiscoException( "Error creating file path: "+path.getAbsolutePath(), e );
+			throw new DiscoException( "Error creating file path: " + path.getAbsolutePath(), e );
 		}
 	}
 }
