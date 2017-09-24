@@ -179,6 +179,44 @@ public class DisOutputStream extends DataOutputStream
 		super.write( bytes );
 	}
 
+	/**
+	 * Write the given string to the stream, limited by -or- padded out to the given
+	 * number of bytes (including any encoding signals we need to add).
+	 * 
+	 * @param string The string to write
+	 * @param limit  The max number of characters to write - will trim if the length is over or
+	 *               will pad with spaces out to this length.
+	 * @throws IOException
+	 */
+	public void writePaddedString( String string, int limit ) throws IOException
+	{
+		byte[] bytes = new byte[limit+1];
+		int stringChars = 0; 
+		if( string.length() >= limit )
+		{
+			// string needs to be trimmed
+			stringChars = limit;
+		}
+		else if( string.length() < limit )
+		{
+			// string needs to be padded
+			stringChars = string.length();
+		}
+
+		// Write the string
+		bytes[0] = 1; // encoding
+
+		// Write values from the given string
+		for( int i = 0; i < stringChars; i++ )
+			bytes[i+1] = (byte)string.charAt(i);
+
+		// Write any necesary padding
+		for( int i = stringChars+1; i < limit; i++ )
+			bytes[i] = (byte)' ';
+
+		super.write( bytes );
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

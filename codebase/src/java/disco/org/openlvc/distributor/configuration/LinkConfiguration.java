@@ -69,6 +69,7 @@ public class LinkConfiguration implements Serializable
 
 	// WAN Properties
 	public static final String LINK_WAN_ADDRESS         = "wan.relay";
+	public static final String LINK_WAN_NIC             = "wan.nic";       // only used for udp
 	public static final String LINK_WAN_PORT            = "wan.port";
 	public static final String LINK_WAN_TRANSPORT       = "wan.transport"; // tcp|udp
 	public static final String LINK_WAN_SITE_NAME       = "wan.siteName";
@@ -165,6 +166,8 @@ public class LinkConfiguration implements Serializable
 			else if( key.equalsIgnoreCase(prefix+LINK_DIS_LOG_TO_FILE) )
 				this.setDisLogToFile( value );
 			// WAN Settings
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_NIC) )
+				this.setWanNic( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_ADDRESS) )
 				this.setWanAddress( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_PORT) )
@@ -474,6 +477,20 @@ public class LinkConfiguration implements Serializable
 	////////////////////////////////////////////////////////////////////////////////////////////
 	// WAN Properties   ////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public String getWanNic()
+	{
+		return getAsString( LINK_WAN_NIC, "SITE_LOCAL" );
+	}
+
+	/**
+	 * The WAN NIC is only used for UDP connections and identifies the device we should both
+	 * send outgoing messages on and listen for the incoming ones through.
+	 */
+	public void setWanNic( String nic )
+	{
+		set( LINK_WAN_NIC, nic );
+	}
+	
 	public String getWanAddress()
 	{
 		return getAsString( LINK_WAN_ADDRESS );
@@ -818,6 +835,11 @@ public class LinkConfiguration implements Serializable
 		properties.setProperty( key, value.toString() );
 	}
 
+	@Override
+	public String toString()
+	{
+		return properties.toString();
+	}
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

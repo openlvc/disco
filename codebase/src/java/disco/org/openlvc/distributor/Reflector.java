@@ -17,6 +17,7 @@
  */
 package org.openlvc.distributor;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;

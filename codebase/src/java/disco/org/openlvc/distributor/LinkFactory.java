@@ -23,6 +23,8 @@ import org.openlvc.distributor.links.logger.LoggingLink;
 import org.openlvc.distributor.links.pulse.PulseLink;
 import org.openlvc.distributor.links.relay.RelayLink;
 import org.openlvc.distributor.links.wan.TcpWanLink;
+import org.openlvc.distributor.links.wan.udp.UdpRelayLink;
+import org.openlvc.distributor.links.wan.udp.UdpWanLink;
 
 public class LinkFactory
 {
@@ -54,7 +56,7 @@ public class LinkFactory
 			case WAN:
 				return createWanLink( linkConfiguration );
 			case RELAY:
-				return new RelayLink( linkConfiguration );
+				return createRelayLink( linkConfiguration );
 			case PULSE:
 				return new PulseLink( linkConfiguration );
 			case LOGGING:
@@ -74,8 +76,22 @@ public class LinkFactory
 			case TCP:
 				return new TcpWanLink( linkConfiguration );
 			case UDP:
+				return new UdpWanLink( linkConfiguration );
 			default:
 				throw new IllegalArgumentException( "Unsupported Transport: "+linkConfiguration.getWanTransport() );
 		}
+	}
+	
+	private static ILink createRelayLink( LinkConfiguration linkConfiguration )
+	{
+		switch( linkConfiguration.getRelayTransport() )
+		{
+			case TCP:
+				return new RelayLink( linkConfiguration );
+			case UDP:
+				return new UdpRelayLink( linkConfiguration );
+			default:
+				throw new IllegalArgumentException( "Unsupported Transport: "+linkConfiguration.getRelayTransport() );
+		}		
 	}
 }

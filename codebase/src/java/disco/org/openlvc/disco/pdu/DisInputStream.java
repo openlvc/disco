@@ -49,6 +49,19 @@ public class DisInputStream extends DataInputStream
 
 	/**
 	 * Construct a new DisInputStream around the given byte[], starting at the offset
+	 * This is useful for reusing a larger buffer rather than having to allocate a new byte[]
+	 * to feed to the stream.
+	 * 
+	 * @param buffer  byte[] to read from 
+	 * @param offset  index to start reading at
+	 */
+	public DisInputStream( byte[] buffer, int offset )
+	{
+		this( buffer, offset, buffer.length );
+	}
+	
+	/**
+	 * Construct a new DisInputStream around the given byte[], starting at the offset
 	 * and spanning the given length. This is useful for reusing a larger buffer rather
 	 * than having to allocate a new byte[] to feed to the stream.
 	 * 
