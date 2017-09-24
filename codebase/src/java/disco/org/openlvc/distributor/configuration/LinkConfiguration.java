@@ -71,6 +71,7 @@ public class LinkConfiguration implements Serializable
 	public static final String LINK_WAN_ADDRESS         = "wan.relay";
 	public static final String LINK_WAN_NIC             = "wan.nic";       // only used for udp
 	public static final String LINK_WAN_PORT            = "wan.port";
+	public static final String LINK_WAN_SEND_PORT       = "wan.send.port"; // only used for udp
 	public static final String LINK_WAN_TRANSPORT       = "wan.transport"; // tcp|udp
 	public static final String LINK_WAN_SITE_NAME       = "wan.siteName";
 	public static final String LINK_WAN_AUTO_RECONNECT  = "wan.autoReconnect";
@@ -172,6 +173,8 @@ public class LinkConfiguration implements Serializable
 				this.setWanAddress( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_PORT) )
 				this.setWanPort( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_WAN_SEND_PORT) )
+				this.setWanSendPort( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_TRANSPORT) )
 				this.setWanTransport( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_WAN_SITE_NAME) )
@@ -521,6 +524,26 @@ public class LinkConfiguration implements Serializable
 		setWanPort( Integer.parseInt(port) );
 	}
 
+	public int getWanSendPort()
+	{
+		return getAsInt( LINK_WAN_SEND_PORT, 0 /*ephemeral port*/ );
+	}
+
+	public void setWanSendPort( int port )
+	{
+		if( port > 65536 )
+			throw new IllegalArgumentException( "WAN send port must be less than 65536" );
+		else if( port < 0 )
+			throw new IllegalArgumentException( "WAN send port must be positive number" );
+
+		set( LINK_WAN_SEND_PORT, port );
+	}
+	
+	private void setWanSendPort( String port )
+	{
+		setWanSendPort( Integer.parseInt(port) );
+	}
+	
 	public TransportType getWanTransport()
 	{
 		return TransportType.valueOfIgnoreCase( getAsString(LINK_WAN_TRANSPORT,"udp") );

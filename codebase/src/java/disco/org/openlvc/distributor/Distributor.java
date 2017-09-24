@@ -105,17 +105,12 @@ public class Distributor
 	}
 
 	/**
-	 * This is called in a couple of spots. Put here so it is in one location
+	 * This is called in a couple of spots. Put here so it is in one location.
+	 * 
+	 * @return <code>true</code> if connection came up successfully, <code>false</code> otherwise
 	 */
-	public void bringUp( ILink link )
+	public boolean bringUp( ILink link )
 	{
-		// 1. Bring the status logger down
-		if( this.statusLogThread != null )
-		{
-			this.statusLogThread.interrupt();
-			ThreadUtils.exceptionlessThreadJoin( statusLogThread, 500 );
-		}
-		
 		// 2. Bring the links down
 		try
 		{
@@ -126,12 +121,14 @@ public class Distributor
 			}
 			
 			logger.info( getConfigSummary(link) );
+			return true;
 		}
 		catch( Exception e )
 		{
 			logger.error( "  %-8s [ err] { Exception: %s }",
 			              StringUtils.max(link.getName(),8), e.getMessage() );
 			logger.debug( e.getMessage(), e );
+			return false;
 		}
 	}
 	
@@ -145,6 +142,13 @@ public class Distributor
 		// do we even have anything to bring up?
 		if( areAnyLinksUp() == false )
 			return;
+
+		// 0. Bring the status logger down
+		if( this.statusLogThread != null )
+		{
+			this.statusLogThread.interrupt();
+			ThreadUtils.exceptionlessThreadJoin( statusLogThread, 500 );
+		}
 
 		// 1. Bring down the reflector first
 		logger.info( "Brining reflector down" );
@@ -212,10 +216,10 @@ public class Distributor
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void addAndBringUp( ILink link )
+	public boolean addAndBringUp( ILink link )
 	{
 		links.add( link );
-		bringUp( link );
+		return bringUp( link );
 	}
 
 	public Logger getLogger()

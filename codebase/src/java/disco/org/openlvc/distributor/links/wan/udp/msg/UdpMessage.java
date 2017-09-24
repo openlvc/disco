@@ -20,6 +20,7 @@ package org.openlvc.distributor.links.wan.udp.msg;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.util.Random;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.DisInputStream;
@@ -32,6 +33,17 @@ import org.openlvc.disco.pdu.DisOutputStream;
  * 
  * The structure of a Distributor UDP message consists of a 10-byte header followed by the actual
  * payload of the message. It's base structure is laid out as follows:
+ *
+ * ```
+ *      | -------------------------------------------------------- |  
+ *      |           14-byte Header                   |             /
+ *      | -------------------------------------------------------- |  
+ *      |  4-bytes  |  4-bytes  |  4-bytes  | 2-byte |             /
+ *      | -------------------------------------------------------- |  
+ * Bit: | 01234567  | 01234567  | 01234567  |  0123  | ... ... ... /
+ * Val: | MAGIC_NUM | MSG_TYPE  |  MSG_ID   |  SIZE  | Payload ... /
+ * ```
+ * 
  * 
  * ```
  *      | -------------------------------------------- |  
@@ -53,17 +65,32 @@ public abstract class UdpMessage
 	public static final int MAX_PACKET_SIZE = 1500 - 28; // MTU - UDP/IP Header
 	                                                     // Our header included in payload
 	
-	public static final int HEADER_SIZE = 10; // MAGIC_NUMBER(int) + MSG_TYPE(int) + LENGTH(short)
+	public static final int HEADER_SIZE = 14; // MAGIC_NUMBER(int) + MSG_TYPE(int) + MSG_ID(int) + LENGTH(short)
+	
+	public static final int MAX_PAYLOAD_SIZE = MAX_PACKET_SIZE - HEADER_SIZE;
 
 	public static final int MIN_PACKET_SIZE = HEADER_SIZE; 
 
+	// Used to calculate random message ids
+	private static final Random RANDOM_GENERATOR = new Random( System.currentTimeMillis() );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	protected int messageId;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	protected UdpMessage()
+	{
+		this.messageId = 0;
+	}
+	
+	protected UdpMessage( int mesageId )
+	{
+		this.messageId = mesageId;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
@@ -91,6 +118,7 @@ public abstract class UdpMessage
 			// write the header
 			stream.writeInt( MAGIC_NUMBER );
 			stream.writeInt( getType().getValue() );
+			stream.writeInt( messageId );
 
 			// write the payload
 			writeTo( stream );
@@ -130,7 +158,20 @@ public abstract class UdpMessage
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-
+	public int getMessageId()
+	{
+		return this.messageId;
+	}
+	
+	public void setMessageId( int messageId )
+	{
+		this.messageId = messageId;
+	}
+	
+	public void setRandomMessageId()
+	{
+		this.messageId = RANDOM_GENERATOR.nextInt();
+	}
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
@@ -158,6 +199,11 @@ public abstract class UdpMessage
     		// read the message type
     		MessageType messageType = MessageType.getType( stream.readInt() );
     		UdpMessage message = messageType.newInstance();
+    		
+    		// read the message id
+    		message.messageId = stream.readInt();
+    		
+    		// read the body of the message
     		message.loadFrom( stream );
     		
     		return message;

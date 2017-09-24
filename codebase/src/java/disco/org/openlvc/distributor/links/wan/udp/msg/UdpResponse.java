@@ -44,6 +44,13 @@ public class UdpResponse extends UdpMessage
 		this.isError = false;
 		this.returnValue = new byte[] {};
 	}
+	
+	public UdpResponse( int messageId )
+	{
+		super( messageId );
+		this.isError = false;
+		this.returnValue = new byte[] {};
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
@@ -64,12 +71,40 @@ public class UdpResponse extends UdpMessage
 	@Override
 	public void writeTo( DisOutputStream stream ) throws IOException
 	{
+		// make sure we don't exceed any size limits
+		int payloadSize = 1 + returnValue.length;
+		if( payloadSize > UdpMessage.MAX_PAYLOAD_SIZE )
+		{
+			throw new DiscoException( "Cannot send; exceeds max payload size (size=%d, max=%d)",
+			                          payloadSize, UdpMessage.MAX_PAYLOAD_SIZE );
+		}
+
+		// write the size of the payload to the packet
+		stream.writeShort( (short)payloadSize );
+
+		// write the result field
+		stream.writeBoolean( isError );
+		
+		// write the contents of the return value
+		if( returnValue.length > 0 )
+			stream.write( returnValue, 0, returnValue.length );
 	}
 
 	@Override
 	public void loadFrom( DisInputStream stream ) throws DiscoException, IOException
 	{
+		// read the size in
+		short payloadSize = stream.readShort();
 		
+		// read the result field
+		this.isError = stream.readBoolean();
+		
+		// read the payload
+		if( payloadSize > 0 )
+		{
+			this.returnValue = new byte[payloadSize];
+			stream.read( returnValue, 0, payloadSize );
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

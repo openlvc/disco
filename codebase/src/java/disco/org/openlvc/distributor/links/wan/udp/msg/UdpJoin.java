@@ -67,12 +67,11 @@ public class UdpJoin extends UdpMessage
 	{
 		// convert the configuration into a byte[]
 		byte[] bytes = SerializationUtils.objectToBytes( linkConfiguration );
-		int maxAvailable = UdpMessage.MAX_PACKET_SIZE - UdpMessage.HEADER_SIZE;
-		if( bytes.length > maxAvailable )
+		if( bytes.length > UdpMessage.MAX_PAYLOAD_SIZE )
 			throw new DiscoException( "Configuration too large for datagram (%d bytes)", bytes.length ); 
 
 		// write the contents
-		stream.writeShort( UdpMessage.HEADER_SIZE + bytes.length );
+		stream.writeShort( bytes.length );
 		stream.write( bytes, 0, bytes.length );
 	}
 

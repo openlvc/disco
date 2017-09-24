@@ -24,8 +24,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -37,6 +35,7 @@ import org.openlvc.distributor.Message;
 import org.openlvc.distributor.Reflector;
 import org.openlvc.distributor.TransportType;
 import org.openlvc.distributor.configuration.LinkConfiguration;
+import org.openlvc.distributor.links.wan.udp.msg.MessageType;
 import org.openlvc.distributor.links.wan.udp.msg.UdpBundle;
 import org.openlvc.distributor.links.wan.udp.msg.UdpJoin;
 import org.openlvc.distributor.links.wan.udp.msg.UdpKeepAlive;
@@ -55,12 +54,13 @@ public class UdpRelayLink extends LinkBase implements ILink
 	private Reflector reflector;
 	private int linkCounter;
 	
+	// Network Properties
 	private DatagramSocket socket;
-	private DatagramPacket packet;
+	private DatagramPacket incoming;
 	private PacketReceiver packetReceiver;
-	
-	private BlockingQueue<String> pendingConnections;
 
+	private BlockingQueue<String> pendingConnections;
+	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -72,7 +72,7 @@ public class UdpRelayLink extends LinkBase implements ILink
 		this.linkCounter    = 0;
 
 		this.socket         = null;     // set in up()
-		this.packet         = null;     // set in up()
+		this.incoming       = null;     // set in up()
 		this.packetReceiver = null;     // set in up()
 		
 		this.pendingConnections = null; // set in up()
@@ -92,14 +92,23 @@ public class UdpRelayLink extends LinkBase implements ILink
 			return;
 
 		//
-		// 1. Prepare the necessary bits and pieces
+		// 1. Make sure we have everything
 		//
-		this.packet = new DatagramPacket( new byte[UdpMessage.MAX_PACKET_SIZE], UdpMessage.MAX_PACKET_SIZE );
+		if( this.reflector == null )
+			throw new RuntimeException( "Nobody has told us where the reflector is yet" );
+
+		logger.debug( "Bringing up link: "+super.getName() );
+		logger.debug( "Link Mode: WAN-UDP" );
+
+		//
+		// 2. Prepare the necessary bits and pieces
+		//
+		this.incoming = new DatagramPacket( new byte[UdpMessage.MAX_PACKET_SIZE], UdpMessage.MAX_PACKET_SIZE );
 		this.pendingConnections = new LinkedBlockingQueue<>();
 		this.linkCounter = 0;
 		
 		//
-		// 2. Open the socket that we'll use
+		// 3. Open the socket that we'll use
 		//
 		InetAddress localAddr = NetworkUtils.resolveInetAddress( linkConfiguration.getRelayAddress() );
 		int localPort = linkConfiguration.getRelayPort();
@@ -107,7 +116,10 @@ public class UdpRelayLink extends LinkBase implements ILink
 		
 		try
 		{
-			this.socket = new DatagramSocket( local );
+			this.socket = new DatagramSocket( null );
+			this.socket.setTrafficClass( 0x10 ); // Low delay
+			this.socket.setReuseAddress( true );
+			this.socket.bind( local );
 		}
 		catch( SocketException se )
 		{
@@ -116,14 +128,14 @@ public class UdpRelayLink extends LinkBase implements ILink
 		}
 		
 		//
-		// 3. Start the packet receiver to process incoming messages
+		// 4. Start the packet receiver to process incoming messages
 		//
 		this.packetReceiver = new PacketReceiver( linkConfiguration.getName() );
 		this.packetReceiver.start();
 
-		super.linkUp = true;
+		super.linkUp = true;		
 	}
-
+	
 	@Override
 	public void down()
 	{
@@ -131,24 +143,29 @@ public class UdpRelayLink extends LinkBase implements ILink
 			return;
 		
 		logger.debug( "Taking UDP Relay link down" );
-		
-		// Take the packet receiver down
+
+		//
+		// 1. Take down the packet receiver to stop incoming messages
+		//
 		this.packetReceiver.interrupt();
-		ThreadUtils.exceptionlessThreadJoin( packetReceiver, 5000 );
-		
-		// Disconnect from the socket
+		ThreadUtils.exceptionlessThreadJoin( packetReceiver, 1000 );
+
+		//
+		// 2. Disconnect from the socket
+		//
 		this.socket.disconnect();
 		
 		this.linkUp = false;
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Outgoing Message Processing Methods   //////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public void reflect( Message message )
 	{
-		
+		// No-op for the relay
+		// Messages are sent to dedicated links for each of the connected sites
 	}
 
 	/**
@@ -156,6 +173,9 @@ public class UdpRelayLink extends LinkBase implements ILink
 	 * This method will catch and log any exception but will not throw them. This should
 	 * only be used inside the relay class for things that shouldn't cause the receiver
 	 * thread to crash out.
+	 * <p/>
+	 * This method is used for internal management methods. Data messages are processed
+	 * through individual {@link UdpWanLink} instances set-up for each connection.
 	 */
 	private void exceptionlessSend( UdpMessage message, SocketAddress to )
 	{
@@ -174,29 +194,37 @@ public class UdpRelayLink extends LinkBase implements ILink
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Incoming Message Processing Methods   //////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	
-	private void receiveNext( DatagramPacket packet )
+	private void receiveNext() throws SocketException, IOException
 	{
-		// Log some packet information
-		byte[] data = packet.getData();
-		int length = packet.getLength();
-		if( logger.isTraceEnabled() )
-			logger.trace( "Received packet from: %s (%d bytes)", packet.getSocketAddress(), length );
+		// Grab the next packet
+		this.socket.receive( this.incoming );
+
+		byte[] data = incoming.getData();
+		int length = incoming.getLength();
+		logger.trace( "Received message from %s (size=%d)", incoming.getSocketAddress(), length );
 		
+		// Verify some basics to make sure it is valid
+		if( length < UdpMessage.MIN_PACKET_SIZE )
+		{
+			logger.warn( "Discarding undersized packet (min: %d, received: %d)",
+			             UdpMessage.MIN_PACKET_SIZE, length );
+			return;
+		}
+
+		// Turn the packet into a message so that we can process it
 		try
 		{
-			// Turn the packet into a message so that we can process it
 			UdpMessage message = UdpMessage.fromByteArray( data, 0 );
 			switch( message.getType() )
 			{
 				case Bundle:
-					incomingBundle( (UdpBundle)message );
+					processBundle( (UdpBundle)message );
 					break;
 				case KeepAlive:
-					incomingKeepAlive( (UdpKeepAlive)message, packet );
+					processKeepAlive( (UdpKeepAlive)message, this.incoming.getSocketAddress() );
 					break;
 				case Join:
-					incomingJoin( packet, (UdpJoin)message );
+					processJoinRequest( (UdpJoin)message, this.incoming.getSocketAddress() );
 					break;
 				case Configure:
 					System.out.println( "RECEIVED CONFIGURE" );
@@ -214,29 +242,45 @@ public class UdpRelayLink extends LinkBase implements ILink
 			logger.debug( "(Discard Packet) %s", e.getMessage(), e );
 			return;
 		}
+
 	}
 	
-	private final void incomingBundle( UdpBundle bundle )
+	private void processBundle( UdpBundle message )
 	{
+		
 	}
 	
-	public final void incomingKeepAlive( UdpKeepAlive message, DatagramPacket packet )
+	private void processKeepAlive( UdpKeepAlive message, SocketAddress sender )
 	{
-		logger.debug( "(Keep Alive) received from %s (request=%s)", packet.getSocketAddress(), message.isRequest() );
+		logger.debug( "(Keep Alive) received from %s (ack requested=%s)", sender, message.isAckRequested() );
 
 		// don't process response KA packets
-		if( message.isResponse() )
+		if( message.isAckRequested() == false )
 			return;
 		
 		// return volley to the place that this KeepAlive request came from
-		UdpKeepAlive keepAlive = new UdpKeepAlive();
-		keepAlive.setRequest( false );
-		exceptionlessSend( keepAlive, packet.getSocketAddress() );
+		UdpResponse response = new UdpResponse( message.getMessageId() );
+		response.setAsOk();
+		exceptionlessSend( response, sender );
 	}
-	
-	public void incomingJoin( DatagramPacket packet, UdpJoin request ) throws InterruptedException
+
+	/**
+	 * A remote site wants to join the distributor. This method will perform
+	 * validation checks, including a site-name reservation check, pending request
+	 * check (a number of these can be sent for a single connection) and so on.
+	 * <p/>
+	 * If successful, this method will set up a new {@link UdpWanLink} instance that
+	 * will be added to the distributor and used to talk back to the connecting instance.
+	 * Packets are sent to the same ip:port combination that we receive messages from as
+	 * this is our best option for breaking through NATs.
+	 * <p/>
+	 * If any of the checks fail, a {@link UdpResponse} with an error message will be
+	 * returned to the sender. If it is successful, an instance of the response with the
+	 * {@link MessageType#OkResponse} header will be returned.
+	 */
+	private void processJoinRequest( UdpJoin request, SocketAddress sender )
+		throws InterruptedException
 	{
-		SocketAddress sender = packet.getSocketAddress();
 		String requestedName = request.getSiteName();
 		logger.debug( "(Join) Request by %s with site name %s", sender, requestedName );
 
@@ -245,7 +289,7 @@ public class UdpRelayLink extends LinkBase implements ILink
 		{
 			// Name in use - tell them NO LINK FOR YOU
 			logger.debug( "(Join) Request by %s REJECTED; site name in use", sender );
-			UdpResponse response = new UdpResponse();
+			UdpResponse response = new UdpResponse( request.getMessageId() );
 			response.setAsError( "Name taken (%s)", requestedName );
 			exceptionlessSend( response, sender );
 			return;
@@ -276,16 +320,22 @@ public class UdpRelayLink extends LinkBase implements ILink
 		logger.debug( "(Join) Request by %s ACCEPTED; site name is %s", sender, requestedName );
 			
 		// Set the reverse IP/Port as the target
-		local.setWanAddress( packet.getAddress().getHostAddress() );
-		local.setWanPort( packet.getPort() );
+		InetSocketAddress inetSender = (InetSocketAddress)sender;
+		local.setWanAddress( inetSender.getAddress().getHostAddress() );
+		local.setWanPort( inetSender.getPort() );
 			                     
 		// Create the reverse connection and initialize it
 		UdpWanLink reverseLink = new UdpWanLink( local );
 		reverseLink.setTransient( true );
-		reflector.getDistributor().addAndBringUp( reverseLink );
+		boolean success = reflector.getDistributor().addAndBringUp( reverseLink );
+		if( success == false )
+		{
+			logger.debug( "(Join) Request by %s REJECTED; can't connect back", sender );
+			return;
+		}
 
 		// Let them know everything is cool
-		UdpResponse response = new UdpResponse();
+		UdpResponse response = new UdpResponse( request.getMessageId() );
 		response.setAsOk( "", "" );
 		exceptionlessSend( response, sender );
 
@@ -308,6 +358,10 @@ public class UdpRelayLink extends LinkBase implements ILink
 		local.setWanBundlingSize( remote.getWanBundlingSizeBytes() );
 		local.setWanBundlingTime( remote.getWanBundlingTime() );
 		local.setWanAutoReconnect( false );
+		
+		// Networking
+		if( remote.getWanNic().equalsIgnoreCase("LOOPBACK") )
+			local.setWanNic( remote.getWanNic() ); // avoid BindExceptions
 		
 		// Filtering
 		// Set remote's ingress as our egress to prevent unnecessary sending.
@@ -345,46 +399,43 @@ public class UdpRelayLink extends LinkBase implements ILink
 		return "NFI";
 	}
 
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	
 	/////////////////////////////////////////////////////////////////////////////////////
 	/// Receive Processing  /////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
-	/** Class responsible for receiving messages from the remote host represented by this instance */
+	/** Class responsible for receiving messages from remote hosts connecting to the relay */
 	private class PacketReceiver extends Thread
 	{
 		private PacketReceiver( String parentName )
 		{
-			super( parentName+"-UDP Packet Manager" );
+			super( parentName+"-UDP Packet Receiver" );
 		}
 		
 		public void run()
 		{
 			logger.debug( "Listening for remote packets on "+socket.getLocalSocketAddress() );
 
-			while( Thread.interrupted() == false )
+			try
 			{
-				// 1. Receive the next packet
-				try
-				{
-					socket.receive( packet );
-					receiveNext( packet );
-				}
-				catch( IOException ioex )
-				{
-					logger.error( "Exception while receiving on UDP socket, disconnecting: "+
-					              ioex.getMessage(), ioex );
-					down();
-					return;
-				}
+				while( Thread.interrupted() == false )
+					receiveNext();
+			}
+			catch( SocketException se )
+			{
+				// we are shutting down - someone has closed the socket intentionally on us
+				logger.debug( "Socket closed, shutting down" );
+			}
+			catch( IOException ioex )
+			{
+				// socket has gone south on us - we can't continue if we can't receive
+				// bring the link down
+				logger.error( "Exception while receiving on UDP socket, disconnecting: "+
+				              ioex.getMessage(), ioex );
+				down();
 			}
 		}
 	}
+
 }

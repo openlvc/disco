@@ -28,25 +28,25 @@ public class UdpKeepAlive extends UdpMessage
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	/** Size of this packet including the header. Keep Alive packets are always the same size. */
-	private static final short PACKET_SIZE = UdpMessage.HEADER_SIZE+1;
+	/** Size of the payload */
+	private static final short PACKET_SIZE = 1;
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private boolean request;
+	private boolean sendAck;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	public UdpKeepAlive()
 	{
-		this.request = true;
+		this.sendAck = false;
 	}
 
-	public UdpKeepAlive( boolean request )
+	public UdpKeepAlive( boolean sendAck )
 	{
-		this.request = request;
+		this.sendAck = sendAck;
 	}
 
 	//----------------------------------------------------------
@@ -66,7 +66,7 @@ public class UdpKeepAlive extends UdpMessage
 	public void writeTo( DisOutputStream stream ) throws IOException
 	{
 		stream.writeShort( PACKET_SIZE );
-		stream.writeBoolean( this.request );
+		stream.writeBoolean( this.sendAck );
 	}
 
 	@Override
@@ -76,26 +76,22 @@ public class UdpKeepAlive extends UdpMessage
 		if( length != PACKET_SIZE )
 			throw new DiscoException( "Incorrect packet length in header" );
 		
-		this.request = stream.readBoolean();
+		this.sendAck = stream.readBoolean();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public boolean isRequest()
+	public boolean isAckRequested()
 	{
-		return this.request;
+		return this.sendAck;
+	}
+
+	public void setAckRequested( boolean requested )
+	{
+		this.sendAck = requested;
 	}
 	
-	public boolean isResponse()
-	{
-		return !this.request;
-	}
-	
-	public void setRequest( boolean request )
-	{
-		this.request = request;
-	}
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
