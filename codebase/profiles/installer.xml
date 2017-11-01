@@ -25,7 +25,7 @@
 	<!-- ================================================================================= -->
 	<!--                             Installer Creation Targets                            -->
 	<!-- ================================================================================= -->
-	<target name="installer" extensionOf="master.installer" depends="zip.win64">
+	<target name="installer" extensionOf="master.installer" depends="zip.win64,zip.linux64">
 	</target>
 
 	<!--                                    -->
@@ -46,6 +46,25 @@
 			            includes="**/*"
 			            prefix="${dist.name}/jre"/>
 		</zip>
+	</target>
+	
+	
+	<!--                                       -->
+	<!-- Linux (64-bit JRE) Tarball Generation -->
+	<!--                                       -->
+	<target name="zip.linux64" if="platform.linux">
+		<!-- Verify that we have access to a JRE we can package -->
+		<verifyJdk location="${jdk.home.linux64}" arch="amd64"/>
+
+		<!-- Generate the tarball with the sandbox and the JRE in it -->
+		<!-- We have to use exec as the result tar task gives us problems with
+		     permissions and symlinks -->
+		<property name="tarball.file" location="${dist.dir}/${dist.name}-linux64.tar.gz"/>
+
+		<echo>Creating tarball: ${tarball.file}</echo>
+		<exec executable="tar" dir="${dist.dir}" failonerror="true">
+			<arg line="-czpf ${tarball.file} --transform=s,jre,${dist.name}/jre,g ./${dist.name} -C${jdk.home.linux64} ./jre"/>
+		</exec>
 	</target>
 
 </project>
