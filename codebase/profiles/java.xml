@@ -65,6 +65,7 @@
 	<property name="testng.dir"            location="${lib.dir}/testng/testng-6.8"/>
 	<property name="log4j.dir"             location="${lib.dir}/log4j/apache-log4j-2.4.1-bin"/>
 	<property name="json-simple.dir"       location="${lib.dir}/json-simple/1.1.1"/>
+	<property name="marineapi.dir"         location="${lib.dir}/marineapi/0.10.0"/> <!-- NEMA 0183 Formatting -->
 
 	<!-- Classpaths for individual libraries -->
 	<path id="lib.testng.classpath">
@@ -79,12 +80,17 @@
 		<fileset dir="${json-simple.dir}" includes="**/*.jar"/>
 	</path>
 
+	<path id="lib.marineapi.classpath">
+		<fileset dir="${marineapi.dir}" includes="**/*.jar"/>
+	</path>
+
 	<!-- ========================== -->
 	<!-- Classpath Set Declarations -->
 	<!-- ========================== -->
 	<path id="compile.classpath">
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.json-simple.classpath"/>
+		<path refid="lib.marineapi.classpath"/>
 	</path>
 
 	<path id="test.classpath">
@@ -190,6 +196,8 @@
 			<fileset dir="${lib.dir}">
 				<include name="log4j/**/*"/>
 				<include name="json-simple/**/*"/>
+				<include name="marineapi/**/*"/>
+				<exclude name="marineapi/**/example*/**"/>
 			</fileset>
 		</copy>
 

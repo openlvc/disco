@@ -89,6 +89,12 @@ public class Main
 			return;
 		}
 
+		if( args.length > 0 && args[0].equalsIgnoreCase("--app:dislocator") )
+		{
+			org.openlvc.dislocator.Main.main( Arrays.copyOfRange(args,1,args.length) );
+			return;
+		}
+
 		// print out some information about us
 		new Main().run();
 	}
