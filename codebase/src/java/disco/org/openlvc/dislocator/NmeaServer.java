@@ -47,16 +47,22 @@ import net.sf.marineapi.nmea.util.Units;
 
 /**
  * This class provides a TCP/IP server that remote clients can connect to and receive
- * location information about the tracking entity from in NMEA format. Whenever we
- * receive a location update from the DIS network, it is sent here where it is converted
- * into a NMEA 0183 "GGA" sentence and sent to all connected clients.
- * <p/>
+ * location information about the tracking entity from in NMEA format. There are actually
+ * a number of NMEA different formats. This server currently supports three, and will output
+ * one of them depending on what the {@link Configuration} object specified. The supported
+ * formats are:
  * 
- * The structure of a GGA sentence is:
- * <p/>
- * <code></code>
+ * <ul>
+ *   <li>GGA - Global Positioning System Fix Data</li>
+ *   <li>RMC - Recommended minimum specific GPS/Transit data</li>
+ *   <li>GLL - Geographic position, latitude / longitude</li>
+ * </ul>
  * 
- *
+ * For more information on message structure, see one of the following links:
+ * <ul>
+ *   <li>http://aprs.gids.nl/nmea/</li>
+ *   <li>http://www.gpsinformation.org/dale/nmea.htm</li>
+ * </ul>
  */
 public class NmeaServer
 {
