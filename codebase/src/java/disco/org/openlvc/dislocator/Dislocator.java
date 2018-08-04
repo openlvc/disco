@@ -25,6 +25,7 @@ import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.utils.NetworkUtils;
+import org.openlvc.duplicator.Replayer;
 
 public class Dislocator implements IPduListener
 {
@@ -39,8 +40,9 @@ public class Dislocator implements IPduListener
 	private Logger logger;
 	
 	// DIS Properties 
-	private OpsCenter opscenter;
 	private String trackingEntityMarking;	
+	private OpsCenter opscenter;  // use this if mode is Network
+	private Replayer replayer;    // use this if mode is File
 	
 	// NMEA Server
 	private NmeaServer nmeaServer;
@@ -53,6 +55,7 @@ public class Dislocator implements IPduListener
 		this.configuration = configuration;
 		this.logger = this.configuration.getDislocatorLogger();
 		this.opscenter = null; // set in execute()
+		this.replayer = null;  // set in execute()
 		
 		// Get the entity marking we're tracking and make sure we reduce it to the
 		// maximum size the marking can be
@@ -78,20 +81,36 @@ public class Dislocator implements IPduListener
 	{
 		printWelcome();
 		
+		//
+		// Set up DIS feed
+		//
 		try
 		{
-    		// Open up the Disco Operations Centre
-    		opscenter = new OpsCenter( configuration.getDiscoConfiguration() );
-    		opscenter.setListener( this );
-    		opscenter.open();
+    		if( configuration.isModeNetwork() )
+    		{
+        		// Open up the Disco Operations Centre
+    			logger.info( "(Mode:Network) Connecting to DIS network" );
+        		opscenter = new OpsCenter( configuration.getDiscoConfiguration() );
+        		opscenter.setListener( this );
+        		opscenter.open();
+        		logger.info( "Connected to DIS network" );
+    		}
+    		else
+    		{
+    			logger.info( "(Mode:File) Session File: "+configuration.getSessionFile().getAbsolutePath() );
+    			replayer = new Replayer( configuration.getSessionFile() );
+    			replayer.setLogger( logger );
+    			replayer.setListener( this );
+    			replayer.startReplay();
+    			logger.info( "File replay is active" );
+    		}
 		}
 		catch( RuntimeException e )
 		{
 			try { nmeaServer.close(); } catch( Exception | Error ex ) {}
 			throw e;
 		}
-		
-		logger.info( "Connected to DIS network" );
+
 		logger.info( "Locating and tracking marking: "+this.trackingEntityMarking );
 
 		// Open the NMEA Server first
@@ -101,8 +120,9 @@ public class Dislocator implements IPduListener
 	public void shutdown()
 	{
 		logger.info( "Shutting the Dislocator down" );
-		try { nmeaServer.close(); } catch( Exception | Error e ) {}
-		try { opscenter.close();  } catch( Exception | Error e ) {}
+		try { nmeaServer.close();    } catch( Exception | Error e ) {}
+		try { opscenter.close();     } catch( Exception | Error e ) {}
+		try { replayer.stopReplay(); } catch( Exception | Error e ) {}
 	}
 
 	
@@ -145,6 +165,11 @@ public class Dislocator implements IPduListener
 		
 		// Log information about the available network interfaces
 		NetworkUtils.logNetworkInterfaceInformation( logger );
+	}
+
+	public String toString()
+	{
+		return "Dislocator";
 	}
 
 	//----------------------------------------------------------

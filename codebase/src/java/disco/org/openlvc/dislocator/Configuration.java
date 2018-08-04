@@ -40,6 +40,10 @@ public class Configuration
 	public static final String KEY_LOG_LEVEL       = "dislocator.loglevel";
 	public static final String KEY_LOG_FILE        = "dislocator.logfile";
 
+	/** What is the mode of the dislocator: reflect network or replay from recorded session? */
+	public static final String KEY_MODE            = "dislocator.mode";
+	public static final String KEY_SESSION_FILE    = "dislocator.sessionFile";
+	
 	/** Marking of the entity that we are tracking */
 	public static final String KEY_TRACKING_ENTITY = "dislocator.tracking";
 
@@ -53,6 +57,7 @@ public class Configuration
 	public static final String KEY_TCP_PORT        = "dislocator.tcp.port";
 
 	public static final String KEY_NMEA_FORMAT     = "dislocator.nmea.format";
+	
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -159,6 +164,47 @@ public class Configuration
 		loggingConfiguration.setLevel( level );
 	}
 
+	// Replay Mode Settings
+	/** @return Are we reading DIS traffic from the network? True if so, false otherwise. */
+	public boolean isModeNetwork()
+	{
+		String mode = properties.getProperty( KEY_MODE, "Network" );
+		return mode.equalsIgnoreCase( "Network" );
+	}
+	
+	/** @return Are we reading DIS traffic from a session file? True if so, false otherwise. */
+	public boolean isModeFile()
+	{
+		String mode = properties.getProperty( KEY_MODE, "Network" );
+		return mode.equalsIgnoreCase( "File" );
+	}
+	
+	public void setMode( String mode )
+	{
+		if( mode == null )
+			throw new DiscoException( "Cannot set mode to null" );
+
+		if( mode.equalsIgnoreCase("Network") == false &&
+			mode.equalsIgnoreCase("File") == false )
+		{
+			throw new DiscoException( "Mode must be either Network or File. Received: "+mode );
+		}
+		else
+		{
+			properties.setProperty( KEY_MODE, mode );
+		}
+	}
+	public File getSessionFile()
+	{
+		return new File( properties.getProperty(KEY_SESSION_FILE,"duplicator.session") );
+	}
+	
+	public void setSessionFile( File file )
+	{
+		properties.setProperty( KEY_SESSION_FILE, file.getAbsolutePath() );
+	}
+	
+	// Entity Settings
 	/**
 	 * @return The marking of the DIS entity we are tracking and reflecting the location of.
 	 */
@@ -372,6 +418,11 @@ public class Configuration
 				this.setTcpServerPort( Integer.parseInt(list.next()) );
 			else if( argument.equalsIgnoreCase("--nmea-format") )
 				this.setNmeaOutputFormat( list.next() );
+			else if( argument.equalsIgnoreCase("--session-file") )
+			{
+				this.setMode( "File" );
+				this.setSessionFile( new File( list.next()) );
+			}
 			else
 				throw new DiscoException( "Unknown argument: "+argument );
 		}
@@ -388,6 +439,7 @@ public class Configuration
 
 		System.out.println( "  --tracking            string   (required)  Marking of entity to track. Must specify here, or in config file" );
 		System.out.println( "  --nmea-format         string   (optional)  NMEA record output format: GGA, RMC or GLL (default: GGA)" );
+		System.out.println( "  --session-file        path     (optional)  Read PDU data from given session file rather than network" );
 		System.out.println( "  --config-file         integer  (optional)  Number of objects to create                (default: 100)" );
 		System.out.println( "  --log-level           string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE]    (default: INFO)" );
 		System.out.println( "" );
