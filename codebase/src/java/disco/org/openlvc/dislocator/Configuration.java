@@ -390,6 +390,8 @@ public class Configuration
 	 */
 	private void applyCommandLine( String[] args ) throws DiscoException
 	{
+		boolean isSystemTest = false;
+
 		CommandList list = new CommandList( args );
 		while( list.hasMore() )
 		{
@@ -421,10 +423,21 @@ public class Configuration
 			else if( argument.equalsIgnoreCase("--session-file") )
 			{
 				this.setMode( "File" );
-				this.setSessionFile( new File( list.next()) );
+				this.setSessionFile( new File(list.next()) );
 			}
+			else if( argument.equalsIgnoreCase("--system-test") )
+				isSystemTest = true;
 			else
 				throw new DiscoException( "Unknown argument: "+argument );
+		}
+		
+		// If this is a system test, override other settings
+		if( isSystemTest )
+		{
+    		this.setMode( "File" );
+    		this.setSessionFile( new File("etc/dislocator-test.session") );
+    		if( this.hasTrackingEntity() == false )
+    			this.setTrackingEntity( "Test" );
 		}
 	}
 
@@ -454,6 +467,11 @@ public class Configuration
 		System.out.println( "  --tcp-port            integer  (optional)  TCP Listen port for NMEA server            (default: 2999)" );
 		System.out.println( "  --tcp-address         string   (optional)  TCP Listen address or a special symbol:    (default: SITE_LOCAL)" );
 		System.out.println( "                                             LOOPBACK, LINK_LOCAL, SITE_LOCAL, GLOBAL" );
+		System.out.println( "" );
+		System.out.println( "System Test Mode" );
+		System.out.println( "  --system-test                  (optional)  Puts the Dislocator into File mode and loads test session from" );
+		System.out.println( "                                             etc/dislocator-test.session. Session has a single aircraft with" );
+		System.out.println( "                                             marking \"Test\" that is loitering near Rockhampton in Queensland" );
 		System.out.println( "" );
 	}
 
