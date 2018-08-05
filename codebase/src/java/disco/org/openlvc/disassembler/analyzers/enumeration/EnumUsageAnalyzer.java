@@ -23,8 +23,8 @@ import org.openlvc.disassembler.analyzers.IResults;
 import org.openlvc.disassembler.configuration.AnalyzerType;
 import org.openlvc.disassembler.configuration.Configuration;
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.pdu.PDU;
 import org.openlvc.duplicator.SessionReader;
+import org.openlvc.duplicator.Track;
 
 public class EnumUsageAnalyzer implements IAnalyzer
 {
@@ -62,14 +62,14 @@ public class EnumUsageAnalyzer implements IAnalyzer
 		EnumUsageResults resultset = new EnumUsageResults( configuration );
 		long startTime = System.currentTimeMillis();
 		long pduCount = 0;
-		for( PDU pdu : session )
+		for( Track track : session )
 		{
-			switch( pdu.getType() )
+			switch( track.getPdu().getType() )
 			{
 				case EntityState:
 				case Fire:
 				case Detonation:
-					resultset.add( pdu );
+					resultset.add( track.getPdu() );
 					break;
 				default:
 					break;

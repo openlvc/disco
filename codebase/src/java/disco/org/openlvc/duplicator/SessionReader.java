@@ -35,7 +35,7 @@ import org.openlvc.disco.pdu.PduFactory;
  * It takes a reference to the session file to be opened and then provides methods
  * for reading PDUs in from the session until complete.
  */
-public class SessionReader implements Iterable<PDU>, Iterator<PDU>
+public class SessionReader implements Iterable<Track>, Iterator<Track>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -57,7 +57,7 @@ public class SessionReader implements Iterable<PDU>, Iterator<PDU>
 	private DataInputStream dataIn;
 
 	private boolean fileIsEmpty;
-	private Queue<PDU> queue;
+	private Queue<Track> queue;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -76,6 +76,24 @@ public class SessionReader implements Iterable<PDU>, Iterator<PDU>
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 	/**
+	 * Set the file from which we are reading. If the session is already open, an exception
+	 * will be thrown.
+	 * 
+	 * @param sessionFile The file to read from
+	 * @throws DiscoException If the session is already open.
+	 */
+	public void setSessionFile( File sessionFile ) throws DiscoException
+	{
+		if( this.isOpen() )
+			throw new DiscoException( "Cannot change the session file while session is open" );
+		else
+			this.sessionFile = sessionFile;
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Session Reading Methods   //////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
 	 * Open the supporting session file so that we can read PDUs from it. Throws an
 	 * exception if there is an underlying IO issue. If the session is already open
 	 * we just return immediately.
@@ -88,13 +106,12 @@ public class SessionReader implements Iterable<PDU>, Iterator<PDU>
 		try
 		{
 			this.fileIn = new FileInputStream( sessionFile );
+			this.dataIn = new DataInputStream( new BufferedInputStream(this.fileIn) );
 		}
 		catch( IOException ioex )
 		{
 			throw new DiscoException( "Could not open session file for reading: "+ioex.getMessage(), ioex );
 		}
-		
-		this.dataIn = new DataInputStream( new BufferedInputStream(this.fileIn) );
 	}
 
 	/**
@@ -128,12 +145,13 @@ public class SessionReader implements Iterable<PDU>, Iterator<PDU>
 	}
 
 	/**
-	 * Return the next PDU in the session. Note that this may trigger a caching of an upcoming
-	 * set of PDUs. This value is set to load PDUs in batches of 100 by default, but can be
-	 * modified via the property {@link #BUFFER_REFILL_THRESHOLD}
+	 * Return the next {@link Track} in the session. Note that tracks are loaded in blocks,
+	 * and this call may trigger the next block to be loaded.
+	 * 
+	 * @return The next available track in the session, or null if there is none.
 	 */
 	@Override
-	public PDU next()
+	public Track next()
 	{
 		// If we don't have at least 100 PDUs in the buffer, and there are more left, fetch them
 		if( queue.size() <= BUFFER_LOW_THRESHOLD )
@@ -173,14 +191,14 @@ public class SessionReader implements Iterable<PDU>, Iterator<PDU>
 			int pdusRead = 0;
 			while( pdusRead < BUFFER_REFILL_THRESHOLD )
 			{
-				dataIn.readLong(); // timestamp
+				long timeOffset = dataIn.readLong(); // timestamp
 				short pdusize = dataIn.readShort();
 				byte[] pdubytes = new byte[pdusize];
 				dataIn.readFully( pdubytes );
 				
 				// convert the byte[] into a PDU
 				PDU pdu = PduFactory.create( pdubytes );
-				queue.add( pdu );
+				queue.add( new Track(pdu,timeOffset) );
 				
 				// is there more information to process?
 				if( fileIn.available() <= 0 )
@@ -202,7 +220,7 @@ public class SessionReader implements Iterable<PDU>, Iterator<PDU>
 	/// Iterator Methods   /////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
-	public Iterator<PDU> iterator()
+	public Iterator<Track> iterator()
 	{
 		return this;
 	}

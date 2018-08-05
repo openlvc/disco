@@ -23,8 +23,8 @@ import org.openlvc.disassembler.analyzers.IResults;
 import org.openlvc.disassembler.configuration.AnalyzerType;
 import org.openlvc.disassembler.configuration.Configuration;
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.pdu.PDU;
 import org.openlvc.duplicator.SessionReader;
+import org.openlvc.duplicator.Track;
 
 public class PduCountAnalyzer implements IAnalyzer
 {
@@ -62,9 +62,9 @@ public class PduCountAnalyzer implements IAnalyzer
 		PduCountResults results = new PduCountResults( configuration );
 		long startTime = System.currentTimeMillis();
 		long pduCount = 0;
-		for( PDU pdu : session )
+		for( Track track : session )
 		{
-			results.add( pdu );
+			results.add( track.getPdu() );
 			
 			if( ++pduCount % 100000 == 0 )
 				logger.info( "Analyzed %,d pdus", pduCount );

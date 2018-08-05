@@ -17,11 +17,7 @@
  */
 package org.openlvc.duplicator;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Timer;
@@ -31,8 +27,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.IPduListener;
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.utils.StringUtils;
 import org.openlvc.disco.utils.ThreadUtils;
 
@@ -62,14 +56,6 @@ public class Replayer
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	// Always try and maintain a buffer of at least 100 PDUs, but preferrably up to 1000.
-	// If we say the average PDU size is 500b, then 1000 is only 500K of ram to hold anyway.
-	/** The lowest we should let the buffer get (excluding when coming to end of session */
-	private static final int BUFFER_LOW_THRESHOLD = 100;
-
-	/** When refilling the buffer from disk, this is the max we should try and fetch. Note
-	    that the actual figure may be slightly above or under this */
-	private static final int BUFFER_REFILL_THRESHOLD = 1000;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -83,14 +69,8 @@ public class Replayer
 	private Status status;
 	private Thread replayThread;
 
-	// Packet management
-	private Queue<Track> queue;
-	
 	// Session Reading
-	private File sessionFile;
-	private FileInputStream fis;
-	private BufferedInputStream bis;
-	private DataInputStream dis;
+	private SessionReader sessionReader;
 
 	// Metrics
 	private long pdusWritten;
@@ -123,13 +103,8 @@ public class Replayer
 		this.status = Status.BeforeStart;
 		this.replayThread = null;         // set in startReplay()
 		
-		// Packet management
-		this.queue = new LinkedList<>();
-		
-		// Session Writing
-		this.sessionFile = sessionFile;
-		this.fis = null;                  // set in openSession()
-		this.bis = null;                  // set in openSession()
+		// Session Reading
+		this.sessionReader = new SessionReader( sessionFile );
 		
 		// Metrics
 		// These are all set in startReplay
@@ -162,6 +137,10 @@ public class Replayer
 		// make sure we have a logger to use
 		if( this.logger == null )
 			this.logger = LogManager.getFormatterLogger( "duplicator" );
+		
+		// open the session
+		this.sessionReader.open();
+		logger.debug( "Session file is open and ready for reading" );
 
 		// reset metrics
 		this.pdusWritten = 0;
@@ -183,16 +162,19 @@ public class Replayer
 		this.status = Status.Running;
 		this.replayThread = new ReplayThread();
 		this.replayThread.start();
+		logger.info( "Session replay has been STARTED" );
 	}
 	
 	public void pauseReplay()
 	{
 		this.status = Status.Paused;
+		logger.info( "Session replay has been PAUSED" );
 	}
 	
 	public void resumeReplay()
 	{
 		this.status = Status.Running;
+		logger.info( "Session replay has been RESUMED" );
 	}
 	
 	public void stopReplay()
@@ -206,6 +188,7 @@ public class Replayer
 		
 		// close the session and timers
 		this.endReplay();
+		logger.info( "Session replay has been STOPPED" );
 	}
 
 	/**
@@ -217,7 +200,8 @@ public class Replayer
 	private void endReplay()
 	{
 		// close the session
-		this.closeSession();
+		this.sessionReader.close();
+		logger.debug( "Session file has been closed" );
 		
 		// end the logging timer
 		if( this.timer != null )
@@ -241,47 +225,6 @@ public class Replayer
 			ThreadUtils.exceptionlessSleep( 1000 );
 		}
 	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Session Reading Methods   //////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	private void openSession()
-	{
-		if( this.sessionFile.exists() == false )
-		{
-			logger.error( "Session file doesn't exist: "+sessionFile );
-			throw new RuntimeException( "Session file doens't exist: "+sessionFile );
-		}
-
-		try
-		{
-			this.fis = new FileInputStream( sessionFile );
-		}
-		catch( IOException ioex )
-		{
-			logger.error( "Could not open session file for reading: "+ioex.getMessage(), ioex );
-		}
-		
-		this.bis = new BufferedInputStream( this.fis );
-		this.dis = new DataInputStream( this.bis );
-		logger.debug( "Session file is open and ready for reading" );
-	}
-	
-	private void closeSession()
-	{
-		// close off our session file
-		try
-		{
-			if( this.bis != null )
-				this.bis.close();
-			if( this.fis != null )
-				this.fis.close();
-		}
-		catch( Exception e )
-		{
-			logger.error( "Exception in shutdown: "+e.getMessage(), e );
-		}		
-	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Session Management Methods   ///////////////////////////////////////////////////////////
@@ -294,18 +237,13 @@ public class Replayer
 		this.pdusWrittenSize = 0;
 		this.lastTenSeconds.clear();
 		
-		// Open up the session file
-		this.openSession();
-		
-		// fill the buffer initially to make sure we have something to work on
-		this.refillBuffer();
-		
 		// record start time and pdu count for logging later
 		long startTime = System.currentTimeMillis();
 		
 		// iterate over all PDUs, waiting the appropriate time if we are running in real time
-		long lastPacketTimestamp = 0;
-		while( queue.isEmpty() == false )
+		long lastTrackOffset = 0;
+
+		while( sessionReader.hasNext() )
 		{
 			// Make sure we're in the right state first
 			switch( status )
@@ -321,8 +259,8 @@ public class Replayer
 			}
 			
 			// Get the next track
-			Track next = getNextTrack();
-			long delay = next.timestamp - lastPacketTimestamp;
+			Track next = sessionReader.next();
+			long delay = next.offset - lastTrackOffset;
 			
 			// Wait for a bit if we have to
 			if( this.mode == Mode.RealTime && (delay > 0) )
@@ -341,7 +279,7 @@ public class Replayer
 			
 			// Send the PDU to the network
 			this.pduListener.receive( next.pdu );
-			lastPacketTimestamp = next.timestamp;
+			lastTrackOffset = next.offset;
 			pdusWritten++;
 			pdusWrittenSize += next.pdu.getPduLength();
 			switch( next.pdu.getType() )
@@ -359,73 +297,6 @@ public class Replayer
 		this.endReplay();
 	}
 
-	private Track getNextTrack()
-	{
-		// Always try and maintain a buffer of at least 100 PDUs, but preferrably up to 1000.
-		// If we say the average PDU size is 500b, then 1000 is only 500K of ram to hold anyway.
-		
-		// If we don't have at least 100 PDUs in the buffer, and there are more left, fetch them
-		if( queue.size() <= BUFFER_LOW_THRESHOLD )
-			refillBuffer();
-		
-		// Return the next thing on the queue
-		if( queue.isEmpty() )
-			return null;
-		else
-			return queue.poll();
-	}
-
-	/**
-	 * This method does the actual reading of the PDU/Track data from disk. It will attempt to
-	 * refill the queue with up to another BUFFER_REFILL_THRESHOLD tracks, but it may end early
-	 * if there are none left to read.
-	 */
-	private final void refillBuffer()
-	{
-		// check to see if there are any more to get, if not, just return
-		try
-		{
-			if( fis.available() == 0 )
-				return;
-		}
-		catch( IOException e )
-		{
-			logger.warn( "Exeption while refilling PDU buffer: "+e.getMessage(), e );
-			return;
-		}
-
-		// refill the buffer
-		try
-		{
-			logger.debug( "Loading more tracks from disk (limit: "+BUFFER_REFILL_THRESHOLD+")" );
-
-			int pdusRead = 0;
-			while( (fis.available() > 0) && (pdusRead < BUFFER_REFILL_THRESHOLD) )
-    		{
-    			long timestamp = dis.readLong();
-    			short pdusize = dis.readShort();
-    			byte[] pdubytes = new byte[pdusize];
-    			dis.readFully( pdubytes );
-    			
-    			// convert the byte[] into a PDU
-    			PDU pdu = PduFactory.create( pdubytes );
-    			Track track = new Track( pdu, timestamp );
-    			pdusRead++;
-    			queue.add( track );
-    		}
-			
-			if( fis.available() == 0 )
-				logger.debug( "Read "+pdusRead+" tracks from disk. No more left to read." );
-			else
-				logger.debug( "Read "+pdusRead+" tracks from disk." );
-		}
-		catch( IOException e )
-		{
-			logger.warn( "Exeption while refilling PDU buffer: "+e.getMessage(), e );
-			return;
-		}
-	}
-	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -454,17 +325,12 @@ public class Replayer
 		return this.status;
 	}
 	
-	public File getSessionFile()
-	{
-		return this.sessionFile;
-	}
-	
 	public void setSessionFile( File sessionFile ) throws DiscoException
 	{
 		if( this.status != Status.BeforeStart )
 			throw new DiscoException( "Cannot change the session file while replay is active" );
-		
-		this.sessionFile = sessionFile;
+
+		this.sessionReader.setSessionFile( sessionFile );
 	}
 
 	public boolean isStatusLogging()
@@ -518,21 +384,6 @@ public class Replayer
 			replaySession();
 		}
 	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Private Class: Track   /////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	private class Track
-	{
-		public long timestamp;
-		public PDU pdu;
-		public Track( PDU pdu, long timestamp )
-		{
-			this.pdu = pdu;
-			this.timestamp = timestamp;
-		}
-	}
-
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Private Class: Status Summary Logger   /////////////////////////////////////////////////
