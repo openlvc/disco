@@ -59,6 +59,11 @@ public class SessionWriter
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public SessionWriter( String sessionFileName )
+	{
+		this( new File(sessionFileName) );
+	}
+
 	public SessionWriter( File sessionFile )
 	{
 		// Session File Properties
@@ -77,7 +82,8 @@ public class SessionWriter
 	//----------------------------------------------------------
 	/**
 	 * Add the given {@link PDU} to the session. This will queue the PDU for writing to
-	 * to session file on disk (handled in a separate thread).
+	 * to session file on disk (handled in a separate thread). This call WILL NOT block
+	 * while adding to the queue.
 	 * 
 	 * @param pdu The PDU to add to the session
 	 */
@@ -116,6 +122,7 @@ public class SessionWriter
 		}
 		
 		// Start the session writer thread so that we're ready for all teh PDUs
+		this.openingTimestamp = System.currentTimeMillis();
 		this.writerThread = new WriterThread();
 		this.writerThread.start();
 	}

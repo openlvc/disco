@@ -17,16 +17,10 @@
  */
 package org.openlvc.duplicator;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.IPduListener;
@@ -34,10 +28,13 @@ import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.utils.BitHelpers;
-import org.openlvc.disco.utils.FileUtils;
 import org.openlvc.disco.utils.StringUtils;
 
+/**
+ * The {@link Recorder} will connect to a DIS network as per its {@link Configuration} and 
+ * dump all the PDUs it receives into a session that we can replay later using an underlying
+ * {@link SessionWriter}. 
+ */
 public class Recorder implements IPduListener
 {
 	//----------------------------------------------------------
@@ -54,15 +51,8 @@ public class Recorder implements IPduListener
 	private DiscoConfiguration discoConfiguration;
 	private OpsCenter opscenter;
 
-	// Packet management
-	private long openingTimestamp;
-	private BlockingQueue<Track> buffer;
-	
 	// Session Writing
-	private File sessionFile;
-	private Thread sessionWriter;
-	private FileOutputStream fos;
-	private BufferedOutputStream bos;
+	private SessionWriter sessionWriter;
 	
 	// PDU Metrics
 	private long pdusWritten;
@@ -87,15 +77,8 @@ public class Recorder implements IPduListener
 		this.discoConfiguration = null;   // set in execute()
 		this.opscenter = null;            // set in execute()
 		
-		// Packet management
-		this.openingTimestamp = 0;        // set in execute()
-		this.buffer = new LinkedBlockingQueue<>();
-		
 		// Session Writing
-		this.sessionFile = new File( configuration.getFilename() );
-		this.sessionWriter = new Thread( new SessionWriter(), "SessionWriter" );
-		this.fos = null;                  // set in execute()
-		this.bos = null;                  // set in execute()
+		this.sessionWriter = new SessionWriter( configuration.getFilename() );
 		
 		// PDU Metrics
 		this.pdusWritten = 0;
@@ -121,9 +104,10 @@ public class Recorder implements IPduListener
 		logger.info( "Mode: Record" );
 
 		//
-		// Check the Session parameters
+		// Prepare the Session for writing before we connect
+		// to the DIS network and have incoming PDUs to write.
 		//
-		this.openSession();
+		this.sessionWriter.open();
 		
 		//
 		// Set up the DIS properties
@@ -145,8 +129,6 @@ public class Recorder implements IPduListener
 		//
 		// Kick things off
 		//
-		this.openingTimestamp = System.currentTimeMillis();
-		this.sessionWriter.start();
 		this.opscenter.open();
 		logger.info( "Recorder is active - DO YOUR WORST" );
 		
@@ -169,24 +151,11 @@ public class Recorder implements IPduListener
 	{
 		// Shut down the DIS receiving thread
 		this.opscenter.close();
+		logger.info( "Ops Center has closed; no more DIS traffic" );
 		
 		// Stop the Session Writer
-		this.sessionWriter.interrupt();
-		try
-		{
-			this.sessionWriter.join();
-			this.fos.close();
-			logger.info( "Session writer has shutdown" );
-			logger.info( "Captured %,d PDUs (%,d bytes)", pdusWritten, bytesWritten );
-		}
-		catch( InterruptedException ie )
-		{
-			logger.warn( "Interrupted while waiting for SessionWriter to stop: "+ie.getMessage(), ie );
-		}
-		catch( IOException ioex )
-		{
-			logger.warn( "Exception while closing session file: "+ioex.getMessage(), ioex );
-		}
+		this.sessionWriter.close();
+		logger.info( "Session has been flushed and closed" );
 		
 		// Kill the activity logger
 		this.activityTimer.cancel();
@@ -195,120 +164,27 @@ public class Recorder implements IPduListener
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// PDU Management Methods   ///////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
 	public void receive( PDU pdu )
+	{
+		this.add( pdu );
+	}
+	
+	public void add( PDU pdu )
 	{
 		// increment count for this PDU type
 		int typeIndex = pdu.getType().ordinal();
 		pduCounter[typeIndex] += 1;
+		++pdusWritten;
+		bytesWritten += pdu.getContentLength();
 		
-		this.buffer.add( new Track(pdu) ); // non-blocking call
+		sessionWriter.add( pdu ); // non-blocking call
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Session Writing Methods   //////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/**
-	 * Open up the connection to the Session file so that we are ready to write to it.
-	 */
-	private void openSession()
-	{
-		if( this.sessionFile.exists() )
-			logger.warn( "Session file exists. Will overwrite: "+sessionFile );
-		else
-			FileUtils.createFile( sessionFile );
-		
-		try
-		{
-			this.fos = new FileOutputStream( sessionFile );
-		}
-		catch( IOException ioex )
-		{
-			logger.error( "Could not open session file for writing: "+ioex.getMessage(), ioex );
-		}
-		
-		this.bos = new BufferedOutputStream( this.fos );
-		logger.info( "Session file is open and ready for writing" );
-	}
-	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Private Class: Track   /////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	private class Track
-	{
-		public long timestamp;
-		public PDU pdu;
-		public Track( PDU pdu )
-		{
-			this.pdu = pdu;
-			this.timestamp = System.currentTimeMillis() - openingTimestamp;
-		}
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Private Class: Session Writer   ////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/**
-	 * This class is responsible for managing access to the underlying Duplicator session file.
-	 * It takes PDUs from the local Queue and flushes them to the file as soon as it can. All
-	 * writing is executed on a dedicated thread.
-	 * 
-	 * NOTE: It will not handle any opening or closing of the file, it will just handle any
-	 *       write operations.
-	 */
-	private class SessionWriter implements Runnable
-	{
-		public void run()
-		{
-			LinkedList<Track> flushList = new LinkedList<>();
-			while( Thread.interrupted() == false )
-			{
-				flushList.clear();
-
-				// 
-				// Drain all available PDUs
-				//
-				// Get the first PDU, blocking until it turns up 
-				try
-				{
-					flushList.add( buffer.take() );
-				}
-				catch( InterruptedException ie )
-				{
-					// time to exit
-					return;
-				}
-
-				// We've got the first PDU, if there are more just keep going, but don't block
-				while( buffer.peek() != null )
-					flushList.add( buffer.poll() );
-
-				//
-				// Flush PDUs to disk
-				//
-				for( Track track : flushList )
-				{
-					try
-					{
-						byte[] pdubytes = track.pdu.toByteArray();
-						bos.write( BitHelpers.longToBytes(track.timestamp) );
-						bos.write( BitHelpers.shortToBytes((short)pdubytes.length) );
-						bos.write( pdubytes );
-						pdusWritten++;
-						bytesWritten += (pdubytes.length+9);
-					}
-					catch( IOException ioex )
-					{
-						logger.warn( "Failed to write PDU to log file: "+ioex.getMessage(), ioex );
-					}
-				}
-			}
-		}
-	}
-	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Private Class: Activity Logger   ///////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

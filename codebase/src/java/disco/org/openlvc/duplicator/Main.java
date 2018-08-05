@@ -124,6 +124,11 @@ public class Main
 	///////////////////////////////////////////////////////////////////////////////////
 	public class ShutdownHook extends Thread
 	{
+		public ShutdownHook()
+		{
+			super( "ShutdownHook" );
+		}
+	
 		@Override
 		public void run()
 		{
