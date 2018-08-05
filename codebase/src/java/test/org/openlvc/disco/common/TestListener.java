@@ -52,7 +52,7 @@ public class TestListener implements IPduListener
 	/// PDU Reception Methods   ///////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
 	@Override
-	public void receiver( PDU pdu )
+	public void receive( PDU pdu )
 	{
 		if( pdu.getType() == PduType.EntityState )
 		{

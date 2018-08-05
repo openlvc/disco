@@ -340,7 +340,7 @@ public class Replayer
 			}
 			
 			// Send the PDU to the network
-			this.pduListener.receiver( next.pdu );
+			this.pduListener.receive( next.pdu );
 			lastPacketTimestamp = next.timestamp;
 			pdusWritten++;
 			pdusWrittenSize += next.pdu.getPduLength();

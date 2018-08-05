@@ -58,7 +58,7 @@ public class SimpleReceiver extends PduReceiver
 	{
 		try
 		{
-			clientListener.receiver( PDU.fromByteArray(array) );
+			clientListener.receive( PDU.fromByteArray(array) );
 		}
 		catch( IOException ioex )
 		{

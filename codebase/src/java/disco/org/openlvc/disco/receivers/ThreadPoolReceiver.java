@@ -221,7 +221,7 @@ public class ThreadPoolReceiver extends PduReceiver implements RejectedExecution
 		public void run()
 		{
 			if( clientListener != null )
-				clientListener.receiver( pdu );
+				clientListener.receive( pdu );
 
 			metricsTotalPdusDelivered.incrementAndGet();
 			metricsTotalPdusDeliveredSize.addAndGet( pdu.getContentLength() );

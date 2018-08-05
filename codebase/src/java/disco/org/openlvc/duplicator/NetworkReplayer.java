@@ -191,7 +191,7 @@ public class NetworkReplayer
 		private String connectionInfo;
 		
 		@Override
-		public void receiver( PDU pdu )
+		public void receive( PDU pdu )
 		{
 			// pass to the OpsCenter
 			opscenter.send( pdu );
@@ -223,7 +223,7 @@ public class NetworkReplayer
 	private class NullListener implements IPduListener
 	{
 		@Override
-		public void receiver( PDU pdu )
+		public void receive( PDU pdu )
 		{
 			// no-op
 		}

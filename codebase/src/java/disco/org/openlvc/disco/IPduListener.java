@@ -32,6 +32,6 @@ public interface IPduListener
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public void receiver( PDU pdu );
+	public void receive( PDU pdu );
 	
 }

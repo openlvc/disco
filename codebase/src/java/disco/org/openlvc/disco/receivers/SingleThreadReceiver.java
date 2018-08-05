@@ -164,7 +164,7 @@ public class SingleThreadReceiver extends PduReceiver
 					packet = receiveQueue.take();
 					
 					long nanoStart = System.nanoTime();
-					clientListener.receiver( PDU.fromByteArray(packet) );
+					clientListener.receive( PDU.fromByteArray(packet) );
 					long nanoTime = System.nanoTime() - nanoStart;
 
 					// take our metrics
