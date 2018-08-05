@@ -36,8 +36,8 @@ public class Main
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private String[] args;
-	private Recorder recorder; // store so we can access from shutdown hook
-	private Replay replay;     // store so we can access from shutdown hook
+	private Recorder recorder;      // store so we can access from shutdown hook
+	private NetworkReplayer replay; // store so we can access from shutdown hook
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -71,7 +71,7 @@ public class Main
 		}
 		else
 		{
-			this.replay = new Replay( configuration );
+			this.replay = new NetworkReplayer( configuration );
 			this.replay.execute();
 		}
 	}

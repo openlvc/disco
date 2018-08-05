@@ -132,12 +132,7 @@ public class Replayer
 		this.bis = null;                  // set in openSession()
 		
 		// Metrics
-		this.pdusWritten = 0;
-		this.esPdusWritten = 0;
-		this.firePdusWritten = 0;
-		this.detPdusWritten = 0;
-		this.pdusWrittenSize = 0;
-		this.lastTenSeconds = new LinkedList<Long>();
+		// These are all set in startReplay
 		
 		// Timer Tasks
 		this.statusLogging = true;
@@ -168,6 +163,14 @@ public class Replayer
 		if( this.logger == null )
 			this.logger = LogManager.getFormatterLogger( "duplicator" );
 
+		// reset metrics
+		this.pdusWritten = 0;
+		this.esPdusWritten = 0;
+		this.firePdusWritten = 0;
+		this.detPdusWritten = 0;
+		this.pdusWrittenSize = 0;
+		this.lastTenSeconds = new LinkedList<Long>();
+		
 		// configure the timers
 		if( this.isStatusLogging() )
 		{
@@ -194,17 +197,49 @@ public class Replayer
 	
 	public void stopReplay()
 	{
-		// stop the replay session
-		this.status = Status.Finished;
+		if( this.status == Status.Finished )
+			return;
+		
+		// stop the replay thread
 		this.replayThread.interrupt();
 		ThreadUtils.exceptionlessThreadJoin( this.replayThread );
 		
-		// kill off the session
-		this.closeSession();
+		// close the session and timers
+		this.endReplay();
+	}
 
-		// kill the timer
+	/**
+	 * End the active elements of the session. We do this in a separate method because we need
+	 * something we can call when either stopping a replay from outside the replay thread, or
+	 * when ending the replay because the session is finished (which happens inside the replay
+	 * thread).
+	 */
+	private void endReplay()
+	{
+		// close the session
+		this.closeSession();
+		
+		// end the logging timer
 		if( this.timer != null )
 			this.timer.cancel();
+		
+		this.status = Status.Finished;
+	}
+
+	/**
+	 * This method will block until the currently active session is finished replaying.
+	 * This block will be held over pause/resume cycles and will only return once the
+	 * status for the session reaches Status.Finished.
+	 */
+	public void waitForSessionToFinish()
+	{
+		while( this.status != Status.Finished )
+		{
+			if( Thread.interrupted() )
+				return;
+			
+			ThreadUtils.exceptionlessSleep( 1000 );
+		}
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -321,6 +356,7 @@ public class Replayer
 		// queue should never get empty - getNextTrack() will refill it. If we get here we are done
 		logger.info( "No more tracks to replay. Session over." );
 		logger.info( "Sent %d PDUs in %dms", pdusWritten, System.currentTimeMillis()-startTime );
+		this.endReplay();
 	}
 
 	private Track getNextTrack()
@@ -411,6 +447,11 @@ public class Replayer
 	public void setMode( Mode mode )
 	{
 		this.mode = mode;
+	}
+	
+	public Status getStatus()
+	{
+		return this.status;
 	}
 	
 	public File getSessionFile()
