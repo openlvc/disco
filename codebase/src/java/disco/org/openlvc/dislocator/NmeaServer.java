@@ -17,11 +17,13 @@
  */
 package org.openlvc.dislocator;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -242,9 +244,9 @@ public class NmeaServer
 	{
 		switch( nmeaFormat )
 		{
-			case GGA: return llaToGga( lla );
-			case GLL: return llaToGll( lla );
-			case RMC: return llaToRmc( lla );
+			case GGA: return llaToGga( lla )+"\n";
+			case GLL: return llaToGll( lla )+"\n";
+			case RMC: return llaToRmc( lla )+"\n";
 			default: throw new DiscoException( "Unsupported NMEA foramt: "+nmeaFormat );
 		}
 	}
@@ -279,7 +281,7 @@ public class NmeaServer
 		rmcParser.setTime( new Time() );
 		rmcParser.setStatus( DataStatus.ACTIVE );
 		rmcParser.setVariation( 0.1 );
-		rmcParser.setDirectionOfVariation( CompassPoint.NORTH );
+		rmcParser.setDirectionOfVariation( CompassPoint.WEST );
 		return rmcParser.toSentence();
 	}
 	
@@ -341,17 +343,20 @@ public class NmeaServer
 	private class Connection
 	{
 		private Socket socket;
+		private BufferedOutputStream bos;
 		private PrintWriter writer;
 		public Connection( Socket socket ) throws IOException
 		{
 			this.socket = socket;
-			this.writer = new PrintWriter( socket.getOutputStream() );
+			this.bos = new BufferedOutputStream( socket.getOutputStream() );
+			//this.writer = new PrintWriter( socket.getOutputStream() );
 		}
 		
-		public void updateLocation( String ggaSentence )
+		public void updateLocation( String nmeaSentence ) throws IOException
 		{
-			writer.println( ggaSentence );
-			writer.flush();
+			byte[] bytes = nmeaSentence.getBytes( Charset.forName("UTF-8") );
+			bos.write( bytes, 0, bytes.length );
+			bos.flush();
 		}
 		
 		public void close()
