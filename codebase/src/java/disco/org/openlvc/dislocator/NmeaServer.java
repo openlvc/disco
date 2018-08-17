@@ -36,6 +36,7 @@ import net.sf.marineapi.nmea.sentence.GLLSentence;
 import net.sf.marineapi.nmea.sentence.RMCSentence;
 import net.sf.marineapi.nmea.sentence.SentenceId;
 import net.sf.marineapi.nmea.sentence.TalkerId;
+import net.sf.marineapi.nmea.util.CompassPoint;
 import net.sf.marineapi.nmea.util.DataStatus;
 import net.sf.marineapi.nmea.util.Date;
 import net.sf.marineapi.nmea.util.Datum;
@@ -256,6 +257,7 @@ public class NmeaServer
 		                                  Datum.WGS84 );
 		ggaParser.setPosition( position );
 		ggaParser.setTime( new Time() );
+		ggaParser.setGeoidalHeightUnits( Units.METER );
 		return ggaParser.toSentence();
 	}
 
@@ -263,7 +265,7 @@ public class NmeaServer
 	{
 		Position pos = new Position( lla.getLatitude(), lla.getLongitude(), lla.getAltitude(), Datum.WGS84 );
 		gllParser.setPosition( pos );
-		gllParser.setTime( new Time() );		
+		gllParser.setTime( new Time() );
 		return gllParser.toSentence();
 	}
 
@@ -275,6 +277,9 @@ public class NmeaServer
 		rmcParser.setSpeed( 0.0 );  // FIXME
 		rmcParser.setDate( new Date() );
 		rmcParser.setTime( new Time() );
+		rmcParser.setStatus( DataStatus.ACTIVE );
+		rmcParser.setVariation( 0.1 );
+		rmcParser.setDirectionOfVariation( CompassPoint.NORTH );
 		return rmcParser.toSentence();
 	}
 	
