@@ -86,6 +86,8 @@ public class Configuration
 		this.loggingConfiguration.setConsoleOn( true );
 		this.loggingConfiguration.setFileOn( false );
 		this.loggingConfiguration.setLevel( "INFO" );
+		
+		this.configFile = "etc/dislocator.config";
 
 		// see if the user specified a config file on the command line before we process it
 		this.checkArgsForConfigFile( args );
