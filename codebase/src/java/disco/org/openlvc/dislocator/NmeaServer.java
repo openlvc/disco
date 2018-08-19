@@ -275,8 +275,8 @@ public class NmeaServer
 	{
 		Position pos = new Position( lla.getLatitude(), lla.getLongitude(), lla.getAltitude(), Datum.WGS84 );
 		rmcParser.setPosition( pos );
-		rmcParser.setCourse( 0.0 ); // FIXME
-		rmcParser.setSpeed( 0.0 );  // FIXME
+		rmcParser.setCourse( 10.0 ); // FIXME
+		rmcParser.setSpeed( 100.0 );  // FIXME
 		rmcParser.setDate( getCurrentDate() );
 		rmcParser.setTime( getCurrentTime() );
 		rmcParser.setStatus( DataStatus.ACTIVE );
