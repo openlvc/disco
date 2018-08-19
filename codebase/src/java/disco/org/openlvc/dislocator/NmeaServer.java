@@ -237,16 +237,13 @@ public class NmeaServer
 		this.lastKnown = location;
 		dead.clear();
 		
-		String locationString = toNmea( location );
-		String trackString = toNmeaTrack();
-		
 		logger.info( "Updating location to: "+location );
 		for( Connection connection : connections )
 		{
 			try
 			{
 				if( connection.socket.isConnected() )
-					connection.update( locationString, trackString );
+					connection.update( location );
 				else
 					dead.add( connection );
 			}
@@ -353,7 +350,7 @@ public class NmeaServer
 					Socket socket = serverSocket.accept();
 					Connection connection = new Connection( socket );
 					if( lastKnown != null )
-						connection.update( toNmea(lastKnown), toNmeaTrack() );
+						connection.update( lastKnown );
 					addConnection( connection );
 
 					logger.info( "(Accepted) Connection from ip=%s",
@@ -389,10 +386,15 @@ public class NmeaServer
 			this.writer = new PrintWriter( socket.getOutputStream() );
 		}
 		
-		public void update( String locationSentence, String trackSentence ) throws IOException
+		public void update( LLA location ) throws IOException
 		{
-			writer.println( locationSentence );
-			writer.println( trackSentence );
+			String vtgString = toNmeaTrack();
+			String ggaString = llaToGga( location );
+			String rmcString = llaToRmc( location );
+			
+			writer.println( vtgString );
+			writer.println( ggaString );
+			writer.println( rmcString );
 			writer.flush();
 		}
 		
