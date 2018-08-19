@@ -57,6 +57,7 @@ public class Configuration
 	public static final String KEY_TCP_PORT        = "dislocator.tcp.port";
 
 	public static final String KEY_NMEA_FORMAT     = "dislocator.nmea.format";
+	public static final String KEY_NMEA_TIME       = "dislocator.nmea.timezone"; // UTC or Local
 	
 
 	//----------------------------------------------------------
@@ -349,7 +350,7 @@ public class Configuration
 	//
 	public SentenceId getNmeaOutputFormat()
 	{
-		return SentenceId.valueOf( properties.getProperty(KEY_NMEA_FORMAT,"GGA").toUpperCase() );
+		return SentenceId.valueOf( properties.getProperty(KEY_NMEA_FORMAT,"RMC").toUpperCase() );
 	}
 	
 	public void setNmeaOutputFormat( String format )
@@ -361,6 +362,26 @@ public class Configuration
 	public void setNmeaOutputFormat( SentenceId format )
 	{
 		properties.setProperty( KEY_NMEA_FORMAT, format.name() );
+	}
+	
+	public void setNmeaOutputTime( String value )
+	{
+		if( value.equalsIgnoreCase("local") == false &&
+			value.equalsIgnoreCase("utc") == false )
+			throw new IllegalArgumentException( "Output time must be \"utc\" or \"local\"" );
+		
+		properties.setProperty( KEY_NMEA_TIME, value );
+	}
+	public boolean useUtcTime()
+	{
+		String value = properties.getProperty(KEY_NMEA_TIME,"local").toLowerCase();
+		return value.equals("utc");
+	}
+	
+	public boolean useLocalTime()
+	{
+		String value = properties.getProperty(KEY_NMEA_TIME,"local").toLowerCase();
+		return value.equals("local");
 	}
 	
 	@Override
@@ -422,6 +443,8 @@ public class Configuration
 				this.setTcpServerPort( Integer.parseInt(list.next()) );
 			else if( argument.equalsIgnoreCase("--nmea-format") )
 				this.setNmeaOutputFormat( list.next() );
+			else if( argument.equalsIgnoreCase("--nmea-timezone") )
+				this.setNmeaOutputTime( list.next() );
 			else if( argument.equalsIgnoreCase("--session-file") )
 			{
 				this.setMode( "File" );
@@ -453,7 +476,8 @@ public class Configuration
 		System.out.println( "" );
 
 		System.out.println( "  --tracking            string   (required)  Marking of entity to track. Must specify here, or in config file" );
-		System.out.println( "  --nmea-format         string   (optional)  NMEA record output format: GGA, RMC or GLL (default: GGA)" );
+		System.out.println( "  --nmea-format         string   (optional)  NMEA record output format: RMC, GGA or GLL (default: RMC)" );
+		System.out.println( "  --nmea-timezone       string   (optional)  NMEA record timezone used: utc or local    (default: local)" );
 		System.out.println( "  --session-file        path     (optional)  Read PDU data from given session file rather than network" );
 		System.out.println( "  --config-file         integer  (optional)  Number of objects to create                (default: 100)" );
 		System.out.println( "  --log-level           string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE]    (default: INFO)" );

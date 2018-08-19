@@ -258,7 +258,7 @@ public class NmeaServer
 		                                  lla.getAltitude(),
 		                                  Datum.WGS84 );
 		ggaParser.setPosition( position );
-		ggaParser.setTime( getUtcTime() );
+		ggaParser.setTime( getCurrentTime() );
 		ggaParser.setGeoidalHeightUnits( Units.METER );
 		return ggaParser.toSentence();
 	}
@@ -267,7 +267,7 @@ public class NmeaServer
 	{
 		Position pos = new Position( lla.getLatitude(), lla.getLongitude(), lla.getAltitude(), Datum.WGS84 );
 		gllParser.setPosition( pos );
-		gllParser.setTime( getUtcTime() );
+		gllParser.setTime( getCurrentTime() );
 		return gllParser.toSentence();
 	}
 
@@ -277,24 +277,26 @@ public class NmeaServer
 		rmcParser.setPosition( pos );
 		rmcParser.setCourse( 0.0 ); // FIXME
 		rmcParser.setSpeed( 0.0 );  // FIXME
-		rmcParser.setDate( getUtcDate() );
-		rmcParser.setTime( getUtcTime() );
+		rmcParser.setDate( getCurrentDate() );
+		rmcParser.setTime( getCurrentTime() );
 		rmcParser.setStatus( DataStatus.ACTIVE );
 		rmcParser.setVariation( 0.1 );
 		rmcParser.setDirectionOfVariation( CompassPoint.WEST );
 		return rmcParser.toSentence();
 	}
 	
-	private Time getUtcTime()
+	private Time getCurrentTime()
 	{
-		OffsetDateTime utc = OffsetDateTime.now( ZoneOffset.UTC );
-		return new Time( utc.getHour(), utc.getMinute(), utc.getSecond() );
+		OffsetDateTime time = configuration.useUtcTime() ? OffsetDateTime.now( ZoneOffset.UTC ) :
+		                                                   OffsetDateTime.now();
+		return new Time( time.getHour(), time.getMinute(), time.getSecond() );
 	}
 	
-	private Date getUtcDate()
+	private Date getCurrentDate()
 	{
-		OffsetDateTime utc = OffsetDateTime.now( ZoneOffset.UTC );
-		return new Date( utc.getYear(), utc.getMonthValue(), utc.getDayOfMonth() );
+		OffsetDateTime time = configuration.useUtcTime() ? OffsetDateTime.now( ZoneOffset.UTC ) :
+		                                                   OffsetDateTime.now();
+		return new Date( time.getYear(), time.getMonthValue(), time.getDayOfMonth() );
 	}
 	
 	private synchronized void addConnection( Connection connection )
