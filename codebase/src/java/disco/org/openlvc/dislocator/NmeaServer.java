@@ -38,6 +38,7 @@ import net.sf.marineapi.nmea.sentence.GLLSentence;
 import net.sf.marineapi.nmea.sentence.RMCSentence;
 import net.sf.marineapi.nmea.sentence.SentenceId;
 import net.sf.marineapi.nmea.sentence.TalkerId;
+import net.sf.marineapi.nmea.sentence.VTGSentence;
 import net.sf.marineapi.nmea.util.CompassPoint;
 import net.sf.marineapi.nmea.util.DataStatus;
 import net.sf.marineapi.nmea.util.Date;
@@ -86,6 +87,7 @@ public class NmeaServer
 	private GGASentence ggaParser;
 	private GLLSentence gllParser;
 	private RMCSentence rmcParser;
+	private VTGSentence vtgParser;
 
 	// Connection Properties
 	private InetSocketAddress socketAddress;
@@ -121,6 +123,9 @@ public class NmeaServer
 		// RMC
 		this.rmcParser = (RMCSentence)sf.createParser( TalkerId.GP, SentenceId.RMC );
 		this.rmcParser.setMode( FaaMode.SIMULATED );
+		
+		// Vector Track Good
+		this.vtgParser = (VTGSentence)sf.createParser( TalkerId.GP, SentenceId.VTG );
 
 
 		// Connection Properties
@@ -212,20 +217,35 @@ public class NmeaServer
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	private synchronized void addConnection( Connection connection )
+	{
+		this.connections.add( connection );
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Update and NMEA Conversion Methods   ///////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * The DIS receiver has found an update and wishes to notify us about it. We'll convert
+	 * this into the appropriate NMEA sentences and hand them off to each connection.
+	 * 
+	 * @param location
+	 */
 	protected synchronized void updateLocation( LLA location )
 	{
 		this.lastKnown = location;
 		dead.clear();
 		
-		String nmeaString = toNmea( location );
-		logger.info( "Updating location to: "+location );
+		String locationString = toNmea( location );
+		String trackString = toNmeaTrack();
 		
+		logger.info( "Updating location to: "+location );
 		for( Connection connection : connections )
 		{
 			try
 			{
 				if( connection.socket.isConnected() )
-					connection.updateLocation( nmeaString );
+					connection.update( locationString, trackString );
 				else
 					dead.add( connection );
 			}
@@ -299,11 +319,15 @@ public class NmeaServer
 		return new Date( time.getYear(), time.getMonthValue(), time.getDayOfMonth() );
 	}
 	
-	private synchronized void addConnection( Connection connection )
+	private String toNmeaTrack()
 	{
-		this.connections.add( connection );
+		vtgParser.setMode( FaaMode.SIMULATED );
+		vtgParser.setSpeedKnots( 100.0 );
+		vtgParser.setMagneticCourse( 10.0 );
+		vtgParser.setTrueCourse( 10.0 );
+		return vtgParser.toSentence();
 	}
-
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
@@ -328,7 +352,7 @@ public class NmeaServer
 					Socket socket = serverSocket.accept();
 					Connection connection = new Connection( socket );
 					if( lastKnown != null )
-						connection.updateLocation( toNmea(lastKnown) );
+						connection.update( toNmea(lastKnown), toNmeaTrack() );
 					addConnection( connection );
 
 					logger.info( "(Accepted) Connection from ip=%s",
@@ -364,9 +388,10 @@ public class NmeaServer
 			this.writer = new PrintWriter( socket.getOutputStream() );
 		}
 		
-		public void updateLocation( String nmeaSentence ) throws IOException
+		public void update( String locationSentence, String trackSentence ) throws IOException
 		{
-			writer.println( nmeaSentence );
+			writer.println( locationSentence );
+			writer.println( trackSentence );
 			writer.flush();
 		}
 		
