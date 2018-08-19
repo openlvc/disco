@@ -22,6 +22,8 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -256,7 +258,7 @@ public class NmeaServer
 		                                  lla.getAltitude(),
 		                                  Datum.WGS84 );
 		ggaParser.setPosition( position );
-		ggaParser.setTime( new Time() );
+		ggaParser.setTime( getUtcTime() );
 		ggaParser.setGeoidalHeightUnits( Units.METER );
 		return ggaParser.toSentence();
 	}
@@ -265,7 +267,7 @@ public class NmeaServer
 	{
 		Position pos = new Position( lla.getLatitude(), lla.getLongitude(), lla.getAltitude(), Datum.WGS84 );
 		gllParser.setPosition( pos );
-		gllParser.setTime( new Time() );
+		gllParser.setTime( getUtcTime() );
 		return gllParser.toSentence();
 	}
 
@@ -275,12 +277,24 @@ public class NmeaServer
 		rmcParser.setPosition( pos );
 		rmcParser.setCourse( 0.0 ); // FIXME
 		rmcParser.setSpeed( 0.0 );  // FIXME
-		rmcParser.setDate( new Date() );
-		rmcParser.setTime( new Time() );
+		rmcParser.setDate( getUtcDate() );
+		rmcParser.setTime( getUtcTime() );
 		rmcParser.setStatus( DataStatus.ACTIVE );
 		rmcParser.setVariation( 0.1 );
 		rmcParser.setDirectionOfVariation( CompassPoint.WEST );
 		return rmcParser.toSentence();
+	}
+	
+	private Time getUtcTime()
+	{
+		OffsetDateTime utc = OffsetDateTime.now( ZoneOffset.UTC );
+		return new Time( utc.getHour(), utc.getMinute(), utc.getSecond() );
+	}
+	
+	private Date getUtcDate()
+	{
+		OffsetDateTime utc = OffsetDateTime.now( ZoneOffset.UTC );
+		return new Date( utc.getYear(), utc.getMonthValue(), utc.getDayOfMonth() );
 	}
 	
 	private synchronized void addConnection( Connection connection )
