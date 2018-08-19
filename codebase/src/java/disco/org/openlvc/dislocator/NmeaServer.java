@@ -319,8 +319,9 @@ public class NmeaServer
 	
 	private String toNmeaTrack()
 	{
-		vtgParser.setMode( FaaMode.SIMULATED );
+		vtgParser.setMode( FaaMode.PRECISE );
 		vtgParser.setSpeedKnots( 100.0 );
+		vtgParser.setSpeedKmh( 100/0.539957 ); //0.539957
 		vtgParser.setMagneticCourse( 10.0 );
 		vtgParser.setTrueCourse( 10.0 );
 		return vtgParser.toSentence();
