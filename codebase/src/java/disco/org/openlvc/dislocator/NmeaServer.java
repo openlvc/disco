@@ -113,7 +113,7 @@ public class NmeaServer
 		SentenceFactory sf = SentenceFactory.getInstance();
 		// GGA
 		this.ggaParser = (GGASentence)sf.createParser( TalkerId.GP, SentenceId.GGA );
-		this.ggaParser.setFixQuality( GpsFixQuality.SIMULATED );
+		this.ggaParser.setFixQuality( GpsFixQuality.NORMAL );
 		this.ggaParser.setSatelliteCount( 4 );
 		this.ggaParser.setAltitudeUnits( Units.METER );
 		this.ggaParser.setHorizontalDOP( 0.0 );
@@ -122,10 +122,11 @@ public class NmeaServer
 		this.gllParser.setStatus( DataStatus.ACTIVE );
 		// RMC
 		this.rmcParser = (RMCSentence)sf.createParser( TalkerId.GP, SentenceId.RMC );
-		this.rmcParser.setMode( FaaMode.SIMULATED );
+		this.rmcParser.setMode( FaaMode.PRECISE );
 		
 		// Vector Track Good
 		this.vtgParser = (VTGSentence)sf.createParser( TalkerId.GP, SentenceId.VTG );
+		this.vtgParser.setMode( FaaMode.PRECISE );
 
 
 		// Connection Properties
