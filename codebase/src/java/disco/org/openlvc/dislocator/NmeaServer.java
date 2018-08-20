@@ -30,7 +30,9 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.pdu.record.EulerAngles;
 import org.openlvc.disco.utils.LLA;
+import org.openlvc.disco.utils.ThreadUtils;
 
 import net.sf.marineapi.nmea.parser.SentenceFactory;
 import net.sf.marineapi.nmea.sentence.GGASentence;
@@ -79,7 +81,8 @@ public class NmeaServer
 	//----------------------------------------------------------
 	private Configuration configuration;
 	private Logger logger;
-	private LLA lastKnown;
+	private LLA lastKnownLocation;
+	private EulerAngles lastKnownOrientation;
 	
 	// NMEA Converters
 	// We just have one for all the supported versions ready to go.
@@ -106,14 +109,15 @@ public class NmeaServer
 	{
 		this.configuration = configuration;
 		this.logger = LogManager.getFormatterLogger( configuration.getDislocatorLogger().getName()+".tcp" );
-		this.lastKnown = null;
+		this.lastKnownLocation = null;
+		this.lastKnownOrientation = null;
 
-		// NMEA Converters
+		// NMEA Converters - Prime everything for later use
 		this.nmeaFormat = configuration.getNmeaOutputFormat();
 		SentenceFactory sf = SentenceFactory.getInstance();
 		// GGA
 		this.ggaParser = (GGASentence)sf.createParser( TalkerId.GP, SentenceId.GGA );
-		this.ggaParser.setFixQuality( GpsFixQuality.NORMAL );
+		this.ggaParser.setFixQuality( GpsFixQuality.SIMULATED );
 		this.ggaParser.setSatelliteCount( 4 );
 		this.ggaParser.setAltitudeUnits( Units.METER );
 		this.ggaParser.setHorizontalDOP( 0.0 );
@@ -122,11 +126,10 @@ public class NmeaServer
 		this.gllParser.setStatus( DataStatus.ACTIVE );
 		// RMC
 		this.rmcParser = (RMCSentence)sf.createParser( TalkerId.GP, SentenceId.RMC );
-		this.rmcParser.setMode( FaaMode.PRECISE );
-		
+		this.rmcParser.setMode( FaaMode.SIMULATED );
 		// Vector Track Good
 		this.vtgParser = (VTGSentence)sf.createParser( TalkerId.GP, SentenceId.VTG );
-		this.vtgParser.setMode( FaaMode.PRECISE );
+		this.vtgParser.setMode( FaaMode.SIMULATED );
 
 
 		// Connection Properties
@@ -199,7 +202,17 @@ public class NmeaServer
 			
 			// close all the child connections
 			for( Connection connection : connections )
-				connection.close();
+			{
+				if( connection.isAlive() )
+				{
+					if( connection.socket.isConnected() )
+						connection.close();
+					
+					// kill the thread
+					connection.interrupt();
+					ThreadUtils.exceptionlessThreadJoin( connection, 500 );
+				}
+			}
 		}
 		catch( IOException ioex )
 		{
@@ -223,54 +236,53 @@ public class NmeaServer
 		this.connections.add( connection );
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Update and NMEA Conversion Methods   ///////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * The DIS receiver has found an update and wishes to notify us about it. We'll convert
 	 * this into the appropriate NMEA sentences and hand them off to each connection.
 	 * 
-	 * @param location
+	 * @param location The new location of the entity
+	 * @param orientation The new orientation of the entity
 	 */
-	protected synchronized void updateLocation( LLA location )
+	protected synchronized void updateLocation( LLA location, EulerAngles orientation )
 	{
-		this.lastKnown = location;
-		dead.clear();
-		
-		logger.info( "Updating location to: "+location );
-		for( Connection connection : connections )
-		{
-			try
-			{
-				if( connection.socket.isConnected() )
-					connection.update( location );
-				else
-					dead.add( connection );
-			}
-			catch( Exception e )
-			{
-				logger.info( "Error sending update to connection; disconnecting remote client" );
-				dead.add( connection );
-			}
-		}
-		
-		for( Connection connection : dead )
-			connections.remove( connection );
+		this.lastKnownLocation = location;
+		this.lastKnownOrientation = orientation;
+		logger.debug( "(DIS Update) Updating location to: "+location );
 	}
 
-	private String toNmea( LLA lla )
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// NMEA Conversion Methods   //////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * @return VTG NMEA string for the last recorded orientation
+	 */
+	private String getNmeaVtg()
+	{
+		vtgParser.setSpeedKnots( 100.0 );      // FIXME
+		vtgParser.setSpeedKmh( 100/0.539957 ); // FIXME  (0.539957 knots-to-km)
+		vtgParser.setMagneticCourse( 10.0 );   // FIXME  
+		vtgParser.setTrueCourse( 10.0 );       // FIXME
+		return vtgParser.toSentence();
+	}
+
+	/**
+	 * @return NMEA string for last recorded position. The format will be one of RMC, GGA or GLL
+	 *         depending on the configuration.
+	 */
+	private String getNmeaPositionReport()
 	{
 		switch( nmeaFormat )
 		{
-			case GGA: return llaToGga( lla );
-			case GLL: return llaToGll( lla );
-			case RMC: return llaToRmc( lla );
+			case GGA: return getLastKnownAsGGA();
+			case GLL: return getLastKnownAsGLL();
+			case RMC: return getLastKnownAsRMC();
 			default: throw new DiscoException( "Unsupported NMEA foramt: "+nmeaFormat );
 		}
 	}
-	
-	private String llaToGga( LLA lla )
+
+	private String getLastKnownAsGGA()
 	{
+		LLA lla = lastKnownLocation;
 		Position position = new Position( lla.getLatitude(),
 		                                  lla.getLongitude(),
 		                                  lla.getAltitude(),
@@ -281,16 +293,18 @@ public class NmeaServer
 		return ggaParser.toSentence();
 	}
 
-	private String llaToGll( LLA lla )
+	private String getLastKnownAsGLL()
 	{
+		LLA lla = lastKnownLocation;
 		Position pos = new Position( lla.getLatitude(), lla.getLongitude(), lla.getAltitude(), Datum.WGS84 );
 		gllParser.setPosition( pos );
 		gllParser.setTime( getCurrentTime() );
 		return gllParser.toSentence();
 	}
 
-	private String llaToRmc( LLA lla )
+	private String getLastKnownAsRMC()
 	{
+		LLA lla = lastKnownLocation;
 		Position pos = new Position( lla.getLatitude(), lla.getLongitude(), lla.getAltitude(), Datum.WGS84 );
 		rmcParser.setPosition( pos );
 		rmcParser.setCourse( 10.0 ); // FIXME
@@ -317,16 +331,6 @@ public class NmeaServer
 		return new Date( time.getYear(), time.getMonthValue(), time.getDayOfMonth() );
 	}
 	
-	private String toNmeaTrack()
-	{
-		vtgParser.setMode( FaaMode.PRECISE );
-		vtgParser.setSpeedKnots( 100.0 );
-		vtgParser.setSpeedKmh( 100/0.539957 ); //0.539957
-		vtgParser.setMagneticCourse( 10.0 );
-		vtgParser.setTrueCourse( 10.0 );
-		return vtgParser.toSentence();
-	}
-	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
@@ -350,9 +354,8 @@ public class NmeaServer
 				{
 					Socket socket = serverSocket.accept();
 					Connection connection = new Connection( socket );
-					if( lastKnown != null )
-						connection.update( lastKnown );
 					addConnection( connection );
+					connection.start();
 
 					logger.info( "(Accepted) Connection from ip=%s",
 					             socket.getRemoteSocketAddress() );
@@ -377,7 +380,7 @@ public class NmeaServer
 	/**
 	 * Represents a connection to a remote client.
 	 */
-	private class Connection
+	private class Connection extends Thread
 	{
 		private Socket socket;
 		private PrintWriter writer;
@@ -387,23 +390,35 @@ public class NmeaServer
 			this.writer = new PrintWriter( socket.getOutputStream() );
 		}
 		
-		public void update( LLA location ) throws IOException
+		public void run()
 		{
-			String vtgString = toNmeaTrack();
-			String ggaString = llaToGga( location );
-			String rmcString = llaToRmc( location );
+			while( Thread.interrupted() == false )
+			{
+				if( lastKnownLocation != null || lastKnownOrientation != null )
+				{
+    				// flush the last known status
+    				String vtgString = getNmeaVtg();
+    				String posString = getNmeaPositionReport();
+    				writer.println( posString );
+    				writer.println( vtgString );
+    				writer.flush();
+				}
+				
+				// sleep for a little bit
+				ThreadUtils.exceptionlessSleep( configuration.getNmeaPingInterval() );
+			}
 			
-			writer.println( vtgString );
-			writer.println( ggaString );
-			writer.println( rmcString );
-			writer.flush();
+			// it's time to bug out!
+			close();
 		}
 		
 		public void close()
 		{
 			try
 			{
+				logger.info( "(Closed) Connection with ip=%s", socket.getRemoteSocketAddress() );
 				this.socket.close();
+				dead.add( this );
 			}
 			catch( IOException ioex )
 			{}

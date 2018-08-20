@@ -56,8 +56,9 @@ public class Configuration
 	public static final String KEY_TCP_ADDRESS     = "dislocator.tcp.address";
 	public static final String KEY_TCP_PORT        = "dislocator.tcp.port";
 
+	public static final String KEY_NMEA_INTERVAL   = "dislocator.nmea.interval";
 	public static final String KEY_NMEA_FORMAT     = "dislocator.nmea.format";
-	public static final String KEY_NMEA_TIME       = "dislocator.nmea.timezone"; // UTC or Local
+	public static final String KEY_NMEA_TIME       = "dislocator.nmea.timezone"; // UTC (default) or Local
 	
 
 	//----------------------------------------------------------
@@ -348,6 +349,30 @@ public class Configuration
 	//
 	// NMEA Properties
 	//
+	/**
+	 * @return The interval between updates that the NMEA server will sent to connected clients.
+	 *         Defaults to 1000 millis.
+	 */
+	public long getNmeaPingInterval()
+	{
+		return Long.parseLong( properties.getProperty(KEY_NMEA_INTERVAL,"1000") );
+	}
+
+	/**
+	 * The NMEA server will send out pings to connected clients on an interval. Set that
+	 * interval in millis
+	 * 
+	 * @param millis The interval period 
+	 */
+	public void setNmeaPingInterval( long millis )
+	{ 
+		// if less than or equal to zero we take that to mean "default"
+		if( millis <= 0 )
+			millis = 1000;
+
+		properties.setProperty( KEY_NMEA_INTERVAL, ""+millis );
+	}
+	
 	public SentenceId getNmeaOutputFormat()
 	{
 		return SentenceId.valueOf( properties.getProperty(KEY_NMEA_FORMAT,"RMC").toUpperCase() );
@@ -374,13 +399,13 @@ public class Configuration
 	}
 	public boolean useUtcTime()
 	{
-		String value = properties.getProperty(KEY_NMEA_TIME,"local").toLowerCase();
+		String value = properties.getProperty(KEY_NMEA_TIME,"utc").toLowerCase();
 		return value.equals("utc");
 	}
 	
 	public boolean useLocalTime()
 	{
-		String value = properties.getProperty(KEY_NMEA_TIME,"local").toLowerCase();
+		String value = properties.getProperty(KEY_NMEA_TIME,"utc").toLowerCase();
 		return value.equals("local");
 	}
 	
@@ -445,6 +470,8 @@ public class Configuration
 				this.setNmeaOutputFormat( list.next() );
 			else if( argument.equalsIgnoreCase("--nmea-timezone") )
 				this.setNmeaOutputTime( list.next() );
+			else if( argument.equalsIgnoreCase("--nmea-interval") )
+				this.setNmeaPingInterval( Long.parseLong(list.next()) );
 			else if( argument.equalsIgnoreCase("--session-file") )
 			{
 				this.setMode( "File" );
@@ -478,6 +505,7 @@ public class Configuration
 		System.out.println( "  --tracking            string   (required)  Marking of entity to track. Must specify here, or in config file" );
 		System.out.println( "  --nmea-format         string   (optional)  NMEA record output format: RMC, GGA or GLL (default: RMC)" );
 		System.out.println( "  --nmea-timezone       string   (optional)  NMEA record timezone used: utc or local    (default: local)" );
+		System.out.println( "  --nmea-interval       long     (optional)  Time (ms) server waits between pos reports (default: 1000)" );
 		System.out.println( "  --session-file        path     (optional)  Read PDU data from given session file rather than network" );
 		System.out.println( "  --config-file         integer  (optional)  Number of objects to create                (default: 100)" );
 		System.out.println( "  --log-level           string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE]    (default: INFO)" );
