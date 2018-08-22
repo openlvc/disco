@@ -139,7 +139,7 @@ public class Configuration
 		temp.getDisConfiguration().setExerciseId( getDisExerciseId() );
 		
 		// copy the logging configuration
-		temp.getLoggingConfiguration().setLevel( properties.getProperty(KEY_DISCO_LOG_LEVEL,"INFO") );
+		temp.getLoggingConfiguration().setLevel( loggingConfiguration.getLevel() );
 		temp.getLoggingConfiguration().setConsoleOn( loggingConfiguration.isConsoleOn() );
 		temp.getLoggingConfiguration().setFileOn( loggingConfiguration.isFileOn() );
 		
@@ -155,11 +155,9 @@ public class Configuration
 		if( this.applicationLogger != null )
 			return applicationLogger;
 		
-		// check for any properties that may have been specified on command line to override
-		loggingConfiguration.setLevel( properties.getProperty(KEY_LOG_LEVEL,"INFO") );
-		
 		this.loggingConfiguration.activateConfiguration();
 		this.applicationLogger = LogManager.getFormatterLogger( "dislocator" );
+		this.applicationLogger.log( applicationLogger.getLevel(), "Logging set to "+applicationLogger.getLevel() );
 		return applicationLogger;
 	}
 

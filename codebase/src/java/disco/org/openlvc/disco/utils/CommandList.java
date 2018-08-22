@@ -139,6 +139,11 @@ public class CommandList
 		return this.arguments.size();
 	}
 	
+	public String toString()
+	{
+		return arguments.toString();
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
