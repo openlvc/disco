@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.record.EulerAngles;
+import org.openlvc.disco.pdu.record.VectorRecord;
 import org.openlvc.disco.utils.LLA;
 import org.openlvc.disco.utils.ThreadUtils;
 
@@ -84,6 +85,7 @@ public class NmeaServer
 	private Logger logger;
 	private LLA lastKnownLocation;
 	private EulerAngles lastKnownOrientation;
+	private VectorRecord lastKnownVelocity;
 	
 	// NMEA Converters
 	// We just have one for all the supported versions ready to go.
@@ -111,6 +113,7 @@ public class NmeaServer
 		this.logger = LogManager.getFormatterLogger( configuration.getDislocatorLogger().getName()+".tcp" );
 		this.lastKnownLocation = null;
 		this.lastKnownOrientation = null;
+		this.lastKnownVelocity = null;
 
 		// NMEA Converters - Prime everything for later use
 		SentenceFactory sf = SentenceFactory.getInstance();
@@ -245,6 +248,7 @@ public class NmeaServer
 	{
 		this.lastKnownLocation = espdu.getLocation().toLLA();
 		this.lastKnownOrientation = espdu.getOrientation();
+		this.lastKnownVelocity = espdu.getLinearVelocity();
 		if( logger.isTraceEnabled() )
 			logger.trace( "(DIS Update) Updating location to: "+lastKnownLocation );
 	}
@@ -257,10 +261,12 @@ public class NmeaServer
 	 */
 	private String getLastKnownAsVTG()
 	{
-		vtgParser.setSpeedKnots( 100.0 );      // FIXME
-		vtgParser.setSpeedKmh( 100/0.539957 ); // FIXME  (0.539957 knots-to-km)
-		vtgParser.setMagneticCourse( 10.0 );   // FIXME  
-		vtgParser.setTrueCourse( 10.0 );       // FIXME
+		double course = getCourse();
+		double speed = getCurrentSpeed();
+		vtgParser.setSpeedKnots( speed*0.539957 ); // FIXME (0.539957 knots-to-km)
+		vtgParser.setSpeedKmh( speed );
+		vtgParser.setMagneticCourse( course );   // FIXME  
+		vtgParser.setTrueCourse( course );       // FIXME
 		return vtgParser.toSentence();
 	}
 
@@ -291,8 +297,8 @@ public class NmeaServer
 		LLA lla = lastKnownLocation;
 		Position pos = new Position( lla.getLatitude(), lla.getLongitude(), lla.getAltitude(), Datum.WGS84 );
 		rmcParser.setPosition( pos );
-		rmcParser.setCourse( 10.0 ); // FIXME
-		rmcParser.setSpeed( 100.0 );  // FIXME
+		rmcParser.setCourse( getCourse() ); // FIXME
+		rmcParser.setSpeed( getCurrentSpeed() );  // FIXME
 		rmcParser.setDate( getCurrentDate() );
 		rmcParser.setTime( getCurrentTime() );
 		rmcParser.setStatus( DataStatus.ACTIVE );
@@ -314,7 +320,29 @@ public class NmeaServer
 		                                                   OffsetDateTime.now();
 		return new Date( time.getYear(), time.getMonthValue(), time.getDayOfMonth() );
 	}
+
+	private double getCurrentSpeed()
+	{
+		return Math.sqrt( Math.pow(lastKnownVelocity.getfirstComponent(),2) +
+		                  Math.pow(lastKnownVelocity.getsecondComponent(),2) +
+		                  Math.pow(lastKnownVelocity.getthirdComponent(),2) );
+	}
 	
+	private double getCourse()
+	{
+		double sinOfLatitude  = Math.sin(lastKnownLocation.getLatitude());
+		double sinOfLongitude = Math.sin(lastKnownLocation.getLongitude());
+		double cosOfLatitude  = Math.cos(lastKnownLocation.getLatitude());
+		double cosOfLongitude = Math.cos(lastKnownLocation.getLongitude());
+		double cosThetaCosPsi = Math.cos(lastKnownOrientation.getTheta()) * Math.cos(lastKnownOrientation.getPsi());
+		double cosThetaSinPsi = Math.cos(lastKnownOrientation.getTheta()) * Math.sin(lastKnownOrientation.getPsi());
+		double sinLatCosLong  = sinOfLatitude * cosOfLongitude;
+
+		double y = -sinOfLongitude * cosThetaCosPsi + cosOfLongitude * cosThetaSinPsi;
+		double x = -sinLatCosLong * cosThetaCosPsi - (sinOfLatitude*sinOfLongitude) * cosThetaSinPsi - cosOfLatitude * Math.sin(lastKnownOrientation.getTheta());
+		return Math.toDegrees(Math.atan2(y,x))+180;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
@@ -384,6 +412,7 @@ public class NmeaServer
 					writer.println( getLastKnownAsVTG() );
 					writer.println( getLastKnownAsGGA() );
 					writer.println( getLastKnownAsRMC() );
+					//writer.println( getLastKnownAsGLL() );
     				writer.flush();
 				}
 				
