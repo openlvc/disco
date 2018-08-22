@@ -30,6 +30,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.utils.LLA;
 
 import net.sf.marineapi.nmea.parser.SentenceFactory;
@@ -230,20 +231,20 @@ public class NmeaServer
 	 * The DIS receiver has found an update and wishes to notify us about it. We'll convert
 	 * this into the appropriate NMEA sentences and hand them off to each connection.
 	 * 
-	 * @param location
+	 * @param espdu The PDU that was received
 	 */
-	protected synchronized void updateLocation( LLA location )
+	protected synchronized void updateLocation( EntityStatePdu espdu )
 	{
-		this.lastKnown = location;
+		this.lastKnown = espdu.getLocation().toLLA();
 		dead.clear();
 		
-		logger.info( "Updating location to: "+location );
+		logger.info( "Updating location to: "+lastKnown );
 		for( Connection connection : connections )
 		{
 			try
 			{
 				if( connection.socket.isConnected() )
-					connection.update( location );
+					connection.update( lastKnown );
 				else
 					dead.add( connection );
 			}
@@ -389,13 +390,14 @@ public class NmeaServer
 		
 		public void update( LLA location ) throws IOException
 		{
-			String vtgString = toNmeaTrack();
-			String ggaString = llaToGga( location );
-			String rmcString = llaToRmc( location );
+			// Write the VTG sentence
+			writer.println( toNmeaTrack() );
+
+//			if( configuration.getNmeaOutputFormat() == SentenceId.GGA )
+				writer.println( llaToGga(location) );
+//			else if( configuration.getNmeaOutputFormat() == SentenceId.RMC )
+				writer.println( llaToRmc(location) );
 			
-			writer.println( vtgString );
-			writer.println( ggaString );
-			writer.println( rmcString );
 			writer.flush();
 		}
 		

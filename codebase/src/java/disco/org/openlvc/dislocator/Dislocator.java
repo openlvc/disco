@@ -137,16 +137,12 @@ public class Dislocator implements IPduListener
 		EntityStatePdu espdu = (EntityStatePdu)pdu;
 		String marking = espdu.getMarking();
 
-		if( marking.length() != 11 )
-			System.out.println( "Marking != 11: ["+marking+"]" );
-		
 		// is this the marking we want?
 		if( marking == null || marking.trim().equalsIgnoreCase(trackingEntityMarking) == false )
 			return;
 
 		// this it the one we want!
-		nmeaServer.updateLocation( espdu.getLocation().toLLA() );
-
+		nmeaServer.updateLocation( espdu );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
