@@ -30,6 +30,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.record.EulerAngles;
 import org.openlvc.disco.utils.LLA;
 import org.openlvc.disco.utils.ThreadUtils;
@@ -238,14 +239,14 @@ public class NmeaServer
 	 * The DIS receiver has found an update and wishes to notify us about it. We'll convert
 	 * this into the appropriate NMEA sentences and hand them off to each connection.
 	 * 
-	 * @param location The new location of the entity
-	 * @param orientation The new orientation of the entity
+	 * @param espdu The PDU that was received
 	 */
-	protected synchronized void updateLocation( LLA location, EulerAngles orientation )
+	protected synchronized void updateLocation( EntityStatePdu espdu )
 	{
-		this.lastKnownLocation = location;
-		this.lastKnownOrientation = orientation;
-		logger.debug( "(DIS Update) Updating location to: "+location );
+		this.lastKnownLocation = espdu.getLocation().toLLA();
+		this.lastKnownOrientation = espdu.getOrientation();
+		if( logger.isTraceEnabled() )
+			logger.trace( "(DIS Update) Updating location to: "+lastKnownLocation );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

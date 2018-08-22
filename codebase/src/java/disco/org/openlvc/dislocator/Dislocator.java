@@ -142,7 +142,7 @@ public class Dislocator implements IPduListener
 			return;
 
 		// this it the one we want!
-		nmeaServer.updateLocation( espdu.getLocation().toLLA(), espdu.getOrientation() );
+		nmeaServer.updateLocation( espdu );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
