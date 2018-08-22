@@ -29,8 +29,6 @@ import org.openlvc.disco.configuration.Log4jConfiguration;
 import org.openlvc.disco.utils.CommandList;
 import org.openlvc.disco.utils.NetworkUtils;
 
-import net.sf.marineapi.nmea.sentence.SentenceId;
-
 public class Configuration
 {
 	//----------------------------------------------------------
@@ -57,7 +55,6 @@ public class Configuration
 	public static final String KEY_TCP_PORT        = "dislocator.tcp.port";
 
 	public static final String KEY_NMEA_INTERVAL   = "dislocator.nmea.interval";
-	public static final String KEY_NMEA_FORMAT     = "dislocator.nmea.format";
 	public static final String KEY_NMEA_TIME       = "dislocator.nmea.timezone"; // UTC (default) or Local
 	
 
@@ -371,22 +368,6 @@ public class Configuration
 		properties.setProperty( KEY_NMEA_INTERVAL, ""+millis );
 	}
 	
-	public SentenceId getNmeaOutputFormat()
-	{
-		return SentenceId.valueOf( properties.getProperty(KEY_NMEA_FORMAT,"RMC").toUpperCase() );
-	}
-	
-	public void setNmeaOutputFormat( String format )
-	{
-		SentenceId.valueOf( format ); // check it
-		properties.setProperty( KEY_NMEA_FORMAT, format );
-	}
-	
-	public void setNmeaOutputFormat( SentenceId format )
-	{
-		properties.setProperty( KEY_NMEA_FORMAT, format.name() );
-	}
-	
 	public void setNmeaOutputTime( String value )
 	{
 		if( value.equalsIgnoreCase("local") == false &&
@@ -464,8 +445,6 @@ public class Configuration
 				this.setTcpServerAddress( list.next() );
 			else if( argument.equalsIgnoreCase("--tcp-port") )
 				this.setTcpServerPort( Integer.parseInt(list.next()) );
-			else if( argument.equalsIgnoreCase("--nmea-format") )
-				this.setNmeaOutputFormat( list.next() );
 			else if( argument.equalsIgnoreCase("--nmea-timezone") )
 				this.setNmeaOutputTime( list.next() );
 			else if( argument.equalsIgnoreCase("--nmea-interval") )
@@ -501,7 +480,6 @@ public class Configuration
 		System.out.println( "" );
 
 		System.out.println( "  --tracking            string   (required)  Marking of entity to track. Must specify here, or in config file" );
-		System.out.println( "  --nmea-format         string   (optional)  NMEA record output format: RMC, GGA or GLL (default: RMC)" );
 		System.out.println( "  --nmea-timezone       string   (optional)  NMEA record timezone used: utc or local    (default: local)" );
 		System.out.println( "  --nmea-interval       long     (optional)  Time (ms) server waits between pos reports (default: 1000)" );
 		System.out.println( "  --session-file        path     (optional)  Read PDU data from given session file rather than network" );

@@ -86,7 +86,6 @@ public class NmeaServer
 	
 	// NMEA Converters
 	// We just have one for all the supported versions ready to go.
-	private SentenceId nmeaFormat;
 	private GGASentence ggaParser;
 	private GLLSentence gllParser;
 	private RMCSentence rmcParser;
@@ -113,7 +112,6 @@ public class NmeaServer
 		this.lastKnownOrientation = null;
 
 		// NMEA Converters - Prime everything for later use
-		this.nmeaFormat = configuration.getNmeaOutputFormat();
 		SentenceFactory sf = SentenceFactory.getInstance();
 		// GGA
 		this.ggaParser = (GGASentence)sf.createParser( TalkerId.GP, SentenceId.GGA );
@@ -256,7 +254,7 @@ public class NmeaServer
 	/**
 	 * @return VTG NMEA string for the last recorded orientation
 	 */
-	private String getNmeaVtg()
+	private String getLastKnownAsVTG()
 	{
 		vtgParser.setSpeedKnots( 100.0 );      // FIXME
 		vtgParser.setSpeedKmh( 100/0.539957 ); // FIXME  (0.539957 knots-to-km)
@@ -265,22 +263,7 @@ public class NmeaServer
 		return vtgParser.toSentence();
 	}
 
-	/**
-	 * @return NMEA string for last recorded position. The format will be one of RMC, GGA or GLL
-	 *         depending on the configuration.
-	 */
-	private String getNmeaPositionReport()
-	{
-		switch( nmeaFormat )
-		{
-			case GGA: return getLastKnownAsGGA();
-			case GLL: return getLastKnownAsGLL();
-			case RMC: return getLastKnownAsRMC();
-			default: throw new DiscoException( "Unsupported NMEA foramt: "+nmeaFormat );
-		}
-	}
-
-	private String getLastKnownAsGGA()
+	public String getLastKnownAsGGA()
 	{
 		LLA lla = lastKnownLocation;
 		Position position = new Position( lla.getLatitude(),
@@ -293,7 +276,7 @@ public class NmeaServer
 		return ggaParser.toSentence();
 	}
 
-	private String getLastKnownAsGLL()
+	public String getLastKnownAsGLL()
 	{
 		LLA lla = lastKnownLocation;
 		Position pos = new Position( lla.getLatitude(), lla.getLongitude(), lla.getAltitude(), Datum.WGS84 );
@@ -302,7 +285,7 @@ public class NmeaServer
 		return gllParser.toSentence();
 	}
 
-	private String getLastKnownAsRMC()
+	public String getLastKnownAsRMC()
 	{
 		LLA lla = lastKnownLocation;
 		Position pos = new Position( lla.getLatitude(), lla.getLongitude(), lla.getAltitude(), Datum.WGS84 );
@@ -397,10 +380,9 @@ public class NmeaServer
 				if( lastKnownLocation != null || lastKnownOrientation != null )
 				{
     				// flush the last known status
-    				String vtgString = getNmeaVtg();
-    				String posString = getNmeaPositionReport();
-    				writer.println( posString );
-    				writer.println( vtgString );
+					writer.println( getLastKnownAsVTG() );
+					writer.println( getLastKnownAsGGA() );
+					writer.println( getLastKnownAsRMC() );
     				writer.flush();
 				}
 				
