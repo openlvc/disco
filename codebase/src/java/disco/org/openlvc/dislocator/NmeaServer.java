@@ -393,9 +393,9 @@ public class NmeaServer
 			// Write the VTG sentence
 			writer.println( toNmeaTrack() );
 
-//			if( configuration.getNmeaOutputFormat() == SentenceId.GGA )
+			if( configuration.getNmeaOutputFormat() == SentenceId.GGA )
 				writer.println( llaToGga(location) );
-//			else if( configuration.getNmeaOutputFormat() == SentenceId.RMC )
+			else if( configuration.getNmeaOutputFormat() == SentenceId.RMC )
 				writer.println( llaToRmc(location) );
 			
 			writer.flush();
