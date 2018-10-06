@@ -76,6 +76,9 @@ public class Distributor
 	 */
 	public void up()
 	{
+		if( links.size() == 0 )
+			logger.warn( "No links have been configured" );
+
 		// do we even have anything to bring up?
 		if( areAnyLinksDown() == false )
 			return;
