@@ -191,17 +191,21 @@ public class Configuration
 		File configurationFile = new File( this.configFile );
 		if( configurationFile.exists() )
 		{
-    		// configuration file exists, load the properties into it
-    		try
-    		{
-    			properties.load( configurationFile.toURI().toURL().openStream() );
-    		}
-    		catch( Exception e )
-    		{
-    			throw new RuntimeException( "Problem parsing config file: "+e.getMessage(), e );
-    		}
+			// configuration file exists, load the properties into it
+			try
+			{
+				properties.load( configurationFile.toURI().toURL().openStream() );
+			}
+			catch( Exception e )
+			{
+				throw new RuntimeException( "Problem parsing config file: "+e.getMessage(), e );
+			}
 		}
-		
+		else
+		{
+			getApplicationLogger().error( "Configuration file does not exist at "+configurationFile.getPath() );
+		}
+
 		//
 		// pull the logging configuration out of the properties
 		//
