@@ -361,7 +361,6 @@ public class Configuration
 		builder.append( "   --dis-address     (string)  Multicast address to use or BROADCAST (default)\n" );
 		builder.append( "   --dis-port        (number)  DIS port to listen/send on. Default: 3000\n" );
 		builder.append( "   --dis-exercise-id (number)  Exercise ID to send in outgoing and only recv on (default: 1)\n" );
-		builder.append( "   --log-interval    (seconds) When recording, log stats ever x seconds (default: 30)\n" );
 		builder.append( "   --replay-realtime           Replay as PDus happened. Delay PDUs if there was receive delay\n" );
 		builder.append( "   --replay-fast               Replay all stored PDUs as fast as possible\n" );
 		builder.append( "   --loop            (number)  Number of times to replay a session. 0 for infinite (default: 1)\n" );
