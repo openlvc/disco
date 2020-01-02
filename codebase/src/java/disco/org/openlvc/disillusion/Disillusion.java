@@ -46,8 +46,6 @@ public class Disillusion
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	private static final String SESSION_FILE = "etc/disillusion.session";
-	
 	// JSON configuration keys
 	private static final String ENTITIES_CONFIG = "entities";
 	private static final String LOCATIONS_CONFIG = "locations";
@@ -198,23 +196,23 @@ public class Disillusion
 		int siteId = 1;
 		int entityId = 0;
 		
-		File sessionFile = new File( SESSION_FILE );
+		File planFile = new File( configuration.getPlanFile() );
 		JSONObject sessionConfig;
-		if( !sessionFile.exists() )
+		if( !planFile.exists() )
 		{
-			throw new RuntimeException( "Could not find session configuration file: '" +
-			                            sessionFile.getAbsoluteFile() + "'" );
+			throw new RuntimeException( "Could not find DISillusion plan configuration file: '" +
+			                            planFile.getAbsoluteFile() + "'" );
 		}
 		{
     		// configuration file exists, load the properties into it
     		try
     		{
-    			sessionConfig = JsonUtils.readObjectFromFile( sessionFile );
+    			sessionConfig = JsonUtils.readObjectFromFile( planFile );
     		}
     		catch( Exception e )
     		{
-				throw new RuntimeException( "Problem parsing session configuration file: '" +
-				                            sessionFile.getAbsoluteFile() + "'" + e.getMessage(),
+				throw new RuntimeException( "Problem parsing DISillusion plan configuration file: '" +
+				                            planFile.getAbsoluteFile() + "'" + e.getMessage(),
 				                            e );
     		}
 		}
@@ -231,8 +229,8 @@ public class Disillusion
 			JSONObject entry = JsonUtils.getJSONObject( pathDefs, idx, null );
 			if( entry == null )
 			{
-				throw new RuntimeException( "Entry " + idx + " of session configuration file '" +
-				                            sessionFile.getAbsoluteFile() +
+				throw new RuntimeException( "Entry " + idx + " of plan configuration file '" +
+				                            planFile.getAbsoluteFile() +
 				                            "' is not a JSON object." );
 			}
 
@@ -266,7 +264,7 @@ public class Disillusion
 				pdu.setEntityID( siteId, 20913, ++entityId );
 				pdu.setEntityType( entityType );
 
-				pdu.setMarking( "DSILL"+i );
+				pdu.setMarking( "DIP"+(idx+1)+"E"+i );
 				pdu.setAppearance( new PlatformAppearance().setPowerplantOn(true).getBits() );
 				LLA startLocation = entityPath.getLLA( 0, entitySpacing*(i-1) );
 				pdu.setLocation( CoordinateUtils.toECEF(startLocation) );

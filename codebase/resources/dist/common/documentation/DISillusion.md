@@ -27,15 +27,14 @@ positional information for those entities.
 Using the DISillusion
 ------------------------
 Launchers are in the `bin` directory. To start DISillusion, simply launch
-`dislillusion.sh` and optionally specify a
-configuration file:
+`dislillusion.sh` and optionally specify a configuration file and/or plan file.
 
 ```
-$ bin/dislillusion --config-file etc/dislillusion.config
+$ bin/dislillusion --config-file etc/dislillusion.config --plan-file etc/disillusion.plan
 ```
 
-The config file mentioned above will be loaded if none is specified. When DISlillusion starts, you
-should see the following output:
+The config and plan files mentioned above will be loaded if none is specified. When
+DISlillusion starts, you should see the following output:
 
 ```bash
 [tim@example:disco-1.0.0]$ bin/dislillusion.sh
@@ -68,13 +67,14 @@ DISillusion uses two configuration files - one to configure underlying DIS netwo
 and so on, the other to describe the entities and motion paths for the session of generated
 DIS traffic.
 
-Some example distributor configuration files can be found in the `etc` directory. The main `etc/dislillusion.config` file is heavily annotated.
+Some example distributor configuration files can be found in the `etc` directory. The main `etc/dislillusion.config`
+file is heavily annotated.
 
   - `etc/dislillusion.config` Default config file, heavily annotated
-  - `etc/dislillusion.session` Entity and motion path session config file, (JSON formatted)
+  - `etc/dislillusion.plan` Entity and motion path plan config file, (JSON formatted)
 
 ### Entity and Motion Path Config File Structure
-The `dislillusion.session` configuration is in the JSON format, a simple human readable text based
+The `dislillusion.plan` configuration is in the JSON format, a simple human readable text based
 data format. If you are unfamiliar with the JSON format [this article](https://en.wikipedia.org/wiki/JSON) may help.
 
 There are three main sections: `entities`, `locations` and `paths`, which sit inside the root level

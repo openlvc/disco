@@ -56,6 +56,7 @@ public class Configuration
 	private Log4jConfiguration loggingConfiguration;
 
 	private String configFile = "etc/disillusion.config";
+	private String planFile = "etc/disillusion.plan";
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -131,6 +132,11 @@ public class Configuration
 		temp.setPduReceiver( properties.getProperty(DiscoConfiguration.PROP_PDU_RECEIVER) );
 
 		return temp;
+	}
+	
+	public String getPlanFile()
+	{
+		return this.planFile;
 	}
 
 	/** Get the Disillusion application logger. Will lazy-load configuration. */
@@ -273,7 +279,7 @@ public class Configuration
 			}
 		}
 	}
-
+	
 	/**
 	 * Apply the given command line args to override any defaults that we have
 	 */
@@ -284,6 +290,8 @@ public class Configuration
 			String argument = args[i];
 			if( argument.equalsIgnoreCase("--config-file") )
 				this.configFile = args[++i];
+			else if( argument.equalsIgnoreCase("--plan-file") )
+				this.planFile = args[++i];
 			else if( argument.equalsIgnoreCase("--log-level") )
 				this.loggingConfiguration.setLevel( args[++i] );
 			else if( argument.equalsIgnoreCase("--objects") )
