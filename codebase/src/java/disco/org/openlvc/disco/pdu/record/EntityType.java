@@ -95,6 +95,24 @@ public class EntityType implements IPduComponent, Cloneable
 		      (short)specific,
 		      (short)extra );
 	}
+	
+	/**
+	 * Convenience constructor so that you can pass in an array of integers. Note that all fields except 
+	 * country will be cast down to a `short`, so ensure they are in range. The array is expected to have
+	 * 7 elements. Any missing array elements will be interpreted as indicating '0' value, and any extra 
+	 * elements will be ignored.
+	 */
+	public EntityType( int[] dis )
+	{
+		this( (short)((dis != null && dis.length > 0) ? dis[0] : 0),
+		      (short)((dis != null && dis.length > 1) ? dis[1] : 0),
+		      ((dis != null && dis.length > 2) ? dis[2] : 0),
+		      (short)((dis != null && dis.length > 3) ? dis[3] : 0),
+		      (short)((dis != null && dis.length > 4) ? dis[4] : 0),
+		      (short)((dis != null && dis.length > 5) ? dis[5] : 0),
+		      (short)((dis != null && dis.length > 6) ? dis[6] : 0)
+		    );
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS

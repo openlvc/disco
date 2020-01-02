@@ -65,34 +65,40 @@ public class Main
 	public static void main( String[] args ) throws Exception
 	{
 		// Are there any special commands to tell us to run on of the child apps?
-		if( args.length > 0 && args[0].equalsIgnoreCase("--app:duplicator") )
+		if( args.length > 0 )
 		{
-			org.openlvc.duplicator.Main.main( Arrays.copyOfRange(args,1,args.length) );
-			return;
-		}
-		
-		if( args.length > 0 && args[0].equalsIgnoreCase("--app:disruptor") )
-		{
-			org.openlvc.disruptor.Main.main( Arrays.copyOfRange(args,1,args.length) );
-			return;
-		}
-		
-		if( args.length > 0 && args[0].equalsIgnoreCase("--app:distributor") )
-		{
-			org.openlvc.distributor.Main.main( Arrays.copyOfRange(args,1,args.length) );
-			return;
-		}
-
-		if( args.length > 0 && args[0].equalsIgnoreCase("--app:disassembler") )
-		{
-			org.openlvc.disassembler.Main.main( Arrays.copyOfRange(args,1,args.length) );
-			return;
-		}
-
-		if( args.length > 0 && args[0].equalsIgnoreCase("--app:dislocator") )
-		{
-			org.openlvc.dislocator.Main.main( Arrays.copyOfRange(args,1,args.length) );
-			return;
+			String firstArg = args[0];
+			String[] remainingArgs = Arrays.copyOfRange(args,1,args.length);
+			if( firstArg.equalsIgnoreCase("--app:duplicator") )
+			{
+				org.openlvc.duplicator.Main.main( remainingArgs );
+				return;
+			}
+			else if( firstArg.equalsIgnoreCase("--app:disillusion") )
+			{
+				org.openlvc.disillusion.Main.main( remainingArgs );
+				return;
+			}
+			else if( firstArg.equalsIgnoreCase("--app:disruptor") )
+			{
+				org.openlvc.disruptor.Main.main( remainingArgs );
+				return;
+			}
+			else if( firstArg.equalsIgnoreCase("--app:distributor") )
+			{
+				org.openlvc.distributor.Main.main( remainingArgs );
+				return;
+			}
+			else if( firstArg.equalsIgnoreCase("--app:disassembler") )
+			{
+				org.openlvc.disassembler.Main.main( remainingArgs );
+				return;
+			}
+			else if( firstArg.equalsIgnoreCase("--app:dislocator") )
+			{
+				org.openlvc.dislocator.Main.main( remainingArgs );
+				return;
+			}
 		}
 
 		// print out some information about us

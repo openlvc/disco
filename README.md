@@ -40,12 +40,14 @@ disco-1.x.x/
 ├── README.md                     << this file!
 │
 ├── bin/
+│   ├── disillusion.sh / bat      << launch the disillusion load testing tool
 │   ├── disruptor.sh / bat        << launch the disruptor load testing tool
 │   ├── distributor.sh / bat      << launch the distributor bridging tool
 │   └── duplicator.sh / bat       << launch the duplicator logging tool
 │
 ├── etc/
 │   ├── disco.config              << sample disco config (all can be set in code)
+│   ├── disillusion.config        << sample disillusion config
 │   ├── disruptor.config          << sample disruptor config
 │   ├── distributor.config        << annotated distributor config
 │   ├── distributor-local.config  << sample distributor config for local bridge
@@ -57,6 +59,7 @@ disco-1.x.x/
 │   
 ├── docs/
 │   ├── disco.md*                 << disco programmer's guide
+│   ├── disillusion.md*           << disillusion documentation
 │   ├── disruptor.md*             << disruptor documentation
 │   ├── distributor.md            << distributor documentation
 │   ├── duplicator.md             << duplicator documentation

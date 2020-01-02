@@ -52,9 +52,9 @@ public class CoordinateUtils
 	// Acknowlegemnet: https://gist.github.com/klucar/1536194
 	public static WorldCoordinate toECEF( LLA coordinate )
 	{
-		double lat = Math.toRadians(coordinate.getLatitude());
-		double lon = Math.toRadians(coordinate.getLongitude());
-		double alt = Math.toRadians(coordinate.getAltitude());
+		double lat = coordinate.getLatitudeRadians();
+		double lon = coordinate.getLongitudeRadians();
+		double alt = coordinate.getAltitude();
 
 		//intermediate calculation (prime vertical radius of curvature)
 		double N = a / Math.sqrt(1 - esq * Math.pow(Math.sin(lat),2) );
@@ -88,6 +88,6 @@ public class CoordinateUtils
 		lon = lon % (2*Math.PI);
 		
 		// correction for altitude near poles left out.
-		return new LLA( Math.toDegrees(lat), Math.toDegrees(lon), alt );
+		return LLA.fromRadians( lat, lon, alt );
 	}
 }

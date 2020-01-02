@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.utils;
 
+import org.json.simple.JSONObject;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
 
 /**
@@ -28,41 +29,62 @@ public class LLA
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 	// WGS-84 ellipsoid params
-	private static final double vincentry_a = 6378137;
-	private static final double vincentry_b = 6356752.314245;
-	private static final double vincentry_f = 1 / 298.257223563; 
+	private static final double vincenty_a = 6378137;            // Earth equatorial radius (meters)
+	private static final double vincenty_b = 6356752.314245;     // Earth polar radius (meters)
+	private static final double vincenty_f = 1 / 298.257223563;  // ellipsoid flattening
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private double lat;
-	private double lon;
+	private double latDeg;
+	private double lonDeg;
 	private double alt;
+	private double latRad;
+	private double lonRad;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	public LLA()
 	{
-		this.lat = 0.0;
-		this.lon = 0.0;
-		this.alt = 0.0;
+		this( 0.0, 0.0, 0.0 );
 	}
 
-	public LLA( double lat, double lon, double alt )
+	public static LLA fromDegrees( double lat, double lon, double alt )
 	{
-		this();
-		this.lat = lat;
-		this.lon = lon;
-		this.alt = alt;
+		return new LLA( lat, lon, alt );
 	}
-	
-	public LLA( WorldCoordinate ecef )
+
+	public static LLA fromRadians( double lat, double lon, double alt )
 	{
-		LLA other = CoordinateUtils.toLLA( ecef );
-		this.lat = other.lat;
-		this.lon = other.lon;
-		this.alt = other.alt;
+		return new LLA( Math.toDegrees( lat ), Math.toDegrees( lon ), alt );
+	}
+
+	public static LLA fromECEF( WorldCoordinate ecef )
+	{
+		return CoordinateUtils.toLLA( ecef );
+	}
+
+	public static LLA fromLLA( LLA other )
+	{
+		return new LLA( other.latDeg, other.lonDeg, other.alt );
+	}
+
+	public static LLA fromJSON( JSONObject json )
+	{
+		double lat = JsonUtils.getDouble( json, "lat", 0.0 );
+		double lon = JsonUtils.getDouble( json, "lon", 0.0 );
+		double alt = JsonUtils.getDouble( json, "alt", 0.0 );
+		return LLA.fromDegrees( lat, lon, alt );
+	}
+
+	private LLA( double lat, double lon, double alt )
+	{
+		this.latDeg = lat;
+		this.lonDeg = lon;
+		this.latRad = Math.toRadians( lat );
+		this.lonRad = Math.toRadians( lon );
+		this.alt = alt;
 	}
 
 	//----------------------------------------------------------
@@ -77,14 +99,24 @@ public class LLA
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public double getLatitude()
+	public double getLatitudeDegrees()
 	{
-		return this.lat;
+		return this.latDeg;
 	}
 	
-	public double getLongitude()
+	public double getLongitudeDegrees()
 	{
-		return this.lon;
+		return this.lonDeg;
+	}
+	
+	public double getLatitudeRadians()
+	{
+		return this.latRad;
+	}
+	
+	public double getLongitudeRadians()
+	{
+		return this.lonRad;
 	}
 	
 	public double getAltitude()
@@ -92,67 +124,35 @@ public class LLA
 		return this.alt;
 	}
 
-	public void setLatitude( double lat )
-	{
-		if( lat > 90.0 || lat < -90.0 )
-		{
-			if( lat == 180.0 || lat == -180.0 )
-				lat = 0.0;
-			else
-				throw new IllegalArgumentException( lat+" not a valid latitude. Must be between +-90" );
-		}
-		
-		this.lat = lat;
-	}
-	
-	public void setLongitude( double lon )
-	{
-		if( lon > 180.0 || lon < -180.0 )
-			throw new IllegalArgumentException( lon+" not a valid latitude. Must be between +-180" );
-		
-		this.lon = lon;
-	}
-	
-	public void setAltitude( double alt )
-	{
-		this.alt = alt;
-	}
-	
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();
-		if( lat >= 0.0 )
-			builder.append( lat+"N" );
+		if( latDeg >= 0.0 )
+			builder.append( latDeg+"N" );
 		else
-			builder.append( (lat*-1.0)+"S" );
+			builder.append( (latDeg*-1.0)+"S" );
 		
-		if( lon >= 0.0 )
-			builder.append( ", "+lon+"E" );
+		if( lonDeg >= 0.0 )
+			builder.append( ", "+lonDeg+"E" );
 		else
-			builder.append( ", "+(lon*-1.0)+"W" );
+			builder.append( ", "+(lonDeg*-1.0)+"W" );
 		
 		builder.append( ", "+alt );
 		return builder.toString();
 	}
-	
 	
 	//////////////////////////////////////////////////////////////////
 	/// Distance Calculations   //////////////////////////////////////
 	//////////////////////////////////////////////////////////////////
 	public double distanceBetween( LLA other )
 	{
-		double theta = lon - other.lon;
-		double dist = Math.sin(deg2rad(lat)) * Math.sin(deg2rad(other.lat)) +
-		              Math.cos(deg2rad(lat)) * Math.cos(deg2rad(other.lat)) * Math.cos(deg2rad(theta));
+		double theta = lonRad - other.lonRad;
+		double dist = Math.sin(latRad) * Math.sin(other.latRad) +
+		              Math.cos(latRad) * Math.cos(other.latRad) * Math.cos(theta);
 		dist = Math.acos( dist );
-		dist = (dist * 180.0 / Math.PI); // radios to degrees
+		dist = Math.toDegrees(dist); // radios to degrees
 		dist = dist * 60 * 1.1515 * 1609.344; // last bit convert miles to meters
 		return dist;
-	}
-
-	private double deg2rad( double degrees )
-	{
-		return( degrees * Math.PI / 180.0 );
 	}
 
 	/*
@@ -168,10 +168,10 @@ public class LLA
 	{
 	    final int R = 6371; // Radius of the earth
 
-	    Double latDistance = Math.toRadians(other.lat - lat);
-	    Double lonDistance = Math.toRadians(other.lon - lon);
+	    Double latDistance = Math.toRadians(other.latDeg - latDeg);
+	    Double lonDistance = Math.toRadians(other.lonDeg - lonDeg);
 	    Double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-	            + Math.cos(Math.toRadians(lat)) * Math.cos(Math.toRadians(other.lat))
+	            + Math.cos(Math.toRadians(latDeg)) * Math.cos(Math.toRadians(other.latDeg))
 	            * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
 	    Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	    double distance = R * c * 1000; // convert to meters
@@ -196,9 +196,9 @@ public class LLA
 	 */
 	public double distanceBetweenUsingVincentry( LLA other )
 	{
-		double L = Math.toRadians( other.lon - this.lon );
-		double U1 = Math.atan( (1-vincentry_f) * Math.tan(Math.toRadians(lat)) );
-		double U2 = Math.atan( (1-vincentry_f) * Math.tan(Math.toRadians(other.lat)) );
+		double L = other.lonRad - this.lonRad;
+		double U1 = Math.atan( (1-vincenty_f) * Math.tan(latRad) );
+		double U2 = Math.atan( (1-vincenty_f) * Math.tan(other.latRad) );
 		double sinU1 = Math.sin( U1 ), cosU1 = Math.cos( U1 );
 		double sinU2 = Math.sin( U2 ), cosU2 = Math.cos( U2 );
 		
@@ -222,9 +222,9 @@ public class LLA
 			cos2SigmaM = cosSigma - 2 * sinU1 * sinU2 / cosSqAlpha;
 			if( Double.isNaN( cos2SigmaM ) )
 				cos2SigmaM = 0; // equatorial line: cosSqAlpha=0 (6)
-			double C = vincentry_f / 16 * cosSqAlpha * (4+vincentry_f * (4-3 * cosSqAlpha));
+			double C = vincenty_f / 16 * cosSqAlpha * (4+vincenty_f * (4-3 * cosSqAlpha));
 			lambdaP = lambda;
-			lambda = L + (1 - C) * vincentry_f * sinAlpha *
+			lambda = L + (1 - C) * vincenty_f * sinAlpha *
 			             (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1+2*cos2SigmaM*cos2SigmaM)));
 		}
 		while( Math.abs( lambda - lambdaP ) > 1e-12 && --iterLimit > 0 );
@@ -232,7 +232,7 @@ public class LLA
 		if( iterLimit == 0 )
 			return Double.NaN; // formula failed to converge
 
-		double uSq = cosSqAlpha * (vincentry_a * vincentry_a - vincentry_b * vincentry_b) / (vincentry_b * vincentry_b);
+		double uSq = cosSqAlpha * (vincenty_a * vincenty_a - vincenty_b * vincenty_b) / (vincenty_b * vincenty_b);
 		double A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
 		double B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)));
 		double deltaSigma = B * sinSigma *
@@ -244,10 +244,36 @@ public class LLA
 		                                                              sinSigma) * (-3 +
 		                                                                           4 * cos2SigmaM *
 		                                                                                cos2SigmaM)));
-		double dist = vincentry_b * A * (sigma - deltaSigma);
+		double dist = vincenty_b * A * (sigma - deltaSigma);
 		return dist;
 	}
 	
+	/**
+	 * Return the destination LLA reached by starting from this LLA and
+	 * traveling in the given heading (in degrees) the given distance (in meters)
+	 * 
+	 * @param bearing the compass heading to travel (in degrees)
+	 * @param distance the distance to travel (in meters)
+	 * @return the LLA of the destination point reached
+	 */
+	public LLA destination( double bearing, double distance )
+	{
+		double bearingRad = Math.toRadians(bearing);
+		
+		// calculate values which are used multiple times once here
+		double EARTH_MEAN_RADIUS = 6371000;
+		double dR = distance / EARTH_MEAN_RADIUS;  // angular distance
+		double cosDR = Math.cos( dR );
+		double sinDR = Math.sin( dR );
+		double cosLat = Math.cos( this.latRad );
+		double sinLat = Math.sin( this.latRad );
+		
+		// calculate the destination
+		double dstLat = Math.asin( sinLat * cosDR + cosLat * sinDR * Math.cos( bearingRad ) );
+		double dstLon = this.lonRad + Math.atan2( Math.sin( bearingRad ) * sinDR * cosLat,
+		                                     cosDR - sinLat * Math.sin( dstLat ) );
+		return LLA.fromRadians( dstLat, dstLon, this.alt );
+	}	
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS

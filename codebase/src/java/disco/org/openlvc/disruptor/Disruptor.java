@@ -178,7 +178,7 @@ public class Disruptor
 			//pdu.setMarking( "DSRPT"+i );
 			pdu.setMarking( "ER"+i );
 			pdu.setAppearance( new PlatformAppearance().setPowerplantOn(true).getBits() );
-			pdu.setLocation( CoordinateUtils.toECEF(new LLA(-31.9522,115.8589,0)) );
+			pdu.setLocation( CoordinateUtils.toECEF(LLA.fromDegrees(-31.9522,115.8589,0)) );
 			
 			entities.add( pdu );
 		}

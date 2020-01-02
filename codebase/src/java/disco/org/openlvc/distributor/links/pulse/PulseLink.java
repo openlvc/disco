@@ -56,7 +56,7 @@ public class PulseLink extends LinkBase implements ILink
 	private int siteId         = 0;
 	private int appId          = 0;
 	private int entityId       = 1;
-	private LLA entityLocation = new LLA( 0.0, 0.0, 2000000.0 ); // 2000km above, medium earth orbit edge
+	private LLA entityLocation = LLA.fromDegrees( 0.0, 0.0, 2000000.0 ); // 2000km above, medium earth orbit edge
 	
 	private int pulseCount = 0;
 	
