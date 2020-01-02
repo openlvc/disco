@@ -1,0 +1,225 @@
+{
+	"entities":
+	{
+        "chinook":    "1 2 225 23 1 9 0",
+        "bushmaster": "1 1 13 3 2 1 0",
+        "camcu":      "3 1 13 11 0 1 1"
+	},
+	"locations":
+	{
+        "location-001-lnd": { "lat":-23.1473332,         "lon":126.7450746,        "alt":0.0 },
+        "location-002-lnd": { "lat":-23.12370607029408,  "lon":126.78667892499308, "alt":0.0 },
+        "location-003-lnd": { "lat":-23.1876052923023,   "lon":126.83253897482302, "alt":0.0 },
+        "location-004-lnd": { "lat":-23.012434959112188, "lon":126.7450746,        "alt":0.0 },
+        "location-005-lnd": { "lat":-23.05275930383561,  "lon":126.91140404102289, "alt":0.0 },
+        "location-001-air": { "lat":-23.1473332,         "lon":126.7450746,        "alt":1000.0 },
+        "location-002-air": { "lat":-23.12370607029408,  "lon":126.78667892499308, "alt":1000.0 },
+        "location-003-air": { "lat":-23.1876052923023,   "lon":126.83253897482302, "alt":1000.0 },
+        "location-004-air": { "lat":-23.012434959112188, "lon":126.7450746,        "alt":1000.0 },
+        "location-005-air": { "lat":-23.05275930383561,  "lon":126.91140404102289, "alt":1000.0 }
+	},
+	"paths":
+	[
+		{
+			"entityType": "chinook",
+			"count":      167,
+			"spacing":    100.0,
+			"path":
+			{
+				"type":   "circle",
+				"center": "location-001-air",
+				"radius": 600.0,
+				"speed":  27.7778
+			}
+		},
+		{
+			"entityType": "bushmaster",
+			"count":      166,
+			"spacing":    50.0,
+			"path":
+			{
+				"type":        "polygon",
+				"sides":       6,
+				"center":      "location-001-lnd",
+				"radius":      300.0,
+				"speed":       16.6666
+			}
+		},
+		{
+			"entityType": "camcu",
+			"count":      167,
+			"spacing":    10.0,
+			"path":
+			{
+				"type":        "polygon",
+				"sides":       3,
+				"center":      "location-001-lnd",
+				"radius":      150.0,
+				"speed":       2.68224
+			}
+        },
+
+
+
+        {
+			"entityType": "chinook",
+			"count":      167,
+			"spacing":    100.0,
+			"path":
+			{
+				"type":   "circle",
+				"center": "location-002-air",
+				"radius": 600.0,
+				"speed":  27.7778
+			}
+		},
+		{
+			"entityType": "bushmaster",
+			"count":      166,
+			"spacing":    50.0,
+			"path":
+			{
+				"type":        "polygon",
+				"sides":       6,
+				"center":      "location-002-lnd",
+				"radius":      300.0,
+				"speed":       16.6666
+			}
+		},
+		{
+			"entityType": "camcu",
+			"count":      167,
+			"spacing":    10.0,
+			"path":
+			{
+				"type":        "polygon",
+				"sides":       3,
+				"center":      "location-002-lnd",
+				"radius":      150.0,
+				"speed":       2.68224
+			}
+        },
+
+
+        {
+			"entityType": "chinook",
+			"count":      167,
+			"spacing":    100.0,
+			"path":
+			{
+				"type":   "circle",
+				"center": "location-003-air",
+				"radius": 600.0,
+				"speed":  27.7778
+			}
+		},
+		{
+			"entityType": "bushmaster",
+			"count":      166,
+			"spacing":    50.0,
+			"path":
+			{
+				"type":        "polygon",
+				"sides":       6,
+				"center":      "location-003-lnd",
+				"radius":      300.0,
+				"speed":       16.6666
+			}
+		},
+		{
+			"entityType": "camcu",
+			"count":      167,
+			"spacing":    10.0,
+			"path":
+			{
+				"type":        "polygon",
+				"sides":       3,
+				"center":      "location-003-lnd",
+				"radius":      150.0,
+				"speed":       2.68224
+			}
+        },
+
+
+
+        {
+			"entityType": "chinook",
+			"count":      167,
+			"spacing":    100.0,
+			"path":
+			{
+				"type":   "circle",
+				"center": "location-004-air",
+				"radius": 600.0,
+				"speed":  27.7778
+			}
+		},
+		{
+			"entityType": "bushmaster",
+			"count":      166,
+			"spacing":    50.0,
+			"path":
+			{
+				"type":        "polygon",
+				"sides":       6,
+				"center":      "location-004-lnd",
+				"radius":      300.0,
+				"speed":       16.6666
+			}
+		},
+		{
+			"entityType": "camcu",
+			"count":      167,
+			"spacing":    10.0,
+			"path":
+			{
+				"type":        "polygon",
+				"sides":       3,
+				"center":      "location-004-lnd",
+				"radius":      150.0,
+				"speed":       2.68224
+			}
+        },
+
+
+
+        {
+			"entityType": "chinook",
+			"count":      167,
+			"spacing":    100.0,
+			"path":
+			{
+				"type":   "circle",
+				"center": "location-005-air",
+				"radius": 600.0,
+				"speed":  27.7778
+			}
+		},
+		{
+			"entityType": "bushmaster",
+			"count":      166,
+			"spacing":    50.0,
+			"path":
+			{
+				"type":        "polygon",
+				"sides":       6,
+				"center":      "location-005-lnd",
+				"radius":      300.0,
+				"speed":       16.6666
+			}
+		},
+		{
+			"entityType": "camcu",
+			"count":      167,
+			"spacing":    10.0,
+			"path":
+			{
+				"type":        "polygon",
+				"sides":       3,
+				"center":      "location-005-lnd",
+				"radius":      150.0,
+				"speed":       2.68224
+			}
+        }
+	]
+}
