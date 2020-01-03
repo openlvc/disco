@@ -15,12 +15,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disillusion.paths;
+package org.openlvc.disruptor.paths;
 
 import org.openlvc.disco.utils.LLA;
 
 /**
- * Interface for movement paths used by DISillusion
+ * Interface for movement paths used by the disruptor
  * 
  * The general idea is that a path is defined, and then one can
  * query the path for where something would be given the
@@ -28,6 +28,13 @@ import org.openlvc.disco.utils.LLA;
  */
 public interface IPath
 {
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	static final float _360DEGREES = (float)Math.PI * 2.0f;
+	static final float _180DEGREES = (float)Math.PI;
+	static final float _90DEGREES = (float)Math.PI / 2.0f;
+	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -54,4 +61,28 @@ public interface IPath
 	 * @param distance the distance along the path
 	 */
 	public LLA getLLA( double distance );
+	
+	/**
+	 * Obtain the heading (in radians) for the given time (starting at 0 at the start of the
+	 * simulation, in milliseconds)
+	 * 
+	 * @param time the current time, in milliseconds, since the start of the simulation
+	 */
+	public double getHeadingRad( long time );
+	
+	/**
+	 * Obtain the heading (in radians) for the given time (starting at 0 at the start of the
+	 * simulation, in milliseconds), with an offset (useful for multiple items on the same path)
+	 * 
+	 * @param time the current time, in milliseconds, since the start of the simulation
+	 * @param offset the offset, in meters, along the path
+	 */
+	public double getHeadingRad( long time, double offset );
+	
+	/**
+	 * Obtain the heading (in radians) for the given distance along the path
+	 * 
+	 * @param distance the distance along the path
+	 */
+	public double getHeadingRad( double distance );
 }

@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disillusion.paths;
+package org.openlvc.disruptor.paths;
 
 import java.util.Map;
 
@@ -144,6 +144,31 @@ public class LinePath implements IPath
 		double remainingDistance = distance - (segmentIdx * this.length);
 
 		return origin.destination( Math.toDegrees( bearing ), remainingDistance );
+	}
+	
+	@Override
+	public double getHeadingRad( long time )
+	{
+		return getHeadingRad( time, 0.0 );
+	}
+	
+	@Override
+	public double getHeadingRad( long time, double offset )
+	{
+		double seconds = time / 1000.0;
+		// how far have we travelled?
+		double distance = (seconds * this.speed) + offset;
+		return getHeadingRad( distance );
+	}
+	
+	@Override
+	public double getHeadingRad( double distance )
+	{
+		// which segment are we currently in?
+		int segmentIdx = (int)Math.floor( distance / this.length );
+		boolean isStart = segmentIdx % 2 == 0;
+		// which direction are we heading?
+		return (isStart ? headingRad : headingRad + Math.PI) - _90DEGREES;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

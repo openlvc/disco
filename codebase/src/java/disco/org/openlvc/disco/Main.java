@@ -74,11 +74,6 @@ public class Main
 				org.openlvc.duplicator.Main.main( remainingArgs );
 				return;
 			}
-			else if( firstArg.equalsIgnoreCase("--app:disillusion") )
-			{
-				org.openlvc.disillusion.Main.main( remainingArgs );
-				return;
-			}
 			else if( firstArg.equalsIgnoreCase("--app:disruptor") )
 			{
 				org.openlvc.disruptor.Main.main( remainingArgs );

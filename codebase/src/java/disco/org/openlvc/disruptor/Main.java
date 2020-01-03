@@ -40,8 +40,8 @@ public class Main
 		Configuration configuration = new Configuration( args );
 
 		// Run the load master
-		Disruptor disruptor = new Disruptor( configuration );
-		disruptor.execute();
+		Disruptor disillusion = new Disruptor( configuration );
+		disillusion.execute();
 	}
 
 	//----------------------------------------------------------

@@ -1,8 +1,8 @@
-Disco DISillusion
+Disco Disruptor
 ===================
-Welcome to Disco DISillusion, provided by the OpenLVC project.
+Welcome to Disco Disruptor, provided by the OpenLVC project.
 
-DISillusion is a tool for generating somewhat believable "real" DIS network
+Disruptor is a tool for generating somewhat believable "real" DIS network
 traffic.
 
 It allows quick generation of traffic for entities following set paths in order
@@ -16,65 +16,67 @@ Common use cases include:
   - load testing for systems which handle DIS traffic
   - verification of representations of DIS traffic in third party systems
 
-How DISillusion Works
+How The Disruptor Works
 --------------------------
-DISillusion reads a simple JSON formatted configuration file which it uses to
+The Disruptor reads a simple JSON formatted configuration file which it uses to
 determine the locations of entities along simple movement paths.
 
 It then outputs DIS traffic which simulates a "real" DIS application outputting
 positional information for those entities.
 
-Using the DISillusion
+Using the Disruptor
 ------------------------
-Launchers are in the `bin` directory. To start DISillusion, simply launch
-`dislillusion.sh` and optionally specify a configuration file and/or plan file.
+Launchers are in the `bin` directory. To start the Disruptor, simply launch
+`disruptor.sh` and optionally specify a configuration file and/or plan file.
 
 ```
-$ bin/dislillusion --config-file etc/dislillusion.config --plan-file etc/disillusion.plan
+$ bin/disruptor --config-file etc/disruptor.config --plan-file etc/disillusion.plan
 ```
 
 The config and plan files mentioned above will be loaded if none is specified. When
-DISlillusion starts, you should see the following output:
+the Disruptor starts, you should see the following output:
 
 ```bash
-[tim@example:disco-1.0.0]$ bin/dislillusion.sh
-11:55:12.113 [main] INFO  disillusion:
-11:55:12.114 [main] INFO  disillusion:  ___ ___ ___
-11:55:12.114 [main] INFO  disillusion: |   \_ _/ __)
-11:55:12.114 [main] INFO  disillusion: | |) | |\__ \ o  ) )     _ o  _   _
-11:55:12.115 [main] INFO  disillusion: |___/___|___/ ( ( ( (_( (  ( (_) ) )
-11:55:12.115 [main] INFO  disillusion:                         _)
-11:55:12.115 [main] INFO  disillusion:
-11:55:12.115 [main] INFO  disillusion: Welcome to DISillusion - a tool for creating the illusion of 'real' DIS traffic
-11:55:12.115 [main] INFO  disillusion:
-11:55:12.972 [main] INFO  disco:        Welcome to Open LVC Disco
-11:55:12.972 [main] INFO  disco:         .___.__
-11:55:12.972 [main] INFO  disco:       __| _/|__| ______ ____  ____
-11:55:12.972 [main] INFO  disco:      / __ | |  |/  ___// ___\/  _ \
-11:55:12.972 [main] INFO  disco:     / /_/ | |  |\___ \\  \__(  ( ) )
-11:55:12.973 [main] INFO  disco:     \____ | |__/____  >\___  >____/
-11:55:12.973 [main] INFO  disco:          \/         \/     \/
-11:55:12.973 [main] INFO  disco:
-11:55:12.973 [main] INFO  disco: Version: 1.0.0 (build 9)
-11:55:12.973 [main] INFO  disco:
-11:55:13.037 [main] INFO  disco: Connecting broadcast socket - /192.168.1.135:3000 (interface: name:eth9 (Intel(R) Ethernet Connection (2) I219-V))
+[tim@example:disco-1.0.0]$ bin/disruptor.sh
+10:28:32.974 [main] INFO  disruptor:
+10:28:32.976 [main] INFO  disruptor:  (
+10:28:32.976 [main] INFO  disruptor:  )\ )                               )
+10:28:32.976 [main] INFO  disruptor: (()/(  (       (      (          ( /(      (
+10:28:32.976 [main] INFO  disruptor:  /(_)) )\  (   )(    ))\  `  )   )\()) (   )(
+10:28:32.976 [main] INFO  disruptor: (_))_ ((_) )\ (()\  /((_) /(/(  (_))/  )\ (()\
+10:28:32.976 [main] INFO  disruptor:  |   \ (_)((_) ((_)(_))( ((_)_\ | |_  ((_) ((_)
+10:28:32.976 [main] INFO  disruptor:  | |) || |(_-<| '_|| || || '_ \)|  _|/ _ \| '_|
+10:28:32.977 [main] INFO  disruptor:  |___/ |_|/__/|_|   \_,_|| .__/  \__|\___/|_|
+10:28:32.977 [main] INFO  disruptor:                          |_|
+10:28:32.977 [main] INFO  disruptor:
+10:28:32.977 [main] INFO  disruptor: Welcome to the Disruptor - Breaking things since Two-Oh-One-Six
+10:28:32.977 [main] INFO  disruptor:
+10:28:33.687 [main] INFO  disco:        Welcome to Open LVC Disco
+10:28:33.687 [main] INFO  disco:         .___.__
+10:28:33.688 [main] INFO  disco:       __| _/|__| ______ ____  ____
+10:28:33.688 [main] INFO  disco:      / __ | |  |/  ___// ___\/  _ \
+10:28:33.688 [main] INFO  disco:     / /_/ | |  |\___ \\  \__(  ( ) )
+10:28:33.689 [main] INFO  disco:     \____ | |__/____  >\___  >____/
+10:28:33.689 [main] INFO  disco:          \/         \/     \/
+10:28:33.689 [main] INFO  disco:
+10:28:33.690 [main] INFO  disco: Version: 1.0.0 (build 9)
+10:28:33.690 [main] INFO  disco:
+10:28:33.733 [main] INFO  disco: Connecting broadcast socket - /192.168.1.135:3000 (interface: name:eth9 (Intel(R) Ethernet Connection (2) I219-V))
 ```
-
-
-Configuring DISillusion
+Configuring Disruptor
 ----------------------------
-DISillusion uses two configuration files - one to configure underlying DIS network parameters
+Disruptor uses two configuration files - one to configure underlying DIS network parameters
 and so on, the other to describe the entities and motion paths for the session of generated
 DIS traffic.
 
-Some example distributor configuration files can be found in the `etc` directory. The main `etc/dislillusion.config`
+Some example distributor configuration files can be found in the `etc` directory. The main `etc/disruptor.config`
 file is heavily annotated.
 
-  - `etc/dislillusion.config` Default config file, heavily annotated
-  - `etc/dislillusion.plan` Entity and motion path plan config file, (JSON formatted)
+  - `etc/disruptor.config` Default config file, heavily annotated
+  - `etc/disruptor.plan` Entity and motion path plan config file, (JSON formatted)
 
 ### Entity and Motion Path Config File Structure
-The `dislillusion.plan` configuration is in the JSON format, a simple human readable text based
+The `disruptor.plan` configuration is in the JSON format, a simple human readable text based
 data format. If you are unfamiliar with the JSON format [this article](https://en.wikipedia.org/wiki/JSON) may help.
 
 There are three main sections: `entities`, `locations` and `paths`, which sit inside the root level
@@ -124,7 +126,7 @@ be seen in the following simple example:
     ...
 }
 ```
-**NOTE:** In order to facilitate faciltate copy/pasting from a variety of source mapping file
+**NOTE:** In order to facilitate facilitate copy/pasting from a variety of source mapping file
 formats, when expressing a DIS enumeration as a string, any non-numeric character is treated as a
 delimiter.
 
@@ -135,7 +137,8 @@ This means that the following  DIS enumeration strings are all equivalent:
  - `"1-1-13-3-2-1-0"`
  - `"1 1.13,3-2x1?0"`
 
-**NOTE:** While DIS enumerations consist of 7 digits, values can be left out (as seen in the above example). "Missing" values are interpreted as having a 0 value.
+**NOTE:** While DIS enumerations consist of 7 digits, values can be left out (as seen in the above
+example). "Missing" values are interpreted as having a 0 value.
 
 #### `locations` Section
 
@@ -230,7 +233,8 @@ follow that path.
 ```
 
 All `paths` entries *must* have the following parameters:
- - `entityType`: either a DIS enumeration or an entity name defined in the `entities` configuration section. If a DIS enumeration is specified, it may be given as an array of integer values or a
+ - `entityType`: either a DIS enumeration or an entity name defined in the `entities` configuration
+ section. If a DIS enumeration is specified, it may be given as an array of integer values or a
  string, just as in the `entities` section.
  - `count`: the number of entities to follow this path
  - `spacing`: the spacing (in meters) between the entities on this path

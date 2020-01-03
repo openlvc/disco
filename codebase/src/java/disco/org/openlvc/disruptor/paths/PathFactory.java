@@ -15,64 +15,40 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disillusion;
+package org.openlvc.disruptor.paths;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
-import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.disillusion.paths.IPath;
+import org.json.simple.JSONObject;
+import org.openlvc.disco.utils.JsonUtils;
+import org.openlvc.disco.utils.LLA;
 
 /**
- * A simple container class to hold the details of a path and the PDUs of entities which are
- * travelling along it
+ * Factory class which produces path definitions from JSON objects
  */
-public class PDUAndPathContainer
+public class PathFactory
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	// JSON configuration keys
+	private static final String PATH_TYPE = "type";
+	private static final String POLYGON_PATH = "polygon";
+	private static final String CIRCLE_PATH  = "circle";
+	private static final String LINE_PATH    = "line";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private List<EntityStatePdu> entityStatePdus;
-	private IPath path;
-	private double spacing;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public PDUAndPathContainer(IPath path, double spacing)
-	{
-		this.path = path;
-		this.spacing = spacing;
-		this.entityStatePdus = new ArrayList<EntityStatePdu>();
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public void addEntityStatePdu( EntityStatePdu pdu )
-	{
-		this.entityStatePdus.add( pdu );
-	}
-	
-	public IPath getPath()
-	{
-		return this.path;
-	}
 
-	public double getSpacing()
-	{
-		return this.spacing;
-	}
-	
-	public List<EntityStatePdu> getEntityStatePdus()
-	{
-		return this.entityStatePdus;
-	}
-	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,4 +56,39 @@ public class PDUAndPathContainer
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	/**
+	 * Create a path based on a JSON definition
+	 * 
+	 * @param json the {@link JSONObject} which contains the path definition
+	 * @param locationLookup a {@link Map} which contains well-known location aliases for lookup
+	 * @return a {@link IPath} instance
+	 */
+	public static IPath fromJson( JSONObject json, Map<String,LLA> locationLookup )
+	{
+		if( json == null )
+		{
+			throw new RuntimeException( "Could not create path - no definition was supplied." );
+		}
+		
+		String pathType = JsonUtils.getString( json, PATH_TYPE, null );
+		if( pathType == null || "".equals(pathType.trim()) )
+		{
+			throw new RuntimeException( "Could not create path - no path type was specified." );
+		}
+		
+		if( pathType.equalsIgnoreCase( LINE_PATH ) )
+		{
+			return LinePath.fromJson( json, locationLookup );
+		}
+		else if( pathType.equalsIgnoreCase( CIRCLE_PATH ) )
+		{
+			return CircularPath.fromJson( json, locationLookup );
+		}
+		else if( pathType.equalsIgnoreCase( POLYGON_PATH ) )
+		{
+			return PolygonPath.fromJson( json, locationLookup );
+		}
+		
+		throw new RuntimeException( "Could not create path - unknown path type '"+pathType+"' was specified." );
+	}
 }

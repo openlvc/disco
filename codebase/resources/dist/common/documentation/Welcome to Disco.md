@@ -2,12 +2,14 @@ Disco Distributor
 ===================
 Welcome to Disco, provided by the Open LVC Project and licensed under the terms of the Apache Software License v2.
 
-Disco is a library an suite of tools deisgned to support the development and deployment of Distributed Interactive Simulation (DIS) applications. It consists of:
+Disco is a library an suite of tools deisgned to support the development and deployment of Distributed Interactive
+Simulation (DIS) applications. It consists of:
 
   - **Disco**:       High Performance Java API for working with DIS applications
   - **Distributor**: Bridge to connect multiple sites together over a WAN
   - **Duplicator**:  Capture and replay sessions of DIS network traffic
   - **Disruptor**:   DIS network load tester; flood the network with traffic to performance test
+  - **Disillusion**: DIS network load tester; generate somewhat realistic DIS traffic
 
 Disco ships with two primary major components depending on your use:
 
@@ -56,10 +58,11 @@ TBA
 Running Disco Applications
 ---------------------------
 
-Disco ships as a set of Java JAR files containing the compiled form of all the software, and a set of application launchers as shell scripts or batch files. 
+Disco ships as a set of Java JAR files containing the compiled form of all the software, and a set of application
+launchers as shell scripts or batch files.
 
 
 
 License
 ========
-The full Disco library is distributed under the Apache Software License v2.  
+The full Disco library is distributed under the Apache Software License v2.

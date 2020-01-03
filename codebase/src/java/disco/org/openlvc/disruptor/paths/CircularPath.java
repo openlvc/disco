@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disillusion.paths;
+package org.openlvc.disruptor.paths;
 
 import java.util.Map;
 
@@ -130,6 +130,31 @@ public class CircularPath implements IPath
 	{
 		double angularOffset = (distance / this.circumference) * _2PI;
 		return this.center.destination( Math.toDegrees( angularOffset ), this.radius );
+	}
+	
+	@Override
+	public double getHeadingRad( long time )
+	{
+		return getHeadingRad( time, 0.0 );
+	}
+	
+	@Override
+	public double getHeadingRad( long time, double offset )
+	{
+		double seconds = time / 1000.0;
+		double currentAngle = this.angularSpeed * seconds;
+		if( offset != 0 )
+		{
+			double angularOffset = (offset / this.circumference) * _2PI;
+			currentAngle += angularOffset;
+		}
+		return currentAngle;
+	}
+	
+	@Override
+	public double getHeadingRad( double distance )
+	{
+		return (distance / this.circumference) * _2PI;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

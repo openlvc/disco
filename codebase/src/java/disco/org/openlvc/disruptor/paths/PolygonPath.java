@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disillusion.paths;
+package org.openlvc.disruptor.paths;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -198,6 +198,30 @@ public class PolygonPath implements IPath
 		return corner.destination( Math.toDegrees( bearing ), remainingDistance );
 	}
 	
+	@Override
+	public double getHeadingRad( long time )
+	{
+		return getHeadingRad( time, 0.0 );
+	}
+	
+	@Override
+	public double getHeadingRad( long time, double offset )
+	{
+		double seconds = time / 1000.0;
+		// how far have we travelled?
+		double distance = (seconds * this.speed) + offset;
+		return getHeadingRad( distance );
+	}
+	
+	@Override
+	public double getHeadingRad( double distance )
+	{
+		// which segment are we currently in?
+		int segmentIdx = (int)Math.floor( distance / this.sideLength );
+		// what direction do we need to be heading from the corner?
+		return ((segmentIdx * this.centerAngle) + this.orientationRad + Math.PI - this.halfCornerAngle) - _90DEGREES;
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
