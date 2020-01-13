@@ -33,6 +33,8 @@ import org.openlvc.disco.pdu.radio.SignalPdu;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
 import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.simman.CommentPdu;
+import org.openlvc.disco.pdu.simman.DataPdu;
+import org.openlvc.disco.pdu.simman.SetDataPdu;
 import org.openlvc.disco.pdu.warfare.DetonationPdu;
 import org.openlvc.disco.pdu.warfare.FirePdu;
 
@@ -60,8 +62,8 @@ public enum PduType
 	ActionRequest     ( (short)16 ),
 	ActionResponse    ( (short)17 ),
 	DataQuery         ( (short)18 ),
-	SetData           ( (short)19 ),
-	Data              ( (short)20 ),
+	SetData           ( (short)19, SetDataPdu.class ),
+	Data              ( (short)20, DataPdu.class ),
 	EventReport       ( (short)21 ),
 	Comment           ( (short)22, CommentPdu.class ),
 	Emission          ( (short)23 ),

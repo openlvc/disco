@@ -18,13 +18,13 @@
 package org.openlvc.disco.pdu.record;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
 import org.openlvc.disco.pdu.field.ParameterTypeDesignator;
-import org.openlvc.disco.utils.DisUnsignedInt64;
 
 /**
  * The specification of articulation parameters for movable parts and attached parts of an entity
@@ -45,7 +45,7 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 	private short changeIndicator;
 	private int attachedTo;
 	private long parameterType;
-	private DisUnsignedInt64 parameterValue;
+	private BigInteger parameterValue;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -56,14 +56,14 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 		      (short)0, 
 		      0, 
 		      0L,
-		      new DisUnsignedInt64() );
+		      BigInteger.ZERO );
 	}
 	
 	public ArticulationParameter( ParameterTypeDesignator typeDesignator,
 	                              short changeIndicator,
 	                              int attachedTo,
 	                              long parameterType,
-	                              DisUnsignedInt64 parameterValue )
+	                              BigInteger parameterValue )
 	{
 		this.typeDesignator = typeDesignator;
 		this.changeIndicator = changeIndicator;
@@ -104,7 +104,7 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 		                                  changeIndicator, 
 		                                  attachedTo, 
 		                                  parameterType, 
-		                                  parameterValue.clone() );
+		                                  parameterValue );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 		changeIndicator = dis.readUI8();
 		attachedTo = dis.readUI16();
 		parameterType = dis.readUI32();
-		parameterValue.from( dis );
+		parameterValue = dis.readUI64();
     }
 
 	@Override
@@ -127,7 +127,7 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 		dos.writeUI8( changeIndicator );
 		dos.writeUI16( attachedTo );
 		dos.writeUI32( parameterType );
-		parameterValue.to( dos );
+		dos.writeUI64( parameterValue );
     }
 	
 	@Override
@@ -136,7 +136,7 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 		int size = DisSizes.UI8_SIZE * 2;
 		size += DisSizes.UI16_SIZE;
 		size += DisSizes.UI32_SIZE;
-		size += parameterValue.getByteLength();
+		size += DisSizes.UI64_SIZE;
 		
 		return size;
 	}
@@ -184,12 +184,12 @@ public class ArticulationParameter implements IPduComponent, Cloneable
     	this.parameterType = parameterType;
     }
 
-	public DisUnsignedInt64 getParameterValue()
+	public BigInteger getParameterValue()
     {
     	return parameterValue;
     }
 
-	public void setParameterValue( DisUnsignedInt64 parameterValue )
+	public void setParameterValue( BigInteger parameterValue )
     {
     	this.parameterValue = parameterValue;
     }

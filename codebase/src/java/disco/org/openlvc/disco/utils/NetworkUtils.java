@@ -177,7 +177,7 @@ public class NetworkUtils
 		try
 		{
     		MulticastSocket socket = new MulticastSocket( port );
-    		//asMulticast.setTimeToLive( multicastTTL );
+    		socket.setTimeToLive( options.timeToLive );
     		//asMulticast.setTrafficClass( multicastTrafficClass );
     		if( options != null )
     		{
@@ -268,7 +268,10 @@ public class NetworkUtils
 			sendSocket.setReuseAddress( true );
 			sendSocket.setBroadcast( true );
 			if( options != null )
+			{
 				sendSocket.setSendBufferSize( options.getSendBufferSize() );
+				sendSocket.setTrafficClass( options.getTrafficClass() );
+			}
 			
 			// Create the receive socket
 			DatagramSocket recvSocket = new DatagramSocket(null);

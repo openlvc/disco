@@ -55,8 +55,8 @@ public class EntityId implements IPduComponent, Cloneable
 	
 	public EntityId( int siteId, int appId, int entityIdentity )
 	{
-		this.siteId = 0;
-		this.appId = 0;
+		this.siteId = siteId;
+		this.appId = appId;
 		this.entityId = entityIdentity;
 	}
 	

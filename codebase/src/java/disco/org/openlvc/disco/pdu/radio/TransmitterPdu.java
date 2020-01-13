@@ -18,6 +18,8 @@
 package org.openlvc.disco.pdu.radio;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.util.Arrays;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -33,7 +35,6 @@ import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.ModulationType;
 import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.record.RadioEntityType;
-import org.openlvc.disco.utils.DisUnsignedInt64;
 
 /**
  * This class represents a Receiver PDU.
@@ -58,7 +59,7 @@ public class TransmitterPdu extends PDU
 	private InputSource inputSource;
 	private AntennaLocation antennaLocation;
 	private AntennaPatternType antennaPatternType;
-	private DisUnsignedInt64 transmissionFrequency;
+	private BigInteger transmissionFrequency;
 	private float transmissionFrequencyBandwidth;
 	private float power;
 	private ModulationType modulationType;
@@ -83,10 +84,10 @@ public class TransmitterPdu extends PDU
 		this.transmitState = TransmitState.Off;
 		this.inputSource = InputSource.Other;
 		this.antennaLocation = new AntennaLocation();
-		this.transmissionFrequency = DisUnsignedInt64.ZERO;
+		this.transmissionFrequency = BigInteger.ZERO;
 		this.transmissionFrequencyBandwidth = 0f;
 		this.power = 0f;
-		this.cryptoSystem = CryptoSystem.Other;
+		this.cryptoSystem = CryptoSystem.None;
 		this.cryptoKey = 0;
 		
 		setModulation( new ModulationType(), new byte[0] );
@@ -115,7 +116,7 @@ public class TransmitterPdu extends PDU
 		antennaLocation.from( dis );
 		AntennaPatternType antennaPatternType = AntennaPatternType.fromValue( dis.readUI16() );
 		int antennaPatternLength = dis.readUI16();
-		transmissionFrequency.from( dis );
+		transmissionFrequency = dis.readUI64();
 		transmissionFrequencyBandwidth = dis.readFloat();
 		power = dis.readFloat();
 		modulationType.from( dis );
@@ -150,7 +151,7 @@ public class TransmitterPdu extends PDU
 		dos.writeUI16( antennaPatternType.value() );
 		// This will never be beyond the bounds of a UI16 due to input verification in the setter
 		dos.writeUI16( antennaPatternParameter.length );
-		transmissionFrequency.to( dos );
+		dos.writeUI64( transmissionFrequency );
 		dos.writeFloat( transmissionFrequencyBandwidth );
 		dos.writeFloat( power );
 		modulationType.to( dos );
@@ -271,7 +272,7 @@ public class TransmitterPdu extends PDU
 		}
 		
 		this.antennaPatternType = antennaPatternType;
-		this.antennaPatternParameter = antennaParameter;
+		this.antennaPatternParameter = Arrays.copyOf( antennaParameter, antennaParameterLength );
 	}
 	
 	public AntennaLocation getAntennaLocation()
@@ -284,12 +285,12 @@ public class TransmitterPdu extends PDU
 		this.antennaLocation = antennaLocation;
 	}
 	
-	public DisUnsignedInt64 getTransmissionFrequency()
+	public BigInteger getTransmissionFrequency()
 	{
 		return transmissionFrequency;
 	}
 	
-	public void setTransmissionFrequency( DisUnsignedInt64 transmissionFrequency )
+	public void setTransmissionFrequency( BigInteger transmissionFrequency )
 	{
 		this.transmissionFrequency = transmissionFrequency;
 	}
@@ -299,7 +300,7 @@ public class TransmitterPdu extends PDU
 		return transmissionFrequencyBandwidth;
 	}
 	
-	public void setTransmissionFrequencyBandwitch( float transmissionFrequencyBandwidth )
+	public void setTransmissionFrequencyBandwith( float transmissionFrequencyBandwidth )
 	{
 		this.transmissionFrequencyBandwidth = transmissionFrequencyBandwidth;
 	}
@@ -339,7 +340,7 @@ public class TransmitterPdu extends PDU
 		}
 		
 		this.modulationType = modulationType;
-		this.modulationParameter = modulationParameter;
+		this.modulationParameter = Arrays.copyOf( modulationParameter, parameterLength );
 	}
 	
 	public CryptoSystem getCryptoSystem()

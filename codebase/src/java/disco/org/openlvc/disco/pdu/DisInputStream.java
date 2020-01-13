@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.math.BigInteger;
 
 /**
  * This class is responsible for reading types specified in the DIS specification from the
@@ -111,6 +112,23 @@ public class DisInputStream extends DataInputStream
 		return ((long)(ch1 << 24 | ch2 << 16 | ch3 << 8 | ch4)) & 0xFFFFFFFFL;
 	}
 
+	/**
+	 * Reads the next eight bytes from the stream as a 64-bit Unsigned Integer and returns the
+	 * value as a {@link BigInteger}.
+	 * 
+	 * @return A {@link BigInteger} representing the 64-bit Unsigned Integer value
+	 * @throws IOException thrown if the value could not be read from the stream
+	 */
+	public BigInteger readUI64() throws IOException
+	{
+		byte[] buffer = new byte[DisSizes.UI64_SIZE];
+		int read = in.read( buffer );
+		if( read < 0 )
+			throw new EOFException();
+		
+		return new BigInteger( buffer );
+	}
+	
 	/**
 	 * Reads the specified number of bytes from the stream as a String
 	 * 

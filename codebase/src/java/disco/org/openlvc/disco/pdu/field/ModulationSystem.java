@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2020 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -17,45 +17,35 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.pdu.radio.TransmitterPdu;
 
 /**
- * This field shall identify the crypto equipment utilized if such equipment is 
- * used with the Transmitter PDU
- * 
- * This field shall be represented by a 16-bit enumeration
+ * This field shall specify the interpretation of the modulation parameter field(s) in the 
+ * {@link TransmitterPdu}
  * 
  * @see "Section 9 in EBV-DOC"
  */
-public enum CryptoSystem
+public enum ModulationSystem
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	None        ( 0 ),
-	KY28        ( 1 ),
-	KY58        ( 2 ),
-	NSVE        ( 3 ),
-	WSVE        ( 4 ),
-	SincgarsIcom( 5 ),
-	KY75        ( 6 ),
-	KY100       ( 7 ),
-	KY57        ( 8 ),
-	KYV5        ( 9 ),
-	KG40AP      ( 10 ),
-	KG40AS      ( 11 ),
-	KG40AR      ( 12 ),
-	Invalid     ( Short.MAX_VALUE );
-
-	//----------------------------------------------------------
-	//                    STATIC VARIABLES
-	//----------------------------------------------------------
-	// fast lookup
-	private static Map<Integer,CryptoSystem> CACHE = new HashMap<>();
+	Other             ( 0 ),
+	Generic           ( 1 ),
+	Hq                ( 2 ),
+	HqII              ( 3 ),
+	HqIIa             ( 4 ),
+	Sincgars          ( 5 ),
+	CcttSincgars      ( 6 ),
+	Eplrs             ( 7 ),
+	JtidsMids         ( 8 ),
+	Link11            ( 9 ),
+	Link11b           ( 10 ),
+	LbandSatcom       ( 11 ),
+	EnhancedSincgars73( 12 ),
+	NavigationAid     ( 13 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -65,10 +55,9 @@ public enum CryptoSystem
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private CryptoSystem( int value )
+	private ModulationSystem( int value )
 	{
 		this.value = value;
-		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -79,14 +68,6 @@ public enum CryptoSystem
 		return this.value;
 	}
 
-	private void store( int value )
-	{
-		if( CACHE == null )
-			CACHE = new HashMap<>();
-
-		CACHE.put( value, this );
-	}
-
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
@@ -94,17 +75,32 @@ public enum CryptoSystem
 	{
 		return DisSizes.UI16_SIZE;
 	}
-
-	public static CryptoSystem fromValue( int value )
+	
+	public static ModulationSystem fromValue( int value )
 	{
-		CryptoSystem result = CACHE.get( value );
-		if( result != null )
-			return result;
-
+		switch( value )
+		{
+			case 0: return Other;
+			case 1: return Generic;
+			case 2: return Hq;
+			case 3: return HqII;
+			case 4: return HqIIa;
+			case 5: return Sincgars;
+			case 6: return CcttSincgars;
+			case 7: return Eplrs;
+			case 8: return JtidsMids;
+			case 9: return Link11;
+			case 10: return Link11b;
+			case 11: return LbandSatcom;
+			case 12: return EnhancedSincgars73;
+			case 13: return NavigationAid;
+			default: // drop through
+		}
+		
 		// Missing
 		if( DiscoConfiguration.STRICT_MODE )
-			throw new IllegalArgumentException( value+" not a valid CryptoSystem" );
+			throw new IllegalArgumentException( value+" not a valid ModulationSystem" );
 		else
-			return Invalid;
+			return Other;
 	}
 }

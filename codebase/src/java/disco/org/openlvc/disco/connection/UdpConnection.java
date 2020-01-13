@@ -117,6 +117,13 @@ public class UdpConnection implements IConnection
 		InetAddress address = configuration.getAddress();
 		int port = configuration.getPort();
 		NetworkInterface networkInterface = configuration.getNetworkInterface();
+		
+		SocketOptions options = new SocketOptions();
+		options.setSendBufferSize( configuration.getSendBufferSize() );
+		options.setRecvBufferSize( configuration.getRecvBufferSize() );
+		options.setTimeToLive( configuration.getTimeToLive() );
+		options.setTrafficClass( configuration.getTrafficClass() );
+		
 		if( address.isMulticastAddress() )
 		{
 			logger.info( "Connecting to multicast group - "+address+":"+port+" (interface: "+networkInterface+")" );
@@ -125,9 +132,6 @@ public class UdpConnection implements IConnection
 			//
 			// Create a MULTICAST socket
 			//
-			SocketOptions options = new SocketOptions();
-			options.setSendBufferSize( configuration.getSendBufferSize() );
-			options.setRecvBufferSize( configuration.getRecvBufferSize() );
 			this.recvSocket = NetworkUtils.createMulticast( address, port, networkInterface, options );
 			this.sendSocket = this.recvSocket; // same for multicast - it has built-in loopback exclusion
 		}
@@ -149,9 +153,6 @@ public class UdpConnection implements IConnection
 			this.broadcast = true;
 			
 			// Create the socket pair
-			SocketOptions options = new SocketOptions();
-			options.setSendBufferSize( configuration.getSendBufferSize() );
-			options.setRecvBufferSize( configuration.getRecvBufferSize() );
 			DatagramSocket[] pair = NetworkUtils.createBroadcastPair( address, port, options );
 			this.sendSocket = pair[0];
 			this.recvSocket = pair[1];
