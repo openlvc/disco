@@ -18,9 +18,11 @@
 package org.openlvc.disco.pdu.field;
 
 import java.lang.reflect.Constructor;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.DiscoConfiguration;
@@ -127,12 +129,14 @@ public enum PduType
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	private static HashMap<Short,PduType> CACHE;
+	private static final Map<Short,PduType> CACHE = Arrays.stream( PduType.values() )
+	                                                      .collect( Collectors.toMap(PduType::value, 
+	                                                                                 type -> type) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private short value;
+	private final short value;
 	private Class<? extends PDU> type;
 	private Constructor<? extends PDU> constructor;
 
@@ -142,8 +146,6 @@ public enum PduType
 	private PduType( short value )
 	{
 		this.value = value;
-		store( value );
-
 		this.type = null;
 		this.constructor = null;
 	}
@@ -155,17 +157,16 @@ public enum PduType
 		this.constructor = null;
 		if( type != null )
 		{
-    		try
-    		{
-    			this.constructor = type.getConstructor( PduHeader.class );
-    		}
-    		catch( Exception e )
-    		{
-    			throw new DiscoException( "PDU Class is missing constructor `Class(PduHeader)`", e );
-    		}
+			try
+			{
+				this.constructor = type.getConstructor( PduHeader.class );
+			}
+			catch( Exception e )
+			{
+				throw new DiscoException( "PDU Class is missing constructor `Class(PduHeader)`",
+				                          e );
+			}
 		}
-		
-		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -187,14 +188,6 @@ public enum PduType
 	public Constructor<? extends PDU> getImplementationConstructor()
 	{
 		return this.constructor;
-	}
-	
-	private void store( short value )
-	{
-		if( CACHE == null )
-			CACHE = new HashMap<>();
-
-		CACHE.put( value, this );
 	}
 
 	/**

@@ -17,9 +17,6 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 
@@ -52,12 +49,6 @@ public enum CryptoSystem
 	Invalid     ( Short.MAX_VALUE );
 
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
-	//----------------------------------------------------------
-	// fast lookup
-	private static Map<Integer,CryptoSystem> CACHE = new HashMap<>();
-
-	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private int value;
@@ -68,7 +59,6 @@ public enum CryptoSystem
 	private CryptoSystem( int value )
 	{
 		this.value = value;
-		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -77,14 +67,6 @@ public enum CryptoSystem
 	public int value()
 	{
 		return this.value;
-	}
-
-	private void store( int value )
-	{
-		if( CACHE == null )
-			CACHE = new HashMap<>();
-
-		CACHE.put( value, this );
 	}
 
 	//----------------------------------------------------------
@@ -97,9 +79,11 @@ public enum CryptoSystem
 
 	public static CryptoSystem fromValue( int value )
 	{
-		CryptoSystem result = CACHE.get( value );
-		if( result != null )
-			return result;
+		for( CryptoSystem system : CryptoSystem.values() )
+		{
+			if( system.value == value )
+				return system;
+		}
 
 		// Missing
 		if( DiscoConfiguration.STRICT_MODE )
