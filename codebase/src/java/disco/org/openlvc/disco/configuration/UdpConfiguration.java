@@ -38,6 +38,8 @@ public class UdpConfiguration
 	private static final String PROP_PORT         = "disco.udp.port";
 	private static final String PROP_SEND_BUFFER  = "disco.udp.sendBuffer";
 	private static final String PROP_RECV_BUFFER  = "disco.udp.recvBuffer";
+	private static final String PROP_TTL          = "disco.udp.ttl";
+	private static final String PROP_TRAFFIC_CLASS= "disco.udp.trafficClass"; 
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -243,6 +245,26 @@ public class UdpConfiguration
 	public void setRecvBufferSize( int bytes )
 	{
 		parent.setProperty(PROP_RECV_BUFFER,""+bytes );
+	}
+	
+	public int getTimeToLive()
+	{
+		return Integer.parseInt( parent.getProperty( PROP_TTL, "254" ) );
+	}
+	
+	public void setTimeToLive( int ttl )
+	{
+		parent.setProperty( PROP_TTL, String.valueOf(ttl) );
+	}
+	
+	public int getTrafficClass()
+	{
+		return Integer.parseInt( parent.getProperty(PROP_TRAFFIC_CLASS, "0") );
+	}
+	
+	public void setTrafficClass( int clasz )
+	{
+		parent.setProperty( PROP_TRAFFIC_CLASS, String.valueOf(clasz) );
 	}
 
 	//----------------------------------------------------------

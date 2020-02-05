@@ -21,8 +21,11 @@ import java.io.IOException;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
+import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.IPduComponent;
 import org.openlvc.disco.pdu.field.MajorModulationType;
+import org.openlvc.disco.pdu.field.ModulationSystem;
+import org.openlvc.disco.pdu.field.SpreadSpectrum;
 
 /**
  * Information about the type of modulation used for radio transmission shall be 
@@ -81,23 +84,23 @@ public class ModulationType implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private int spreadSpectrum;
+	private SpreadSpectrum spreadSpectrum;
 	private MajorModulationType majorModulationType;
 	private int detail;
-	private int system;
+	private ModulationSystem system;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	public ModulationType()
 	{
-		this( 0, MajorModulationType.Other, 0, 0 );
+		this( new SpreadSpectrum(), MajorModulationType.Other, 0, ModulationSystem.Other );
 	}
 	
-	public ModulationType( int spreadSpectrum,
+	public ModulationType( SpreadSpectrum spreadSpectrum,
 	                       MajorModulationType majorModulationType, 
 	                       int detail,
-	                       int system )
+	                       ModulationSystem system )
 	{
 		this.spreadSpectrum = spreadSpectrum;
 		this.majorModulationType = majorModulationType;
@@ -117,10 +120,10 @@ public class ModulationType implements IPduComponent, Cloneable
 		if( other instanceof ModulationType )
 		{
 			ModulationType asModulationType = (ModulationType)other;
-			if( asModulationType.spreadSpectrum == this.spreadSpectrum &&
+			if( asModulationType.spreadSpectrum.equals(this.spreadSpectrum) &&
 				asModulationType.majorModulationType == this.majorModulationType &&
 				asModulationType.detail == this.detail &&
-				asModulationType.system == this.system )
+				asModulationType.system.equals(this.system) )
 			{
 				return true;
 			}
@@ -132,45 +135,48 @@ public class ModulationType implements IPduComponent, Cloneable
 	@Override
 	public ModulationType clone()
 	{
-		return new ModulationType( spreadSpectrum, majorModulationType, detail, system );
+		return new ModulationType( spreadSpectrum.clone(), majorModulationType, detail, system );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// IPduComponent Methods   ////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
-    public void from( DisInputStream dis ) throws IOException
-    {
-		spreadSpectrum = dis.readUI16();
-		majorModulationType = MajorModulationType.fromValue( dis.readUI16() ); 
-        detail = dis.readUI16();
-        system = dis.readUI16();
-    }
+	public void from( DisInputStream dis ) throws IOException
+	{
+		spreadSpectrum.from( dis );
+		majorModulationType = MajorModulationType.fromValue( dis.readUI16() );
+		detail = dis.readUI16();
+		system = ModulationSystem.fromValue( dis.readUI16() );
+	}
 
 	@Override
-    public void to( DisOutputStream dos ) throws IOException
-    {
-		dos.writeUI16( spreadSpectrum );
+	public void to( DisOutputStream dos ) throws IOException
+	{
+		spreadSpectrum.to( dos );
 		dos.writeUI16( majorModulationType.value() );
 		dos.writeUI16( detail );
-		dos.writeUI16( system );
-    }
+		dos.writeUI16( system.value() );
+	}
 	
 	@Override
-    public final int getByteLength()
+	public final int getByteLength()
 	{
-		return 8; //DisSizes.UI16_SIZE * 4;
+		return this.spreadSpectrum.getByteLength() + 
+		       MajorModulationType.getByteLength() +
+		       DisSizes.UI16_SIZE + 
+		       ModulationSystem.getByteLength();
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public int getSpreadSpectrum()
+	public SpreadSpectrum getSpreadSpectrum()
 	{
 		return spreadSpectrum;
 	}
 	
-	public void setSpreadSpectrum( int spreadSpectrum )
+	public void setSpreadSpectrum( SpreadSpectrum spreadSpectrum )
 	{
 		this.spreadSpectrum = spreadSpectrum;
 	}
@@ -195,12 +201,12 @@ public class ModulationType implements IPduComponent, Cloneable
 		this.detail = detail;
 	}
 	
-	public int getSystem()
+	public ModulationSystem getSystem()
 	{
 		return system;
 	}
 	
-	public void setSystem( int system )
+	public void setSystem( ModulationSystem system )
 	{
 		this.system = system;
 	}

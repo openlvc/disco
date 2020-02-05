@@ -17,7 +17,9 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
 
@@ -113,12 +115,14 @@ public enum Fuse
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 	// Lots of options - cache if for some speedup
-	private static HashMap<Integer,Fuse> CACHE = new HashMap<>();
+	private static final Map<Integer,Fuse> CACHE = Arrays.stream( Fuse.values() )
+	                                                     .collect( Collectors.toMap(Fuse::value, 
+	                                                                                fuse -> fuse) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private int value;
+	private final int value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -126,7 +130,6 @@ public enum Fuse
 	private Fuse( int value )
 	{
 		this.value = value;
-		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -135,14 +138,6 @@ public enum Fuse
 	public int value()
 	{
 		return this.value;
-	}
-	
-	private void store( int value )
-	{
-		if( CACHE == null )
-			CACHE = new HashMap<>();
-
-		CACHE.put( value, this );
 	}
 
 	//----------------------------------------------------------

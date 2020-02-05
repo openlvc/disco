@@ -32,6 +32,8 @@ public class SocketOptions
 	//----------------------------------------------------------
 	public int recvBufferSize  = (int)ByteUnit.MEGABYTES.toBytes( 4 );
 	public int sendBufferSize  = (int)ByteUnit.MEGABYTES.toBytes( 4 );
+	public int timeToLive      = 254;
+	public int trafficClass    = 0;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -72,6 +74,26 @@ public class SocketOptions
 	public int getRecvBufferSize()
 	{
 		return this.recvBufferSize;
+	}
+	
+	public int getTimeToLive()
+	{
+		return this.timeToLive;
+	}
+	
+	public void setTimeToLive( int ttl )
+	{
+		this.timeToLive = ttl;
+	}
+	
+	public int getTrafficClass()
+	{
+		return this.trafficClass;
+	}
+	
+	public void setTrafficClass( int clasz )
+	{
+		this.trafficClass = clasz;
 	}
 	
 	//----------------------------------------------------------

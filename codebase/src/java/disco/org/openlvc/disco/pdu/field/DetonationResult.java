@@ -17,6 +17,10 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.openlvc.disco.configuration.DiscoConfiguration;
 
 public enum DetonationResult
@@ -54,11 +58,14 @@ public enum DetonationResult
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static final Map<Short,DetonationResult> CACHE = Arrays.stream( DetonationResult.values() )
+	                                                               .collect( Collectors.toMap(DetonationResult::value, 
+	                                                                                          result -> result) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private short value;
+	private final short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -81,12 +88,13 @@ public enum DetonationResult
 	//----------------------------------------------------------
 	public static DetonationResult fromValue( short value )
 	{
-		DetonationResult[] all = values();
-		if( value >= 0 && value < all.length )
-			return DetonationResult.values()[value];
-		
+		DetonationResult temp = CACHE.get( value );
+		if( temp != null )
+			return temp;
+
+		// Missing
 		if( DiscoConfiguration.STRICT_MODE )
-			throw new IllegalArgumentException( value+" not a valid DetonationResult" );
+			throw new IllegalArgumentException( value+" not a valid Detonation Result" );
 		else
 			return Other;
 	}

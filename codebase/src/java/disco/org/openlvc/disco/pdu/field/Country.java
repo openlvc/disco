@@ -17,7 +17,9 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
@@ -263,6 +265,7 @@ public enum Country
 	WestBank( 235 ),
 	WesternSamoa( 236 ),
 	Yemen( 237 ),
+	SerbiaAndMontenegro( 240 ),
 	Zaire( 241 ),
 	Zambia( 242 ),
 	Zimbabwe( 243 ),
@@ -283,7 +286,7 @@ public enum Country
 	Moldova( 258 ),
 	Montenegro( 259 ),
 	Russia( 260 ),
-	SerbiaAndMontenegro( 261 ),
+	Serbia( 261 ),
 	Slovenia( 262 ),
 	Tajikistan( 263 ),
 	Turkmenistan( 264 ),
@@ -294,12 +297,14 @@ public enum Country
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 	// fast lookup for types with lots of options
-	private static HashMap<Integer,Country> CACHE = new HashMap<>();
+	private static final Map<Integer,Country> CACHE = Arrays.stream( Country.values() )
+	                                                        .collect( Collectors.toMap(Country::value, 
+	                                                                                   country -> country) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private int value;
+	private final int value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -307,7 +312,6 @@ public enum Country
 	private Country( int value )
 	{
 		this.value = value;
-		store( value );
 	}
 
 	//----------------------------------------------------------
@@ -316,14 +320,6 @@ public enum Country
 	public int value()
 	{
 		return this.value;
-	}
-	
-	private void store( int value )
-	{
-		if( CACHE == null )
-			CACHE = new HashMap<>();
-
-		CACHE.put( value, this );
 	}
 
 	//----------------------------------------------------------

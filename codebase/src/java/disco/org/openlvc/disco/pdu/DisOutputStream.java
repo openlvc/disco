@@ -20,6 +20,7 @@ package org.openlvc.disco.pdu;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 
 /**
  * This class is responsible for writing types specified in the DIS 
@@ -112,6 +113,25 @@ public class DisOutputStream extends DataOutputStream
 		write( (int)((value >>> 16) & 0xFF) );
 		write( (int)((value >>> 8) & 0xFF) );
 		write( (int)((value >>> 0) & 0xFF) );
+	}
+	
+	public void writeUI64( BigInteger value ) throws IOException
+	{
+		if( value.compareTo( BigInteger.ZERO ) < 0 ||
+			value.compareTo( DisSizes.UI64_MAX_VALUE ) > 0 )
+		{
+			String msg = "Out of range ("+value.toString()+"): Expecting number between 0 and "+DisSizes.UI64_MAX_VALUE.toString();
+			throw new IllegalArgumentException( msg );
+		}
+		
+		// Write any zero padding required
+		byte[] valueAsBytes = value.toByteArray();
+		int paddingRequired = 8 - valueAsBytes.length;
+		for( int i = 0 ; i < paddingRequired ; ++i )
+			write( 0 );
+		
+		// Write value
+		write( valueAsBytes );
 	}
 	
 	/**

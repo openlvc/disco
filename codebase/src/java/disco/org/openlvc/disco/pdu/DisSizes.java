@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.pdu;
 
+import java.math.BigInteger;
 import java.util.Collection;
 
 /**
@@ -39,7 +40,7 @@ public class DisSizes
 	public static final short UI8_MAX_VALUE = 0xFF; 
 	public static final int   UI16_MAX_VALUE = 0xFFFF;
 	public static final long  UI32_MAX_VALUE = 0xFFFFFFFFl;
-	
+	public static final BigInteger UI64_MAX_VALUE = BigInteger.valueOf( 2 ).pow( 64 ).subtract( BigInteger.ONE );
 	/**
 	 * The maximum value that can fit into the PDU Header's length field (specified in bytes). 
 	 */

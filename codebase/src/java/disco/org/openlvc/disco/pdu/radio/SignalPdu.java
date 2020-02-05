@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.radio;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -222,7 +223,10 @@ public class SignalPdu extends PDU
 			throw new IllegalArgumentException( "Data size mismatch" );
 		
 		this.dataLength = dataLength;
-		this.data = data;
+		
+		// Important to take a copy of the data here, the caller may have passed in their working buffer
+		// which can subsequently be modified in the time that we're waiting for the PDU to be sent
+		this.data = Arrays.copyOf( data, data.length );
 	}
 	
 	@Override
