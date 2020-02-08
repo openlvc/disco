@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.connection;
 
+import org.openlvc.disco.connection.rpr.RprConnection;
+
 public class ConnectionFactory
 {
 	//----------------------------------------------------------
@@ -50,6 +52,8 @@ public class ConnectionFactory
 		name = name.trim();
 		if( name.equalsIgnoreCase("udp") )
 			return new UdpConnection();
+		else if( name.equals("rpr") )
+			return new RprConnection();
 		else
 			throw new IllegalArgumentException( "Connection type not known: "+name );
 	}

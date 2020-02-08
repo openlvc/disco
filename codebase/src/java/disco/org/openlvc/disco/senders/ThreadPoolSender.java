@@ -17,7 +17,6 @@
  */
 package org.openlvc.disco.senders;
 
-import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -119,7 +118,7 @@ public class ThreadPoolSender extends PduSender implements RejectedExecutionHand
 			{
 				connection.send( pdu.toByteArray() );
 			}
-			catch( IOException ioex )
+			catch( DiscoException ioex )
 			{
 				logger.warn( "Error trying to serialize PDU ("+pdu+"): "+ioex.getMessage(), ioex );
 			}

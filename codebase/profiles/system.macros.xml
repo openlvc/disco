@@ -147,6 +147,7 @@
 			        groups="@{groups}">
 				<classfileset dir="@{classdir}">
 					<include name="CommonSetup.class"/>
+					<include name="@{suite}/**/CommonSetup.class"/>
 					<include name="@{suite}/TestSetup.class"/>
 					<include name="@{suite}/**/*Test.class"/>
 				</classfileset>

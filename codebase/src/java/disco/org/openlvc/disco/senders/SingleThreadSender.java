@@ -25,7 +25,6 @@ import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduSender;
 import org.openlvc.disco.connection.IConnection;
-import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.utils.ThreadUtils;
 
@@ -124,18 +123,9 @@ public class SingleThreadSender extends PduSender
 				{
 					pdu = sendQueue.take();
 					
-					// Set the stream up
-					ByteArrayOutputStream baos = new ByteArrayOutputStream( 2048 );
-					DisOutputStream dos = new DisOutputStream( baos );
-
-					// Write the PDU header to the stream
-					pdu.writeHeader( dos );
-					
-					// Write the body content
-					pdu.to( dos );
-					
 					// Send it off to the network
 					connection.send( baos.toByteArray() );
+					connection.send( pdu );
 				}
 				catch( InterruptedException ie )
 				{

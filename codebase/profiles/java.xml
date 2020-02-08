@@ -66,6 +66,9 @@
 	<property name="log4j.dir"             location="${lib.dir}/log4j/apache-log4j-2.4.1-bin"/>
 	<property name="json-simple.dir"       location="${lib.dir}/json-simple/1.1.1"/>
 	<property name="marineapi.dir"         location="${lib.dir}/marineapi/0.10.0"/> <!-- NEMA 0183 Formatting -->
+	<!-- HLA Settings -->
+	<property name="ieee1516e.dir"         location="${lib.dir}/hla/ifspec"/> <!-- HLA IfSpec -->
+	<property name="portico.dir"           location="${lib.dir}/hla/portico/2.0.3"/> <!-- Portico, for HLA testing -->
 
 	<!-- Classpaths for individual libraries -->
 	<path id="lib.testng.classpath">
@@ -84,6 +87,13 @@
 		<fileset dir="${marineapi.dir}" includes="**/*.jar"/>
 	</path>
 
+	<path id="lib.hla.classpath">
+		<!-- Portico has these. Also, ... Portico makes some teeeensy spec changes that are totes
+		     hidden, but get shown up when the spec interfaces are on the classpath first. -->
+		<!--<fileset dir="${ieee1516e.dir}" includes="**/*.jar"/>--> 
+		<fileset dir="${portico.dir}" includes="**/*.jar"/>
+	</path>
+
 	<!-- ========================== -->
 	<!-- Classpath Set Declarations -->
 	<!-- ========================== -->
@@ -91,6 +101,7 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.json-simple.classpath"/>
 		<path refid="lib.marineapi.classpath"/>
+		<path refid="lib.hla.classpath"/>
 	</path>
 
 	<path id="test.classpath">

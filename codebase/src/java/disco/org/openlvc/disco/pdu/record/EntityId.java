@@ -92,8 +92,33 @@ public class EntityId implements IPduComponent, Cloneable
 	@Override
 	public int hashCode()
 	{
-		return toString().hashCode();
+		// Limitations: Max Site & App IDs == 255 :(
+		
+		// -------------------------------------------------------------------------
+		// Shift Hash: Anything over 255 for Site/App ID will be 0
+		// -------------------------------------------------------------------------
+		// For Site & App ID: Clear out high-24 bits, then move into top two octet slots
+		// For EntityID     : Clear out high-16 bits and keep in the bottom two octet slots
+		//
+		//return ((siteId  & 255) << 24) + // &255 cleans out high-24, then we move low 8 to top slot
+		//       ((appId   & 255) << 16) + // &255 cleans out high-24, then we move low 8 to 2nd slot
+		//       (entityId & 65535);       // &65535 cleans out high-16, and we keep the low 16
+		
+		// -------------------------------------------------------------------------
+		// Modulo Hash: Anything over 255 for Site/App ID will wrap (256=0, 257=1, ...)
+		// -------------------------------------------------------------------------
+		// First, we wrap the Site and App IDs back around to something below 256.
+		// This also has the effect of clearly out the high-24 bits
+		//
+		// Second, we move them into the top and second-top octet slots
+		//
+		// Finally, we clean out the high-16 bits for the Entity ID and keep them
+		//
+		siteId = siteId % 256;
+		appId = appId % 256;
+		return (siteId << 24) + (appId << 16) + (entityId & 65535);
 	}
+	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// IPduComponent Methods   ////////////////////////////////////////////////////////////////

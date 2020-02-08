@@ -10,5 +10,7 @@
 	<classpathentry kind="lib" path="codebase/resources/dist/common"/>
 	<classpathentry kind="lib" path="codebase/lib/json-simple/1.1.1/json-simple-1.1.1.jar"/>
 	<classpathentry kind="lib" path="codebase/lib/marineapi/0.10.0/marineapi-0.10.0.jar"/>
+	<classpathentry kind="lib" path="codebase/lib/hla/ifspec/hla-ieee1516e.jar"/>
+	<classpathentry kind="lib" path="codebase/lib/hla/portico/2.0.3/portico.jar"/>
 	<classpathentry kind="output" path="eclipse-build/classes"/>
 </classpath>

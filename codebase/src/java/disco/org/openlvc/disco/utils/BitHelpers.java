@@ -573,4 +573,91 @@ public class BitHelpers
 		        ((buffer[1] & 255) <<  8) +
 		        ((buffer[0] & 255) <<  0));
 	}
+	
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////// Printing/String Methods //////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Converts a long to a 64-bit binary string.
+	 * 
+	 * @param number    The number to convert
+	 * @param groupSize The number of bits in a group
+	 * @return          The 32-bit long bit string
+	 */
+	public static String toBinaryString( long number, int groupSize )
+	{
+		StringBuilder result = new StringBuilder();
+
+		for( long i = 63; i >= 0 ; i--)
+		{
+			long mask = 1L << i;
+			result.append( (number & mask) != 0 ? "1" : "0" );
+
+			if( i % groupSize == 0 )
+				result.append(" ");
+		}
+		result.replace( result.length()-1, result.length(), "" );
+
+		return result.toString();
+	}
+
+	/**
+	 * Converts an integer to a 32-bit binary string.
+	 * 
+	 * @param number    The number to convert
+	 * @param groupSize The number of bits in a group
+	 * @return          The 32-bit long bit string
+	 */
+	public static String toBinaryString( int number, int groupSize )
+	{
+		StringBuilder result = new StringBuilder();
+
+		for( int i = 31; i >= 0 ; i--)
+		{
+			int mask = 1 << i;
+			result.append( (number & mask) != 0 ? "1" : "0" );
+
+			if( i % groupSize == 0 )
+				result.append(" ");
+		}
+		result.replace( result.length()-1, result.length(), "" );
+
+		return result.toString();
+	}
+
+	public static String toBinaryString( short number, int groupSize )
+	{
+		StringBuilder result = new StringBuilder();
+
+		for( int i = 15; i >= 0 ; i--)
+		{
+			int mask = 1 << i;
+			result.append( (number & mask) != 0 ? "1" : "0" );
+
+			if( i % groupSize == 0 )
+				result.append(" ");
+		}
+		result.replace( result.length()-1, result.length(), "" );
+
+		return result.toString();
+	}
+
+	public static String toBinaryString( byte number, int groupSize )
+	{
+		StringBuilder result = new StringBuilder();
+
+		for( int i = 7; i >= 0 ; i--)
+		{
+			int mask = 1 << i;
+			result.append( (number & mask) != 0 ? "1" : "0" );
+
+			if( i % groupSize == 0 )
+				result.append(" ");
+		}
+		result.replace( result.length()-1, result.length(), "" );
+
+		return result.toString();
+	}
 }

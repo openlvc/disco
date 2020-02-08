@@ -17,6 +17,9 @@
  */
 package org.openlvc.disco;
 
+import java.io.File;
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.connection.ConnectionFactory;
@@ -24,6 +27,7 @@ import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.connection.Metrics;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.PduFactory;
+import org.openlvc.disco.utils.ClassLoaderUtils;
 
 public class OpsCenter
 {
@@ -90,6 +94,11 @@ public class OpsCenter
 		// enable networking
 		if( this.connection == null )
 		{
+			// Note: We need to do this now, because it's too late once the RPR connection
+			//       class tries to load up.
+			if( configuration.getConnection().equals("rpr") )
+				applyRprClasspathHack();
+			
 			this.logger.debug( "Creating connection: "+configuration.getConnection() );
 			this.connection = ConnectionFactory.getConnection( configuration.getConnection() );
 			this.connection.configure( this );
@@ -128,6 +137,24 @@ public class OpsCenter
 		this.logger.info( "OpsCenter has closed" );
 	}
 	
+	/**
+	 * If we are using the RPR connection, we need to extend the classpath before we can
+	 * even have a go at loading it. Because it references HLA classes, those have to be
+	 * on the classpath from the time that the RPR connection loads. Extending the classpath
+	 * on open is too late.
+	 */
+	private void applyRprClasspathHack()
+	{
+		List<File> paths = configuration.getRprConfiguration().getRtiPathExtension();
+		for( File file : paths )
+		{
+			if( file.exists() == false )
+				logger.warn( "Missing jar file: "+file.getAbsolutePath() );
+		}
+		
+		ClassLoaderUtils.extendClasspath( configuration.getRprConfiguration().getRtiPathExtension() );
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Message Handling Methods   /////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,6 +177,9 @@ public class OpsCenter
 	 */
 	public void send( PDU pdu ) throws DiscoException
 	{
+		if( this.open == false )
+			throw new DiscoException( "OpsCenter is not open yet" );
+
 		pdu.setExerciseId( this.exerciseId );
 		this.pduSender.send( pdu );
 	}

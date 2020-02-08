@@ -24,6 +24,7 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.field.TdlType;
 import org.openlvc.disco.pdu.record.EncodingScheme;
 import org.openlvc.disco.pdu.record.EntityId;
@@ -71,6 +72,12 @@ public class SignalPdu extends PDU
 		this.sampleRate = 0;
 		this.samples = 0;
 		setData( new byte[0] );
+	}
+	
+	public SignalPdu()
+	{
+		this( new PduHeader().setPduType(PduType.Signal) );
+		super.getHeader().setProtocolFamily( ProtocolFamily.Radio );
 	}
 
 	//----------------------------------------------------------
@@ -140,9 +147,19 @@ public class SignalPdu extends PDU
 		return entityID;
 	}
 	
+	public EntityId getEntityId()
+	{
+		return entityID;
+	}
+	
 	public void setEntityIdentifier( EntityId id )
 	{
 		entityID = id;
+	}
+	
+	public void setEntityId( EntityId id )
+	{
+		this.entityID = id;
 	}
 	
 	public int getRadioID()

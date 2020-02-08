@@ -50,6 +50,7 @@ public class DiscoConfiguration
 	
 	private DisConfiguration disConfiguration;
 	private UdpConfiguration udpConfiguration;
+	private RprConfiguration rprConfiguration;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -60,6 +61,7 @@ public class DiscoConfiguration
 		this.loggingConfiguration = null; // lazy loaded
 		this.disConfiguration = new DisConfiguration( this );
 		this.udpConfiguration = new UdpConfiguration( this );
+		this.rprConfiguration = new RprConfiguration( this );
 	}
 
 	//----------------------------------------------------------
@@ -199,6 +201,11 @@ public class DiscoConfiguration
 		return this.udpConfiguration;
 	}
 	
+	public RprConfiguration getRprConfiguration()
+	{
+		return this.rprConfiguration;
+	}
+	
 	
 	protected String getProperty( String key, String defaultValue )
 	{
@@ -208,6 +215,11 @@ public class DiscoConfiguration
 	protected void setProperty( String key, String value )
 	{
 		properties.setProperty( key, value );
+	}
+
+	protected boolean isProperty( String key, boolean defaultValue )
+	{
+		return getBoolean( properties.getProperty(key,""+defaultValue) );
 	}
 
 	//----------------------------------------------------------

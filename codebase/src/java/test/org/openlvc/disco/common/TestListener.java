@@ -23,7 +23,9 @@ import java.util.Map;
 import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.radio.SignalPdu;
+import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disco.pdu.record.EntityId;
 
 public class TestListener implements IPduListener
 {
@@ -35,6 +37,8 @@ public class TestListener implements IPduListener
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private Map<String,EntityStatePdu> espdus; 
+	private Map<EntityId,TransmitterPdu> transmitterPdus;
+	private Map<EntityId,SignalPdu> signalPdus;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -42,6 +46,8 @@ public class TestListener implements IPduListener
 	public TestListener()
 	{
 		this.espdus = new HashMap<String,EntityStatePdu>();
+		this.transmitterPdus = new HashMap<>();
+		this.signalPdus = new HashMap<>();
 	}
 
 	//----------------------------------------------------------
@@ -54,11 +60,28 @@ public class TestListener implements IPduListener
 	@Override
 	public void receive( PDU pdu )
 	{
-		if( pdu.getType() == PduType.EntityState )
+		switch( pdu.getType() )
 		{
-			EntityStatePdu espdu = (EntityStatePdu)pdu;
-			espdus.put( espdu.getMarking(), espdu );
+			case EntityState:
+				EntityStatePdu espdu = (EntityStatePdu)pdu;
+				espdus.put( espdu.getMarking(), espdu );
+				break;
+
+			case Transmitter:
+				TransmitterPdu trpdu = pdu.as( TransmitterPdu.class );
+				transmitterPdus.put( trpdu.getEntityId(), trpdu );
+				break;
+
+			case Signal:
+				SignalPdu spdu = pdu.as( SignalPdu.class );
+				signalPdus.put( spdu.getEntityIdentifier(), spdu );
+				break;
+
+			default:
+				break;
 		}
+
+		synchronized( this ) { this.notifyAll(); }
 	}
 
 	
@@ -80,6 +103,36 @@ public class TestListener implements IPduListener
 		throw new TimeoutException( "Timeout waiting for ESPDU with marking: "+marking );
 	}
 	
+	public TransmitterPdu waitForTransmitter( EntityId id )
+	{
+		long finishTime = getTimeout();
+		while( finishTime > System.currentTimeMillis() )
+		{
+			waitForPdu();
+
+			if( transmitterPdus.containsKey(id) )
+				return transmitterPdus.remove(id);
+		}
+		
+		// no update received in time
+		throw new TimeoutException( "Timeout waiting for Transmitter with ID: "+id );
+	}
+	
+	public SignalPdu waitForSignal( EntityId id )
+	{
+		long finishTime = getTimeout();
+		while( finishTime > System.currentTimeMillis() )
+		{
+			waitForPdu();
+
+			if( signalPdus.containsKey(id) )
+				return signalPdus.remove(id);
+		}
+		
+		// no update received in time
+		throw new TimeoutException( "Timeout waiting for Transmitter with ID: "+id );
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Helper Methods   //////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////

@@ -20,6 +20,7 @@ package org.openlvc.disco.pdu;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.PduHeader;
 
@@ -159,13 +160,20 @@ public abstract class PDU
 	/**
 	 * Convert the given PDU into a `byte[]`.
 	 */
-	public byte[] toByteArray() throws IOException
+	public byte[] toByteArray()
 	{
-		ByteArrayOutputStream baos = new ByteArrayOutputStream( PDU.MAX_SIZE );
-		DisOutputStream dos = new DisOutputStream( baos );
-		this.writeHeader( dos );
-		this.to( dos );
-		return baos.toByteArray();
+		try
+		{
+    		ByteArrayOutputStream baos = new ByteArrayOutputStream( PDU.MAX_SIZE );
+    		DisOutputStream dos = new DisOutputStream( baos );
+    		this.writeHeader( dos );
+    		this.to( dos );
+    		return baos.toByteArray();
+		}
+		catch( IOException ioex )
+		{
+			throw new DiscoException( ioex.getMessage(), ioex );
+		}
 	}
 
 	/**

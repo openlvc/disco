@@ -58,7 +58,6 @@ public interface IConnection
 	/**
 	 * Send the given DIS PDU to the network.
 	 */
-	@Deprecated
 	public void send( PDU pdu ) throws DiscoException;
 
 	/**

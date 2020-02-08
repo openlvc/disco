@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<objectModel xsi:schemaLocation="http://standards.ieee.org/IEEE1516-2010 http://standards.ieee.org/downloads/1516/1516.2-2010/IEEE1516-DIF-2010.xsd" xmlns="http://standards.ieee.org/IEEE1516-2010" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelIdentification>
+        <name>Disco RPR Defaults</name>
+        <type>FOM</type>
+        <version>1.0</version>
+        <modificationDate>2010-01-01</modificationDate>
+        <securityClassification>Unclassified</securityClassification>
+        <purpose>To get around FOM parser strictness in the Pitch RTI.</purpose>
+        <applicationDomain>All domains</applicationDomain>
+        <description>Adds a bunch of defaults for things like switches that the Pitch RTI will complain about if it doesn't have.</description>
+        <useLimitation></useLimitation>
+        <poc>
+            <pocType>Primary author</pocType>
+            <pocName>Tim Pokorny</pocName>
+            <pocOrg>Calytrix Technologies</pocOrg>
+            <pocTelephone>+1 (123) 456-7890</pocTelephone>
+            <pocEmail>nobody@example.com</pocEmail>
+        </poc>
+    </modelIdentification>
+    <switches>
+        <autoProvide isEnabled="true"/>
+        <conveyRegionDesignatorSets isEnabled="false"/>
+        <conveyProducingFederate isEnabled="false"/>
+        <attributeScopeAdvisory isEnabled="false"/>
+        <attributeRelevanceAdvisory isEnabled="false"/>
+        <objectClassRelevanceAdvisory isEnabled="false"/>
+        <interactionRelevanceAdvisory isEnabled="false"/>
+        <serviceReporting isEnabled="false"/>
+        <exceptionReporting isEnabled="false"/>
+        <delaySubscriptionEvaluation isEnabled="false"/>
+        <automaticResignAction resignAction="CancelThenDeleteThenDivest"/>
+    </switches>
+</objectModel>
+
+
+
+
+
+
+

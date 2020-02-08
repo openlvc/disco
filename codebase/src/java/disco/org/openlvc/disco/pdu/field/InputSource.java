@@ -34,7 +34,11 @@ public enum InputSource
 	Gunner           ( (short)6 ),
 	Commander        ( (short)7 ),
 	DigitalDataDevice( (short)8 ),
-	Intercom         ( (short)9 );
+	Intercom         ( (short)9 ),
+	AudioJammer      ( (short)10 ),
+	DataJammer       ( (short)11 ),
+	GpsJammer        ( (short)12 ),
+	GpsMeaconer      ( (short)13 );
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES

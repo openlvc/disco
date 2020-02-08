@@ -29,6 +29,7 @@ import org.openlvc.disco.pdu.field.AntennaPatternType;
 import org.openlvc.disco.pdu.field.CryptoSystem;
 import org.openlvc.disco.pdu.field.InputSource;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.field.TransmitState;
 import org.openlvc.disco.pdu.record.AntennaLocation;
 import org.openlvc.disco.pdu.record.EntityId;
@@ -53,7 +54,7 @@ public class TransmitterPdu extends PDU
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private EntityId entityID;
-	private int radioID;
+	private int radioId;
 	private RadioEntityType radioEntityType;
 	private TransmitState transmitState;
 	private InputSource inputSource;
@@ -79,7 +80,7 @@ public class TransmitterPdu extends PDU
 			throw new IllegalStateException( "Expected Transmitter header, found "+header.getPduType() );
 		
 		this.entityID = new EntityId();
-		this.radioID = 0;
+		this.radioId = 0;
 		this.radioEntityType = new RadioEntityType();
 		this.transmitState = TransmitState.Off;
 		this.inputSource = InputSource.Other;
@@ -94,6 +95,12 @@ public class TransmitterPdu extends PDU
 		setAntennaPattern( AntennaPatternType.OmniDirectional, new byte[0] );
 	}
 
+	public TransmitterPdu()
+	{
+		this( new PduHeader().setPduType(PduType.Transmitter) );
+		super.getHeader().setProtocolFamily( ProtocolFamily.Radio );
+	}
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -105,7 +112,7 @@ public class TransmitterPdu extends PDU
 	public void from( DisInputStream dis ) throws IOException
 	{
 		entityID.from( dis );
-		radioID = dis.readUI16();
+		radioId = dis.readUI16();
 		radioEntityType.from( dis );
 		transmitState = TransmitState.fromValue( dis.readUI8() );
 		inputSource = InputSource.fromValue( dis.readUI8() );
@@ -140,7 +147,7 @@ public class TransmitterPdu extends PDU
 	public void to( DisOutputStream dos ) throws IOException
 	{
 		entityID.to( dos );
-		dos.writeUI16( radioID );
+		dos.writeUI16( radioId );
 		radioEntityType.to( dos );
 		dos.writeUI8( transmitState.value() );
 		dos.writeUI8( inputSource.value() );
@@ -198,11 +205,22 @@ public class TransmitterPdu extends PDU
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/** Just a dup of {@link #getEntityIdentifier()} with a shorter name for compactness. */
+	public EntityId getEntityId()
+	{
+		return entityID;
+	}
+
 	public EntityId getEntityIdentifier()
 	{
 		return entityID;
 	}
 	
+	public void setEntityId( EntityId id )
+	{
+		entityID = id;
+	}
+
 	public void setEntityIdentifier( EntityId id )
 	{
 		entityID = id;
@@ -210,12 +228,12 @@ public class TransmitterPdu extends PDU
 	
 	public int getRadioID()
 	{
-		return radioID;
+		return radioId;
 	}
 	
-	public void setRadioID( int radioID )
+	public void setRadioID( int radioId )
 	{
-		this.radioID = radioID;
+		this.radioId = radioId;
 	}
 
 	public RadioEntityType getRadioEntityType()
@@ -263,12 +281,13 @@ public class TransmitterPdu extends PDU
 		int antennaParameterLength = antennaParameter.length;
 		if( (antennaParameterLength % 8) != 0 )
 		{
-			throw new IllegalArgumentException( "Antenna Parameter BLOB must be aligned to 64bit boundary" );
+			throw new IllegalArgumentException( "Antenna Parameter BLOB must be aligned to 64bit boundary ["+
+			                                    antennaParameterLength+" bytes]" );
 		}
 		else if( antennaParameterLength > DisSizes.UI16_MAX_VALUE )
 		{
 			throw new IllegalArgumentException( "Antenna Parameter BLOB may not be larger than " + 
-				DisSizes.UI16_MAX_VALUE + "bytes" );
+				DisSizes.UI16_MAX_VALUE + "bytes ["+antennaParameterLength+" bytes]" );
 		}
 		
 		this.antennaPatternType = antennaPatternType;

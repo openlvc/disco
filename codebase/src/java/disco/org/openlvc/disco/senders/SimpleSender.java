@@ -17,8 +17,6 @@
  */
 package org.openlvc.disco.senders;
 
-import java.io.IOException;
-
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduSender;
@@ -57,7 +55,7 @@ public class SimpleSender extends PduSender
 		{
 			this.connection.send( pdu.toByteArray() );
 		}
-		catch( IOException ioex )
+		catch( DiscoException ioex )
 		{
 			logger.warn( "(PduSend) Problem serializing PDU for sending: "+ioex.getMessage(), ioex );
 		}
