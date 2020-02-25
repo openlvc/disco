@@ -17,31 +17,45 @@
  */
 package org.openlvc.disco.connection.rpr.types.enumerated;
 
-import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
+import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum AntennaPatternEnum32 implements DataElement
+public enum ConstituentPartStationNameEnum16 implements DataElement
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	OmniDirectional( new RPRunsignedInteger32BE(0) ),
-	Beam( new RPRunsignedInteger32BE(1) ),
-	SphericalHarmonic( new RPRunsignedInteger32BE(2) );
+	Other( new RPRunsignedInteger16BE(0) ),
+	AircraftWingstation( new RPRunsignedInteger16BE(1) ),
+	ShipsForwardGunmountStarboard( new RPRunsignedInteger16BE(2) ),
+	ShipsForwardGunmountPort( new RPRunsignedInteger16BE(3) ),
+	ShipsForwardGunmountCenterline( new RPRunsignedInteger16BE(4) ),
+	ShipsAftGunmountStarboard( new RPRunsignedInteger16BE(5) ),
+	ShipsAftGunmountPort( new RPRunsignedInteger16BE(6) ),
+	ShipsAftGunmountCenterline( new RPRunsignedInteger16BE(7) ),
+	ForwardTorpedoTube( new RPRunsignedInteger16BE(8) ),
+	AftTorpedoTube( new RPRunsignedInteger16BE(9) ),
+	BombBay( new RPRunsignedInteger16BE(10) ),
+	CargoBay( new RPRunsignedInteger16BE(11) ),
+	TruckBed( new RPRunsignedInteger16BE(12) ),
+	TrailerBed( new RPRunsignedInteger16BE(13) ),
+	WellDeck( new RPRunsignedInteger16BE(14) ),
+	OnStationRangeBearing( new RPRunsignedInteger16BE(15) ),
+	OnStationXYZ( new RPRunsignedInteger16BE(16) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private RPRunsignedInteger32BE value;
+	private RPRunsignedInteger16BE value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private AntennaPatternEnum32( RPRunsignedInteger32BE value )
+	private ConstituentPartStationNameEnum16( RPRunsignedInteger16BE value )
 	{
 		this.value = value;
 	}
@@ -102,12 +116,12 @@ public enum AntennaPatternEnum32 implements DataElement
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	
-	public static AntennaPatternEnum32 valueOf( long value )
+	public static ConstituentPartStationNameEnum16 valueOf( long value )
 	{
-		for( AntennaPatternEnum32 temp : AntennaPatternEnum32.values() )
+		for( ConstituentPartStationNameEnum16 temp : ConstituentPartStationNameEnum16.values() )
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (ConstituentPartStationNameEnum16)" );
 	}
 }

@@ -18,6 +18,7 @@
 package org.openlvc.disco.connection.rpr;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -304,7 +305,9 @@ public class RprConnection implements IConnection
 	private void publishAndSubscribe()
 	{
 		// PubSub Object Classes
-		List<String> classes = Arrays.asList( "HLAobjectRoot.EmbeddedSystem.RadioTransmitter" );
+		List<String> classes = new ArrayList<>();
+		classes.add( "HLAobjectRoot.EmbeddedSystem.RadioTransmitter" );
+		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity" );
 		for( String qualifiedName : classes )
 		{
 			logger.debug( "PubSub for "+qualifiedName );

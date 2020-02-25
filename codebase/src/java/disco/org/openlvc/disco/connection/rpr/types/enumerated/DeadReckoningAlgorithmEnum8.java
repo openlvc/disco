@@ -17,42 +17,54 @@
  */
 package org.openlvc.disco.connection.rpr.types.enumerated;
 
-import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
+import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum AntennaPatternEnum32 implements DataElement
+public enum DeadReckoningAlgorithmEnum8 implements DataElement
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	OmniDirectional( new RPRunsignedInteger32BE(0) ),
-	Beam( new RPRunsignedInteger32BE(1) ),
-	SphericalHarmonic( new RPRunsignedInteger32BE(2) );
+	Other(0),
+	Static(1),
+	DRM_FPW(2),
+	DRM_RPW(3),
+	DRM_RVW(4),
+	DRM_FVW(5),
+	DRM_FPB(6),
+	DRM_RPB(7),
+	DRM_RVB(8),
+	DRM_FVB(9);
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private RPRunsignedInteger32BE value;
+	private HLAoctet value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private AntennaPatternEnum32( RPRunsignedInteger32BE value )
+	private DeadReckoningAlgorithmEnum8( int value )
 	{
-		this.value = value;
+		this.value = new HLAoctet( value );
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	public long getValue()
+	
+	public byte getValue()
 	{
 		return this.value.getValue();
+	}
+	
+	public short getUnsignedValue()
+	{
+		return this.value.getUnsignedValue();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,12 +114,12 @@ public enum AntennaPatternEnum32 implements DataElement
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	
-	public static AntennaPatternEnum32 valueOf( long value )
+	public static DeadReckoningAlgorithmEnum8 valueOf( short value )
 	{
-		for( AntennaPatternEnum32 temp : AntennaPatternEnum32.values() )
+		for( DeadReckoningAlgorithmEnum8 temp : DeadReckoningAlgorithmEnum8.values() )
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (DeadReckoningAlgorithmEnum8)" );
 	}
 }

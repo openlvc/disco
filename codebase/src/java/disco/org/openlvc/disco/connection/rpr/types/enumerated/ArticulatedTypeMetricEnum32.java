@@ -24,14 +24,27 @@ import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum AntennaPatternEnum32 implements DataElement
+public enum ArticulatedTypeMetricEnum32 implements DataElement
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	OmniDirectional( new RPRunsignedInteger32BE(0) ),
-	Beam( new RPRunsignedInteger32BE(1) ),
-	SphericalHarmonic( new RPRunsignedInteger32BE(2) );
+	Position( new RPRunsignedInteger32BE(1) ),
+	PositionRate( new RPRunsignedInteger32BE(2) ),
+	Extension( new RPRunsignedInteger32BE(3) ),
+	ExtensionRate( new RPRunsignedInteger32BE(4) ),
+	X( new RPRunsignedInteger32BE(5) ),
+	XRate( new RPRunsignedInteger32BE(6) ),
+	Y( new RPRunsignedInteger32BE(7) ),
+	YRate( new RPRunsignedInteger32BE(8) ),
+	Z( new RPRunsignedInteger32BE(9) ),
+	ZRate( new RPRunsignedInteger32BE(10) ),
+	Azimuth( new RPRunsignedInteger32BE(11) ),
+	AzimuthRate( new RPRunsignedInteger32BE(12) ),
+	Elevation( new RPRunsignedInteger32BE(13) ),
+	ElevationRate( new RPRunsignedInteger32BE(14) ),
+	Rotation( new RPRunsignedInteger32BE(15) ),
+	RotationRate( new RPRunsignedInteger32BE(16) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -41,7 +54,7 @@ public enum AntennaPatternEnum32 implements DataElement
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private AntennaPatternEnum32( RPRunsignedInteger32BE value )
+	private ArticulatedTypeMetricEnum32( RPRunsignedInteger32BE value )
 	{
 		this.value = value;
 	}
@@ -102,12 +115,12 @@ public enum AntennaPatternEnum32 implements DataElement
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	
-	public static AntennaPatternEnum32 valueOf( long value )
+	public static ArticulatedTypeMetricEnum32 valueOf( long value )
 	{
-		for( AntennaPatternEnum32 temp : AntennaPatternEnum32.values() )
+		for( ArticulatedTypeMetricEnum32 temp : ArticulatedTypeMetricEnum32.values() )
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (ArticulatedTypeMetricEnum32)" );
 	}
 }

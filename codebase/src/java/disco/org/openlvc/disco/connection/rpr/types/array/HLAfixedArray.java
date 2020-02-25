@@ -36,17 +36,21 @@ public class HLAfixedArray<T extends DataElement> implements hla.rti1516e.encodi
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	protected DataElementFactory<T> factory;
 	protected List<T> elements;
+	private int limit;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	@SafeVarargs
-	public HLAfixedArray( T... provided )
+	public HLAfixedArray( T... values )
 	{
-		this.elements = new ArrayList<T>( provided.length );
-		for( T element : provided )
-			this.elements.add( element );
+		this.factory = null;
+		this.elements = new ArrayList<T>( values.length );
+		this.limit = values.length;
+		for( int i = 0; i < values.length; i++ )
+			this.elements.add( values[i] );
 	}
 
 	/**
@@ -55,7 +59,9 @@ public class HLAfixedArray<T extends DataElement> implements hla.rti1516e.encodi
 	 */
 	public HLAfixedArray( DataElementFactory<T> factory, int size )
 	{
+		this.factory = factory;
 		this.elements = new ArrayList<T>( size );
+		this.limit = size;
 		for( int i = 0; i < size; i++ )
 			elements.add( factory.createElement(i) );
 	}
@@ -68,6 +74,7 @@ public class HLAfixedArray<T extends DataElement> implements hla.rti1516e.encodi
 	 * 
 	 * @return the number of elements in this fixed array
 	 */
+	@Override
 	public int size()
 	{
 		return this.elements.size();
@@ -80,6 +87,7 @@ public class HLAfixedArray<T extends DataElement> implements hla.rti1516e.encodi
 	 * 
 	 * @return the element at the specified <code>index</code>
 	 */
+	@Override
 	public T get( int index )
 	{
 		return this.elements.get( index );
@@ -90,10 +98,20 @@ public class HLAfixedArray<T extends DataElement> implements hla.rti1516e.encodi
 	 * 
 	 * @return an iterator for the elements in this fixed array
 	 */
+	@Override
 	public Iterator<T> iterator()
 	{
 		return this.elements.iterator();
 	}
+
+	public void set( T value, int index )
+	{
+		if( index >= limit )
+			throw new ArrayIndexOutOfBoundsException( "Cannot exceed fixed array size of "+limit );
+		else
+			this.elements.set( index, value );
+	}
+
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////// DataElement Methods //////////////////////////////////

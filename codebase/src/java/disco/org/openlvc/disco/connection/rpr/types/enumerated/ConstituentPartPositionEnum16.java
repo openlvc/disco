@@ -24,14 +24,14 @@ import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum AntennaPatternEnum32 implements DataElement
+public enum ConstituentPartPositionEnum16 implements DataElement
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	OmniDirectional( new RPRunsignedInteger32BE(0) ),
-	Beam( new RPRunsignedInteger32BE(1) ),
-	SphericalHarmonic( new RPRunsignedInteger32BE(2) );
+	Other( new RPRunsignedInteger32BE(0) ),
+	OnTopOf( new RPRunsignedInteger32BE(1) ),
+	Inside( new RPRunsignedInteger32BE(2) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -41,7 +41,7 @@ public enum AntennaPatternEnum32 implements DataElement
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private AntennaPatternEnum32( RPRunsignedInteger32BE value )
+	private ConstituentPartPositionEnum16( RPRunsignedInteger32BE value )
 	{
 		this.value = value;
 	}
@@ -102,12 +102,12 @@ public enum AntennaPatternEnum32 implements DataElement
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	
-	public static AntennaPatternEnum32 valueOf( long value )
+	public static ConstituentPartPositionEnum16 valueOf( long value )
 	{
-		for( AntennaPatternEnum32 temp : AntennaPatternEnum32.values() )
+		for( ConstituentPartPositionEnum16 temp : ConstituentPartPositionEnum16.values() )
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (ConstituentPartPositionEnum16)" );
 	}
 }

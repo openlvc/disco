@@ -19,15 +19,11 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 
 import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
-import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
-import org.openlvc.disco.connection.rpr.types.enumerated.NomenclatureEnum16;
-import org.openlvc.disco.connection.rpr.types.enumerated.NomenclatureVersionEnum8;
-import org.openlvc.disco.pdu.field.Country;
 import org.openlvc.disco.pdu.field.Domain;
-import org.openlvc.disco.pdu.field.EntityKind;
-import org.openlvc.disco.pdu.record.RadioEntityType;
+import org.openlvc.disco.pdu.field.Kind;
+import org.openlvc.disco.pdu.record.EntityType;
 
-public class RadioTypeStruct extends HLAfixedRecord
+public class EntityTypeStruct extends HLAfixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -40,28 +36,31 @@ public class RadioTypeStruct extends HLAfixedRecord
 	private HLAoctet domain;
 	private RPRunsignedInteger16BE countryCode;
 	private HLAoctet category;
-	private EnumHolder<NomenclatureVersionEnum8> nomenclatureVersion;
-	private EnumHolder<NomenclatureEnum16> nomenclature;
+	private HLAoctet subcategory;
+	private HLAoctet specific;
+	private HLAoctet extra;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public RadioTypeStruct()
+	public EntityTypeStruct()
 	{
 		this.kind = new HLAoctet( 0 );
 		this.domain = new HLAoctet( 0 );
 		this.countryCode = new RPRunsignedInteger16BE( 0 );
 		this.category = new HLAoctet( 0 );
-		this.nomenclatureVersion = new EnumHolder<>( NomenclatureVersionEnum8.Other );
-		this.nomenclature = new EnumHolder<>( NomenclatureEnum16.Other );
+		this.subcategory = new HLAoctet( 0 );
+		this.specific = new HLAoctet( 0 );
+		this.extra = new HLAoctet( 0 );
 
-		// Add to the elements in the parent so that it can do its generic fixed-record stuff
+		// Add to the elements to the parent so that it can do its generic fixed-record stuff
 		super.add( this.kind );
 		super.add( this.domain );
 		super.add( this.countryCode );
 		super.add( this.category );
-		super.add( this.nomenclatureVersion );
-		super.add( this.nomenclature );
+		super.add( this.subcategory );
+		super.add( this.specific );
+		super.add( this.extra );
 	}
 
 	//----------------------------------------------------------
@@ -71,30 +70,31 @@ public class RadioTypeStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue( RadioEntityType type )
+	public void setValue( EntityType type )
 	{
-		this.kind.setUnsignedValue( type.getEntityKind().value() );
-		this.domain.setUnsignedValue( type.getDomain().value() );
-		this.countryCode.setValue( type.getCountry().value() );
+		this.kind.setUnsignedValue( type.getKind() );
+		this.domain.setUnsignedValue( type.getDomain() );
+		this.countryCode.setValue( type.getCountry() );
 		this.category.setUnsignedValue( type.getCategory() );
-		this.nomenclatureVersion.setEnum( NomenclatureVersionEnum8.valueOf(type.getNomenclatureVersion()) );
-		this.nomenclature.setEnum( NomenclatureEnum16.valueOf(type.getNomenclature()) );
+		this.subcategory.setUnsignedValue( type.getSubcategory() );
+		this.specific.setUnsignedValue( type.getSpecific() );
+		this.extra.setUnsignedValue( type.getExtra() );
 	}
 
-	public RadioEntityType getDisValue()
+	public EntityType getDisValue()
 	{
-		RadioEntityType type = new RadioEntityType();
-		type.setEntityKind( EntityKind.fromValue(kind.getUnsignedValue()) );
+		EntityType type = new EntityType();
+		type.setKind( Kind.fromValue(kind.getUnsignedValue()) );
 		type.setDomain( Domain.fromValue(domain.getUnsignedValue()) );
-		type.setCountry( Country.fromValue(countryCode.getValue()) );
+		type.setCountry( countryCode.getValue() );
 		type.setCategory( category.getUnsignedValue() );
-		type.setNomenclatureVersion( nomenclatureVersion.getEnum().getUnsignedValue() );
-		type.setNomenclature( nomenclature.getEnum().getValue() );
+		type.setSubcategory( subcategory.getUnsignedValue() );
+		type.setSpecific( specific.getUnsignedValue());
+		type.setExtra( extra.getUnsignedValue() );
 		return type;
 	}
 

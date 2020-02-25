@@ -17,10 +17,10 @@
  */
 package org.openlvc.disco.connection.rpr.types.fixed;
 
-import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
-import org.openlvc.disco.pdu.record.EntityCoordinate;
+import org.openlvc.disco.connection.rpr.types.basic.HLAinteger16BE;
+import org.openlvc.disco.connection.rpr.types.variant.StationNameLocationVariantStruct;
 
-public class RelativePositionStruct extends HLAfixedRecord
+public class NamedLocationStruct extends HLAfixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,23 +29,20 @@ public class RelativePositionStruct extends HLAfixedRecord
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAfloat32BE bodyXDistance;
-	private HLAfloat32BE bodyYDistance;
-	private HLAfloat32BE bodyZDistance;
+	private HLAinteger16BE stationNumber;
+	private StationNameLocationVariantStruct stationName;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public RelativePositionStruct()
+	public NamedLocationStruct()
 	{
-		this.bodyXDistance = new HLAfloat32BE();
-		this.bodyYDistance = new HLAfloat32BE();
-		this.bodyZDistance = new HLAfloat32BE();
-		
-		// Add to the elements in the parent so that it can do its generic fixed-record stuff
-		super.add( bodyXDistance );
-		super.add( bodyYDistance );
-		super.add( bodyZDistance );
+		this.stationNumber = new HLAinteger16BE();
+		this.stationName = new StationNameLocationVariantStruct();
+
+		// Add to the elements to the parent so that it can do its generic fixed-record stuff
+		super.add( stationNumber );
+		super.add( stationName );
 	}
 
 	//----------------------------------------------------------
@@ -55,23 +52,12 @@ public class RelativePositionStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue( EntityCoordinate position )
+	public void setValue()
 	{
-		this.bodyXDistance.setValue( position.getX() );
-		this.bodyYDistance.setValue( position.getY() );
-		this.bodyZDistance.setValue( position.getZ() );
-	}
-	
-	public EntityCoordinate getDisValue()
-	{
-		return new EntityCoordinate( bodyXDistance.getValue(),
-		                             bodyYDistance.getValue(),
-		                             bodyZDistance.getValue() );
 	}
 
 	//----------------------------------------------------------

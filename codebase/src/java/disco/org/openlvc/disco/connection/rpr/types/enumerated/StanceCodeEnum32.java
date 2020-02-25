@@ -24,14 +24,27 @@ import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum AntennaPatternEnum32 implements DataElement
+public enum StanceCodeEnum32 implements DataElement
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	OmniDirectional( new RPRunsignedInteger32BE(0) ),
-	Beam( new RPRunsignedInteger32BE(1) ),
-	SphericalHarmonic( new RPRunsignedInteger32BE(2) );
+	NotApplicable( new RPRunsignedInteger32BE(0) ),
+	UprightStandingStill( new RPRunsignedInteger32BE(1) ),
+	UprightWalking( new RPRunsignedInteger32BE(2) ),
+	UprightRunning( new RPRunsignedInteger32BE(3) ),
+	Kneeling( new RPRunsignedInteger32BE(4) ),
+	Prone( new RPRunsignedInteger32BE(5) ),
+	Crawling( new RPRunsignedInteger32BE(6) ),
+	Swimming( new RPRunsignedInteger32BE(7) ),
+	Parachuting( new RPRunsignedInteger32BE(8) ),
+	Jumping( new RPRunsignedInteger32BE(9) ),
+	Sitting( new RPRunsignedInteger32BE(10) ),
+	Squatting( new RPRunsignedInteger32BE(11) ),
+	Crouching( new RPRunsignedInteger32BE(12) ),
+	Wading( new RPRunsignedInteger32BE(13) ),
+	Surrender( new RPRunsignedInteger32BE(14) ),
+	Detained( new RPRunsignedInteger32BE(15) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -41,7 +54,7 @@ public enum AntennaPatternEnum32 implements DataElement
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private AntennaPatternEnum32( RPRunsignedInteger32BE value )
+	private StanceCodeEnum32( RPRunsignedInteger32BE value )
 	{
 		this.value = value;
 	}
@@ -102,12 +115,12 @@ public enum AntennaPatternEnum32 implements DataElement
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	
-	public static AntennaPatternEnum32 valueOf( long value )
+	public static StanceCodeEnum32 valueOf( long value )
 	{
-		for( AntennaPatternEnum32 temp : AntennaPatternEnum32.values() )
+		for( StanceCodeEnum32 temp : StanceCodeEnum32.values() )
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (StanceCodeEnum32)" );
 	}
 }

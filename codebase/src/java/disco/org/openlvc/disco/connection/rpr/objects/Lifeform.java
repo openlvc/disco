@@ -15,12 +15,16 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.types.fixed;
+package org.openlvc.disco.connection.rpr.objects;
 
-import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
-import org.openlvc.disco.pdu.record.EntityCoordinate;
+import org.openlvc.disco.connection.rpr.types.enumerated.ComplianceStateEnum32;
+import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
+import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
+import org.openlvc.disco.connection.rpr.types.enumerated.StanceCodeEnum32;
+import org.openlvc.disco.connection.rpr.types.enumerated.WeaponStateEnum32;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
 
-public class RelativePositionStruct extends HLAfixedRecord
+public abstract class Lifeform extends PhysicalEntity
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,23 +33,24 @@ public class RelativePositionStruct extends HLAfixedRecord
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAfloat32BE bodyXDistance;
-	private HLAfloat32BE bodyYDistance;
-	private HLAfloat32BE bodyZDistance;
+	protected EnumHolder<RPRboolean> flashLightsOn;
+	protected EnumHolder<StanceCodeEnum32> stanceCode;
+	protected EnumHolder<WeaponStateEnum32> primaryWeaponState;
+	protected EnumHolder<WeaponStateEnum32> secondaryWeaponState;
+	protected EnumHolder<ComplianceStateEnum32> complianceState;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public RelativePositionStruct()
+	protected Lifeform()
 	{
-		this.bodyXDistance = new HLAfloat32BE();
-		this.bodyYDistance = new HLAfloat32BE();
-		this.bodyZDistance = new HLAfloat32BE();
+		super();
 		
-		// Add to the elements in the parent so that it can do its generic fixed-record stuff
-		super.add( bodyXDistance );
-		super.add( bodyYDistance );
-		super.add( bodyZDistance );
+		this.flashLightsOn = new EnumHolder<>( RPRboolean.False );
+		this.stanceCode = new EnumHolder<>( StanceCodeEnum32.NotApplicable );
+		this.primaryWeaponState = new EnumHolder<>( WeaponStateEnum32.NoWeapon );
+		this.secondaryWeaponState = new EnumHolder<>( WeaponStateEnum32.NoWeapon );
+		this.complianceState = new EnumHolder<>( ComplianceStateEnum32.Other );
 	}
 
 	//----------------------------------------------------------
@@ -55,23 +60,26 @@ public class RelativePositionStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
+	/// DIS Decoding Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue( EntityCoordinate position )
+	protected void fromPdu( EntityStatePdu incoming )
 	{
-		this.bodyXDistance.setValue( position.getX() );
-		this.bodyYDistance.setValue( position.getY() );
-		this.bodyZDistance.setValue( position.getZ() );
+		// pass up the tree
+		super.fromPdu( incoming );
+
+
+		throw new RuntimeException( "Not Implemented Yet" );
 	}
 	
-	public EntityCoordinate getDisValue()
+	protected void toPdu( EntityStatePdu pdu )
 	{
-		return new EntityCoordinate( bodyXDistance.getValue(),
-		                             bodyYDistance.getValue(),
-		                             bodyZDistance.getValue() );
+		// pass up the tree
+		super.toPdu( pdu );
+
+		
+		throw new RuntimeException( "Not Implemented Yet" );
 	}
 
 	//----------------------------------------------------------

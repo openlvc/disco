@@ -15,12 +15,15 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.types.fixed;
+package org.openlvc.disco.connection.rpr.objects;
 
-import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
-import org.openlvc.disco.pdu.record.EntityCoordinate;
+import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
+import org.openlvc.disco.connection.rpr.types.fixed.EntityTypeStruct;
+import org.openlvc.disco.connection.rpr.types.fixed.IsPartOfStruct;
+import org.openlvc.disco.connection.rpr.types.variant.SpatialVariantStruct;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
 
-public class RelativePositionStruct extends HLAfixedRecord
+public abstract class BaseEntity extends ObjectInstance
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,23 +32,23 @@ public class RelativePositionStruct extends HLAfixedRecord
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAfloat32BE bodyXDistance;
-	private HLAfloat32BE bodyYDistance;
-	private HLAfloat32BE bodyZDistance;
+	protected EntityTypeStruct entityType;
+	protected EntityIdentifierStruct entityIdentifier;
+	protected IsPartOfStruct isPartOf;
+	protected SpatialVariantStruct spatial;
+	protected SpatialVariantStruct relativeSpatial;
+	
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public RelativePositionStruct()
+	protected BaseEntity()
 	{
-		this.bodyXDistance = new HLAfloat32BE();
-		this.bodyYDistance = new HLAfloat32BE();
-		this.bodyZDistance = new HLAfloat32BE();
-		
-		// Add to the elements in the parent so that it can do its generic fixed-record stuff
-		super.add( bodyXDistance );
-		super.add( bodyYDistance );
-		super.add( bodyZDistance );
+		this.entityType = new EntityTypeStruct();
+		this.entityIdentifier = new EntityIdentifierStruct();
+		this.isPartOf = new IsPartOfStruct();
+		this.spatial = new SpatialVariantStruct();
+		this.relativeSpatial = new SpatialVariantStruct();
 	}
 
 	//----------------------------------------------------------
@@ -55,25 +58,49 @@ public class RelativePositionStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue( EntityCoordinate position )
+	public EntityTypeStruct getEntityType()
 	{
-		this.bodyXDistance.setValue( position.getX() );
-		this.bodyYDistance.setValue( position.getY() );
-		this.bodyZDistance.setValue( position.getZ() );
-	}
-	
-	public EntityCoordinate getDisValue()
-	{
-		return new EntityCoordinate( bodyXDistance.getValue(),
-		                             bodyYDistance.getValue(),
-		                             bodyZDistance.getValue() );
+		return entityType;
 	}
 
+	public EntityIdentifierStruct getEntityIdentifier()
+	{
+		return entityIdentifier;
+	}
+
+	public IsPartOfStruct getIsPartOf()
+	{
+		return isPartOf;
+	}
+
+	public SpatialVariantStruct getSpatial()
+	{
+		return spatial;
+	}
+
+	public SpatialVariantStruct getRelativeSpatial()
+	{
+		return relativeSpatial;
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// DIS Decoding Methods   /////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	protected void fromPdu( EntityStatePdu incoming )
+	{
+		this.entityType.setValue( incoming.getEntityType() );
+		this.entityIdentifier.setValue( incoming.getEntityID() );
+		//this.isPartOf.setValue(  );
+		//this.spatial.setValue(  );
+		//this.relativeSpatial.setValue( );
+	}
+	
+	protected void toPdu( EntityStatePdu pdu )
+	{
+		pdu.setEntityType( entityType.getDisValue() );
+		pdu.setEntityID( entityIdentifier.getDisValue() );
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

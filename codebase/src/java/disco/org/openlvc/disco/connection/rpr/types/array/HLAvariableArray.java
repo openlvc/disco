@@ -63,6 +63,7 @@ public class HLAvariableArray<T extends DataElement> implements hla.rti1516e.enc
 	 * 
 	 * @param dataElement element to add
 	 */
+	@Override
 	public void addElement( T dataElement )
 	{
 		this.elements.add( dataElement );
@@ -75,6 +76,7 @@ public class HLAvariableArray<T extends DataElement> implements hla.rti1516e.enc
 	 * 
 	 * @param newSize the new size
 	 */
+	@Override
 	public void resize( int newSize )
 	{
 		int existingSize = this.elements.size();
@@ -94,16 +96,19 @@ public class HLAvariableArray<T extends DataElement> implements hla.rti1516e.enc
 		}
 	}
 
+	@Override
 	public int size()
     {
 	    return this.elements.size();
     }
 
+	@Override
 	public T get( int index )
     {
 	    return this.elements.get( index );
     }
 
+	@Override
 	public Iterator<T> iterator()
     {
 	    return this.elements.iterator();

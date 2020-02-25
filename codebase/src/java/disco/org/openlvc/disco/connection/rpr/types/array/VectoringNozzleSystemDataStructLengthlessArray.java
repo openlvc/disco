@@ -15,12 +15,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.types.fixed;
+package org.openlvc.disco.connection.rpr.types.array;
 
-import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
-import org.openlvc.disco.pdu.record.EntityCoordinate;
+import org.openlvc.disco.connection.rpr.types.fixed.VectoringNozzleSystemDataStruct;
 
-public class RelativePositionStruct extends HLAfixedRecord
+import hla.rti1516e.encoding.DataElementFactory;
+
+public class VectoringNozzleSystemDataStructLengthlessArray
+	extends RPRlengthlessArray<VectoringNozzleSystemDataStruct>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,23 +31,13 @@ public class RelativePositionStruct extends HLAfixedRecord
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAfloat32BE bodyXDistance;
-	private HLAfloat32BE bodyYDistance;
-	private HLAfloat32BE bodyZDistance;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public RelativePositionStruct()
+	public VectoringNozzleSystemDataStructLengthlessArray()
 	{
-		this.bodyXDistance = new HLAfloat32BE();
-		this.bodyYDistance = new HLAfloat32BE();
-		this.bodyZDistance = new HLAfloat32BE();
-		
-		// Add to the elements in the parent so that it can do its generic fixed-record stuff
-		super.add( bodyXDistance );
-		super.add( bodyYDistance );
-		super.add( bodyZDistance );
+		super( new VectoringNozzleSystemDataStructLengthlessArray.Factory() );
 	}
 
 	//----------------------------------------------------------
@@ -55,26 +47,31 @@ public class RelativePositionStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue( EntityCoordinate position )
-	{
-		this.bodyXDistance.setValue( position.getX() );
-		this.bodyYDistance.setValue( position.getY() );
-		this.bodyZDistance.setValue( position.getZ() );
-	}
-	
-	public EntityCoordinate getDisValue()
-	{
-		return new EntityCoordinate( bodyXDistance.getValue(),
-		                             bodyYDistance.getValue(),
-		                             bodyZDistance.getValue() );
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	
+	public static VectoringNozzleSystemDataStructLengthlessArray from( VectoringNozzleSystemDataStruct... values )
+	{
+		VectoringNozzleSystemDataStructLengthlessArray array =
+			new VectoringNozzleSystemDataStructLengthlessArray();
+
+		for( VectoringNozzleSystemDataStruct value : values )
+			array.addElement( value );
+		
+		return array;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// DataElement Factory Methods   //////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	private static class Factory implements DataElementFactory<VectoringNozzleSystemDataStruct>
+	{
+    	@Override
+    	public VectoringNozzleSystemDataStruct createElement( int index )
+    	{
+    		return new VectoringNozzleSystemDataStruct();
+    	}
+	}
 }

@@ -24,14 +24,27 @@ import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum AntennaPatternEnum32 implements DataElement
+public enum ComplianceStateEnum32 implements DataElement
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	OmniDirectional( new RPRunsignedInteger32BE(0) ),
-	Beam( new RPRunsignedInteger32BE(1) ),
-	SphericalHarmonic( new RPRunsignedInteger32BE(2) );
+	Other( new RPRunsignedInteger32BE(0) ),
+	Detained( new RPRunsignedInteger32BE(1) ),
+	Surrender( new RPRunsignedInteger32BE(2) ),
+	UsingFists( new RPRunsignedInteger32BE(3) ),
+	VerbalAbuse1( new RPRunsignedInteger32BE(4) ),
+	VerbalAbuse2( new RPRunsignedInteger32BE(5) ),
+	VerbalAbuse3( new RPRunsignedInteger32BE(6) ),
+	PassiveResistance1( new RPRunsignedInteger32BE(7) ),
+	PassiveResistance2( new RPRunsignedInteger32BE(8) ),
+	PassiveResistance3( new RPRunsignedInteger32BE(9) ),
+	NonLethalWeapon1( new RPRunsignedInteger32BE(10) ),
+	NonLethalWeapon2( new RPRunsignedInteger32BE(11) ),
+	NonLethalWeapon3( new RPRunsignedInteger32BE(12) ),
+	NonLethalWeapon4( new RPRunsignedInteger32BE(13) ),
+	NonLethalWeapon5( new RPRunsignedInteger32BE(14) ),
+	NonLethalWeapon6( new RPRunsignedInteger32BE(15) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -41,7 +54,7 @@ public enum AntennaPatternEnum32 implements DataElement
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private AntennaPatternEnum32( RPRunsignedInteger32BE value )
+	private ComplianceStateEnum32( RPRunsignedInteger32BE value )
 	{
 		this.value = value;
 	}
@@ -102,12 +115,12 @@ public enum AntennaPatternEnum32 implements DataElement
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	
-	public static AntennaPatternEnum32 valueOf( long value )
+	public static ComplianceStateEnum32 valueOf( long value )
 	{
-		for( AntennaPatternEnum32 temp : AntennaPatternEnum32.values() )
+		for( ComplianceStateEnum32 temp : ComplianceStateEnum32.values() )
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (ComplianceStateEnum32)" );
 	}
 }

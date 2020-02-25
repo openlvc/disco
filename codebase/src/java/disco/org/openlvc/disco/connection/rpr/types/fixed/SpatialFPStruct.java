@@ -17,10 +17,10 @@
  */
 package org.openlvc.disco.connection.rpr.types.fixed;
 
-import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
-import org.openlvc.disco.pdu.record.EntityCoordinate;
+import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
+import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
 
-public class RelativePositionStruct extends HLAfixedRecord
+public class SpatialFPStruct extends HLAfixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,23 +29,26 @@ public class RelativePositionStruct extends HLAfixedRecord
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAfloat32BE bodyXDistance;
-	private HLAfloat32BE bodyYDistance;
-	private HLAfloat32BE bodyZDistance;
+	private WorldLocationStruct worldLocation;
+	private EnumHolder<RPRboolean> isFrozen;
+	private OrientationStruct orientation;
+	private VelocityVectorStruct velocity;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public RelativePositionStruct()
+	public SpatialFPStruct()
 	{
-		this.bodyXDistance = new HLAfloat32BE();
-		this.bodyYDistance = new HLAfloat32BE();
-		this.bodyZDistance = new HLAfloat32BE();
+		this.worldLocation = new WorldLocationStruct();
+		this.isFrozen = new EnumHolder<>( RPRboolean.False );
+		this.orientation = new OrientationStruct();
+		this.velocity = new VelocityVectorStruct();
 		
-		// Add to the elements in the parent so that it can do its generic fixed-record stuff
-		super.add( bodyXDistance );
-		super.add( bodyYDistance );
-		super.add( bodyZDistance );
+		// Add to the elements to the parent so that it can do its generic fixed-record stuff
+		super.add( worldLocation );
+		super.add( isFrozen );
+		super.add( orientation );
+		super.add( velocity );
 	}
 
 	//----------------------------------------------------------
@@ -55,23 +58,12 @@ public class RelativePositionStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue( EntityCoordinate position )
+	public void setValue()
 	{
-		this.bodyXDistance.setValue( position.getX() );
-		this.bodyYDistance.setValue( position.getY() );
-		this.bodyZDistance.setValue( position.getZ() );
-	}
-	
-	public EntityCoordinate getDisValue()
-	{
-		return new EntityCoordinate( bodyXDistance.getValue(),
-		                             bodyYDistance.getValue(),
-		                             bodyZDistance.getValue() );
 	}
 
 	//----------------------------------------------------------

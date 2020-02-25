@@ -206,6 +206,17 @@ public class OpsCenter
 		return this.configuration;
 	}
 	
+	public void setConfiguration( DiscoConfiguration configuration )
+	{
+		if( configuration == null )
+			return;
+
+		if( this.open )
+			throw new DiscoException( "Cannot change the configuration of an open OpsCenter" );
+		else
+			this.configuration = configuration;
+	}
+	
 	public PduReceiver getPduReceiver()
 	{
 		return this.pduReceiver;

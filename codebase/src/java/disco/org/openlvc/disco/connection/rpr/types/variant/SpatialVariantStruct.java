@@ -15,12 +15,16 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.types.fixed;
+package org.openlvc.disco.connection.rpr.types.variant;
 
-import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
-import org.openlvc.disco.pdu.record.EntityCoordinate;
+import org.openlvc.disco.connection.rpr.types.enumerated.DeadReckoningAlgorithmEnum8;
+import org.openlvc.disco.connection.rpr.types.fixed.SpatialFPStruct;
+import org.openlvc.disco.connection.rpr.types.fixed.SpatialFVStruct;
+import org.openlvc.disco.connection.rpr.types.fixed.SpatialRPStruct;
+import org.openlvc.disco.connection.rpr.types.fixed.SpatialRVStruct;
+import org.openlvc.disco.connection.rpr.types.fixed.SpatialStaticStruct;
 
-public class RelativePositionStruct extends HLAfixedRecord
+public class SpatialVariantStruct extends HLAvariantRecord<DeadReckoningAlgorithmEnum8>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,24 +33,24 @@ public class RelativePositionStruct extends HLAfixedRecord
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAfloat32BE bodyXDistance;
-	private HLAfloat32BE bodyYDistance;
-	private HLAfloat32BE bodyZDistance;
+	public SpatialVariantStruct()
+	{
+		super();
+		
+		super.setVariant( DeadReckoningAlgorithmEnum8.Static, new SpatialStaticStruct() );
+		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_FPW, new SpatialFPStruct() );
+		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_RPW, new SpatialRPStruct() );
+		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_RVW, new SpatialRVStruct() );
+		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_FVW, new SpatialFVStruct() );
+		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_FPB, new SpatialFPStruct() );
+		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_RPB, new SpatialRPStruct() );
+		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_RVB, new SpatialRVStruct() );
+		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_FVB, new SpatialFVStruct() );
+	}
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public RelativePositionStruct()
-	{
-		this.bodyXDistance = new HLAfloat32BE();
-		this.bodyYDistance = new HLAfloat32BE();
-		this.bodyZDistance = new HLAfloat32BE();
-		
-		// Add to the elements in the parent so that it can do its generic fixed-record stuff
-		super.add( bodyXDistance );
-		super.add( bodyYDistance );
-		super.add( bodyZDistance );
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
@@ -55,24 +59,6 @@ public class RelativePositionStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue( EntityCoordinate position )
-	{
-		this.bodyXDistance.setValue( position.getX() );
-		this.bodyYDistance.setValue( position.getY() );
-		this.bodyZDistance.setValue( position.getZ() );
-	}
-	
-	public EntityCoordinate getDisValue()
-	{
-		return new EntityCoordinate( bodyXDistance.getValue(),
-		                             bodyYDistance.getValue(),
-		                             bodyZDistance.getValue() );
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

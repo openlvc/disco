@@ -24,14 +24,16 @@ import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum AntennaPatternEnum32 implements DataElement
+public enum CamouflageEnum32 implements DataElement
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	OmniDirectional( new RPRunsignedInteger32BE(0) ),
-	Beam( new RPRunsignedInteger32BE(1) ),
-	SphericalHarmonic( new RPRunsignedInteger32BE(2) );
+	UniformPaintScheme( new RPRunsignedInteger32BE(0) ),
+	DesertCamouflage( new RPRunsignedInteger32BE(1) ),
+	WinterCamouflage( new RPRunsignedInteger32BE(2) ),
+	ForestCamouflage( new RPRunsignedInteger32BE(3) ),
+	GenericCamouflage( new RPRunsignedInteger32BE(4) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -41,7 +43,7 @@ public enum AntennaPatternEnum32 implements DataElement
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private AntennaPatternEnum32( RPRunsignedInteger32BE value )
+	private CamouflageEnum32( RPRunsignedInteger32BE value )
 	{
 		this.value = value;
 	}
@@ -102,12 +104,12 @@ public enum AntennaPatternEnum32 implements DataElement
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	
-	public static AntennaPatternEnum32 valueOf( long value )
+	public static CamouflageEnum32 valueOf( long value )
 	{
-		for( AntennaPatternEnum32 temp : AntennaPatternEnum32.values() )
+		for( CamouflageEnum32 temp : CamouflageEnum32.values() )
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (CamouflageEnum32)" );
 	}
 }

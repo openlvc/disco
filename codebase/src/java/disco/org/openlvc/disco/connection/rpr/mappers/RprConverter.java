@@ -27,6 +27,7 @@ import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.model.ObjectModel;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
+import org.openlvc.disco.connection.rpr.objects.PhysicalEntity;
 import org.openlvc.disco.connection.rpr.objects.RadioTransmitter;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
@@ -70,6 +71,7 @@ public class RprConverter
 
 	// DIS Object Storage
 	private Map<EntityId,RadioTransmitter> disTransmitters;
+	private Map<EntityId,PhysicalEntity> disEntities;
 
 	// HLA Mappers
 	private Map<ObjectClass,IObjectMapper> objectMappersByHlaType;
@@ -92,6 +94,7 @@ public class RprConverter
 
 		// DIS Object Storage
 		this.disTransmitters = new HashMap<>();
+		this.disEntities = new HashMap<>();
 		
 		// HLA Mappers
 		this.objectMappersByHlaType = new HashMap<>();
@@ -105,6 +108,7 @@ public class RprConverter
 		//
 		// Register Object Mappers
 		this.registerMapper( new TransmitterMapper(this) );
+		this.registerMapper( new EntityStateMapper(this) );
 		
 		// Register Interaction Mappers
 		this.registerMapper( new SignalMapper(this) );
@@ -160,6 +164,9 @@ public class RprConverter
 	/////////////////////////////////////////////
 	///  Object Storage Methods   ///////////////
 	/////////////////////////////////////////////
+	//
+	// Transmitters
+	//
 	public void addDisTransmitter( EntityId disId, RadioTransmitter hlaObject )
 	{
 		logger.debug( "(DIS->HLA) Store RadioTransmitter for DIS id [%s]; HLA Object [%s]",
@@ -171,6 +178,22 @@ public class RprConverter
 	{
 		return this.disTransmitters.get( disId );
 	}
+	
+	//
+	// Physical Entities (Platform, Lifeform)
+	//
+	public void addDisEntity( EntityId disId, PhysicalEntity hlaObject )
+	{
+		logger.debug( "(DIS->HLA) Store PhysicalEntity for DIS id [%s]; HLA Object [%s]",
+		              disId, hlaObject.getObjectHandle() );
+		this.disEntities.put( disId, hlaObject );
+	}
+	
+	public PhysicalEntity getDisEntity( EntityId disId )
+	{
+		return this.disEntities.get( disId );
+	}
+	
 	
 	////////////////////////////////////////////////////////////////////////////////////
 	///  HLA -> DIS Support Methods    /////////////////////////////////////////////////

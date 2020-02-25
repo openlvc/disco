@@ -17,42 +17,48 @@
  */
 package org.openlvc.disco.connection.rpr.types.enumerated;
 
-import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
+import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum AntennaPatternEnum32 implements DataElement
+public enum MarkingEncodingEnum8 implements DataElement
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	OmniDirectional( new RPRunsignedInteger32BE(0) ),
-	Beam( new RPRunsignedInteger32BE(1) ),
-	SphericalHarmonic( new RPRunsignedInteger32BE(2) );
+	Other(0),
+	ASCII(1),
+	ArmyMarkingCCTT(2),
+	DigitChevron(3);
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private RPRunsignedInteger32BE value;
+	private HLAoctet value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private AntennaPatternEnum32( RPRunsignedInteger32BE value )
+	private MarkingEncodingEnum8( int value )
 	{
-		this.value = value;
+		this.value = new HLAoctet( value );
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	public long getValue()
+	
+	public byte getValue()
 	{
 		return this.value.getValue();
+	}
+	
+	public short getUnsignedValue()
+	{
+		return this.value.getUnsignedValue();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,12 +108,12 @@ public enum AntennaPatternEnum32 implements DataElement
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	
-	public static AntennaPatternEnum32 valueOf( long value )
+	public static MarkingEncodingEnum8 valueOf( short value )
 	{
-		for( AntennaPatternEnum32 temp : AntennaPatternEnum32.values() )
+		for( MarkingEncodingEnum8 temp : MarkingEncodingEnum8.values() )
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (MarkingEncodingEnum8)" );
 	}
 }

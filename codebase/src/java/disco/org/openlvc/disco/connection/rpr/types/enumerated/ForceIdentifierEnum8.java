@@ -17,42 +17,55 @@
  */
 package org.openlvc.disco.connection.rpr.types.enumerated;
 
-import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
+import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum AntennaPatternEnum32 implements DataElement
+public enum ForceIdentifierEnum8 implements DataElement
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	OmniDirectional( new RPRunsignedInteger32BE(0) ),
-	Beam( new RPRunsignedInteger32BE(1) ),
-	SphericalHarmonic( new RPRunsignedInteger32BE(2) );
+	Other(0),
+	Friendly(1),     Opposing(2),     Neutral(3),
+	Friendly_2(4),   Opposing_2(5),   Neutral_2(6),
+	Friendly_3(7),   Opposing_3(8),   Neutral_3(9),
+	Friendly_4(10),  Opposing_4(11),  Neutral_4(12),
+	Friendly_5(13),  Opposing_5(14),  Neutral_5(15),
+	Friendly_6(16),  Opposing_6(17),  Neutral_6(18),
+	Friendly_7(19),  Opposing_7(20),  Neutral_7(21),
+	Friendly_8(22),  Opposing_8(23),  Neutral_8(24),
+	Friendly_9(25),  Opposing_9(26),  Neutral_9(27),
+	Friendly_10(28), Opposing_10(29), Neutral_10(30);
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private RPRunsignedInteger32BE value;
+	private HLAoctet value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private AntennaPatternEnum32( RPRunsignedInteger32BE value )
+	private ForceIdentifierEnum8( int value )
 	{
-		this.value = value;
+		this.value = new HLAoctet( value );
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	public long getValue()
+	
+	public byte getValue()
 	{
 		return this.value.getValue();
+	}
+	
+	public short getUnsignedValue()
+	{
+		return this.value.getUnsignedValue();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,12 +115,12 @@ public enum AntennaPatternEnum32 implements DataElement
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	
-	public static AntennaPatternEnum32 valueOf( long value )
+	public static ForceIdentifierEnum8 valueOf( short value )
 	{
-		for( AntennaPatternEnum32 temp : AntennaPatternEnum32.values() )
+		for( ForceIdentifierEnum8 temp : ForceIdentifierEnum8.values() )
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (ForceIdentifierEnum8)" );
 	}
 }

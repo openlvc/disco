@@ -69,366 +69,78 @@ Variant        // Discriminant >> Struct
     >> TDLMessageCount : UnsignedInteger16
     >> UserProtocolID : UserProtocolEnum32
 
-<dataTypes>
-    <simpleDataTypes>
-        <simpleData>
-            <name>BitRateBitPerSecondUnsignedInteger32</name>
-            <representation>RPRunsignedInteger32BE</representation>
-            <units>bit/second</units>
-            <resolution>1</resolution>
-            <accuracy>perfect</accuracy>
-            <semantics>Rate of transmission, in bits per second.</semantics>
-        </simpleData>
-        <simpleData>
-            <name>BitsUnsignedInteger16</name>
-            <representation>RPRunsignedInteger16BE</representation>
-            <units>bit</units>
-            <resolution>1</resolution>
-            <accuracy>perfect</accuracy>
-            <semantics>Transmission size, in number of bits.</semantics>
-        </simpleData>
-        <simpleData>
-            <name>FrequencyHertzUnsignedInteger64</name>
-            <representation>RPRunsignedInteger64BE</representation>
-            <units>hertz (Hz)</units>
-            <resolution>NA</resolution>
-            <accuracy>NA</accuracy>
-            <semantics>Frequency of a radio transmission, in hertz.</semantics>
-        </simpleData>
-    </simpleDataTypes>
-    <enumeratedDataTypes>
-        <enumeratedData>
-            <name>CryptographicModeEnum32</name>
-            <representation>RPRunsignedInteger32BE</representation>
-            <semantics>Represents the encryption mode of a cryptographic system.</semantics>
-            <enumerator>
-                <name>BasebandEncryption</name>
-                <value>0</value>
-            </enumerator>
-            <enumerator>
-                <name>DiphaseEncryption</name>
-                <value>1</value>
-            </enumerator>
-        </enumeratedData>
-    </enumeratedDataTypes>
-    <arrayDataTypes>
-        <arrayData>
-            <name>AntennaPatternVariantStructLengthlessArray</name>
-            <dataType>AntennaPatternVariantStruct</dataType>
-            <cardinality>Dynamic</cardinality>
-            <encoding>RPRlengthlessArray</encoding>
-            <semantics>Represents an antenna's radiation pattern, its orientation in space, and the polarization of the radiation.</semantics>
-        </arrayData>
-        <arrayData>
-            <name>CoefficientsLengthlessArray1Plus</name>
-            <dataType>Float32</dataType>
-            <cardinality>[1..2147483647]</cardinality>
-            <encoding>RPRlengthlessArray</encoding>
-            <semantics>Represents the power distribution from the antenna as the coefficients of a spherical harmonic expansion. The highest order of the expansion can be determined by the number of coefficients in the array.</semantics>
-        </arrayData>
-        <arrayData>
-            <name>SignalDataLengthlessArray1Plus</name>
-            <dataType>Octet</dataType>
-            <cardinality>[1..2147483647]</cardinality>
-            <encoding>RPRlengthlessArray</encoding>
-            <semantics>The audio or digital data conveyed in a radio transmission.</semantics>
-        </arrayData>
-    </arrayDataTypes>
-    <fixedRecordDataTypes>
-        <fixedRecordData>
-            <name>AudioDataTypeStruct</name>
-            <encoding>HLAfixedRecord</encoding>
-            <semantics>Specifies an encoded audio radio signal.</semantics>
-            <field>
-                <name>StreamTag</name>
-                <dataType>UnsignedInteger64</dataType>
-                <semantics>Identifier for the audio stream. This must be globally unique.</semantics>
-            </field>
-            <field>
-                <name>EncodingType</name>
-                <dataType>EncodingTypeEnum32</dataType>
-                <semantics>The type of encoding used for the audio data</semantics>
-            </field>
-            <field>
-                <name>SampleRate</name>
-                <dataType>BitRateBitPerSecondUnsignedInteger32</dataType>
-                <semantics>The number of samples per second in the audio data.</semantics>
-            </field>
-            <field>
-                <name>DataLength</name>
-                <dataType>BitsUnsignedInteger16</dataType>
-                <semantics>The length of the signal data.</semantics>
-            </field>
-            <field>
-                <name>SampleCount</name>
-                <dataType>UnsignedInteger32</dataType>
-                <semantics>The number of samples in this transmission.</semantics>
-            </field>
-            <field>
-                <name>Data</name>
-                <dataType>SignalDataLengthlessArray1Plus</dataType>
-                <semantics>The signal data.</semantics>
-            </field>
-        </fixedRecordData>
-        <fixedRecordData>
-            <name>BeamAntennaStruct</name>
-            <encoding>HLAfixedRecord</encoding>
-            <semantics>Specifies the direction, pattern, and polarization of radiation from a radio transmitter's antenna.</semantics>
-            <field>
-                <name>BeamOrientation</name>
-                <dataType>OrientationStruct</dataType>
-                <semantics>The rotation that transforms the reference coordinate system into the beam coordinate system.</semantics>
-            </field>
-            <field>
-                <name>BeamAzimuthBeamwidth</name>
-                <dataType>AngleRadianFloat32</dataType>
-                <semantics>The full width of the beam to the -3 dB power density points in the x-y plane of the beam coordinate system.</semantics>
-            </field>
-            <field>
-                <name>BeamElevationBeamwidth</name>
-                <dataType>AngleRadianFloat32</dataType>
-                <semantics>The full width of the beam to the -3 dB power density points in the x-z plane of the beam coordinate system.</semantics>
-            </field>
-            <field>
-                <name>ReferenceSystem</name>
-                <dataType>ReferenceSystemEnum8</dataType>
-                <semantics>The reference coordinate system with respect to which beam direction is specified</semantics>
-            </field>
-            <field>
-                <name>Ez</name>
-                <dataType>Float32</dataType>
-                <semantics>The magnitude of the Z-component (in beam coordinates) of the Electrical field at some arbitrary single point in the mainbeam and in the far field of the antenna.</semantics>
-            </field>
-            <field>
-                <name>Ex</name>
-                <dataType>Float32</dataType>
-                <semantics>The magnitude of the X-component (in beam coordinates) of the Electrical field at some arbitrary single point in the mainbeam and in the far field of the antenna</semantics>
-            </field>
-            <field>
-                <name>BeamPhaseAngle</name>
-                <dataType>Float32</dataType>
-                <semantics>The phase angle between Ez and Ex in radians.</semantics>
-            </field>
-        </fixedRecordData>
-        <fixedRecordData notes="RPRnoteCommunication3">
-            <name>RadioTypeStruct</name>
-            <encoding>HLAfixedRecord</encoding>
-            <semantics>Specifies the type of a radio.</semantics>
-            <field>
-                <name>EntityKind</name>
-                <dataType>Octet</dataType>
-                <semantics>The kind of the entity described in this struct.</semantics>
-            </field>
-            <field>
-                <name>Domain</name>
-                <dataType>Octet</dataType>
-                <semantics>The domain in which the radio entity operates.</semantics>
-            </field>
-            <field>
-                <name>CountryCode</name>
-                <dataType>UnsignedInteger16</dataType>
-                <semantics>The country to which the design of the radio entity is attributed.</semantics>
-            </field>
-            <field>
-                <name>Category</name>
-                <dataType>Octet</dataType>
-                <semantics>The main category that describes the radio entity.</semantics>
-            </field>
-            <field>
-                <name>NomenclatureVersion</name>
-                <dataType>NomenclatureVersionEnum8</dataType>
-                <semantics>The specific modification or individual unit type for a series and/or family of equipment.</semantics>
-            </field>
-            <field>
-                <name>Nomenclature</name>
-                <dataType>NomenclatureEnum16</dataType>
-                <semantics>The nomenclature for a particular communications device.</semantics>
-            </field>
-        </fixedRecordData>
-        <fixedRecordData>
-            <name>SINCGARSModulationStruct</name>
-            <encoding>HLAfixedRecord</encoding>
-            <semantics>Modulation parameters for SINCGARS radio system</semantics>
-            <field>
-                <name>FHNetID</name>
-                <dataType>Integer16</dataType>
-                <semantics>Frequency hopping network identifier.</semantics>
-            </field>
-            <field>
-                <name>HopSetID</name>
-                <dataType>Integer16</dataType>
-                <semantics>Identification for the set of frequencies used when creating a hopping pattern.</semantics>
-            </field>
-            <field>
-                <name>LockoutSetID</name>
-                <dataType>Integer16</dataType>
-                <semantics>Identification for the set of frequencies that are excluded from the hopping pattern.</semantics>
-            </field>
-            <field>
-                <name>TransmissionSecurityKey</name>
-                <dataType>Integer16</dataType>
-                <semantics>Identifies the transmission security key that is used when generating the hopping pattern.</semantics>
-            </field>
-            <field>
-                <name>FHSynchronizationTimeOffset</name>
-                <dataType>TimeSecondInteger32</dataType>
-                <semantics>The offset to exercise time in seconds for the clock in the radio.</semantics>
-            </field>
-        </fixedRecordData>
-        <fixedRecordData>
-            <name>SphericalHarmonicAntennaStruct</name>
-            <encoding>HLAfixedRecord</encoding>
-            <semantics>Specifies the direction and radiation pattern from a radio transmitter's antenna.</semantics>
-            <field>
-                <name>Order</name>
-                <dataType>UnsignedInteger32</dataType>
-                <semantics>The highest order of the expansion in spherical harmonics, counting from zero.</semantics>
-            </field>
-            <field notes="RPRnoteCommunication5">
-                <name>Coefficients</name>
-                <dataType>CoefficientsLengthlessArray1Plus</dataType>
-                <semantics>Represents the power distribution from the antenna as the coefficients of a spherical harmonic expansion to the order given in the Order field. The length of the array is N^2+2N+1 (N being the Order).</semantics>
-            </field>
-            <field>
-                <name>ReferenceSystem</name>
-                <dataType>ReferenceSystemEnum8</dataType>
-                <semantics>This field shall specify the reference coordinate system with respect to which beam direction is specified.</semantics>
-            </field>
-            <field notes="RPRnoteCommunication1">
-                <name>Padding</name>
-                <dataType>OctetArray3</dataType>
-                <semantics>Padding to 32 bits</semantics>
-            </field>
-        </fixedRecordData>
-    </fixedRecordDataTypes>
-    <variantRecordDataTypes>
-        <variantRecordData>
-            <name>AntennaPatternVariantStruct</name>
-            <discriminant>AntennaPatternType</discriminant>
-            <dataType>AntennaPatternTypeEnum32</dataType>
-            <alternative>
-                <enumerator>Beam</enumerator>
-                <name>BeamAntenna</name>
-                <dataType>BeamAntennaStruct</dataType>
-                <semantics>Specifies the direction, pattern, and polarization of radiation from a radio transmitter's antenna, represented with respect to a beam coordinate system.</semantics>
-            </alternative>
-            <alternative>
-                <enumerator>SphericalHarmonic</enumerator>
-                <name>SphericalHarmonicAntenna</name>
-                <dataType>SphericalHarmonicAntennaStruct</dataType>
-                <semantics>Specifies the direction and radiation pattern from a radio transmitter's antenna, represented with respect to the world coordinate system or entity coordinate system.</semantics>
-            </alternative>
-            <encoding>HLAvariantRecord</encoding>
-            <semantics>Specifies the radiation pattern from the antenna, its orientation in space, and the polarization of the radiation.</semantics>
-        </variantRecordData>
-        <variantRecordData>
-            <name>RFModulationTypeVariantStruct</name>
-            <discriminant>MajorModulationType</discriminant>
-            <dataType>MajorRFModulationTypeEnum16</dataType>
-            <alternative>
-                <enumerator>Amplitude</enumerator>
-                <name>AmplitudeModulationType</name>
-                <dataType>AmplitudeModulationTypeEnum16</dataType>
-                <semantics>Detailed modulation type for the amplitude major modulation type.</semantics>
-            </alternative>
-            <alternative>
-                <enumerator>AmplitudeAndAngle</enumerator>
-                <name>AmplitudeAngleModulationType</name>
-                <dataType>AmplitudeAngleModulationTypeEnum16</dataType>
-                <semantics>Detailed modulation type for the amplitude and angle major modulation type.</semantics>
-            </alternative>
-            <alternative>
-                <enumerator>Angle</enumerator>
-                <name>AngleModulationType</name>
-                <dataType>AngleModulationTypeEnum16</dataType>
-                <semantics>Detailed modulation type for the angle major modulation type.</semantics>
-            </alternative>
-            <alternative>
-                <enumerator>Combination</enumerator>
-                <name>CombinationModulationType</name>
-                <dataType>CombinationModulationTypeEnum16</dataType>
-                <semantics>Detailed modulation type for the combination major modulation type.</semantics>
-            </alternative>
-            <alternative>
-                <enumerator>Pulse</enumerator>
-                <name>PulseModulationType</name>
-                <dataType>PulseModulationTypeEnum16</dataType>
-                <semantics>Detailed modulation type for the pulse major modulation type.</semantics>
-            </alternative>
-            <alternative>
-                <enumerator>Unmodulated</enumerator>
-                <name>UnmodulatedType</name>
-                <dataType>UnmodulatedTypeEnum16</dataType>
-                <semantics>Detailed modulation type for the unmodulated major modulation type.</semantics>
-            </alternative>
-            <encoding>HLAvariantRecord</encoding>
-            <semantics>Specifies the major modulation type as well as certain detailed information specific to the type.</semantics>
-        </variantRecordData>
-        <variantRecordData>
-            <name>SpreadSpectrumVariantStruct</name>
-            <discriminant>SpreadSpectrumType</discriminant>
-            <dataType>SpreadSpectrumEnum16</dataType>
-            <alternative>
-                <enumerator>SINCGARSFrequencyHop</enumerator>
-                <name>SINCGARSModulation</name>
-                <dataType>SINCGARSModulationStruct</dataType>
-                <semantics>Modulation parameters for SINCGARS radio system.</semantics>
-            </alternative>
-            <encoding>HLAvariantRecord</encoding>
-            <semantics>Identifies the actual spread spectrum technique in use.</semantics>
-        </variantRecordData>
-    </variantRecordDataTypes>
-</dataTypes>
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//  Entity State Object  /////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BaseEntity
+  > EntityType : EntityTypeStruct
+  > EntityIdentifier : EntityIdentifierStruct
+  > IsPartOf : IsPartOfStruct
+  > Spatial : SpatialVariantStruct
+  > RelativeSpatial : SpatialVariantStruct
 
 
+PhysicalEntity
+  > AcousticSignatureIndex : Integer16
+  > AlternateEntityType : EntityTypeStruct
+  > ArticulatedParametersArray : ArticulatedParameterStructLengthlessArray  >> ??
+  > CamouflageType : CamouflageEnum32
+  > DamageState : DamageStatusEnum32
+  > EngineSmokeOn : RPRboolean
+  > FirePowerDisabled : RPRboolean
+  > FlamesPresent : RPRboolean
+  > ForceIdentifier : ForceIdentifierEnum8
+  > HasAmmunitionSupplyCap : RPRboolean
+  > HasFuelSupplyCap : RPRboolean
+  > HasRecoveryCap : RPRboolean
+  > HasRepairCap : RPRboolean
+  > Immobilized : RPRboolean
+  > InfraredSignatureIndex : Integer16
+  > IsConcealed : RPRboolean
+  > LiveEntityMeasuredSpeed : VelocityDecimeterPerSecondInteger16
+  > Marking : MarkingStruct
+  > PowerPlantOn : RPRboolean
+  > PropulsionSystemsData : PropulsionSystemDataStructLengthlessArray >> ??
+  > RadarCrossSectionSignatureIndex : Integer16
+  > SmokePlumePresent : RPRboolean
+  > TentDeployed : RPRboolean
+  > TrailingEffectsCode : TrailingEffectsCodeEnum32
+  > VectoringNozzleSystemData : VectoringNozzleSystemDataStructLengthlessArray >> ??
 
 
+PhysicalEntity::Platform
+  > AfterburnerOn : RPRboolean
+  > AntiCollisionLightsOn : RPRboolean
+  > BlackOutBrakeLightsOn : RPRboolean
+  > BlackOutLightsOn : RPRboolean
+  > BrakeLightsOn : RPRboolean
+  > FormationLightsOn : RPRboolean
+  > HatchState : HatchStateEnum32
+  > HeadLightsOn : RPRboolean
+  > InteriorLightsOn : RPRboolean
+  > LandingLightsOn : RPRboolean
+  > LauncherRaised : RPRboolean
+  > NavigationLightsOn : RPRboolean
+  > RampDeployed : RPRboolean
+  > RunningLightsOn : RPRboolean
+  > SpotLightsOn : RPRboolean
+  > TailLightsOn : RPRboolean
+
+  >> PhysicalEntity::Platform::Aircraft
+  >> PhysicalEntity::Platform::GroundVehicle
+  >> PhysicalEntity::Platform::MultiDomainPlatform
+  >> PhysicalEntity::Platform::Spacecraft
+  >> PhysicalEntity::Platform::SubmersibleVessel
+  >> PhysicalEntity::Platform::SurfaceVessel
+
+PhysicalEntity::Lifeform
+  > FlashLightsOn : RPRboolean
+  > StanceCode : StanceCodeEnum32
+  > PrimaryWeaponState : WeaponStateEnum32
+  > SecondaryWeaponState : WeaponStateEnum32
+  > ComplianceState : ComplianceStateEnum32
+
+  >> PhysicalEntity::Lifeform::Human
+  >> PhysicalEntity::Lifeform::NonHuman
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Data Element Methods   /////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	public int getOctetBoundary()
-	{
-		return -1;
-	}
-
-	public void encode( ByteWrapper byteWrapper ) throws EncoderException
-	{
-	}
-
-
-	public int getEncodedLength()
-	{
-		return -1;
-	}
-
-
-	public byte[] toByteArray() throws EncoderException
-	{
-		return null;
-	}
-
-
-	public void decode( ByteWrapper byteWrapper ) throws DecoderException
-	{
-	}
-
-
-	public void decode( byte[] bytes ) throws DecoderException
-	{
-	}

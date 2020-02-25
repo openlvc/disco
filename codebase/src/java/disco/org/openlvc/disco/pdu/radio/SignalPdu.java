@@ -258,6 +258,13 @@ public class SignalPdu extends PDU
 		return entityID.getAppId();
 	}
 
+	
+	@Override
+	public boolean equals( Object other )
+	{
+		return false;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

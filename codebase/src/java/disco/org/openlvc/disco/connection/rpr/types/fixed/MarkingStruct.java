@@ -17,10 +17,13 @@
  */
 package org.openlvc.disco.connection.rpr.types.fixed;
 
-import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
-import org.openlvc.disco.pdu.record.EntityCoordinate;
+import java.nio.charset.StandardCharsets;
 
-public class RelativePositionStruct extends HLAfixedRecord
+import org.openlvc.disco.connection.rpr.types.array.MarkingArray11;
+import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
+import org.openlvc.disco.connection.rpr.types.enumerated.MarkingEncodingEnum8;
+
+public class MarkingStruct extends HLAfixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,23 +32,20 @@ public class RelativePositionStruct extends HLAfixedRecord
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAfloat32BE bodyXDistance;
-	private HLAfloat32BE bodyYDistance;
-	private HLAfloat32BE bodyZDistance;
+	private EnumHolder<MarkingEncodingEnum8> markingEncodingType;
+	private MarkingArray11 markingData;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public RelativePositionStruct()
+	public MarkingStruct()
 	{
-		this.bodyXDistance = new HLAfloat32BE();
-		this.bodyYDistance = new HLAfloat32BE();
-		this.bodyZDistance = new HLAfloat32BE();
+		this.markingEncodingType = new EnumHolder<>( MarkingEncodingEnum8.ASCII );
+		this.markingData = new MarkingArray11();
 		
-		// Add to the elements in the parent so that it can do its generic fixed-record stuff
-		super.add( bodyXDistance );
-		super.add( bodyYDistance );
-		super.add( bodyZDistance );
+		// Add to the elements to the parent so that it can do its generic fixed-record stuff
+		super.add( this.markingEncodingType );
+		super.add( this.markingData );
 	}
 
 	//----------------------------------------------------------
@@ -55,23 +55,20 @@ public class RelativePositionStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue( EntityCoordinate position )
+	public void setValue( String value )
 	{
-		this.bodyXDistance.setValue( position.getX() );
-		this.bodyYDistance.setValue( position.getY() );
-		this.bodyZDistance.setValue( position.getZ() );
+		byte[] bytes = value.getBytes(StandardCharsets.US_ASCII);
+		for( int i = 0; i < 11; i++ )
+			this.markingData.get(i).setValue( bytes[i] );
 	}
 	
-	public EntityCoordinate getDisValue()
+	public String getDisValue()
 	{
-		return new EntityCoordinate( bodyXDistance.getValue(),
-		                             bodyYDistance.getValue(),
-		                             bodyZDistance.getValue() );
+		return new String( markingData.toByteArray(), StandardCharsets.US_ASCII );
 	}
 
 	//----------------------------------------------------------

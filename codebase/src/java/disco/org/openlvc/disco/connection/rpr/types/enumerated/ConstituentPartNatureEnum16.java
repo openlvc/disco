@@ -17,31 +17,39 @@
  */
 package org.openlvc.disco.connection.rpr.types.enumerated;
 
-import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
+import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum AntennaPatternEnum32 implements DataElement
+public enum ConstituentPartNatureEnum16 implements DataElement
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	OmniDirectional( new RPRunsignedInteger32BE(0) ),
-	Beam( new RPRunsignedInteger32BE(1) ),
-	SphericalHarmonic( new RPRunsignedInteger32BE(2) );
+	Other( new RPRunsignedInteger16BE(0) ),
+	HostFireableMunition( new RPRunsignedInteger16BE(1) ),
+	MunitionCarriedAsCargo( new RPRunsignedInteger16BE(2) ),
+	FuelCarriedAsCargo( new RPRunsignedInteger16BE(3) ),
+	GunmountAttachedToHost( new RPRunsignedInteger16BE(4) ),
+	ComputerGeneratedForcesCarriedAsCargo( new RPRunsignedInteger16BE(5) ),
+	VehicleCarriedAsCargo( new RPRunsignedInteger16BE(6) ),
+	EmitterMountedOnHost( new RPRunsignedInteger16BE(7) ),
+	MobileCommandAndControlEntityCarriedAboardHost( new RPRunsignedInteger16BE(8) ),
+	EntityStationedWithRespectToHost( new RPRunsignedInteger16BE(9) ),
+	TeamMemberInFormationWith( new RPRunsignedInteger16BE(10) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private RPRunsignedInteger32BE value;
+	private RPRunsignedInteger16BE value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private AntennaPatternEnum32( RPRunsignedInteger32BE value )
+	private ConstituentPartNatureEnum16( RPRunsignedInteger16BE value )
 	{
 		this.value = value;
 	}
@@ -102,12 +110,12 @@ public enum AntennaPatternEnum32 implements DataElement
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	
-	public static AntennaPatternEnum32 valueOf( long value )
+	public static ConstituentPartNatureEnum16 valueOf( long value )
 	{
-		for( AntennaPatternEnum32 temp : AntennaPatternEnum32.values() )
+		for( ConstituentPartNatureEnum16 temp : ConstituentPartNatureEnum16.values() )
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (ConstituentPartNatureEnum16)" );
 	}
 }
