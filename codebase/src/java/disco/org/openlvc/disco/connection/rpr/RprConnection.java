@@ -290,16 +290,18 @@ public class RprConnection implements IConnection
 		// Get all the handles for the classes/attributes we may need to know about
 		logger.debug( "Loading handles for FOM" );
 		FomHelpers.loadHandlesFromRti( this.rtiamb, this.objectModel );
-		
+
 		//
-		// Step 5. Publish and Subscribe
-		//
-		this.publishAndSubscribe();
-		
-		//
-		// Step 6. Set up our RPR Conversion Engine
+		// Step 6. Set up our RPR Conversion Engine.
+		//         We must do this BEFORE pub/sub, otherwise we'll get discoveries for
+		//         objects we don't know how to convert.
 		//
 		this.rprConverter = new RprConverter( objectModel, logger );
+
+		//
+		// Step 7. Publish and Subscribe
+		//
+		this.publishAndSubscribe();
 	}
 
 	private void publishAndSubscribe()

@@ -63,7 +63,7 @@ public class RprFomTest extends AbstractTest
 	//----------------------------------------------------------
 	private OpsCenter left;
 	private OpsCenter right;
-	//private TestListener leftListener;
+	private TestListener leftListener;
 	private TestListener rightListener;
 
 	//----------------------------------------------------------
@@ -107,7 +107,7 @@ public class RprFomTest extends AbstractTest
 		// create the opscenter instances we'll use for testing
 		this.left = super.newOpsCenter( leftConfiguration );
 		this.right = super.newOpsCenter( rightConfiguration );
-		//this.leftListener = (TestListener)left.getPduListener();
+		this.leftListener = (TestListener)left.getPduListener();
 		this.rightListener = (TestListener)right.getPduListener();
 
 		this.left.open();
@@ -146,6 +146,32 @@ public class RprFomTest extends AbstractTest
 	/// Transmitter PDU Tests   ///////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
 
+	@Test
+	public void testRprTransmitterWithSameSiteAppEntityId()
+	{
+		// Radio Transmitters can have the same site, application and entity ID, but differ
+		// in terms of their Radio Id. Make sure we can ...
+		
+		// 1. Create a Transmitter
+		TransmitterPdu transmitterOne = new TransmitterPdu();
+		transmitterOne.setEntityId( new EntityId(1,2,3) );
+		transmitterOne.setRadioID( 1 );
+		
+		TransmitterPdu transmitterTwo = new TransmitterPdu();
+		transmitterTwo.setEntityId( new EntityId(1,2,3) );
+		transmitterTwo.setRadioID( 2 );
+		
+		// 2. Send Radio #1 from left, and #2 from right, and make sure they get through
+		left.send( transmitterOne );
+		TransmitterPdu received = rightListener.waitForTransmitter( new EntityId(1,2,3) );
+		Assert.assertEquals( received.getRadioID(), transmitterOne.getRadioID() );
+		
+		right.send( transmitterTwo );
+		received = null;
+		received = leftListener.waitForTransmitter( new EntityId(1,2,3) );
+		Assert.assertEquals( received.getRadioID(), transmitterTwo.getRadioID() );
+	}
+	
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Signal PDU Tests   ////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////

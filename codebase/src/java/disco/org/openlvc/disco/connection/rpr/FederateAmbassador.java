@@ -64,7 +64,15 @@ public class FederateAmbassador extends NullFederateAmbassador
 	                                    ObjectClassHandle theObjectClass,
 	                                    String objectName )
 	{
-		connection.receiveHlaDiscover( theObject, theObjectClass );
+		try
+		{
+			connection.receiveHlaDiscover( theObject, theObjectClass );
+		}
+		catch( Exception e )
+		{
+			logger.warn( "Exception processing object discovery [id="+theObject+",class="+
+			             theObjectClass+"]: "+e.getMessage(), e );
+		}
 	}
 
 	// 6.9
@@ -73,7 +81,7 @@ public class FederateAmbassador extends NullFederateAmbassador
 	                                    String objectName,
 	                                    FederateHandle producingFederate )
 	{
-		connection.receiveHlaDiscover( theObject, theObjectClass );
+		discoverObjectInstance( theObject, theObjectClass, objectName );
 	}
 
 	
@@ -83,7 +91,14 @@ public class FederateAmbassador extends NullFederateAmbassador
 	                                  OrderType sentOrdering,
 	                                  SupplementalRemoveInfo removeInfo )
 	{
-		connection.receiveHlaRemove( theObject );
+		try
+		{
+			connection.receiveHlaRemove( theObject );
+		}
+		catch( Exception e )
+		{
+			logger.warn( "Exception processing object removal [id="+theObject+"]: "+e.getMessage(), e );
+		}
 	}
 
 	// 6.15
@@ -95,7 +110,7 @@ public class FederateAmbassador extends NullFederateAmbassador
 	                                  OrderType receivedOrdering,
 	                                  SupplementalRemoveInfo removeInfo )
 	{
-		connection.receiveHlaRemove( theObject );
+		removeObjectInstance( theObject, userSuppliedTag, sentOrdering, removeInfo );
 	}
 
 	// 6.15
@@ -108,7 +123,7 @@ public class FederateAmbassador extends NullFederateAmbassador
 	                                  MessageRetractionHandle retractionHandle,
 	                                  SupplementalRemoveInfo removeInfo )
 	{
-		connection.receiveHlaRemove( theObject );
+		removeObjectInstance( theObject, userSuppliedTag, sentOrdering, removeInfo );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,7 +138,15 @@ public class FederateAmbassador extends NullFederateAmbassador
 	                                    SupplementalReflectInfo reflectInfo )
 	{
 		logger.trace( "HLA::Reflection Received >> object=%s, attribute=%d", theObject, attributes.size() );
-		connection.receiveHlaReflection( theObject, attributes );
+
+		try
+		{
+			connection.receiveHlaReflection( theObject, attributes );
+		}
+		catch( Exception e )
+		{
+			logger.warn( "Exception processing attribute reflection [id="+theObject+"]: "+e.getMessage(), e );
+		}
 	}
 
 	// 6.11
@@ -168,7 +191,14 @@ public class FederateAmbassador extends NullFederateAmbassador
 	                                SupplementalReceiveInfo receiveInfo )
 	{
 		logger.trace( "HLA::Interaction Received >> class=%s, parameters=%d", theClass, parameters.size() );
-		connection.receiveHlaInteraction( theClass, parameters );
+		try
+		{
+			connection.receiveHlaInteraction( theClass, parameters );
+		}
+		catch( Exception e )
+		{
+			logger.warn( "Exception processing received interaction [id="+theClass+"]: "+e.getMessage(), e );
+		}
 	}
 
 	// 6.13
