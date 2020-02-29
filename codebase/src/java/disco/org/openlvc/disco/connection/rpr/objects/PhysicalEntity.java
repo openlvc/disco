@@ -18,20 +18,23 @@
 package org.openlvc.disco.connection.rpr.objects;
 
 import org.openlvc.disco.connection.rpr.types.array.ArticulatedParameterStructLengthlessArray;
-import org.openlvc.disco.connection.rpr.types.array.PropulsionSystemDataStructLengthlessArray;
-import org.openlvc.disco.connection.rpr.types.array.VectoringNozzleSystemDataStructLengthlessArray;
-import org.openlvc.disco.connection.rpr.types.basic.HLAinteger16BE;
-import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 import org.openlvc.disco.connection.rpr.types.enumerated.CamouflageEnum32;
 import org.openlvc.disco.connection.rpr.types.enumerated.DamageStatusEnum32;
 import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.ForceIdentifierEnum8;
 import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
 import org.openlvc.disco.connection.rpr.types.enumerated.TrailingEffectsCodeEnum32;
+import org.openlvc.disco.connection.rpr.types.fixed.ArticulatedParameterStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.EntityTypeStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.MarkingStruct;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.ForceId;
+import org.openlvc.disco.pdu.record.ArticulationParameter;
 
+/**
+ * Partially implemented. We only use some of this at the moment, so postponing some work for 
+ * low impact areas.
+ */
 public abstract class PhysicalEntity extends BaseEntity
 {
 	//----------------------------------------------------------
@@ -52,29 +55,31 @@ public abstract class PhysicalEntity extends BaseEntity
 	protected EnumHolder<TrailingEffectsCodeEnum32> trailingEffectsCode;
 
 	// Apperance
-	protected EnumHolder<RPRboolean> engineSmokeOn;
-	protected EnumHolder<RPRboolean> firePowerDisabled;
-	protected EnumHolder<RPRboolean> flamesPresent;
-	protected EnumHolder<RPRboolean> hasAmmunitionSupplyCap;
-	protected EnumHolder<RPRboolean> hasFuelSupplyCap;
-	protected EnumHolder<RPRboolean> hasRecoveryCap;
-	protected EnumHolder<RPRboolean> hasRepairCap;
-	protected EnumHolder<RPRboolean> immobilized;
-	protected EnumHolder<RPRboolean> isConcealed;
-	protected EnumHolder<RPRboolean> smokePlumePresent;
-	protected EnumHolder<RPRboolean> tentDeployed;
-	protected EnumHolder<RPRboolean> powerplantOn;
+	protected RPRboolean engineSmokeOn;
+	protected RPRboolean firePowerDisabled;
+	protected RPRboolean flamesPresent;
+	protected RPRboolean immobilized;
+	protected RPRboolean isConcealed;
+	protected RPRboolean smokePlumePresent;
+	protected RPRboolean tentDeployed;
+	protected RPRboolean powerplantOn;
+	
+	// Capabilities
+	protected RPRboolean hasAmmunitionSupplyCap;
+	protected RPRboolean hasFuelSupplyCap;
+	protected RPRboolean hasRecoveryCap;
+	protected RPRboolean hasRepairCap;
 
-	// Other
-	protected RPRunsignedInteger16BE liveEntityMeasuredSpeed;
-	protected HLAinteger16BE radarCrossSectionSignatureIndex;
-	protected HLAinteger16BE infraredSignatureIndex;
-	protected HLAinteger16BE acousticSignatureIndex;
+	// Other - SEES PDU
+	//protected RPRunsignedInteger16BE liveEntityMeasuredSpeed;
+	//protected HLAinteger16BE radarCrossSectionSignatureIndex;
+	//protected HLAinteger16BE infraredSignatureIndex;
+	//protected HLAinteger16BE acousticSignatureIndex;
 
 	// Arrays
 	protected ArticulatedParameterStructLengthlessArray articulatedParametersArray;
-	protected PropulsionSystemDataStructLengthlessArray propulsionSystemsData;
-	protected VectoringNozzleSystemDataStructLengthlessArray vectoringNozzleSystemData;
+	//protected PropulsionSystemDataStructLengthlessArray propulsionSystemsData;
+	//protected VectoringNozzleSystemDataStructLengthlessArray vectoringNozzleSystemData;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -94,29 +99,31 @@ public abstract class PhysicalEntity extends BaseEntity
 		this.trailingEffectsCode = new EnumHolder<>( TrailingEffectsCodeEnum32.NoTrail );
 		
 		// Appearance Bits
-		this.engineSmokeOn = new EnumHolder<>( RPRboolean.False );
-		this.firePowerDisabled = new EnumHolder<>( RPRboolean.False );
-		this.flamesPresent = new EnumHolder<>( RPRboolean.False );
-		this.hasAmmunitionSupplyCap = new EnumHolder<>( RPRboolean.False );
-		this.hasFuelSupplyCap = new EnumHolder<>( RPRboolean.False );
-		this.hasRecoveryCap = new EnumHolder<>( RPRboolean.False );
-		this.hasRepairCap = new EnumHolder<>( RPRboolean.False );
-		this.immobilized = new EnumHolder<>( RPRboolean.False );
-		this.isConcealed = new EnumHolder<>( RPRboolean.False );
-		this.smokePlumePresent = new EnumHolder<>( RPRboolean.False );
-		this.tentDeployed = new EnumHolder<>( RPRboolean.False );
-		this.powerplantOn = new EnumHolder<>( RPRboolean.False );
+		this.engineSmokeOn = new RPRboolean(false);
+		this.firePowerDisabled = new RPRboolean(false);
+		this.flamesPresent = new RPRboolean(false);
+		this.immobilized = new RPRboolean(false);
+		this.isConcealed = new RPRboolean(false);
+		this.smokePlumePresent = new RPRboolean(false);
+		this.tentDeployed = new RPRboolean(false);
+		this.powerplantOn = new RPRboolean(false);
+		
+		// Capabilities
+		this.hasAmmunitionSupplyCap = new RPRboolean(false);
+		this.hasFuelSupplyCap = new RPRboolean(false);
+		this.hasRecoveryCap = new RPRboolean(false);
+		this.hasRepairCap = new RPRboolean(false);
 
-		// Other
-		this.liveEntityMeasuredSpeed = new RPRunsignedInteger16BE();
-		this.radarCrossSectionSignatureIndex = new HLAinteger16BE();
-		this.infraredSignatureIndex = new HLAinteger16BE();
-		this.acousticSignatureIndex = new HLAinteger16BE();
+		// Other - SEES PDU
+		//this.liveEntityMeasuredSpeed = new RPRunsignedInteger16BE();
+		//this.radarCrossSectionSignatureIndex = new HLAinteger16BE();
+		//this.infraredSignatureIndex = new HLAinteger16BE();
+		//this.acousticSignatureIndex = new HLAinteger16BE();
 
 		// Arrays
 		this.articulatedParametersArray = new ArticulatedParameterStructLengthlessArray();
-		this.propulsionSystemsData = new PropulsionSystemDataStructLengthlessArray();
-		this.vectoringNozzleSystemData = new VectoringNozzleSystemDataStructLengthlessArray();
+		//this.propulsionSystemsData = new PropulsionSystemDataStructLengthlessArray();
+		//this.vectoringNozzleSystemData = new VectoringNozzleSystemDataStructLengthlessArray();
 	}
 
 	//----------------------------------------------------------
@@ -156,100 +163,100 @@ public abstract class PhysicalEntity extends BaseEntity
 		return trailingEffectsCode;
 	}
 
-	public EnumHolder<RPRboolean> getEngineSmokeOn()
+	public RPRboolean getEngineSmokeOn()
 	{
 		return engineSmokeOn;
 	}
 
-	public EnumHolder<RPRboolean> getFirePowerDisabled()
+	public RPRboolean getFirePowerDisabled()
 	{
 		return firePowerDisabled;
 	}
 
-	public EnumHolder<RPRboolean> getFlamesPresent()
+	public RPRboolean getFlamesPresent()
 	{
 		return flamesPresent;
 	}
 
-	public EnumHolder<RPRboolean> getHasAmmunitionSupplyCap()
+	public RPRboolean getHasAmmunitionSupplyCap()
 	{
 		return hasAmmunitionSupplyCap;
 	}
 
-	public EnumHolder<RPRboolean> getHasFuelSupplyCap()
+	public RPRboolean getHasFuelSupplyCap()
 	{
 		return hasFuelSupplyCap;
 	}
 
-	public EnumHolder<RPRboolean> getHasRecoveryCap()
+	public RPRboolean getHasRecoveryCap()
 	{
 		return hasRecoveryCap;
 	}
 
-	public EnumHolder<RPRboolean> getHasRepairCap()
+	public RPRboolean getHasRepairCap()
 	{
 		return hasRepairCap;
 	}
 
-	public EnumHolder<RPRboolean> getImmobilized()
+	public RPRboolean getImmobilized()
 	{
 		return immobilized;
 	}
 
-	public EnumHolder<RPRboolean> getIsConcealed()
+	public RPRboolean getIsConcealed()
 	{
 		return isConcealed;
 	}
 
-	public EnumHolder<RPRboolean> getSmokePlumePresent()
+	public RPRboolean getSmokePlumePresent()
 	{
 		return smokePlumePresent;
 	}
 
-	public EnumHolder<RPRboolean> getTentDeployed()
+	public RPRboolean getTentDeployed()
 	{
 		return tentDeployed;
 	}
 
-	public EnumHolder<RPRboolean> getPowerplantOn()
+	public RPRboolean getPowerplantOn()
 	{
 		return powerplantOn;
 	}
 
-	public RPRunsignedInteger16BE getLiveEntityMeasuredSpeed()
-	{
-		return liveEntityMeasuredSpeed;
-	}
+	//public RPRunsignedInteger16BE getLiveEntityMeasuredSpeed()
+	//{
+	//	return liveEntityMeasuredSpeed;
+	//}
 
-	public HLAinteger16BE getRadarCrossSectionSignatureIndex()
-	{
-		return radarCrossSectionSignatureIndex;
-	}
+	//public HLAinteger16BE getRadarCrossSectionSignatureIndex()
+	//{
+	//	return radarCrossSectionSignatureIndex;
+	//}
 
-	public HLAinteger16BE getInfraredSignatureIndex()
-	{
-		return infraredSignatureIndex;
-	}
+	//public HLAinteger16BE getInfraredSignatureIndex()
+	//{
+	//	return infraredSignatureIndex;
+	//}
 
-	public HLAinteger16BE getAcousticSignatureIndex()
-	{
-		return acousticSignatureIndex;
-	}
+	//public HLAinteger16BE getAcousticSignatureIndex()
+	//{
+	//	return acousticSignatureIndex;
+	//}
 
 	public ArticulatedParameterStructLengthlessArray getArticulatedParametersArray()
 	{
 		return articulatedParametersArray;
 	}
 
-	public PropulsionSystemDataStructLengthlessArray getPropulsionSystemsData()
-	{
-		return propulsionSystemsData;
-	}
+	//public PropulsionSystemDataStructLengthlessArray getPropulsionSystemsData()
+	//{
+	//	return propulsionSystemsData;
+	//}
 
-	public VectoringNozzleSystemDataStructLengthlessArray getVectoringNozzleSystemData()
-	{
-		return vectoringNozzleSystemData;
-	}
+	//public VectoringNozzleSystemDataStructLengthlessArray getVectoringNozzleSystemData()
+	//{
+	//	return vectoringNozzleSystemData;
+	//}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Decoding Methods   /////////////////////////////////////////////////////////////////
@@ -264,18 +271,32 @@ public abstract class PhysicalEntity extends BaseEntity
 		this.forceIdentifier.setEnum( ForceIdentifierEnum8.valueOf(incoming.getForceID().value()) );
 		this.marking.setValue( incoming.getMarking() );
 
-		// Status
-		//this.damageState.setEnum( 
-		//this.camouflageType.setEnum( 
-		//this.trailingEffectsCode.setEnum( 
+		// Status -- Delegated to child class
 		
-		// Appearance Bits
+		// Appearance -- Delegated to child class
+		
+		// Capabilities
+		this.hasAmmunitionSupplyCap.setValue( incoming.getCapabilities().getAmmunitionSupply() );
+		this.hasFuelSupplyCap.setValue( incoming.getCapabilities().getFuelSupply() );
+		this.hasRecoveryCap.setValue( incoming.getCapabilities().getRecovery() );
+		this.hasRepairCap.setValue( incoming.getCapabilities().getRepair() );
+
 		
 		// Other
+		//this.liveEntityMeasuredSpeed.setValue(  );
+		//this.radarCrossSectionSignatureIndex.setValue(  );
+		//this.infraredSignatureIndex.setValue(  );
+		//this.acousticSignatureIndex.setValue(  );
 		
 		// Arrays
-
-		throw new RuntimeException( "Not Implemented Yet" );
+		ArticulatedParameterStructLengthlessArray array = new ArticulatedParameterStructLengthlessArray();
+		this.articulatedParametersArray.clear();
+		for( ArticulationParameter param : incoming.getArticulationParameter() )
+		{
+			ArticulatedParameterStruct struct = new ArticulatedParameterStruct();
+			struct.setValue( param );
+			array.addElement( struct );
+		}
 	}
 	
 	protected void toPdu( EntityStatePdu pdu )
@@ -284,16 +305,29 @@ public abstract class PhysicalEntity extends BaseEntity
 		super.toPdu( pdu );
 
 		// Metadata
+		pdu.setAlternativeEntityType( alternateEntityType.getDisValue() );
+		pdu.setForceID( ForceId.fromValue(forceIdentifier.getEnum().getValue()) );
+		pdu.setMarking( marking.getDisValue() );
 		
-		// Status
+		// Status -- Delegated to child class
 		
-		// Apperance Bits
+		// Apperance Bits -- Deletated to child class
+		
+		// Capabilities
+		pdu.getCapabilities().setAmmunitionSupply( hasAmmunitionSupplyCap.getValue() );
+		pdu.getCapabilities().setFuelSupply( hasFuelSupplyCap.getValue() );
+		pdu.getCapabilities().setRecovery( hasRecoveryCap.getValue() );
+		pdu.getCapabilities().setRepair( hasRepairCap.getValue() );
 		
 		// Other
+		// liveEntityMeasuredSpeed -- Not in ESPDU
+		// radarCrossSectionSignatureIndex -- Not in ESPDU
+		// infraredSignatureIndex -- Not in ESPDU
+		// acousticSignatureIndex -- Not in ESPDU
 		
 		// Arrays
-		
-		throw new RuntimeException( "Not Implemented Yet" );
+		for( ArticulatedParameterStruct struct : this.articulatedParametersArray )
+			pdu.getArticulationParameter().add( struct.getDisValue() );
 	}
 
 	//----------------------------------------------------------

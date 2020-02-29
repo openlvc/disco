@@ -20,6 +20,7 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 import org.openlvc.disco.connection.rpr.types.variant.ParameterValueVariantStruct;
+import org.openlvc.disco.pdu.record.ArticulationParameter;
 
 public class ArticulatedParameterStruct extends HLAfixedRecord
 {
@@ -60,8 +61,16 @@ public class ArticulatedParameterStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue()
+	public void setValue( ArticulationParameter disValue )
 	{
+		this.articulatedParameterChange.setValue( (byte)disValue.getChangeIndicator() );
+		this.partAttachedTo.setValue( disValue.getAttachedTo() );
+		this.parameterValue.setValue( disValue );
+	}
+	
+	public ArticulationParameter getDisValue()
+	{
+		throw new RuntimeException( "Not Yet Implemented" );
 	}
 	
 	//----------------------------------------------------------

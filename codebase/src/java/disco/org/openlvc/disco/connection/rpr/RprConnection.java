@@ -309,7 +309,7 @@ public class RprConnection implements IConnection
 		// PubSub Object Classes
 		List<String> classes = new ArrayList<>();
 		classes.add( "HLAobjectRoot.EmbeddedSystem.RadioTransmitter" );
-		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity" );
+		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform" );
 		for( String qualifiedName : classes )
 		{
 			logger.debug( "PubSub for "+qualifiedName );

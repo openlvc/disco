@@ -20,11 +20,10 @@ package org.openlvc.disco.connection.rpr.types.enumerated;
 import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 
 import hla.rti1516e.encoding.ByteWrapper;
-import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum RadioInputSourceEnum8 implements DataElement
+public enum RadioInputSourceEnum8 implements ExtendedDataElement<RadioInputSourceEnum8>
 {
 	//----------------------------------------------------------
 	//                        VALUES
@@ -93,16 +92,19 @@ public enum RadioInputSourceEnum8 implements DataElement
 
 
 	@Override
-	public void decode( ByteWrapper byteWrapper ) throws DecoderException
+	public RadioInputSourceEnum8 valueOf( ByteWrapper value ) throws DecoderException
 	{
-		value.decode( byteWrapper );
+		HLAoctet temp = new HLAoctet();
+		temp.decode( value );
+		return valueOf( temp.getValue() );
 	}
 
-
 	@Override
-	public void decode( byte[] bytes ) throws DecoderException
+	public RadioInputSourceEnum8 valueOf( byte[] value ) throws DecoderException
 	{
-		value.decode( bytes );
+		HLAoctet temp = new HLAoctet();
+		temp.decode( value );
+		return valueOf( temp.getValue() );
 	}
 
 	//----------------------------------------------------------

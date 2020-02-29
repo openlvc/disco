@@ -114,32 +114,32 @@ public class VectorRecord implements IPduComponent, Cloneable
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public float getfirstComponent()
+	public float getFirstComponent()
 	{
 		return firstComponent;
 	}
 
-	public void setfirstComponent( float firstComponent )
+	public void setFirstComponent( float firstComponent )
 	{
 		this.firstComponent = firstComponent;
 	}
 
-	public float getsecondComponent()
+	public float getSecondComponent()
 	{
 		return secondComponent;
 	}
 
-	public void setsecondComponent( float secondComponent )
+	public void setSecondComponent( float secondComponent )
 	{
 		this.secondComponent = secondComponent;
 	}
 
-	public float getthirdComponent()
+	public float getThirdComponent()
 	{
 		return thirdComponent;
 	}
 
-	public void setthirdComponent( float thirdComponent )
+	public void setThirdComponent( float thirdComponent )
 	{
 		this.thirdComponent = thirdComponent;
 	}

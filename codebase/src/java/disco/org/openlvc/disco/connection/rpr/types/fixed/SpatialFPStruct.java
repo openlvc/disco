@@ -17,10 +17,10 @@
  */
 package org.openlvc.disco.connection.rpr.types.fixed;
 
-import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
 
-public class SpatialFPStruct extends HLAfixedRecord
+public class SpatialFPStruct extends AbstractSpatialStruct
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -30,9 +30,9 @@ public class SpatialFPStruct extends HLAfixedRecord
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private WorldLocationStruct worldLocation;
-	private EnumHolder<RPRboolean> isFrozen;
+	private RPRboolean isFrozen;
 	private OrientationStruct orientation;
-	private VelocityVectorStruct velocity;
+	private VelocityVectorStruct linearVelocity;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -40,15 +40,15 @@ public class SpatialFPStruct extends HLAfixedRecord
 	public SpatialFPStruct()
 	{
 		this.worldLocation = new WorldLocationStruct();
-		this.isFrozen = new EnumHolder<>( RPRboolean.False );
+		this.isFrozen = new RPRboolean( false );
 		this.orientation = new OrientationStruct();
-		this.velocity = new VelocityVectorStruct();
+		this.linearVelocity = new VelocityVectorStruct();
 		
 		// Add to the elements to the parent so that it can do its generic fixed-record stuff
 		super.add( worldLocation );
 		super.add( isFrozen );
 		super.add( orientation );
-		super.add( velocity );
+		super.add( linearVelocity );
 	}
 
 	//----------------------------------------------------------
@@ -62,8 +62,23 @@ public class SpatialFPStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue()
+	@Override
+	public SpatialFPStruct fromPdu( EntityStatePdu pdu )
 	{
+		this.worldLocation.setValue( pdu.getLocation() );
+		this.isFrozen.setValue( pdu.isFrozen() );
+		this.orientation.setValue( pdu.getOrientation() );
+		this.linearVelocity.setValue( pdu.getLinearVelocity() );
+		return this;
+	}
+
+	@Override
+	public void toPdu( EntityStatePdu pdu )
+	{
+		pdu.setLocation( worldLocation.getDisValue() );
+		pdu.setFrozen( isFrozen.getValue() );
+		pdu.setOrientation( orientation.getDisValue() );
+		pdu.setLinearVelocity( linearVelocity.getDisValue() );
 	}
 
 	//----------------------------------------------------------

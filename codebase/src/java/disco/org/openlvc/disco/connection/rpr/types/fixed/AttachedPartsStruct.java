@@ -19,6 +19,7 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 
 import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.StationEnum32;
+import org.openlvc.disco.pdu.record.ArticulationParameter;
 
 public class AttachedPartsStruct extends HLAfixedRecord
 {
@@ -56,8 +57,16 @@ public class AttachedPartsStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue()
+	public void setValue( ArticulationParameter articulation )
 	{
+		long parameterType = articulation.getParameterType();
+		// Bottom 32 - Attached Part
+			// 0-31  - Station
+		// Upper 32  - Articulated Part Values
+		// Value     - Value (Entity Type)
+		int narrow = (int)parameterType;
+		this.station.setEnum( StationEnum32.valueOf(narrow) );
+		this.storeType.setLongValue( articulation.getParameterValue().longValue() );
 	}
 
 	//----------------------------------------------------------

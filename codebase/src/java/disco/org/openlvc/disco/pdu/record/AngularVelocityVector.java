@@ -41,9 +41,9 @@ public class AngularVelocityVector implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private long rateAboutXAxis;
-	private long rateAboutYAxis;
-	private long rateAboutZAxis;
+	private float rateAboutXAxis;
+	private float rateAboutYAxis;
+	private float rateAboutZAxis;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -53,7 +53,7 @@ public class AngularVelocityVector implements IPduComponent, Cloneable
 		this( 0, 0, 0 );
 	}
 	
-	public AngularVelocityVector( long rateAboutXAxis, long rateAboutYAxis, long rateAboutZAxis )
+	public AngularVelocityVector( float rateAboutXAxis, float rateAboutYAxis, float rateAboutZAxis )
 	{
 		this.rateAboutXAxis = rateAboutXAxis;
 		this.rateAboutYAxis = rateAboutYAxis;
@@ -106,9 +106,9 @@ public class AngularVelocityVector implements IPduComponent, Cloneable
 	@Override
     public void to( DisOutputStream dos ) throws IOException
     {
-		dos.writeUI32( rateAboutXAxis );
-		dos.writeUI32( rateAboutYAxis );
-		dos.writeUI32( rateAboutZAxis );
+		dos.writeFloat( rateAboutXAxis );
+		dos.writeFloat( rateAboutYAxis );
+		dos.writeFloat( rateAboutZAxis );
     }
 	
 	@Override
@@ -120,32 +120,32 @@ public class AngularVelocityVector implements IPduComponent, Cloneable
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-    public long getRateAboutXAxis()
+    public float getRateAboutXAxis()
     {
     	return rateAboutXAxis;
     }
 
-    public void setRateAboutXAxis( long rateAboutXAxis )
+    public void setRateAboutXAxis( float rateAboutXAxis )
     {
     	this.rateAboutXAxis = rateAboutXAxis;
     }
 
-    public long getRateAboutYAxis()
+    public float getRateAboutYAxis()
     {
     	return rateAboutYAxis;
     }
 
-    public void setRateAboutYAxis( long rateAboutYAxis )
+    public void setRateAboutYAxis( float rateAboutYAxis )
     {
     	this.rateAboutYAxis = rateAboutYAxis;
     }
 
-    public long getRateAboutZAxis()
+    public float getRateAboutZAxis()
     {
     	return rateAboutZAxis;
     }
 
-    public void setRateAboutZAxis( long rateAboutZAxis )
+    public void setRateAboutZAxis( float rateAboutZAxis )
     {
     	this.rateAboutZAxis = rateAboutZAxis;
     }

@@ -329,9 +329,9 @@ public class NmeaServer
 
 	private double getCurrentSpeed()
 	{
-		return Math.sqrt( Math.pow(lastKnownVelocity.getfirstComponent(),2) +
-		                  Math.pow(lastKnownVelocity.getsecondComponent(),2) +
-		                  Math.pow(lastKnownVelocity.getthirdComponent(),2) );
+		return Math.sqrt( Math.pow(lastKnownVelocity.getFirstComponent(),2) +
+		                  Math.pow(lastKnownVelocity.getSecondComponent(),2) +
+		                  Math.pow(lastKnownVelocity.getThirdComponent(),2) );
 	}
 	
 	private double getCourse()

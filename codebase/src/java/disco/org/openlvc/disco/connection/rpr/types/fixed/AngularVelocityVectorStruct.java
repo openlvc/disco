@@ -18,6 +18,7 @@
 package org.openlvc.disco.connection.rpr.types.fixed;
 
 import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
+import org.openlvc.disco.pdu.record.AngularVelocityVector;
 
 public class AngularVelocityVectorStruct extends HLAfixedRecord
 {
@@ -59,8 +60,18 @@ public class AngularVelocityVectorStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue()
+	public void setValue( AngularVelocityVector vector )
 	{
+		this.XAngularVelocity.setValue( vector.getRateAboutXAxis() );
+		this.YAngularVelocity.setValue( vector.getRateAboutYAxis() );
+		this.ZAngularVelocity.setValue( vector.getRateAboutZAxis() );
+	}
+	
+	public AngularVelocityVector getDisValue()
+	{
+		return new AngularVelocityVector( XAngularVelocity.getValue(),
+		                                  YAngularVelocity.getValue(),
+		                                  ZAngularVelocity.getValue() );
 	}
 
 	//----------------------------------------------------------

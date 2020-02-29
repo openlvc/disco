@@ -17,9 +17,12 @@
  */
 package org.openlvc.disco.connection.rpr.types.variant;
 
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.connection.rpr.types.enumerated.ParameterTypeEnum32;
 import org.openlvc.disco.connection.rpr.types.fixed.ArticulatedPartsStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.AttachedPartsStruct;
+import org.openlvc.disco.pdu.field.ParameterTypeDesignator;
+import org.openlvc.disco.pdu.record.ArticulationParameter;
 
 public class ParameterValueVariantStruct extends HLAvariantRecord<ParameterTypeEnum32>
 {
@@ -53,8 +56,26 @@ public class ParameterValueVariantStruct extends HLAvariantRecord<ParameterTypeE
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue()
+	public void setValue( ArticulationParameter disValue )
 	{
+		if( disValue.getTypeDesignator() == ParameterTypeDesignator.ArticulatedPart )
+		{
+			ArticulatedPartsStruct struct = new ArticulatedPartsStruct();
+			struct.setValue( disValue );
+			this.setVariant( ParameterTypeEnum32.ArticulatedPart, struct );
+			this.setDiscriminant( ParameterTypeEnum32.ArticulatedPart );
+		}
+		else if( disValue.getTypeDesignator() == ParameterTypeDesignator.AttachedPart )
+		{
+			AttachedPartsStruct struct = new AttachedPartsStruct();
+			struct.setValue( disValue );
+			this.setVariant( ParameterTypeEnum32.AttachedPart, struct );
+			this.setDiscriminant( ParameterTypeEnum32.AttachedPart );
+		}
+		else
+		{
+			throw new DiscoException( "Unknown Articulated Parameter Type: "+disValue.getTypeDesignator() );
+		}
 	}
 
 	//----------------------------------------------------------

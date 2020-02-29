@@ -20,11 +20,10 @@ package org.openlvc.disco.connection.rpr.types.enumerated;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 
 import hla.rti1516e.encoding.ByteWrapper;
-import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum AngleModulationTypeEnum16 implements DataElement
+public enum AngleModulationTypeEnum16 implements ExtendedDataElement<AngleModulationTypeEnum16>
 {
 	//----------------------------------------------------------
 	//                        VALUES
@@ -87,16 +86,19 @@ public enum AngleModulationTypeEnum16 implements DataElement
 
 
 	@Override
-	public void decode( ByteWrapper byteWrapper ) throws DecoderException
+	public AngleModulationTypeEnum16 valueOf( ByteWrapper value ) throws DecoderException
 	{
-		value.decode( byteWrapper );
+		RPRunsignedInteger16BE temp = new RPRunsignedInteger16BE();
+		temp.decode( value );
+		return valueOf( temp.getValue() );
 	}
 
-
 	@Override
-	public void decode( byte[] bytes ) throws DecoderException
+	public AngleModulationTypeEnum16 valueOf( byte[] value ) throws DecoderException
 	{
-		value.decode( bytes );
+		RPRunsignedInteger16BE temp = new RPRunsignedInteger16BE();
+		temp.decode( value );
+		return valueOf( temp.getValue() );
 	}
 
 	//----------------------------------------------------------

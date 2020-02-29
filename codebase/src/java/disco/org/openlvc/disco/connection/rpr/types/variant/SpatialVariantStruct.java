@@ -17,12 +17,16 @@
  */
 package org.openlvc.disco.connection.rpr.types.variant;
 
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.connection.rpr.types.enumerated.DeadReckoningAlgorithmEnum8;
+import org.openlvc.disco.connection.rpr.types.fixed.AbstractSpatialStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.SpatialFPStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.SpatialFVStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.SpatialRPStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.SpatialRVStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.SpatialStaticStruct;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.DeadReckoningAlgorithm;
 
 public class SpatialVariantStruct extends HLAvariantRecord<DeadReckoningAlgorithmEnum8>
 {
@@ -42,6 +46,7 @@ public class SpatialVariantStruct extends HLAvariantRecord<DeadReckoningAlgorith
 		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_RPW, new SpatialRPStruct() );
 		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_RVW, new SpatialRVStruct() );
 		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_FVW, new SpatialFVStruct() );
+		
 		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_FPB, new SpatialFPStruct() );
 		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_RPB, new SpatialRPStruct() );
 		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_RVB, new SpatialRVStruct() );
@@ -59,7 +64,43 @@ public class SpatialVariantStruct extends HLAvariantRecord<DeadReckoningAlgorith
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public void setValue( EntityStatePdu pdu )
+	{
+		DeadReckoningAlgorithm dr = pdu.getDeadReckoningParams().getDeadReckoningAlgorithm();
+		AbstractSpatialStruct value = null;
+		switch( dr )
+		{
+			case Static: value = new SpatialStaticStruct().fromPdu(pdu); break;
+			case FPW: value = new SpatialFPStruct().fromPdu(pdu); break;
+			case FPB: value = new SpatialFPStruct().fromPdu(pdu); break;
+			case RPW: value = new SpatialRPStruct().fromPdu(pdu); break;
+			case RPB: value = new SpatialRPStruct().fromPdu(pdu); break;
+			case RVW: value = new SpatialRVStruct().fromPdu(pdu); break;
+			case RVB: value = new SpatialRVStruct().fromPdu(pdu); break;
+			case FVW: value = new SpatialFVStruct().fromPdu(pdu); break;
+			case FVB: value = new SpatialFVStruct().fromPdu(pdu); break;
+			default: break;
+		}
+		
+		if( value == null )
+			throw new DiscoException( "Unknown DeadReckoning Type: "+dr );
+		
+		// Set the discriminant
+		DeadReckoningAlgorithmEnum8 type = DeadReckoningAlgorithmEnum8.valueOf( dr.value() );
+		super.setVariant( type, value );
+		super.setDiscriminant( type );
+	}
 
+	public void toPdu( EntityStatePdu pdu )
+	{
+		// Set the DR type flag
+		DeadReckoningAlgorithm dr = DeadReckoningAlgorithm.fromValue(super.activeDiscriminant.getUnsignedValue());
+		pdu.getDeadReckoningParams().setDeadReckoningAlgorithm( dr );
+
+		// Set the values depending on which DR implementation it is
+		((AbstractSpatialStruct)super.getValue()).toPdu( pdu );
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

@@ -17,10 +17,10 @@
  */
 package org.openlvc.disco.connection.rpr.types.fixed;
 
-import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
 
-public class SpatialFVStruct extends HLAfixedRecord
+public class SpatialFVStruct extends AbstractSpatialStruct
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -30,10 +30,10 @@ public class SpatialFVStruct extends HLAfixedRecord
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private WorldLocationStruct worldLocation;
-	private EnumHolder<RPRboolean> isFrozen;
+	private RPRboolean isFrozen;
 	private OrientationStruct orientation;
-	private VelocityVectorStruct velocityVector;
-	private AccelerationVectorStruct accelerationVector;
+	private VelocityVectorStruct linearVelocity;
+	private AccelerationVectorStruct acceleration;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -41,17 +41,17 @@ public class SpatialFVStruct extends HLAfixedRecord
 	public SpatialFVStruct()
 	{
 		this.worldLocation = new WorldLocationStruct();
-		this.isFrozen = new EnumHolder<>( RPRboolean.False );
+		this.isFrozen = new RPRboolean( false );
 		this.orientation = new OrientationStruct();
-		this.velocityVector = new VelocityVectorStruct();
-		this.accelerationVector = new AccelerationVectorStruct();
+		this.linearVelocity = new VelocityVectorStruct();
+		this.acceleration = new AccelerationVectorStruct();
 		
 		// Add to the elements to the parent so that it can do its generic fixed-record stuff
 		super.add( worldLocation );
 		super.add( isFrozen );
 		super.add( orientation );
-		super.add( velocityVector );
-		super.add( accelerationVector );
+		super.add( linearVelocity );
+		super.add( acceleration );
 	}
 
 	//----------------------------------------------------------
@@ -65,8 +65,25 @@ public class SpatialFVStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue()
+	@Override
+	public SpatialFVStruct fromPdu( EntityStatePdu pdu )
 	{
+		this.worldLocation.setValue( pdu.getLocation() );
+		this.isFrozen.setValue( pdu.isFrozen() );
+		this.orientation.setValue( pdu.getOrientation() );
+		this.linearVelocity.setValue( pdu.getLinearVelocity() );
+		this.acceleration.setValue( pdu.getDeadReckoningParams().getEntityLinearAcceleration() );
+		return this;
+	}
+
+	@Override
+	public void toPdu( EntityStatePdu pdu )
+	{
+		pdu.setLocation( worldLocation.getDisValue() );
+		pdu.setFrozen( isFrozen.getValue() );
+		pdu.setOrientation( orientation.getDisValue() );
+		pdu.setLinearVelocity( linearVelocity.getDisValue() );
+		pdu.getDeadReckoningParams().setEntityLinearAcceleration( acceleration.getDisValue() );
 	}
 
 	//----------------------------------------------------------

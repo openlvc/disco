@@ -19,6 +19,11 @@ package org.openlvc.disco.pdu;
 
 import org.openlvc.disco.AbstractTest;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.appearance.GroundPlatformAppearance;
+import org.openlvc.disco.pdu.field.appearance.enums.CamouflageType;
+import org.openlvc.disco.pdu.field.appearance.enums.HatchState;
+import org.openlvc.disco.pdu.field.appearance.enums.PaintScheme;
+import org.openlvc.disco.pdu.field.appearance.enums.TrailingEffects;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -89,6 +94,62 @@ public class EntityStatePduTest extends AbstractTest
 		Assert.assertEquals( afterArray.length, beforeArray.length, "Lengths do not match" );
 		Assert.assertEquals( afterArray, beforeArray );
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////
+	/// Appearance Testing Method   ///////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+	@Test(groups="poo")
+	public void testGroundPlatformAppearance()
+	{
+		GroundPlatformAppearance before = new GroundPlatformAppearance();
+		
+		// Set the values
+		before.setPaintScheme( PaintScheme.Camouflage );
+		before.setMobilityKilled( true );
+		before.setFirepowerKilled( true );
+		before.setDustTrail( TrailingEffects.Large );
+		before.setHatchState( HatchState.OpenAndPersonVisible );
+		before.setHeadLightsOn( true );
+		before.setTailLightsOn( true );
+		before.setBreakLightsOn( true );
+		before.setLauncherRaised( true );
+		before.setCamouflageType( CamouflageType.Other );
+		before.setConcealed( true );
+		before.setTentExtended( true );
+		before.setRampDeployed( true );
+		before.setBlackOutLightsOn( true );
+		before.setBlackoutBreakLightsOn( true );
+		before.setSpotLightsOn( true );
+		before.setInteriorLightsOn( true );
+		before.setOccupantsSurrendered( true );
+		before.setMasked( true );
+		
+		// Convert to int
+		int value = before.getBits();
+		
+		// Convert back
+		GroundPlatformAppearance after = new GroundPlatformAppearance( value );
+		Assert.assertEquals( after.getPaintSchemeValue(), PaintScheme.Camouflage.value() );
+		Assert.assertTrue( after.isMobilityKilled() );
+		Assert.assertTrue( after.isFirepowerKilled() );
+		Assert.assertEquals( after.getDustTrailValue(), TrailingEffects.Large.value() );
+		Assert.assertEquals( after.getHatchStateValue(), HatchState.OpenAndPersonVisible.value() );
+		Assert.assertTrue( after.isHeadLightsOn() );
+		Assert.assertTrue( after.isTailLightsOn() );
+		Assert.assertTrue( after.isBreakLightsOn() );
+		Assert.assertTrue( after.isLauncherRaised() );
+		Assert.assertEquals( after.getCamouflageTypeValue(), CamouflageType.Other.value() );
+		Assert.assertTrue( after.isConcealed() );
+		Assert.assertTrue( after.isTentExtended() );
+		Assert.assertTrue( after.isRampDeployed() );
+		Assert.assertTrue( after.isBlackOutLightsOn() );
+		Assert.assertTrue( after.isBlackoutBreakLightsOn() );
+		Assert.assertTrue( after.isSpotLightsOn() );
+		Assert.assertTrue( after.isInteriorLightsOn() );
+		Assert.assertTrue( after.isOccupantsSurrendered() );
+		Assert.assertTrue( after.isMasked() );
+	}
+
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS

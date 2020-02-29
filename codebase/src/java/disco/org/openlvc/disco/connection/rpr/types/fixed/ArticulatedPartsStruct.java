@@ -21,6 +21,7 @@ import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
 import org.openlvc.disco.connection.rpr.types.enumerated.ArticulatedPartsTypeEnum32;
 import org.openlvc.disco.connection.rpr.types.enumerated.ArticulatedTypeMetricEnum32;
 import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
+import org.openlvc.disco.pdu.record.ArticulationParameter;
 
 public class ArticulatedPartsStruct extends HLAfixedRecord
 {
@@ -31,8 +32,8 @@ public class ArticulatedPartsStruct extends HLAfixedRecord
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EnumHolder<ArticulatedPartsTypeEnum32> theClass;
 	private EnumHolder<ArticulatedTypeMetricEnum32> typeMetric;
+	private EnumHolder<ArticulatedPartsTypeEnum32> theClass;
 	private HLAfloat32BE value;
 
 	//----------------------------------------------------------
@@ -45,8 +46,8 @@ public class ArticulatedPartsStruct extends HLAfixedRecord
 		this.value = new HLAfloat32BE( 0 );
 		
 		// Add to the elements in the parent so that it can do its generic fixed-record stuff
-		super.add( theClass );
 		super.add( typeMetric );
+		super.add( theClass );
 		super.add( value );
 	}
 
@@ -61,8 +62,20 @@ public class ArticulatedPartsStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue()
+	public void setValue( ArticulationParameter articulation )
 	{
+		long parameterType = articulation.getParameterType();
+		// Bottom 32 - Attached Part
+		// Upper 32  - Split
+			// 32-47 - ArticulatedTypeMetricEnum32
+			// 48-63 - ArticulatedPartsTypeEnum32
+		// Value     - Value (only 32 of 64)
+		
+		this.typeMetric.setEnum( ArticulatedTypeMetricEnum32.valueOf((short)(parameterType >> 32)) );
+		this.theClass.setEnum( ArticulatedPartsTypeEnum32.valueOf((short)(parameterType >> 48)) );
+
+		// Wot to do here. It is written to and read from the PDU as a uint64
+		this.value.setValue( articulation.getParameterValue().floatValue() );
 	}
 
 	//----------------------------------------------------------

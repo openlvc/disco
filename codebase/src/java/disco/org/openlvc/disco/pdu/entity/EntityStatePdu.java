@@ -39,6 +39,7 @@ import org.openlvc.disco.pdu.record.EulerAngles;
 import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.record.VectorRecord;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
+import org.openlvc.disco.utils.BitField32;
 
 public class EntityStatePdu extends PDU
 {
@@ -292,10 +293,31 @@ public class EntityStatePdu extends PDU
 	{
 		return appearance;
 	}
-
+	
 	public void setAppearance( int appearance )
 	{
 		this.appearance = appearance;
+	}
+
+	/**
+	 * @return True if the "Is Frozen" bit in the appearance bitfield is set. On all types of
+	 *         entities (lifeforms, platforms, munitions, ...) this is always Bit 21 in the field.
+	 */
+	public boolean isFrozen()
+	{
+		return BitField32.isSet( this.appearance, 21 );
+	}
+	
+	/**
+	 * Set's the "Is Frozen" apperance bit to the given value. On all entity types (lifeform,
+	 * platform, munition, ...) this is always Bit 21 in the field, so we're safe to speak to
+	 * it generically.
+	 * 
+	 * @param isFrozen Should the bit be set to 0 (if false) or 1 (if true)
+	 */
+	public void setFrozen( boolean isFrozen )
+	{
+		this.appearance = BitField32.set( this.appearance, 21, isFrozen );
 	}
 
 	public DeadReckoningParameter getDeadReckoningParams()
@@ -341,6 +363,7 @@ public class EntityStatePdu extends PDU
 
 		this.articulationParameters = articulationParameters;
 	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

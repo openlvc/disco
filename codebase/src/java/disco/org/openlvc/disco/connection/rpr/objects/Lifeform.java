@@ -33,7 +33,7 @@ public abstract class Lifeform extends PhysicalEntity
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	protected EnumHolder<RPRboolean> flashLightsOn;
+	protected RPRboolean flashLightsOn;
 	protected EnumHolder<StanceCodeEnum32> stanceCode;
 	protected EnumHolder<WeaponStateEnum32> primaryWeaponState;
 	protected EnumHolder<WeaponStateEnum32> secondaryWeaponState;
@@ -46,7 +46,7 @@ public abstract class Lifeform extends PhysicalEntity
 	{
 		super();
 		
-		this.flashLightsOn = new EnumHolder<>( RPRboolean.False );
+		this.flashLightsOn = new RPRboolean( false );
 		this.stanceCode = new EnumHolder<>( StanceCodeEnum32.NotApplicable );
 		this.primaryWeaponState = new EnumHolder<>( WeaponStateEnum32.NoWeapon );
 		this.secondaryWeaponState = new EnumHolder<>( WeaponStateEnum32.NoWeapon );

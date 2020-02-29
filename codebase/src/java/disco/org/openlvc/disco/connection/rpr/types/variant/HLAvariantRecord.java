@@ -20,12 +20,15 @@ package org.openlvc.disco.connection.rpr.types.variant;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
+import org.openlvc.disco.connection.rpr.types.enumerated.ExtendedDataElement;
+
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public class HLAvariantRecord<T extends DataElement> implements hla.rti1516e.encoding.HLAvariantRecord<T>
+public class HLAvariantRecord<T extends ExtendedDataElement<T>> implements hla.rti1516e.encoding.HLAvariantRecord<T>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -128,7 +131,9 @@ public class HLAvariantRecord<T extends DataElement> implements hla.rti1516e.enc
 	public void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
 		byteWrapper.align( getOctetBoundary() );
-		this.activeDiscriminant.decode( byteWrapper );
+		EnumHolder<T> temp = new EnumHolder<>( this.activeDiscriminant );
+		temp.decode( byteWrapper );
+		this.activeDiscriminant = temp.getEnum();
 		byteWrapper.align( getValueBoundary() );
 
 		if( associations.containsKey(activeDiscriminant) == false )

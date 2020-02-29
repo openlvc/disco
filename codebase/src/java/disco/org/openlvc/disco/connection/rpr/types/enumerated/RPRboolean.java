@@ -24,99 +24,97 @@ import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum RPRboolean implements DataElement
+public class RPRboolean implements DataElement
 {
 	//----------------------------------------------------------
-	//                        VALUES
+	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	False((byte)0),
-	True((byte)1);
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAoctet value;
+	private boolean value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private RPRboolean( byte value )
+	
+	public RPRboolean()
 	{
-		this.value = new HLAoctet( value );
+		this.value = false;
 	}
 
+	public RPRboolean( boolean value )
+	{
+		this.value = value;
+	}
+	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	
+
 	public boolean getValue()
 	{
-		return this == True;
+		return this.value;
+	}
+	
+	public void setValue( boolean value )
+	{
+		this.value = value;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Data Element Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	private final HLAoctet getHlaVersion()
+	{
+		return new HLAoctet( value ? 1 : 0 );
+	}
+
 	@Override
 	public int getOctetBoundary()
 	{
-		return value.getOctetBoundary();
+		return 1;
 	}
 
 	@Override
 	public void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
-		value.encode( byteWrapper );
+		getHlaVersion().encode( byteWrapper );
 	}
 
 
 	@Override
 	public int getEncodedLength()
 	{
-		return value.getEncodedLength();
+		return 1;
 	}
 
 
 	@Override
 	public byte[] toByteArray() throws EncoderException
 	{
-		return value.toByteArray();
+		return getHlaVersion().toByteArray();
 	}
-
 
 	@Override
-	public void decode( ByteWrapper byteWrapper ) throws DecoderException
+	public void decode( ByteWrapper wrapper ) throws DecoderException
 	{
-		value.decode( byteWrapper );
+		HLAoctet temp = new HLAoctet();
+		temp.decode( wrapper );
+		this.value = temp.getUnsignedValue() == 1;
 	}
-
 
 	@Override
 	public void decode( byte[] bytes ) throws DecoderException
 	{
-		value.decode( bytes );
+		HLAoctet temp = new HLAoctet();
+		temp.decode( bytes );
+		this.value = temp.getUnsignedValue() == 1;
 	}
+
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	
-	public static RPRboolean valueOf( short value )
-	{
-		if( value == 1 )
-			return RPRboolean.True;
-		else if( value == 0 )
-			return RPRboolean.False;
-		else
-			throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (RPRboolean)" );
-	}
-	
-	public static RPRboolean valueOf( boolean value )
-	{
-		if( value )
-			return RPRboolean.True;
-		else
-			return RPRboolean.False;
-	}
-
 }

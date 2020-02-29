@@ -20,11 +20,10 @@ package org.openlvc.disco.connection.rpr.types.enumerated;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
 
 import hla.rti1516e.encoding.ByteWrapper;
-import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum DamageStatusEnum32 implements DataElement
+public enum DamageStatusEnum32 implements ExtendedDataElement<DamageStatusEnum32>
 {
 	//----------------------------------------------------------
 	//                        VALUES
@@ -85,19 +84,22 @@ public enum DamageStatusEnum32 implements DataElement
 		return value.toByteArray();
 	}
 
-
 	@Override
-	public void decode( ByteWrapper byteWrapper ) throws DecoderException
+	public DamageStatusEnum32 valueOf( ByteWrapper value ) throws DecoderException
 	{
-		value.decode( byteWrapper );
+		RPRunsignedInteger32BE temp = new RPRunsignedInteger32BE();
+		temp.decode( value );
+		return valueOf( temp.getValue() );
 	}
 
-
 	@Override
-	public void decode( byte[] bytes ) throws DecoderException
+	public DamageStatusEnum32 valueOf( byte[] value ) throws DecoderException
 	{
-		value.decode( bytes );
+		RPRunsignedInteger32BE temp = new RPRunsignedInteger32BE();
+		temp.decode( value );
+		return valueOf( temp.getValue() );
 	}
+
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

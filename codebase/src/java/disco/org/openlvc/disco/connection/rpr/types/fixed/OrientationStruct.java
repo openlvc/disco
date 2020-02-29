@@ -66,6 +66,11 @@ public class OrientationStruct extends HLAfixedRecord
 		this.phi.setValue( angles.getPhi() );
 	}
 
+	public EulerAngles getDisValue()
+	{
+		return new EulerAngles( psi.getValue(), theta.getValue(), phi.getValue() );
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

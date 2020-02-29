@@ -17,10 +17,10 @@
  */
 package org.openlvc.disco.connection.rpr.types.fixed;
 
-import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
 
-public class SpatialStaticStruct extends HLAfixedRecord
+public class SpatialStaticStruct extends AbstractSpatialStruct
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -30,7 +30,7 @@ public class SpatialStaticStruct extends HLAfixedRecord
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private WorldLocationStruct worldLocation;
-	private EnumHolder<RPRboolean> isFrozen;
+	private RPRboolean isFrozen;
 	private OrientationStruct orientation;
 
 	//----------------------------------------------------------
@@ -39,7 +39,7 @@ public class SpatialStaticStruct extends HLAfixedRecord
 	public SpatialStaticStruct()
 	{
 		this.worldLocation = new WorldLocationStruct();
-		this.isFrozen = new EnumHolder<>( RPRboolean.False );
+		this.isFrozen = new RPRboolean( false );
 		this.orientation = new OrientationStruct();
 		
 		// Add to the elements to the parent so that it can do its generic fixed-record stuff
@@ -59,8 +59,21 @@ public class SpatialStaticStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue()
+	@Override
+	public SpatialStaticStruct fromPdu( EntityStatePdu pdu )
 	{
+		this.worldLocation.setValue( pdu.getLocation() );
+		this.isFrozen.setValue( pdu.isFrozen() );
+		this.orientation.setValue( pdu.getOrientation() );
+		return this;
+	}
+
+	@Override
+	public void toPdu( EntityStatePdu pdu )
+	{
+		pdu.setLocation( worldLocation.getDisValue() );
+		pdu.setFrozen( isFrozen.getValue() );
+		pdu.setOrientation( orientation.getDisValue() );
 	}
 
 	//----------------------------------------------------------

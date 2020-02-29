@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2020 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -15,78 +15,56 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.pdu.field.appearance;
-
-import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.disco.utils.BitField32;
+package org.openlvc.disco.pdu.field.appearance.enums;
 
 /**
- * This class will extract the Platform Apperance bits from a given 32-bit integer
- * are received in an {@link EntityStatePdu}.
+ * Platform trailing effects appearance values.
+ * 
+ * @see "SISO-REF-10 [UID 381]"
  */
-public class PlatformAppearance
+public enum TrailingEffects
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
-	private static final int INDEX_MKILL = 1;
-	private static final int INDEX_POWERPLANT = 22;
+	None  ( (byte)0 ),
+	Small ( (byte)1 ),
+	Medium( (byte)2 ),
+	Large ( (byte)3 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private BitField32 bitfield;
+	private byte value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public PlatformAppearance( int bits )
+	private TrailingEffects( byte value )
 	{
-		this.bitfield = new BitField32( bits );
-	}
-	
-	public PlatformAppearance()
-	{
-		this( 0 );
+		this.value = value;
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public int getBits()
+	public byte value()
 	{
-		return bitfield.getInt();
-	}
-	
-	public PlatformAppearance setBits( int bits )
-	{
-		this.bitfield.setInt( bits );
-		return this;
-	}
-	
-	public boolean isMobilityKilled()
-	{
-		return bitfield.isSet( INDEX_MKILL );
-	}
-
-	public PlatformAppearance setMobilityKilled( boolean mkill )
-	{
-		bitfield.setBit( INDEX_MKILL, mkill );
-		return this;
-	}
-	
-	public boolean isPowerplantOn()
-	{
-		return bitfield.isSet( INDEX_POWERPLANT );
-	}
-	
-	public PlatformAppearance setPowerplantOn( boolean on )
-	{
-		bitfield.setBit( INDEX_POWERPLANT, on );
-		return this;
+		return this.value;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static TrailingEffects fromValue( byte value )
+	{
+		switch( value )
+		{
+			case 0: return None;
+			case 1: return Small;
+			case 2: return Medium;
+			case 3: return Large;
+			default: throw new IllegalArgumentException( "Invalid Trailing Effects Code: "+value );
+		}
+	}
 }

@@ -71,6 +71,7 @@ public class CommonSetup
 			CONSOLE_LOG_LEVEL = "OFF";
 		
 		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
+		logConfiguration.setLevel( CONSOLE_LOG_LEVEL );
 		logConfiguration.activateConfiguration();
 
 		/////////////////////////////////////////

@@ -19,10 +19,13 @@ package org.openlvc.disco.connection.rpr.objects;
 
 import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.EntityTypeStruct;
-import org.openlvc.disco.connection.rpr.types.fixed.IsPartOfStruct;
 import org.openlvc.disco.connection.rpr.types.variant.SpatialVariantStruct;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 
+/**
+ * NOTE: IsPartOf and associated RelativeSpatial not yet supported as the PDUs that feed this
+ *       are not supported in Disco yet.
+ */
 public abstract class BaseEntity extends ObjectInstance
 {
 	//----------------------------------------------------------
@@ -34,10 +37,9 @@ public abstract class BaseEntity extends ObjectInstance
 	//----------------------------------------------------------
 	protected EntityTypeStruct entityType;
 	protected EntityIdentifierStruct entityIdentifier;
-	protected IsPartOfStruct isPartOf;
+	//protected IsPartOfStruct isPartOf;
 	protected SpatialVariantStruct spatial;
-	protected SpatialVariantStruct relativeSpatial;
-	
+	//protected SpatialVariantStruct relativeSpatial;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -46,9 +48,9 @@ public abstract class BaseEntity extends ObjectInstance
 	{
 		this.entityType = new EntityTypeStruct();
 		this.entityIdentifier = new EntityIdentifierStruct();
-		this.isPartOf = new IsPartOfStruct();
+		//this.isPartOf = new IsPartOfStruct();
 		this.spatial = new SpatialVariantStruct();
-		this.relativeSpatial = new SpatialVariantStruct();
+		//this.relativeSpatial = new SpatialVariantStruct();
 	}
 
 	//----------------------------------------------------------
@@ -68,20 +70,20 @@ public abstract class BaseEntity extends ObjectInstance
 		return entityIdentifier;
 	}
 
-	public IsPartOfStruct getIsPartOf()
-	{
-		return isPartOf;
-	}
+	//public IsPartOfStruct getIsPartOf()
+	//{
+	//	return isPartOf;
+	//}
 
 	public SpatialVariantStruct getSpatial()
 	{
 		return spatial;
 	}
 
-	public SpatialVariantStruct getRelativeSpatial()
-	{
-		return relativeSpatial;
-	}
+	//public SpatialVariantStruct getRelativeSpatial()
+	//{
+	//	return relativeSpatial;
+	//}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Decoding Methods   /////////////////////////////////////////////////////////////////
@@ -90,15 +92,18 @@ public abstract class BaseEntity extends ObjectInstance
 	{
 		this.entityType.setValue( incoming.getEntityType() );
 		this.entityIdentifier.setValue( incoming.getEntityID() );
-		//this.isPartOf.setValue(  );
-		//this.spatial.setValue(  );
-		//this.relativeSpatial.setValue( );
+		//this.isPartOf.setValue();
+		this.spatial.setValue( incoming );
+		//this.relativeSpatial.setValue();
 	}
 	
 	protected void toPdu( EntityStatePdu pdu )
 	{
 		pdu.setEntityType( entityType.getDisValue() );
 		pdu.setEntityID( entityIdentifier.getDisValue() );
+		//isPartOf
+		this.spatial.toPdu( pdu );
+		//relativeSpatial
 	}
 	
 	//----------------------------------------------------------

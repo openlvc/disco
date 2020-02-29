@@ -70,10 +70,39 @@ public class EntityTypeStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
+	public String toString()
+	{
+		return this.kind.getValue()+"."+this.domain.getValue()+"."+this.countryCode.getValue()+"."+
+		       this.category.getValue()+"."+this.subcategory.getValue()+"."+
+		       this.specific.getValue()+"."+this.extra.getValue();
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public void setLongValue( long bits )
+	{
+		kind.setValue( (byte)(bits) );
+		domain.setValue( (byte)(bits >> 8) );
+		countryCode.setValue( (short)(bits >> 16) );
+		category.setValue( (byte)(bits >> 32) );
+		subcategory.setValue( (byte)(bits >> 40) );
+		specific.setValue( (byte)(bits >> 48) );
+		extra.setValue( (byte)(bits >> 56) );
+	}
+	
+	public long getLongValue()
+	{
+		return ((long)kind.getValue())               |
+		       ((long)domain.getValue()      << 8)   |
+		       ((long)countryCode.getValue() << 16)  |
+		       ((long)category.getValue()    << 32)  |
+		       ((long)subcategory.getValue() << 40)  |
+		       ((long)specific.getValue()    << 48)  |
+		       ((long)extra.getValue()       << 56);
+	}
+
 	public void setValue( EntityType type )
 	{
 		this.kind.setUnsignedValue( type.getKind() );
@@ -96,6 +125,16 @@ public class EntityTypeStruct extends HLAfixedRecord
 		type.setSpecific( specific.getUnsignedValue());
 		type.setExtra( extra.getUnsignedValue() );
 		return type;
+	}
+
+	public Kind getDisKind()
+	{
+		return Kind.fromValue( kind.getUnsignedValue() );
+	}
+
+	public Domain getDisDomain()
+	{
+		return Domain.fromValue( domain.getUnsignedValue() );
 	}
 
 	//----------------------------------------------------------

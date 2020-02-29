@@ -117,7 +117,7 @@ public class RadioTransmitter extends EmbeddedSystem
 		this.rfModulationType = new RFmodulationTypeVariantStruct();
 		this.spreadSpectrum = new SpreadSpectrumVariantStruct();
 		this.streamTag = new RPRunsignedInteger64BE();
-		this.timeHopInUse = RPRboolean.False;
+		this.timeHopInUse = new RPRboolean(false);
 		this.transmittedPower = new HLAfloat32BE( 0.0f );
 		this.transmitterOperationalStatus = TransmitterOperationalStatusEnum8.Off;
 		this.worldLocation = new WorldLocationStruct();
@@ -126,11 +126,6 @@ public class RadioTransmitter extends EmbeddedSystem
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-//	public TransmitterPdu getPdu()
-//	{
-//		return this.pdu;
-//	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Decoding Methods   /////////////////////////////////////////////////////////////////
@@ -185,7 +180,7 @@ public class RadioTransmitter extends EmbeddedSystem
 		streamTag.setValue( StreamTag.encode(pdu.getEntityId(),pdu.getRadioID()) );
 
 		// TimeHopInUse
-		timeHopInUse = RPRboolean.valueOf( pdu.getModulationType().getSpreadSpectrum().isTimeHopping() );
+		timeHopInUse.setValue( pdu.getModulationType().getSpreadSpectrum().isTimeHopping() );
 		
 		// TransmittedPower
 		transmittedPower.setValue( pdu.getPower() );

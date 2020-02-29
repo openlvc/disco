@@ -17,10 +17,10 @@
  */
 package org.openlvc.disco.connection.rpr.types.fixed;
 
-import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
 
-public class SpatialRPStruct extends HLAfixedRecord
+public class SpatialRPStruct extends AbstractSpatialStruct
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -30,9 +30,9 @@ public class SpatialRPStruct extends HLAfixedRecord
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private WorldLocationStruct worldLocation;
-	private EnumHolder<RPRboolean> isFrozen;
+	private RPRboolean isFrozen;
 	private OrientationStruct orientation;
-	private VelocityVectorStruct velocityVector;
+	private VelocityVectorStruct linearVelocity;
 	private AngularVelocityVectorStruct angularVelocity;
 
 	//----------------------------------------------------------
@@ -41,16 +41,16 @@ public class SpatialRPStruct extends HLAfixedRecord
 	public SpatialRPStruct()
 	{
 		this.worldLocation = new WorldLocationStruct();
-		this.isFrozen = new EnumHolder<>( RPRboolean.False );
+		this.isFrozen = new RPRboolean( false );
 		this.orientation = new OrientationStruct();
-		this.velocityVector = new VelocityVectorStruct();
+		this.linearVelocity = new VelocityVectorStruct();
 		this.angularVelocity = new AngularVelocityVectorStruct();
 		
 		// Add to the elements to the parent so that it can do its generic fixed-record stuff
 		super.add( worldLocation );
 		super.add( isFrozen );
 		super.add( orientation );
-		super.add( velocityVector );
+		super.add( linearVelocity );
 		super.add( angularVelocity );
 	}
 
@@ -65,9 +65,27 @@ public class SpatialRPStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue()
+	@Override
+	public SpatialRPStruct fromPdu( EntityStatePdu pdu )
 	{
+		this.worldLocation.setValue( pdu.getLocation() );
+		this.isFrozen.setValue( pdu.isFrozen() );
+		this.orientation.setValue( pdu.getOrientation() );
+		this.linearVelocity.setValue( pdu.getLinearVelocity() );
+		this.angularVelocity.setValue( pdu.getDeadReckoningParams().getEntityAngularVelocity() );
+		return this;
 	}
+
+	@Override
+	public void toPdu( EntityStatePdu pdu )
+	{
+		pdu.setLocation( worldLocation.getDisValue() );
+		pdu.setFrozen( isFrozen.getValue() );
+		pdu.setOrientation( orientation.getDisValue() );
+		pdu.setLinearVelocity( linearVelocity.getDisValue() );
+		pdu.getDeadReckoningParams().setEntityAngularVelocity( angularVelocity.getDisValue() );
+	}
+
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

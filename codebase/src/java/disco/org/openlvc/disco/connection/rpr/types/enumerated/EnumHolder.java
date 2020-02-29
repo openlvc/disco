@@ -31,7 +31,7 @@ import hla.rti1516e.encoding.EncoderException;
  * For this to work properly, we need to reference an enum holder, which we can update (unlike
  * an enum directly) later on to point to the value we want, allowing that redirection.
  */
-public class EnumHolder<T extends DataElement> implements DataElement
+public class EnumHolder<T extends ExtendedDataElement<T>> implements DataElement
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -98,17 +98,31 @@ public class EnumHolder<T extends DataElement> implements DataElement
 	}
 
 
+	/**
+	 * Replaces the value we are wrapping with one that matches whatever comes out of the
+	 * given HLA byte wrapper. Calls through to {@link ExtendedDataElement#valueOf(ByteWrapper)}.
+	 * 
+	 * @param byteWrapper The value we need to find a match against the enum for
+	 * @throws DecoderException If we have trouble processing the given byte wrapper
+	 */
 	@Override
 	public void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
-		value.decode( byteWrapper );
+		value = value.valueOf( byteWrapper );
 	}
 
 
+	/**
+	 * Replaces the value we are wrapping with one that matches whatever comes out of the
+	 * array. This calls through to {@link ExtendedDataElement#valueOf(ByteWrapper)}.
+	 * 
+	 * @param bytes The value we need to find a match against the enum for
+	 * @throws DecoderException If we have trouble processing the given byte array
+	 */
 	@Override
 	public void decode( byte[] bytes ) throws DecoderException
 	{
-		value.decode( bytes );
+		value = value.valueOf( bytes );
 	}
 
 	//----------------------------------------------------------
