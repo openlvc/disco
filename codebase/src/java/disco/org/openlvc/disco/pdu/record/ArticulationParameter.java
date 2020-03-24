@@ -127,7 +127,7 @@ public class ArticulationParameter implements IPduComponent, Cloneable
 		dos.writeUI8( changeIndicator );
 		dos.writeUI16( attachedTo );
 		dos.writeUI32( parameterType );
-		dos.writeUI64( parameterValue );
+		dos.writeBits64( parameterValue );
     }
 	
 	@Override

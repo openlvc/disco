@@ -18,7 +18,6 @@
 package org.openlvc.disco.senders;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -138,15 +137,15 @@ public class SingleThreadSender extends PduSender
 					// Send it off to the network
 					connection.send( baos.toByteArray() );
 				}
-				catch( IOException ioex )
-				{
-					// warn about the error and move on to the next PDU
-					logger.warn( "Error trying to serialize PDU ("+pdu+"): "+ioex.getMessage(), ioex );
-				}
 				catch( InterruptedException ie )
 				{
 					// time to shut down
 					return;
+				}
+				catch( Exception ex )
+				{
+					// warn about the error and move on to the next PDU
+					logger.warn( "Error trying to serialize PDU ("+pdu+"): "+ex.getMessage(), ex );
 				}
 			}
 		}

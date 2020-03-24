@@ -133,6 +133,24 @@ public class DisOutputStream extends DataOutputStream
 		// Write value
 		write( valueAsBytes );
 	}
+
+	/**
+	 * Writes the bits of the given interger to the stream. Unlike {@link #writeUI64(BigInteger)},
+	 * there is no range check. We just write 64-bits to the stream.
+	 * 
+	 * @param value The value to write
+	 */
+	public void writeBits64( BigInteger value ) throws IOException
+	{
+		// Write any zero padding required
+		byte[] valueAsBytes = value.toByteArray();
+		int paddingRequired = Math.min( 0, (8-valueAsBytes.length) ); // only write 8 bytes
+		for( int i = 0 ; i < paddingRequired ; ++i )
+			write( 0 );
+		
+		// Write value
+		write( valueAsBytes, 0, 8 );
+	}
 	
 	/**
 	 * Writes <code>count</code> bytes of padding zeros to the stream.
