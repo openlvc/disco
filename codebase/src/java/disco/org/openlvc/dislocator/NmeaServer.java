@@ -273,8 +273,8 @@ public class NmeaServer
 	public String getLastKnownAsGGA()
 	{
 		LLA lla = lastKnownLocation;
-		Position position = new Position( lla.getLatitude(),
-		                                  lla.getLongitude(),
+		Position position = new Position( lla.getLatitudeDegrees(),
+		                                  lla.getLongitudeDegrees(),
 		                                  lla.getAltitude(),
 		                                  Datum.WGS84 );
 		ggaParser.setPosition( position );
@@ -286,7 +286,10 @@ public class NmeaServer
 	public String getLastKnownAsGLL()
 	{
 		LLA lla = lastKnownLocation;
-		Position pos = new Position( lla.getLatitude(), lla.getLongitude(), lla.getAltitude(), Datum.WGS84 );
+		Position pos = new Position( lla.getLatitudeDegrees(), 
+		                             lla.getLongitudeDegrees(), 
+		                             lla.getAltitude(), 
+		                             Datum.WGS84 );
 		gllParser.setPosition( pos );
 		gllParser.setTime( getCurrentTime() );
 		return gllParser.toSentence();
@@ -295,7 +298,10 @@ public class NmeaServer
 	public String getLastKnownAsRMC()
 	{
 		LLA lla = lastKnownLocation;
-		Position pos = new Position( lla.getLatitude(), lla.getLongitude(), lla.getAltitude(), Datum.WGS84 );
+		Position pos = new Position( lla.getLatitudeDegrees(), 
+		                             lla.getLongitudeDegrees(), 
+		                             lla.getAltitude(), 
+		                             Datum.WGS84 );
 		rmcParser.setPosition( pos );
 		rmcParser.setCourse( getCourse() ); // FIXME
 		rmcParser.setSpeed( getCurrentSpeed() );  // FIXME
@@ -330,10 +336,10 @@ public class NmeaServer
 	
 	private double getCourse()
 	{
-		double sinOfLatitude  = Math.sin(lastKnownLocation.getLatitude());
-		double sinOfLongitude = Math.sin(lastKnownLocation.getLongitude());
-		double cosOfLatitude  = Math.cos(lastKnownLocation.getLatitude());
-		double cosOfLongitude = Math.cos(lastKnownLocation.getLongitude());
+		double sinOfLatitude  = Math.sin(lastKnownLocation.getLatitudeRadians());
+		double sinOfLongitude = Math.sin(lastKnownLocation.getLongitudeRadians());
+		double cosOfLatitude  = Math.cos(lastKnownLocation.getLatitudeRadians());
+		double cosOfLongitude = Math.cos(lastKnownLocation.getLongitudeRadians());
 		double cosThetaCosPsi = Math.cos(lastKnownOrientation.getTheta()) * Math.cos(lastKnownOrientation.getPsi());
 		double cosThetaSinPsi = Math.cos(lastKnownOrientation.getTheta()) * Math.sin(lastKnownOrientation.getPsi());
 		double sinLatCosLong  = sinOfLatitude * cosOfLongitude;

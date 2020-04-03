@@ -72,13 +72,48 @@ public class LLATest
 	@Test
 	public void testDistanceBetweenTwoPoints()
 	{
-		LLA pointA = new LLA( 38.898556, -77.037852, 0 );
-		LLA pointB = new LLA( 38.897147, -77.043934, 0 );
+		LLA pointA = LLA.fromDegrees( 38.898556, -77.037852, 0 );
+		LLA pointB = LLA.fromDegrees( 38.897147, -77.043934, 0 );
 		double dist = pointB.distanceBetweenHavershine( pointA );
 		Assert.assertEquals( dist, 549.1557912038083 );
-		//System.out.println( "Distance between points: "+dist );
 	}
 
+	@Test
+	public void testDestinationFromPoint()
+	{
+		// north-east hemisphere
+		LLA pointA = LLA.fromDegrees( 38.898556, -77.037852, 0 );
+		LLA pointB = pointA.destination( 45, 100000 );
+		double dist = pointB.distanceBetweenHavershine( pointA );
+		Assert.assertEquals( dist, 100000, 0.001 );
+		Assert.assertEquals( pointB.getLatitudeDegrees(), 39.53166667, 0.001 );
+		Assert.assertEquals( pointB.getLongitudeDegrees(), -76.21333333, 0.001 );
+		
+		// north-west hemisphere
+		pointA = LLA.fromDegrees( 38.898556, 77.037852, 0 );
+		pointB = pointA.destination( 45, 100000 );
+		dist = pointB.distanceBetweenHavershine( pointA );
+		Assert.assertEquals( dist, 100000, 0.001 );
+		Assert.assertEquals( pointB.getLatitudeDegrees(), 39.53166667, 0.001 );
+		Assert.assertEquals( pointB.getLongitudeDegrees(), 77.86222222, 0.001 );
+		
+		// south-east hemisphere
+		pointA = LLA.fromDegrees( 31.9522, 115.8589, 0 );
+		pointB = pointA.destination( 45, 100000 );
+		dist = pointB.distanceBetweenHavershine( pointA );
+		Assert.assertEquals( dist, 100000, 0.001 );
+		Assert.assertEquals( pointB.getLatitudeDegrees(), 32.58583333, 0.001 );
+		Assert.assertEquals( pointB.getLongitudeDegrees(), 116.61361111, 0.001 );
+		
+		// south-west hemisphere
+		pointA = LLA.fromDegrees( -31.9522, 115.8589, 0 );
+		pointB = pointA.destination( 45, 100000 );
+		dist = pointB.distanceBetweenHavershine( pointA );
+		Assert.assertEquals( dist, 100000, 0.001 );
+		Assert.assertEquals( pointB.getLatitudeDegrees(), -31.31416667, 0.001 );
+		Assert.assertEquals( pointB.getLongitudeDegrees(), 116.60333333, 0.001 );
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

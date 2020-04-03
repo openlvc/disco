@@ -31,22 +31,35 @@ public class Configuration
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	public static final String KEY_CONFIG_FILE     = "disruptor.configfile";
-	public static final String KEY_LOG_LEVEL       = "disruptor.loglevel";
-	public static final String KEY_LOG_FILE        = "disruptor.logfile";
-	
-	public static final String KEY_OBJECT_COUNT    = "disruptor.objectCount";
-	public static final String KEY_LOOPS           = "disruptor.loops";
-	public static final String KEY_TICK_INTERVAL   = "disruptor.tickInterval";
-	
-	public static final String KEY_SIMULATION_ADDRESS = "disruptor.dis.simaddress";
+	// configuration file keys
+	public static final String KEY_CONFIG_FILE          = "disruptor.configfile";
+	public static final String KEY_LOG_LEVEL            = "disruptor.loglevel";
+	public static final String KEY_LOG_FILE             = "disruptor.logfile";
 
-	public static final String KEY_DISCO_LOG_LEVEL = "disruptor.disco.loglevel";
-	public static final String KEY_DISCO_ADDRESS   = "disruptor.dis.address";
-	public static final String KEY_DISCO_PORT      = "disruptor.dis.port";
-	public static final String KEY_DISCO_NIC       = "disruptor.dis.nic";
-	public static final String KEY_DISCO_EXID      = "disruptor.dis.exerciseId";
+	public static final String KEY_OBJECT_COUNT         = "disruptor.objectCount";
+	public static final String KEY_LOOPS                = "disruptor.loops";
+	public static final String KEY_TICK_INTERVAL        = "disruptor.tickInterval";
 
+	public static final String KEY_SIMULATION_ADDRESS   = "disruptor.dis.simaddress";
+
+	public static final String KEY_DISCO_LOG_LEVEL      = "disruptor.disco.loglevel";
+	public static final String KEY_DISCO_ADDRESS        = "disruptor.dis.address";
+	public static final String KEY_DISCO_PORT           = "disruptor.dis.port";
+	public static final String KEY_DISCO_NIC            = "disruptor.dis.nic";
+	public static final String KEY_DISCO_EXID           = "disruptor.dis.exerciseId";
+	
+	// configuration defaults
+	private static final String DEFAULT_CONFIG_FILE     = "etc/disruptor.config";
+	private static final String DEFAULT_PLAN_FILE       = "etc/disruptor.plan";
+	private static final String DEFAULT_LOOPS           = "300";
+	private static final String DEFAULT_TICK_INTERVAL   = "1000";
+	private static final String DEFAULT_SIM_ADDRESS     = "1-1-20913";
+	private static final String DEFAULT_LOG_LEVEL       = "INFO";
+	private static final String DEFAULT_DIS_EXERCISE_ID = "1";
+	private static final String DEFAULT_DIS_NIC         = "SITE_LOCAL";
+	private static final String DEFAULT_DIS_PORT        = "3000";
+	private static final String DEFAULT_DIS_ADDRESS     = "BROADCAST";
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -54,8 +67,9 @@ public class Configuration
 
 	private Logger applicationLogger;
 	private Log4jConfiguration loggingConfiguration;
-	
-	private String configFile = "etc/disruptor.config";
+
+	private String configFile = DEFAULT_CONFIG_FILE;
+	private String planFile   = DEFAULT_PLAN_FILE;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -73,12 +87,12 @@ public class Configuration
 		this.loggingConfiguration = new Log4jConfiguration( "disruptor" );
 		this.loggingConfiguration.setConsoleOn( true );
 		this.loggingConfiguration.setFileOn( false );
-		this.loggingConfiguration.setLevel( "INFO" );
+		this.loggingConfiguration.setLevel( DEFAULT_LOG_LEVEL );
 
 		// see if the user specified a config file on the command line before we process it
 		this.checkArgsForConfigFile( args );
 		this.loadConfigFile();
-		
+
 		// pull out any command line args and use them to override all values
 		this.applyCommandLine( args );
 	}
@@ -102,7 +116,7 @@ public class Configuration
     		{
     			throw new RuntimeException( "Problem parsing config file: "+e.getMessage(), e );
     		}
-    		
+
     		// store the loaded configuration
     		this.properties.putAll( fileProperties );
 		}
@@ -118,50 +132,45 @@ public class Configuration
 		temp.getUdpConfiguration().setAddress( getDisAddress() );
 		temp.getUdpConfiguration().setPort( getDisPort() );
 		temp.getUdpConfiguration().setNetworkInterface( getDisNic() );
-		
+
 		// DIS Settings
 		temp.getDisConfiguration().setExerciseId( getDisExerciseId() );
-		
+
 		// copy the logging configuration
-		temp.getLoggingConfiguration().setLevel( properties.getProperty(KEY_DISCO_LOG_LEVEL,"INFO") );
+		temp.getLoggingConfiguration().setLevel( properties.getProperty(KEY_DISCO_LOG_LEVEL,DEFAULT_LOG_LEVEL) );
 		temp.getLoggingConfiguration().setConsoleOn( loggingConfiguration.isConsoleOn() );
 		temp.getLoggingConfiguration().setFileOn( loggingConfiguration.isFileOn() );
-		
+
 		temp.setPduSender( properties.getProperty(DiscoConfiguration.PROP_PDU_SENDER) );
 		temp.setPduReceiver( properties.getProperty(DiscoConfiguration.PROP_PDU_RECEIVER) );
 
 		return temp;
 	}
 	
+	public String getPlanFile()
+	{
+		return this.planFile;
+	}
+
 	/** Get the Disruptor application logger. Will lazy-load configuration. */
 	public Logger getDisruptorLogger()
 	{
 		if( this.applicationLogger != null )
 			return applicationLogger;
-		
+
 		// check for any properties that may have been specified on command line to override
-		loggingConfiguration.setLevel( properties.getProperty(KEY_LOG_LEVEL,"INFO") );
-		
+		loggingConfiguration.setLevel( properties.getProperty(KEY_LOG_LEVEL,DEFAULT_LOG_LEVEL) );
+
 		this.loggingConfiguration.activateConfiguration();
 		this.applicationLogger = LogManager.getFormatterLogger( "disruptor" );
 		return applicationLogger;
 	}
 
-	public int getObjectCount()
-	{
-		return Integer.parseUnsignedInt( properties.getProperty(KEY_OBJECT_COUNT,"1000") );
-	}
-	
-	public void setObjectCount( int objectCount )
-	{
-		this.properties.put( KEY_OBJECT_COUNT, ""+objectCount );
-	}
-
 	public int getLoops()
 	{
-		return Integer.parseUnsignedInt( properties.getProperty(KEY_LOOPS,"300") ); 
+		return Integer.parseUnsignedInt( properties.getProperty(KEY_LOOPS,DEFAULT_LOOPS) );
 	}
-	
+
 	public void setLoops( int loops )
 	{
 		this.properties.put( KEY_LOOPS, ""+loops );
@@ -169,27 +178,27 @@ public class Configuration
 
 	public long getTickInterval()
 	{
-		return Long.parseUnsignedLong( properties.getProperty(KEY_TICK_INTERVAL,"1000") ); 
+		return Long.parseUnsignedLong( properties.getProperty(KEY_TICK_INTERVAL,DEFAULT_TICK_INTERVAL) );
 	}
-	
+
 	public void setTickInterval( long tickInterval )
 	{
 		this.properties.put( KEY_TICK_INTERVAL, ""+tickInterval );
 	}
-	
+
 	public void setLogLevel( String level )
 	{
 		loggingConfiguration.setLevel( level );
 	}
-	
+
 	//
 	// DIS & Networking
 	//
 	public String getSimulationAddress()
 	{
-		return properties.getProperty( KEY_SIMULATION_ADDRESS, "1-1-20913" );
+		return properties.getProperty( KEY_SIMULATION_ADDRESS, DEFAULT_SIM_ADDRESS );
 	}
-	
+
 	public void setSimulationAddress( String simulationAddress )
 	{
 		properties.put( KEY_SIMULATION_ADDRESS, simulationAddress );
@@ -197,17 +206,17 @@ public class Configuration
 
 	public String getDisAddress()
 	{
-		return properties.getProperty( KEY_DISCO_ADDRESS, "BROADCAST" );
+		return properties.getProperty( KEY_DISCO_ADDRESS, DEFAULT_DIS_ADDRESS );
 	}
-	
+
 	public void setDisAddress( String address )
 	{
 		this.properties.put( KEY_DISCO_ADDRESS, address );
 	}
-	
+
 	public int getDisPort()
 	{
-		return Integer.parseUnsignedInt( properties.getProperty(KEY_DISCO_PORT,"3000") );
+		return Integer.parseUnsignedInt( properties.getProperty(KEY_DISCO_PORT,DEFAULT_DIS_PORT) );
 	}
 
 	public void setDisPort( int port )
@@ -217,22 +226,22 @@ public class Configuration
 
 	public String getDisNic()
 	{
-		return properties.getProperty( KEY_DISCO_NIC, "SITE_LOCAL" );
+		return properties.getProperty( KEY_DISCO_NIC, DEFAULT_DIS_NIC );
 	}
-	
+
 	public void setDisNic( String iface )
 	{
 		this.properties.put( KEY_DISCO_NIC, iface );
 	}
-	
+
 	public void setDisExerciseId( String id )
 	{
 		this.properties.put( KEY_DISCO_EXID, id );
 	}
-	
+
 	public short getDisExerciseId()
 	{
-		return Short.parseShort( properties.getProperty(KEY_DISCO_EXID,"1") );
+		return Short.parseShort( properties.getProperty(KEY_DISCO_EXID,DEFAULT_DIS_EXERCISE_ID) );
 	}
 
 	//
@@ -273,7 +282,7 @@ public class Configuration
 			}
 		}
 	}
-
+	
 	/**
 	 * Apply the given command line args to override any defaults that we have
 	 */
@@ -284,10 +293,10 @@ public class Configuration
 			String argument = args[i];
 			if( argument.equalsIgnoreCase("--config-file") )
 				this.configFile = args[++i];
+			else if( argument.equalsIgnoreCase("--plan-file") )
+				this.planFile = args[++i];
 			else if( argument.equalsIgnoreCase("--log-level") )
 				this.loggingConfiguration.setLevel( args[++i] );
-			else if( argument.equalsIgnoreCase("--objects") )
-				this.setObjectCount( Integer.parseInt(args[++i]) );
 			else if( argument.equalsIgnoreCase("--tick-interval") )
 				this.setTickInterval( Long.parseLong(args[++i]) );
 			else if( argument.equalsIgnoreCase("--loops") )
@@ -320,16 +329,16 @@ public class Configuration
 		System.out.println( "Usage: bin/disruptor [--args]" );
 		System.out.println( "" );
 
-		System.out.println( "  --config-file         integer  (optional)  Number of objects to create                (default: 100)" );
-		System.out.println( "  --objects             integer  (optional)  Number of objects to create                (default: 100)" );
-		System.out.println( "  --loops               integer  (optional)  Numbber of sim-loops to run                (default: 300)" );
-		System.out.println( "  --tick-interval       integer  (optional)  Millis between update tick cycle           (default: 1000)");
-		System.out.println( "  --simulation-address  string   (optional)  Simulation Address                         (default: 1-1-20913)" );
-		System.out.println( "  --log-level           string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE]    (default: INFO)" );
-		System.out.println( "  --dis-exercise-id     short    (optional)  Ex ID to send in outgoing and only recv on (default: 1)" );
-		System.out.println( "  --dis-address         string   (optional)  Where to send DIS traffic, or BROADCAST    (default: BROADCAST)" );
-		System.out.println( "  --dis-port            integer  (optional)  Port for DIS traffic                       (default: 3000)" );
-		System.out.println( "  --dis-interface       string   (optional)  NIC to use. Address or a special symbol:   (default: SITE_LOCAL)" );
+		System.out.println( "  --config-file         string   (optional)  path to configuration file                 (default: "+DEFAULT_CONFIG_FILE+")" );
+		System.out.println( "  --plan-file           string   (optional)  path to plan file                          (default: "+DEFAULT_PLAN_FILE+")" );
+		System.out.println( "  --loops               integer  (optional)  Numbber of sim-loops to run                (default: "+DEFAULT_LOOPS+")" );
+		System.out.println( "  --tick-interval       integer  (optional)  Millis between update tick cycle           (default: "+DEFAULT_TICK_INTERVAL+")");
+		System.out.println( "  --simulation-address  string   (optional)  Simulation Address                         (default: "+DEFAULT_SIM_ADDRESS+")" );
+		System.out.println( "  --log-level           string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE]    (default: "+DEFAULT_LOG_LEVEL+")" );
+		System.out.println( "  --dis-exercise-id     short    (optional)  Ex ID to send in outgoing and only recv on (default: "+DEFAULT_DIS_EXERCISE_ID+")" );
+		System.out.println( "  --dis-address         string   (optional)  Where to send DIS traffic, or BROADCAST    (default: "+DEFAULT_DIS_ADDRESS+")" );
+		System.out.println( "  --dis-port            integer  (optional)  Port for DIS traffic                       (default: "+DEFAULT_DIS_PORT+")" );
+		System.out.println( "  --dis-interface       string   (optional)  NIC to use. Address or a special symbol:   (default: "+DEFAULT_DIS_NIC+")" );
 		System.out.println( "                                             LOOPBACK, LINK_LOCAL, SITE_LOCAL, GLOBAL" );
 		System.out.println( "  --pdu-sender          string   (optional)  single-thread, thread-pool, simple         (default: single-thread)" );
 		System.out.println( "  --pdu-receiver        string   (optional)  single-thread, thread-pool, simple         (default: single-thread)" );

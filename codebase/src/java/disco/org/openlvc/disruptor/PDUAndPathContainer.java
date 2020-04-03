@@ -1,5 +1,5 @@
 /*
- *   Copyright 2016 Open LVC Project.
+ *   Copyright 2019 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -17,7 +17,17 @@
  */
 package org.openlvc.disruptor;
 
-public class Main
+import java.util.ArrayList;
+import java.util.List;
+
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disruptor.paths.IPath;
+
+/**
+ * A simple container class to hold the details of a path and the PDUs of entities which are
+ * travelling along it
+ */
+public class PDUAndPathContainer
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -26,38 +36,48 @@ public class Main
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private List<EntityStatePdu> entityStatePdus;
+	private IPath path;
+	private double spacing;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public PDUAndPathContainer(IPath path, double spacing)
+	{
+		this.path = path;
+		this.spacing = spacing;
+		this.entityStatePdus = new ArrayList<EntityStatePdu>();
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run( String[] args ) throws Exception
+	public void addEntityStatePdu( EntityStatePdu pdu )
 	{
-		// Load configuration
-		Configuration configuration = new Configuration( args );
-
-		// Run the load master
-		Disruptor disillusion = new Disruptor( configuration );
-		disillusion.execute();
+		this.entityStatePdus.add( pdu );
 	}
+	
+	public IPath getPath()
+	{
+		return this.path;
+	}
+
+	public double getSpacing()
+	{
+		return this.spacing;
+	}
+	
+	public List<EntityStatePdu> getEntityStatePdus()
+	{
+		return this.entityStatePdus;
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args ) throws Exception
-	{
-		for( String string : args )
-		{
-			if( string.equalsIgnoreCase("--help") )
-			{
-				Configuration.printHelp();
-				return;
-			}
-		}
-		
-		new Main().run( args );
-	}
 }

@@ -40,7 +40,9 @@ public class PduListener implements IPduListener
 
 	public void receive( PDU pdu )
 	{
-		// no-op for us
+		// The disruptor does not concern itself with such
+		// trivialities as mere "incoming PDUs". It is
+		// above such things.
 	}
 
 	//----------------------------------------------------------
