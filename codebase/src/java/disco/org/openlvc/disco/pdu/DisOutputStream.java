@@ -144,12 +144,12 @@ public class DisOutputStream extends DataOutputStream
 	{
 		// Write any zero padding required
 		byte[] valueAsBytes = value.toByteArray();
-		int paddingRequired = Math.min( 0, (8-valueAsBytes.length) ); // only write 8 bytes
+		int paddingRequired = Math.max( 0, (8-valueAsBytes.length) ); // only write 8 bytes
 		for( int i = 0 ; i < paddingRequired ; ++i )
 			write( 0 );
 		
 		// Write value
-		write( valueAsBytes, 0, 8 );
+		write( valueAsBytes );
 	}
 	
 	/**
