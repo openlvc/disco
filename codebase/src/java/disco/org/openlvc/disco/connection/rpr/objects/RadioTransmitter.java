@@ -26,6 +26,7 @@ import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger64BE;
 import org.openlvc.disco.connection.rpr.types.basic.StreamTag;
 import org.openlvc.disco.connection.rpr.types.enumerated.CryptographicModeEnum32;
 import org.openlvc.disco.connection.rpr.types.enumerated.CryptographicSystemTypeEnum16;
+import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.RFmodulationSystemTypeEnum16;
 import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
 import org.openlvc.disco.connection.rpr.types.enumerated.RadioInputSourceEnum8;
@@ -78,21 +79,21 @@ public class RadioTransmitter extends EmbeddedSystem
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private AntennaPatternVariantStructLengthlessArray antennaPatternDataArray; // FIXME
-	private CryptographicModeEnum32 cryptographicMode;
-	private CryptographicSystemTypeEnum16 cryptoSystem;
+	private EnumHolder<CryptographicModeEnum32> cryptographicMode;
+	private EnumHolder<CryptographicSystemTypeEnum16> cryptoSystem;
 	private RPRunsignedInteger16BE encryptionKeyIdentifier;
 	private RPRunsignedInteger64BE frequency;
 	private HLAfloat32BE frequencyBandwidth;
 	private RPRunsignedInteger16BE radioIndex;
-	private RadioInputSourceEnum8 radioInputSource;
+	private EnumHolder<RadioInputSourceEnum8> radioInputSource;
 	private RadioTypeStruct radioSystemType;
-	private RFmodulationSystemTypeEnum16 rfModulationSystemType;
+	private EnumHolder<RFmodulationSystemTypeEnum16> rfModulationSystemType;
 	private RFmodulationTypeVariantStruct rfModulationType;
 	private SpreadSpectrumVariantStruct spreadSpectrum;
 	private RPRunsignedInteger64BE streamTag;
 	private RPRboolean timeHopInUse;
 	private HLAfloat32BE transmittedPower;
-	private TransmitterOperationalStatusEnum8 transmitterOperationalStatus;
+	private EnumHolder<TransmitterOperationalStatusEnum8> transmitterOperationalStatus;
 	private WorldLocationStruct worldLocation;
 
 	//----------------------------------------------------------
@@ -105,21 +106,21 @@ public class RadioTransmitter extends EmbeddedSystem
 		this.antennaPatternDataArray = new AntennaPatternVariantStructLengthlessArray();
 		this.antennaPatternDataArray.addElement( new AntennaPatternVariantStruct() );
 
-		this.cryptographicMode = CryptographicModeEnum32.BasebandEncryption;
-		this.cryptoSystem = CryptographicSystemTypeEnum16.Other;
+		this.cryptographicMode = new EnumHolder<>( CryptographicModeEnum32.BasebandEncryption );
+		this.cryptoSystem = new EnumHolder<>( CryptographicSystemTypeEnum16.Other );
 		this.encryptionKeyIdentifier = new RPRunsignedInteger16BE(0);
 		this.frequency = new RPRunsignedInteger64BE( BigInteger.ZERO );
 		this.frequencyBandwidth = new HLAfloat32BE( 0.0f );
 		this.radioIndex = new RPRunsignedInteger16BE(1);
-		this.radioInputSource = RadioInputSourceEnum8.Other;
+		this.radioInputSource = new EnumHolder<>( RadioInputSourceEnum8.Other );
 		this.radioSystemType = new RadioTypeStruct();
-		this.rfModulationSystemType = RFmodulationSystemTypeEnum16.Other;
+		this.rfModulationSystemType = new EnumHolder<>( RFmodulationSystemTypeEnum16.Other );
 		this.rfModulationType = new RFmodulationTypeVariantStruct();
 		this.spreadSpectrum = new SpreadSpectrumVariantStruct();
 		this.streamTag = new RPRunsignedInteger64BE();
 		this.timeHopInUse = new RPRboolean(false);
 		this.transmittedPower = new HLAfloat32BE( 0.0f );
-		this.transmitterOperationalStatus = TransmitterOperationalStatusEnum8.Off;
+		this.transmitterOperationalStatus = new EnumHolder<>( TransmitterOperationalStatusEnum8.Off );
 		this.worldLocation = new WorldLocationStruct();
 	}
 	
@@ -144,10 +145,10 @@ public class RadioTransmitter extends EmbeddedSystem
 		antennaPatternDataArray.get(0).setValue( pdu.getAntennaPatternType() );
 		
 		// CryptographicMode
-		cryptographicMode = CryptographicModeEnum32.valueOf( pdu.getCryptoKey() );
+		cryptographicMode.setEnum( CryptographicModeEnum32.valueOf(pdu.getCryptoKey()) );
 
 		// CryptoSystem
-		cryptoSystem = CryptographicSystemTypeEnum16.valueOf( pdu.getCryptoSystem().value() );
+		cryptoSystem.setEnum( CryptographicSystemTypeEnum16.valueOf(pdu.getCryptoSystem().value()) );
 		
 		// EncryptionKeyIdentifier
 		encryptionKeyIdentifier.setValue( pdu.getCryptoKey() );
@@ -162,13 +163,13 @@ public class RadioTransmitter extends EmbeddedSystem
 		radioIndex.setValue( pdu.getRadioID() );
 		
 		// RadioInputSource
-		radioInputSource = RadioInputSourceEnum8.valueOf( pdu.getInputSource().value() );
+		radioInputSource.setEnum( RadioInputSourceEnum8.valueOf(pdu.getInputSource().value()) );
 		
 		// RadioSystemType
 		radioSystemType.setValue( pdu.getRadioEntityType() );
 		
 		// RFModulationSystemType
-		rfModulationSystemType = RFmodulationSystemTypeEnum16.valueOf( pdu.getModulationType().getSystem().value() );
+		rfModulationSystemType.setEnum( RFmodulationSystemTypeEnum16.valueOf(pdu.getModulationType().getSystem().value()) );
 
 		// RFModulationType
 		rfModulationType.setValue( pdu.getModulationType().getMajorModulationType() ); // FIXME
@@ -186,7 +187,7 @@ public class RadioTransmitter extends EmbeddedSystem
 		transmittedPower.setValue( pdu.getPower() );
 		
 		// TransmitterOperationalStatus
-		transmitterOperationalStatus = TransmitterOperationalStatusEnum8.valueOf( pdu.getTransmitState().value() );
+		transmitterOperationalStatus.setEnum( TransmitterOperationalStatusEnum8.valueOf(pdu.getTransmitState().value()) );
 		
 		// WorldLocation
 		worldLocation.setValue( pdu.getAntennaLocation().getAntennaLocation() );
@@ -210,10 +211,10 @@ public class RadioTransmitter extends EmbeddedSystem
 		pdu.setAntennaPattern( as.getDisDiscriminant(), as.getDisValue() );
 		
 		// CryptographicMode
-		pdu.setCryptoKey( (int)cryptographicMode.getValue() );
+		pdu.setCryptoKey( (int)cryptographicMode.getEnum().getValue() );
 
 		// CryptoSystem
-		pdu.setCryptoSystem( CryptoSystem.fromValue(cryptoSystem.getValue()) );
+		pdu.setCryptoSystem( CryptoSystem.fromValue(cryptoSystem.getEnum().getValue()) );
 		
 		// EncryptionKeyIdentifier
 		pdu.setCryptoKey( encryptionKeyIdentifier.getValue() );
@@ -228,13 +229,13 @@ public class RadioTransmitter extends EmbeddedSystem
 		pdu.setRadioID( radioIndex.getValue() );
 		
 		// RadioInputSource
-		pdu.setInputSource( InputSource.fromValue(radioInputSource.getValue()) );
+		pdu.setInputSource( InputSource.fromValue(radioInputSource.getEnum().getValue()) );
 		
 		// RadioSystemType
 		pdu.setRadioEntityType( radioSystemType.getDisValue() );
 		
 		// RFModulationSystemType
-		pdu.getModulationType().setSystem( ModulationSystem.fromValue(rfModulationSystemType.getValue()) );
+		pdu.getModulationType().setSystem( ModulationSystem.fromValue(rfModulationSystemType.getEnum().getValue()) );
 
 		// RFModulationType
 		pdu.getModulationType().setMajorModulationType( MajorModulationType.fromValue(rfModulationType.getDiscriminant().getValue()) );
@@ -252,7 +253,7 @@ public class RadioTransmitter extends EmbeddedSystem
 		pdu.setPower( transmittedPower.getValue() );
 		
 		// TransmitterOperationalStatus
-		pdu.setTransmitState( TransmitState.fromValue(transmitterOperationalStatus.getValue()) );
+		pdu.setTransmitState( TransmitState.fromValue(transmitterOperationalStatus.getEnum().getValue()) );
 		
 		// WorldLocation
 		pdu.getAntennaLocation().setAntennaLocation( worldLocation.getDisValue() );
@@ -269,12 +270,12 @@ public class RadioTransmitter extends EmbeddedSystem
 		return antennaPatternDataArray;
 	}
 
-	public CryptographicModeEnum32 getCryptographicMode()
+	public EnumHolder<CryptographicModeEnum32> getCryptographicMode()
 	{
 		return cryptographicMode;
 	}
 
-	public CryptographicSystemTypeEnum16 getCryptoSystem()
+	public EnumHolder<CryptographicSystemTypeEnum16> getCryptoSystem()
 	{
 		return cryptoSystem;
 	}
@@ -299,7 +300,7 @@ public class RadioTransmitter extends EmbeddedSystem
 		return radioIndex;
 	}
 
-	public RadioInputSourceEnum8 getRadioInputSource()
+	public EnumHolder<RadioInputSourceEnum8> getRadioInputSource()
 	{
 		return radioInputSource;
 	}
@@ -309,7 +310,7 @@ public class RadioTransmitter extends EmbeddedSystem
 		return radioSystemType;
 	}
 
-	public RFmodulationSystemTypeEnum16 getRfModulationSystemType()
+	public EnumHolder<RFmodulationSystemTypeEnum16> getRfModulationSystemType()
 	{
 		return rfModulationSystemType;
 	}
@@ -339,7 +340,7 @@ public class RadioTransmitter extends EmbeddedSystem
 		return transmittedPower;
 	}
 
-	public TransmitterOperationalStatusEnum8 getTransmitterOperationalStatus()
+	public EnumHolder<TransmitterOperationalStatusEnum8> getTransmitterOperationalStatus()
 	{
 		return transmitterOperationalStatus;
 	}

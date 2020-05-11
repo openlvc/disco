@@ -17,7 +17,6 @@
  */
 package org.openlvc.disco.senders;
 
-import java.io.ByteArrayOutputStream;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -124,7 +123,6 @@ public class SingleThreadSender extends PduSender
 					pdu = sendQueue.take();
 					
 					// Send it off to the network
-					connection.send( baos.toByteArray() );
 					connection.send( pdu );
 				}
 				catch( InterruptedException ie )

@@ -31,7 +31,7 @@ import org.json.simple.JSONObject;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.connection.Metrics;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.disco.pdu.field.appearance.CommonAppearance;
+import org.openlvc.disco.pdu.field.appearance.GroundPlatformAppearance;
 import org.openlvc.disco.pdu.record.EntityType;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
 import org.openlvc.disco.utils.CoordinateUtils;
@@ -117,7 +117,7 @@ public class Disruptor
 			opscenter.close();
 		}
 
-		logger.info( "DIS illusions have been dispelled - normality has been restored." );
+		logger.info( "DIS connection has been closed" );
 
 		Metrics metrics = opscenter.getMetrics();
 		long sent = metrics.getPdusSent();
@@ -205,21 +205,20 @@ public class Disruptor
 		JSONObject sessionConfig;
 		if( !planFile.exists() )
 		{
-			throw new RuntimeException( "Could not find DISillusion plan configuration file: '" +
+			throw new RuntimeException( "Could not find Disruptor plan configuration file: '" +
 			                            planFile.getAbsoluteFile() + "'" );
 		}
 		{
-    		// configuration file exists, load the properties into it
-    		try
-    		{
-    			sessionConfig = JsonUtils.readObjectFromFile( planFile );
-    		}
-    		catch( Exception e )
-    		{
-				throw new RuntimeException( "Problem parsing DISillusion plan configuration file: '" +
-				                            planFile.getAbsoluteFile() + "'" + e.getMessage(),
-				                            e );
-    		}
+			// configuration file exists, load the properties into it
+			try
+			{
+				sessionConfig = JsonUtils.readObjectFromFile( planFile );
+			}
+			catch( Exception e )
+			{
+				throw new RuntimeException( "Problem parsing Disruptor plan configuration file: '" +
+				                            planFile.getAbsoluteFile() + "'" + e.getMessage(), e );
+            }
 		}
 		
 		// process entity type aliasing lookups
@@ -260,7 +259,7 @@ public class Disruptor
 				pdu.setEntityType( entityType );
 
 				pdu.setMarking( "D"+(idx+1)+"E"+i );
-				pdu.setAppearance( new PlatformAppearance().setPowerplantOn(true).getBits() );
+				pdu.setAppearance( new GroundPlatformAppearance().setPowerplantOn(true).getBits() );
 				LLA startLocation = entityPath.getLLA( 0, entitySpacing*(i-1) );
 				WorldCoordinate ecefLocation = CoordinateUtils.toECEF(startLocation);
 				pdu.setLocation( ecefLocation );
@@ -268,17 +267,8 @@ public class Disruptor
 
 				container.addEntityStatePdu( pdu );
 			}
-			
-			EntityStatePdu pdu = new EntityStatePdu();
-			pdu.setEntityID( siteId, 20913, ++entityId );
-			pdu.setEntityType( new EntityType(1, 1, 225, 1, 2, 3, 4) );
-			
-			//pdu.setMarking( "DSRPT"+i );
-			pdu.setMarking( "ER"+i );
-			pdu.setAppearance( new CommonAppearance().setPowerplantOn(true).getBits() );
-			pdu.setLocation( CoordinateUtils.toECEF(new LLA(-31.9522,115.8589,0)) );
-			
-			entities.add( pdu );
+
+			pduAndPathContainers.add( container );
 		}
 	}
 

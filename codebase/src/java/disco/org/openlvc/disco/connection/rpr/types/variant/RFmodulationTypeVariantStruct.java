@@ -21,6 +21,7 @@ import org.openlvc.disco.connection.rpr.types.enumerated.AmplitudeAngleModulatio
 import org.openlvc.disco.connection.rpr.types.enumerated.AmplitudeModulationTypeEnum16;
 import org.openlvc.disco.connection.rpr.types.enumerated.AngleModulationTypeEnum16;
 import org.openlvc.disco.connection.rpr.types.enumerated.CombinationModulationTypeEnum16;
+import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.MajorRFModulationTypeEnum16;
 import org.openlvc.disco.connection.rpr.types.enumerated.PulseModulationTypeEnum16;
 import org.openlvc.disco.connection.rpr.types.enumerated.UnmodulatedTypeEnum16;
@@ -43,13 +44,14 @@ public class RFmodulationTypeVariantStruct extends HLAvariantRecord<MajorRFModul
 	{
 		super();
 		
-		super.setVariant( MajorRFModulationTypeEnum16.Other, MajorRFModulationTypeEnum16.Other );
-		super.setVariant( MajorRFModulationTypeEnum16.Amplitude, AmplitudeModulationTypeEnum16.Other );
-		super.setVariant( MajorRFModulationTypeEnum16.AmplitudeAndAngle, AmplitudeAngleModulationTypeEnum16.Other );
-		super.setVariant( MajorRFModulationTypeEnum16.Angle, AngleModulationTypeEnum16.Other );
-		super.setVariant( MajorRFModulationTypeEnum16.Combination, CombinationModulationTypeEnum16.Other );
-		super.setVariant( MajorRFModulationTypeEnum16.Pulse, PulseModulationTypeEnum16.Other );
-		super.setVariant( MajorRFModulationTypeEnum16.Unmodulated, UnmodulatedTypeEnum16.Other );
+		super.setVariant( MajorRFModulationTypeEnum16.Other, EnumHolder.from(MajorRFModulationTypeEnum16.Other) );
+		super.setVariant( MajorRFModulationTypeEnum16.Other, EnumHolder.from(MajorRFModulationTypeEnum16.Other) );
+		super.setVariant( MajorRFModulationTypeEnum16.Amplitude, EnumHolder.from(AmplitudeModulationTypeEnum16.Other) );
+		super.setVariant( MajorRFModulationTypeEnum16.AmplitudeAndAngle, EnumHolder.from(AmplitudeAngleModulationTypeEnum16.Other) );
+		super.setVariant( MajorRFModulationTypeEnum16.Angle, EnumHolder.from(AngleModulationTypeEnum16.Other) );
+		super.setVariant( MajorRFModulationTypeEnum16.Combination, EnumHolder.from(CombinationModulationTypeEnum16.Other) );
+		super.setVariant( MajorRFModulationTypeEnum16.Pulse, EnumHolder.from(PulseModulationTypeEnum16.Other) );
+		super.setVariant( MajorRFModulationTypeEnum16.Unmodulated, EnumHolder.from(UnmodulatedTypeEnum16.Other) );
 	}
 	
 	//----------------------------------------------------------

@@ -128,4 +128,9 @@ public class EnumHolder<T extends ExtendedDataElement<T>> implements DataElement
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static <T extends ExtendedDataElement<T>> EnumHolder<T> from( T value )
+	{
+		return new EnumHolder<>( value );
+	}
+	
 }

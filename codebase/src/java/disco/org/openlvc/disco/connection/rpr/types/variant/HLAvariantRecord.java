@@ -20,6 +20,7 @@ package org.openlvc.disco.connection.rpr.types.variant;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.ExtendedDataElement;
 
@@ -73,6 +74,9 @@ public class HLAvariantRecord<T extends ExtendedDataElement<T>> implements hla.r
 	@Override
 	public void setVariant( T discriminant, DataElement dataElement )
 	{
+		if( dataElement instanceof Enum )
+			throw new DiscoException( "Data Element cannot be an Java enum, must be in EnumHolder" );
+		
 		if( discriminant == null )
 			throw new IllegalArgumentException( "Discriminant cannot be null" );
 		else if( dataElement == null )

@@ -222,7 +222,7 @@ public class RprFomTest extends AbstractTest
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Entity State PDU Tests   //////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-	@Test(groups= {"rpr-espdu"})
+	@Test(groups={"rpr-espdu"})
 	public void testRprEntityState()
 	{
 		// 1. Prepare the values we will use
@@ -358,14 +358,14 @@ public class RprFomTest extends AbstractTest
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	// Run some stuff standalone, without the TestNG harness
-	public static void main( String[] args ) throws Exception
-	{
-		CommonSetup.commonBeforeSuiteSetup();
-		RprFomTest test = new RprFomTest();
-		test.beforeClass();
-		test.beforeMethod();
-		test.testRprEntityState();
-		test.afterMethod();
-		test.afterClass();
-	}
+//	public static void main( String[] args ) throws Exception
+//	{
+//		CommonSetup.commonBeforeSuiteSetup();
+//		RprFomTest test = new RprFomTest();
+//		test.beforeClass();
+//		test.beforeMethod();
+//		test.testRprEntityState();
+//		test.afterMethod();
+//		test.afterClass();
+//	}
 }

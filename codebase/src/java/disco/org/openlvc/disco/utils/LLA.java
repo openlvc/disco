@@ -50,35 +50,7 @@ public class LLA
 		this( 0.0, 0.0, 0.0 );
 	}
 
-	public static LLA fromDegrees( double lat, double lon, double alt )
-	{
-		return new LLA( lat, lon, alt );
-	}
-
-	public static LLA fromRadians( double lat, double lon, double alt )
-	{
-		return new LLA( Math.toDegrees( lat ), Math.toDegrees( lon ), alt );
-	}
-
-	public static LLA fromECEF( WorldCoordinate ecef )
-	{
-		return CoordinateUtils.toLLA( ecef );
-	}
-
-	public static LLA fromLLA( LLA other )
-	{
-		return new LLA( other.latDeg, other.lonDeg, other.alt );
-	}
-
-	public static LLA fromJSON( JSONObject json )
-	{
-		double lat = JsonUtils.getDouble( json, "lat", 0.0 );
-		double lon = JsonUtils.getDouble( json, "lon", 0.0 );
-		double alt = JsonUtils.getDouble( json, "alt", 0.0 );
-		return LLA.fromDegrees( lat, lon, alt );
-	}
-
-	private LLA( double lat, double lon, double alt )
+	public LLA( double lat, double lon, double alt )
 	{
 		this.latDeg = lat;
 		this.lonDeg = lon;
@@ -278,4 +250,32 @@ public class LLA
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static LLA fromDegrees( double lat, double lon, double alt )
+	{
+		return new LLA( lat, lon, alt );
+	}
+
+	public static LLA fromRadians( double lat, double lon, double alt )
+	{
+		return new LLA( Math.toDegrees( lat ), Math.toDegrees( lon ), alt );
+	}
+
+	public static LLA fromECEF( WorldCoordinate ecef )
+	{
+		return CoordinateUtils.toLLA( ecef );
+	}
+
+	public static LLA fromLLA( LLA other )
+	{
+		return new LLA( other.latDeg, other.lonDeg, other.alt );
+	}
+
+	public static LLA fromJSON( JSONObject json )
+	{
+		double lat = JsonUtils.getDouble( json, "lat", 0.0 );
+		double lon = JsonUtils.getDouble( json, "lon", 0.0 );
+		double alt = JsonUtils.getDouble( json, "alt", 0.0 );
+		return LLA.fromDegrees( lat, lon, alt );
+	}
+
 }
