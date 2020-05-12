@@ -120,7 +120,7 @@ public class EntityStatePdu extends PDU
 		orientation.from( dis );
 		appearance = dis.readInt();
 		deadReckoningParams.from( dis );
-		marking = dis.readString( 11 );
+		marking = dis.readString( 11 ).trim(); // Should we do the trim?? Not sure
 		capabilities.from( dis );
 
 		articulationParameters.clear();

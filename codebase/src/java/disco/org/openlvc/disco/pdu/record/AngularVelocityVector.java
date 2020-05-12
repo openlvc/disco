@@ -64,22 +64,22 @@ public class AngularVelocityVector implements IPduComponent, Cloneable
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 	@Override
-	public boolean equals( Object other )
+	public boolean equals( Object object )
 	{
 		boolean equal = false;
 		
-		if( other == this )
+		if( object == this )
 		{
 			equal = true;
 		}
 		else
 		{
-			if( other instanceof AngularVelocityVector )
+			if( object instanceof AngularVelocityVector )
 			{
-				AngularVelocityVector asAngularVelocityVector = (AngularVelocityVector)other;
-				equal = asAngularVelocityVector.rateAboutXAxis == this.rateAboutXAxis 
-					&& asAngularVelocityVector.rateAboutYAxis == this.rateAboutYAxis
-					&& asAngularVelocityVector.rateAboutZAxis == this.rateAboutZAxis;
+				AngularVelocityVector other = (AngularVelocityVector)object;
+				equal = other.rateAboutXAxis == this.rateAboutXAxis && 
+					    other.rateAboutYAxis == this.rateAboutYAxis  &&
+					    other.rateAboutZAxis == this.rateAboutZAxis;
 			}
 		}
 		
@@ -98,9 +98,9 @@ public class AngularVelocityVector implements IPduComponent, Cloneable
 	@Override
     public void from( DisInputStream dis ) throws IOException
     {
-		rateAboutXAxis = dis.readUI32();
-		rateAboutYAxis = dis.readUI32();
-		rateAboutZAxis = dis.readUI32();
+		rateAboutXAxis = dis.readFloat();
+		rateAboutYAxis = dis.readFloat();
+		rateAboutZAxis = dis.readFloat();
     }
 
 	@Override

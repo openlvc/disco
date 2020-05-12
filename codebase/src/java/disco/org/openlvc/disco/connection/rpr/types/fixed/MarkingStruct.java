@@ -61,14 +61,29 @@ public class MarkingStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void setValue( String value )
 	{
+//		byte[] bytes = value.getBytes(StandardCharsets.US_ASCII);
+//		int max = Math.min( 11, value.length() );
+//		for( int i = 0; i < max; i++ )
+//			this.markingData.get(i).setValue( bytes[i] );
+//		
+		
 		byte[] bytes = value.getBytes(StandardCharsets.US_ASCII);
+		int max = Math.min( 11, value.length() );
 		for( int i = 0; i < 11; i++ )
-			this.markingData.get(i).setValue( bytes[i] );
+		{
+			if( i >= max )
+				this.markingData.get(i).setValue( (byte)0 );
+			else
+				this.markingData.get(i).setValue( bytes[i] );
+		}
+		
+		
+		
 	}
 	
 	public String getDisValue()
 	{
-		return new String( markingData.toByteArray(), StandardCharsets.US_ASCII );
+		return new String( markingData.toByteArray(), StandardCharsets.US_ASCII ).trim();
 	}
 
 	//----------------------------------------------------------

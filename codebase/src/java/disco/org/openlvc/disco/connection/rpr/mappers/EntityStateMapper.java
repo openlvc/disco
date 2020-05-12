@@ -283,7 +283,7 @@ public class EntityStateMapper extends AbstractMapper implements IObjectMapper
 	@Override
 	public ObjectInstance createObject( ObjectInstanceHandle objectHandle )
 	{
-		Platform object = new Aircraft();
+		Platform object = new Aircraft(); // TODO Fixme. Don't even know where to start with this one
 		object.setObjectHandle( objectHandle );
 		object.setObjectClass( hlaClass );
 		object.setMapper( this );

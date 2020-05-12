@@ -229,7 +229,7 @@ public class RprFomTest extends AbstractTest
 		EntityId entityId = new EntityId( 12, 13, 14 );
 		EntityType entityType = new EntityType( 1, 1, 225, 2, 4, 6, 8 );
 		EntityType alternateType = new EntityType( 3, 3, 13, 1, 3, 5, 7 );
-		EntityCapabilities capabilities = new EntityCapabilities( true, false, true, false, true );
+		EntityCapabilities capabilities = new EntityCapabilities( true, true, true, true, false );
 		WorldCoordinate location = new WorldCoordinate( 31.9505, 115.8605, 100 );
 		EulerAngles orientation = new EulerAngles( 1.0f, 2.0f, 3.0f );
 		// Articulations
@@ -331,7 +331,7 @@ public class RprFomTest extends AbstractTest
 //		Assert.assertEquals( receivedParam.getParameterType(), 123 );
 //		Assert.assertEquals( receivedParam.getParameterValue(), BigInteger.valueOf(123456789) );
 		// Capabilities
-//		Assert.assertEquals( received.getCapabilities(), capabilities );
+		Assert.assertEquals( received.getCapabilities(), capabilities );
 		// ForceId
 		Assert.assertEquals( received.getForceID(), ForceId.Opposing );
 		// LinearVelocity
@@ -343,29 +343,72 @@ public class RprFomTest extends AbstractTest
 		// Orientation
 		Assert.assertEquals( received.getOrientation(), orientation );
 		// Dead Reckoning Param
-//		Assert.assertEquals( received.getDeadReckoningParams().getDeadReckoningAlgorithm(), DeadReckoningAlgorithm.RPW );
-//		Assert.assertEquals( received.getDeadReckoningParams().getEntityAngularVelocity(), angularVelocity );
-//		Assert.assertEquals( received.getDeadReckoningParams().getEntityLinearAcceleration(), vectorRecord );
-//		byte[] receivedDrData = received.getDeadReckoningParams().getDeadReckoningOtherParamaters();
-//		Assert.assertEquals( receivedDrData.length, drData.length );
-//		for( int i = 0; i < drData.length; i++ )
-//			Assert.assertEquals(receivedDrData[i],drData[i]);
+		Assert.assertEquals( received.getDeadReckoningParams().getDeadReckoningAlgorithm(), DeadReckoningAlgorithm.RPW );
+		Assert.assertEquals( received.getDeadReckoningParams().getEntityAngularVelocity(), angularVelocity );
+		Assert.assertEquals( received.getDeadReckoningParams().getEntityLinearAcceleration(), vectorRecord );
+		byte[] receivedDrData = received.getDeadReckoningParams().getDeadReckoningOtherParamaters();
+		Assert.assertEquals( receivedDrData.length, drData.length );
+		for( int i = 0; i < drData.length; i++ )
+			Assert.assertEquals(receivedDrData[i],drData[i]);
 	}
 	
+	
+	@Test(groups={"rpr-espdu2"})
+	public void testRprEntityStateDeakReckoning()
+	{
+		// 1. Prepare the values we will use
+		EntityId entityId = new EntityId( 12, 13, 14 );
+		EntityType entityType = new EntityType( 1, 1, 225, 2, 4, 6, 8 );
+		WorldCoordinate location = new WorldCoordinate( 31.9505, 115.8605, 100 );
+		EulerAngles orientation = new EulerAngles( 1.0f, 2.0f, 3.0f );
+
+		// Dead Reckoning
+		byte[] drData = new byte[]{ 33, 34, -35, 68, 72, 12, 104, -13, 7, 1, 2, 3, 4, 5, 6 };
+		VectorRecord vectorRecord = new VectorRecord( 1.0f, 2.0f, 3.0f );
+		AngularVelocityVector angularVelocity = new AngularVelocityVector( 4, 5, 6 );
+		DeadReckoningParameter drParameter = new DeadReckoningParameter( DeadReckoningAlgorithm.RPW,
+		                                                                 drData,
+		                                                                 null,
+		                                                                 angularVelocity );
+
+		// 2. Create the Entity State PDU
+		EntityStatePdu espdu = new EntityStatePdu();
+		espdu.setEntityID( entityId );
+		espdu.setMarking( "DRTest" );
+		espdu.setEntityType( entityType );
+		espdu.setLocation( location );
+		espdu.setOrientation( orientation );
+		espdu.setDeadReckoningParams( drParameter );
+		espdu.setLinearVelocity( vectorRecord );
+		
+		// 3. Send it from the left
+		left.send( espdu );
+
+		// 4. See if the right side picks it up
+		EntityStatePdu received = rightListener.waitForEntityState( "DRTest" );
+		
+		// LinearVelocity
+		Assert.assertEquals( received.getLinearVelocity(), vectorRecord );
+		// Location
+		Assert.assertEquals( received.getLocation(), location );
+		// Dead Reckoning Param
+		Assert.assertEquals( received.getDeadReckoningParams().getDeadReckoningAlgorithm(), DeadReckoningAlgorithm.RPW );
+		Assert.assertEquals( received.getDeadReckoningParams().getEntityAngularVelocity(), angularVelocity );
+	}
 	
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	// Run some stuff standalone, without the TestNG harness
-//	public static void main( String[] args ) throws Exception
-//	{
-//		CommonSetup.commonBeforeSuiteSetup();
-//		RprFomTest test = new RprFomTest();
-//		test.beforeClass();
-//		test.beforeMethod();
-//		test.testRprEntityState();
-//		test.afterMethod();
-//		test.afterClass();
-//	}
+	public static void main( String[] args ) throws Exception
+	{
+		CommonSetup.commonBeforeSuiteSetup();
+		RprFomTest test = new RprFomTest();
+		test.beforeClass();
+		test.beforeMethod();
+		test.testRprEntityStateDeakReckoning();
+		test.afterMethod();
+		test.afterClass();
+	}
 }

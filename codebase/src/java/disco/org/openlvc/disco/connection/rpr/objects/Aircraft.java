@@ -33,6 +33,10 @@ public class Aircraft extends Platform
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public Aircraft()
+	{
+		//System.out.println( "Created Aircraft" );
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
