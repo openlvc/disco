@@ -84,7 +84,10 @@ public class RprConnection implements IConnection
 	// Internal Tracking
 	protected ObjectModel objectModel;
 	protected RprConverter rprConverter;
-	
+
+	// metrics
+	private Metrics metrics;
+
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -144,6 +147,8 @@ public class RprConnection implements IConnection
 	@Override
 	public void open() throws DiscoException
 	{
+		this.metrics = new Metrics();
+
 		// Initalize and connect to the federation
 		this.initializeFederation();
 	}
@@ -177,10 +182,16 @@ public class RprConnection implements IConnection
 		try
 		{
 			rprConverter.sendDisToHla( pdu, rtiamb );
+			metrics.pduSent( pdu.getPduLength() );
 		}
 		catch( UnsupportedException ue )
 		{
 			logger.trace( "(RprConnection) "+ue.getMessage(), ue );
+			metrics.pduDiscarded();
+		}
+		catch( Exception e )
+		{
+			metrics.pduDiscarded();
 		}
 	}
 
@@ -190,7 +201,7 @@ public class RprConnection implements IConnection
 	@Override
 	public Metrics getMetrics()
 	{
-		return new Metrics();
+		return this.metrics;
 	}
 
 	
@@ -409,6 +420,9 @@ public class RprConnection implements IConnection
 		{
 			// convert the object to a PDU
 			rprConverter.sendHlaToDis( objectHandle, attributes, opscenter );
+
+			int size = attributes.values().stream().mapToInt(v -> v.length).sum();
+			metrics.pduReceived(size);
 		}
 		catch( Exception e )
 		{
@@ -435,6 +449,9 @@ public class RprConnection implements IConnection
 		{
 			// convert the interaction to a PDU
 			rprConverter.sendHlaToDis( classHandle, parameters, opscenter );
+			
+			int size = parameters.values().stream().mapToInt(v -> v.length).sum();
+			metrics.pduReceived(size);
 		}
 		catch( Exception e )
 		{

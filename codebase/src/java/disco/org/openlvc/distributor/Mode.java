@@ -31,7 +31,8 @@ public enum Mode
 	WAN,
 	RELAY,
 	PULSE,
-	LOGGING;
+	LOGGING,
+	HLA;
 	
 	public static Mode valueOfIgnoreCase( String string )
 	{

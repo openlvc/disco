@@ -192,6 +192,9 @@ public class OpsCenter
 	 */
 	public void sendRaw( PDU pdu ) throws DiscoException
 	{
+		if( this.open == false )
+			throw new DiscoException( "OpsCenter is not open yet" );
+
 		this.pduSender.send( pdu );
 	}
 

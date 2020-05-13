@@ -19,6 +19,7 @@ package org.openlvc.distributor;
 
 import org.openlvc.distributor.configuration.LinkConfiguration;
 import org.openlvc.distributor.links.dis.DisLink;
+import org.openlvc.distributor.links.hla.HlaLink;
 import org.openlvc.distributor.links.logger.LoggingLink;
 import org.openlvc.distributor.links.pulse.PulseLink;
 import org.openlvc.distributor.links.relay.RelayLink;
@@ -59,6 +60,8 @@ public class LinkFactory
 				return new PulseLink( linkConfiguration );
 			case LOGGING:
 				return new LoggingLink( linkConfiguration );
+			case HLA:
+				return new HlaLink( linkConfiguration );
 			default:
 				throw new IllegalArgumentException( "Unknown mode: "+linkConfiguration.getMode() );
 		}

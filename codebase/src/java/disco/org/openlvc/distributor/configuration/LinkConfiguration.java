@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.Properties;
 import java.util.Random;
 
+import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.utils.StringUtils;
 import org.openlvc.distributor.Mode;
@@ -95,6 +96,15 @@ public class LinkConfiguration implements Serializable
 	public static final String LINK_PULSE_SITE_ID       = "pulse.siteId";
 	public static final String LINK_PULSE_APP_ID        = "pulse.appId";
 
+	// RPR Link Properties
+	public static final String LINK_HLA_RTI_PROVIDER    = "hla.rti.provider";
+	public static final String LINK_HLA_RTI_INSTALL_DIR = "hla.rti.installdir";
+	public static final String LINK_HLA_LOCAL_SETTINGS  = "hla.rti.localsettings";
+	public static final String LINK_HLA_FEDERATION_NAME = "hla.federationName";
+	public static final String LINK_HLA_FEDERATE_NAME   = "hla.federateName";
+	public static final String LINK_HLA_LOG_LEVEL       = "hla.loglevel";
+	public static final String LINK_HLA_LOG_FILE        = "hla.logfile";
+	public static final String LINK_HLA_LOG_TO_FILE     = "hla.logtofile";
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -201,6 +211,23 @@ public class LinkConfiguration implements Serializable
 				this.setPulseSiteId( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_PULSE_APP_ID) )
 				this.setPulseAppId( value );
+			// RPR Settings
+			else if( key.equalsIgnoreCase(prefix+LINK_HLA_RTI_PROVIDER) )
+				this.setHlaRtiProvider( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_HLA_RTI_INSTALL_DIR) )
+				this.setHlaRtiInstallDir( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_HLA_LOCAL_SETTINGS) )
+				this.setHlaRtiLocalSettings( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_HLA_FEDERATION_NAME) )
+				this.setHlaFederationName( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_HLA_FEDERATE_NAME) )
+				this.setHlaFederateName( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_HLA_LOG_LEVEL) )
+				this.setHlaLogLevel( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_HLA_LOG_FILE) )
+				this.setHlaLogFile( value );
+			else if( key.equalsIgnoreCase(prefix+LINK_HLA_LOG_TO_FILE) )
+				this.setHlaLogToFile( value );
 			else
 				; // skip
 		}
@@ -748,6 +775,116 @@ public class LinkConfiguration implements Serializable
 	{
 		return getAsInt( LINK_PULSE_APP_ID, 0 );
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// HLA Properties   ////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void setHlaRtiProvider( RtiProvider provider )
+	{
+		set( LINK_HLA_RTI_PROVIDER, provider.name() );
+	}
+	
+	public void setHlaRtiProvider( String provider )
+	{
+		set( LINK_HLA_RTI_PROVIDER, RtiProvider.valueOf(provider) );
+	}
+
+	public RtiProvider getHlaRtiProvider()
+	{
+		return RtiProvider.valueOf( getAsString(LINK_HLA_RTI_PROVIDER,"Portico") );
+	}
+	
+	public void setHlaRtiInstallDir( String dir )
+	{
+		set( LINK_HLA_RTI_INSTALL_DIR, dir );
+	}
+	
+	public String getHlaRtiInstallDir()
+	{
+		return getAsString( LINK_HLA_RTI_INSTALL_DIR, "./" );
+	}
+	
+	public void setHlaRtiLocalSettings( String localSettings )
+	{
+		set( LINK_HLA_LOCAL_SETTINGS, localSettings );
+	}
+
+	public String getHlaRtiLocalSettings()
+	{
+		return getAsString( LINK_HLA_LOCAL_SETTINGS, "" );
+	}
+
+	public void setHlaFederationName( String federationName )
+	{
+		set( LINK_HLA_FEDERATION_NAME, federationName );
+	}
+	
+	public String getHlaFederationName()
+	{
+		return getAsString( LINK_HLA_FEDERATION_NAME, "Disjoiner" );
+	}
+	
+	public void setHlaFederateName( String federateName )
+	{
+		set( LINK_HLA_FEDERATE_NAME, federateName );
+	}
+	
+	public String getHlaFederateName()
+	{
+		return getAsString( LINK_HLA_FEDERATE_NAME, "Disjoiner" );
+	}
+
+	/**
+	 * The log level to use for the underlying HLA library
+	 */
+	public String getHlaLogLevel()
+	{
+		return getAsString( LINK_HLA_LOG_LEVEL, "ERROR" );
+	}
+
+	public void setHlaLogLevel( String level )
+	{
+		set( LINK_HLA_LOG_LEVEL, level );
+	}
+	
+	/**
+	 * The log file to use for the underlying HLA library
+	 */
+	public String getHlaLogFile()
+	{
+		return getAsString( LINK_HLA_LOG_FILE, "logs/distributor."+name+".log" );
+	}
+
+	/**
+	 * Set the path to the log file to use for the underlying HLA library. If it contains
+	 * the string &lt;name&gt;, that will be replaced with the name of this link.
+	 * @param path
+	 */
+	public void setHlaLogFile( String path )
+	{
+		// replace the <name> token with this link name if it is present
+		path = path.replace( "<name>", name );
+		set( LINK_HLA_LOG_FILE, path );
+	}
+
+	/**
+	 * Should file logging for this connection be turned on or off
+	 */
+	public boolean getHlaLogToFile()
+	{
+		return getAsBoolean( LINK_HLA_LOG_TO_FILE, false );
+	}
+	
+	public void setHlaLogToFile( boolean logToFile )
+	{
+		set( LINK_HLA_LOG_TO_FILE, logToFile );
+	}
+	
+	public void setHlaLogToFile( String value )
+	{
+		setHlaLogToFile( StringUtils.stringToBoolean(value) );
+	}
+
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
