@@ -90,6 +90,9 @@ public class TestListener implements IPduListener
 	///////////////////////////////////////////////////////////////////////////////////
 	public EntityStatePdu waitForEntityState( String marking )
 	{
+		if( marking.length() > 11 )
+			throw new RuntimeException( "Marking cannot be longer than 11 characters ["+marking+"]" );
+		
 		long finishTime = getTimeout();
 		while( finishTime > System.currentTimeMillis() )
 		{

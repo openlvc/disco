@@ -84,7 +84,11 @@ public class RPRlengthlessArray<T extends DataElement> extends HLAvariableArray<
 	public void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
 		if( byteWrapper.remaining() < this.getEncodedLength() )
-			throw new EncoderException( "Insufficient space remaining in buffer to encode this value" );
+		{
+			throw new EncoderException( "Insufficient buffer space remaining to encode this value ("+
+			                            "required="+this.getEncodedLength()+
+			                            ", available="+byteWrapper.remaining() );
+		}
 		
 		// Write the elements
 		for( T element : super.elements )

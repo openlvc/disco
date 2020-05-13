@@ -107,8 +107,9 @@ public class StreamTest extends AbstractTest
 		param1.setTypeDesignator( ParameterTypeDesignator.ArticulatedPart );
 		param1.setChangeIndicator( (short)0 );
 		param1.setAttachedTo( 0 );
-		param1.setParameterType( 0 );
-		param1.setParameterValue( DisSizes.UI64_MAX_VALUE );
+		param1.setArticulatedPartTypeMetric( (short)7 );
+		param1.setArticulatedPartTypeClass( 33 );
+		param1.setArticulatedPartParameterValue( 3.14f );
 		before.getArticulationParameter().add( param1 );
 		
 		// Create the output stream and write the PDU

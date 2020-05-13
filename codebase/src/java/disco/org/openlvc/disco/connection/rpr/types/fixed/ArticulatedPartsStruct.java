@@ -64,18 +64,18 @@ public class ArticulatedPartsStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void setValue( ArticulationParameter articulation )
 	{
-		long parameterType = articulation.getParameterType();
-		// Bottom 32 - Attached Part
-		// Upper 32  - Split
-			// 32-47 - ArticulatedTypeMetricEnum32
-			// 48-63 - ArticulatedPartsTypeEnum32
-		// Value     - Value (only 32 of 64)
-		
-		this.typeMetric.setEnum( ArticulatedTypeMetricEnum32.valueOf((short)(parameterType >> 32)) );
-		this.theClass.setEnum( ArticulatedPartsTypeEnum32.valueOf((short)(parameterType >> 48)) );
+		this.typeMetric.setEnum( ArticulatedTypeMetricEnum32.valueOf(articulation.getArticulatedPartTypeMetric()) );
+		this.theClass.setEnum( ArticulatedPartsTypeEnum32.valueOf(articulation.getArticulatedPartTypeClass()) );
+		this.value.setValue( articulation.getArticulatedPartParameterValue() );
+	}
 
-		// Wot to do here. It is written to and read from the PDU as a uint64
-		this.value.setValue( articulation.getParameterValue().floatValue() );
+	public ArticulationParameter getDisValue()
+	{
+		ArticulationParameter parameter = new ArticulationParameter();
+		parameter.setArticulatedPartTypeMetric( (short)this.typeMetric.getEnum().getValue() );
+		parameter.setArticulatedPartTypeClass( (int)this.theClass.getEnum().getValue() );
+		parameter.setArticulatedPartParameterValue( this.value.getValue() );
+		return parameter;
 	}
 
 	//----------------------------------------------------------

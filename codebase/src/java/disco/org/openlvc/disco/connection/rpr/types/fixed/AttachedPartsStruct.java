@@ -31,7 +31,7 @@ public class AttachedPartsStruct extends HLAfixedRecord
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private EnumHolder<StationEnum32> station;
-	private EntityTypeStruct storeType;
+	private EntityTypeStruct storeType; // Enumeration of the part that is attached
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -57,16 +57,18 @@ public class AttachedPartsStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue( ArticulationParameter articulation )
+	public void setValue( ArticulationParameter parameter )
 	{
-		long parameterType = articulation.getParameterType();
-		// Bottom 32 - Attached Part
-			// 0-31  - Station
-		// Upper 32  - Articulated Part Values
-		// Value     - Value (Entity Type)
-		int narrow = (int)parameterType;
-		this.station.setEnum( StationEnum32.valueOf(narrow) );
-		this.storeType.setLongValue( articulation.getParameterValue().longValue() );
+		this.station.setEnum( StationEnum32.valueOf(parameter.getAttachedPartStationId()) );
+		this.storeType.setLongValue( Double.doubleToLongBits(parameter.getAttachedPartParameterValue()) );
+	}
+
+	public ArticulationParameter getDisValue()
+	{
+		ArticulationParameter parameter = new ArticulationParameter();
+		parameter.setAttachedPartStationId( (int)station.getEnum().getValue() );
+		parameter.setAttachedPartParameterValue( storeType.getLongValue() );
+		return parameter;
 	}
 
 	//----------------------------------------------------------

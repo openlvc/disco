@@ -78,6 +78,22 @@ public class ParameterValueVariantStruct extends HLAvariantRecord<ParameterTypeE
 		}
 	}
 
+	/**
+	 * @return The attached parts variant struct (whether it is the active disciminant or not)
+	 */
+	public AttachedPartsStruct getAttachedParts()
+	{
+		return (AttachedPartsStruct)associations.get( ParameterTypeEnum32.AttachedPart );
+	}
+	
+	/**
+	 * @return The articulated parts variant struct (whether it is the active disciminant or not)
+	 */
+	public ArticulatedPartsStruct getArticulatedParts()
+	{
+		return (ArticulatedPartsStruct)associations.get( ParameterTypeEnum32.ArticulatedPart );
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

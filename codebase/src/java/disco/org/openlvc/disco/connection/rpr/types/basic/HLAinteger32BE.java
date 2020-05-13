@@ -92,7 +92,7 @@ public class HLAinteger32BE implements hla.rti1516e.encoding.HLAinteger32BE
 		if( byteWrapper.remaining() < asBytes.length )
 			throw new EncoderException( "Insufficient space remaining in buffer to encode this value" );
 
-		byteWrapper.put( toByteArray() );
+		byteWrapper.put( asBytes );
 	}
 
 	@Override

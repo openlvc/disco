@@ -134,7 +134,7 @@ public class HLAvariantRecord<T extends ExtendedDataElement<T>> implements hla.r
 	@Override
 	public void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
-		byteWrapper.align( getOctetBoundary() );
+//		byteWrapper.align( getOctetBoundary() );
 		EnumHolder<T> temp = new EnumHolder<>( this.activeDiscriminant );
 		temp.decode( byteWrapper );
 		this.activeDiscriminant = temp.getEnum();
@@ -159,7 +159,8 @@ public class HLAvariantRecord<T extends ExtendedDataElement<T>> implements hla.r
 	@Override
 	public void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
-		byteWrapper.align( getOctetBoundary() );
+//		byteWrapper.align( getOctetBoundary() );  // getEncodedLength() does not take this into account
+//		throw new RuntimeException( "Starting here -- need to figure out getEncodedLength to incorporate alignment" );
 		this.activeDiscriminant.encode( byteWrapper );
 		
 		byteWrapper.align( getValueBoundary() );

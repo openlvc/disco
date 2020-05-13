@@ -17,7 +17,6 @@
  */
 package org.openlvc.disco.rpr;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -150,7 +149,6 @@ public class RprFomTest extends AbstractTest
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Transmitter PDU Tests   ///////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-
 	@Test
 	public void testRprTransmitterWithSameSiteAppEntityId()
 	{
@@ -222,8 +220,11 @@ public class RprFomTest extends AbstractTest
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Entity State PDU Tests   //////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
+	//
+	// Entity State Basic Values
+	//
 	@Test(groups={"rpr-espdu"})
-	public void testRprEntityState()
+	public void testRprEntityStateBasics()
 	{
 		// 1. Prepare the values we will use
 		EntityId entityId = new EntityId( 12, 13, 14 );
@@ -232,27 +233,70 @@ public class RprFomTest extends AbstractTest
 		EntityCapabilities capabilities = new EntityCapabilities( true, true, true, true, false );
 		WorldCoordinate location = new WorldCoordinate( 31.9505, 115.8605, 100 );
 		EulerAngles orientation = new EulerAngles( 1.0f, 2.0f, 3.0f );
-		// Articulations
-		short articulationParameterTypeMetric = 1;
-		short articulationPartType = 4096;
-		long parameterType = (long)articulationParameterTypeMetric << 32 | (long)articulationPartType << 48;
-		long parameterValue = Float.floatToIntBits( 3.14f );
-		ArrayList<ArticulationParameter> articulations = new ArrayList<>();
-		ArticulationParameter articulation = new ArticulationParameter( ParameterTypeDesignator.ArticulatedPart,
-		                                                                (short)1,
-		                                                                1, 
-		                                                                parameterType, 
-		                                                                BigInteger.valueOf(parameterValue) );
-		articulations.add( articulation );
+		VectorRecord velocity = new VectorRecord( 1.0f, 2.0f, 3.0f );
 
-		// Dead Reckoning
-		byte[] drData = new byte[]{ 33, 34, -35, 68, 72, 12, 104, -13, 7, 1, 2, 3, 4, 5, 6 };
-		VectorRecord vectorRecord = new VectorRecord( 1.0f, 2.0f, 3.0f );
-		AngularVelocityVector angularVelocity = new AngularVelocityVector( 4, 5, 6 );
-		DeadReckoningParameter drParameter = new DeadReckoningParameter( DeadReckoningAlgorithm.RPW,
-		                                                                 drData,
-		                                                                 vectorRecord,
-		                                                                 angularVelocity );
+
+		// 2. Create the Entity State PDU
+		EntityStatePdu espdu = new EntityStatePdu();
+		espdu.setEntityID( entityId );
+		espdu.setEntityType( entityType );
+		espdu.setAlternativeEntityType( alternateType );
+		espdu.setCapabilities( capabilities );
+		espdu.setForceID( ForceId.Opposing );
+		espdu.setLocation( location );
+		espdu.setMarking( "EntityBasic" );
+		espdu.setOrientation( orientation );
+		espdu.setLinearVelocity( velocity );
+		
+		// 3. Send it from the left
+		left.send( espdu );
+
+		// 4. See if the right side picks it up
+		EntityStatePdu received = rightListener.waitForEntityState( "EntityBasic" );
+		
+		// EntityId
+		Assert.assertEquals( received.getEntityID().getSiteId(), 12 );
+		Assert.assertEquals( received.getEntityID().getAppId(), 13 );
+		Assert.assertEquals( received.getEntityID().getEntityIdentity(), 14 );
+		// EntityType
+		Assert.assertEquals( received.getEntityType().getKind(), 1 );
+		Assert.assertEquals( received.getEntityType().getDomain(), 1 );
+		Assert.assertEquals( received.getEntityType().getCountry(), 225 );
+		Assert.assertEquals( received.getEntityType().getCategory(), 2 );
+		Assert.assertEquals( received.getEntityType().getSubcategory(), 4 );
+		Assert.assertEquals( received.getEntityType().getSpecific(), 6 );
+		Assert.assertEquals( received.getEntityType().getExtra(), 8 );
+		// Alternate Entity Type
+		Assert.assertEquals( received.getAlternativeEntityType().getKind(), 3 );
+		Assert.assertEquals( received.getAlternativeEntityType().getDomain(), 3 );
+		Assert.assertEquals( received.getAlternativeEntityType().getCountry(), 13 );
+		Assert.assertEquals( received.getAlternativeEntityType().getCategory(), 1 );
+		Assert.assertEquals( received.getAlternativeEntityType().getSubcategory(), 3 );
+		Assert.assertEquals( received.getAlternativeEntityType().getSpecific(), 5 );
+		Assert.assertEquals( received.getAlternativeEntityType().getExtra(), 7 );
+		// Capabilities
+		Assert.assertEquals( received.getCapabilities(), capabilities );
+		// ForceId
+		Assert.assertEquals( received.getForceID(), ForceId.Opposing );
+		// LinearVelocity -- Doesn't seem to work, because in RPR it's all tied up in DR params
+		//Assert.assertEquals( received.getLinearVelocity(), velocity );
+		// Location
+		Assert.assertEquals( received.getLocation(), location );
+		// Marking
+		Assert.assertEquals( received.getMarking(), "EntityBasic" );
+		// Orientation
+		Assert.assertEquals( received.getOrientation(), orientation );
+	}
+
+	//
+	// Ground Platform Appearance
+	//
+	@Test(groups={"rpr-espdu"})
+	public void testRprEntityStateGroundAppearance()
+	{
+		// 1. Prepare the values we will use
+		EntityType entityType = new EntityType( 1, 1, 225, 2, 4, 6, 8 );
+		EntityCapabilities capabilities = new EntityCapabilities( true, true, true, true, false );
 
 		// Appearance
 		GroundPlatformAppearance appearance = new GroundPlatformAppearance();
@@ -281,29 +325,17 @@ public class RprFomTest extends AbstractTest
 		
 		// 2. Create the Entity State PDU
 		EntityStatePdu espdu = new EntityStatePdu();
-		espdu.setEntityID( entityId );
 		espdu.setEntityType( entityType );
-		espdu.setAlternativeEntityType( alternateType );
 		espdu.setAppearance( appearanceBitMask );
-		espdu.setArticulationParameters( articulations );
 		espdu.setCapabilities( capabilities );
-		espdu.setDeadReckoningParams( drParameter );
-		espdu.setForceID( ForceId.Opposing );
-		espdu.setLinearVelocity( vectorRecord );
-		espdu.setLocation( location );
-		espdu.setMarking( "BingoBob11c" );
-		espdu.setOrientation( orientation );
+		espdu.setMarking( "RprGroundAp" );
 		
 		// 3. Send it from the left
 		left.send( espdu );
 
 		// 4. See if the right side picks it up
-		EntityStatePdu received = rightListener.waitForEntityState( "BingoBob11c" );
+		EntityStatePdu received = rightListener.waitForEntityState( "RprGroundAp" );
 		
-		// EntityId
-		Assert.assertEquals( received.getEntityID().getSiteId(), 12 );
-		Assert.assertEquals( received.getEntityID().getAppId(), 13 );
-		Assert.assertEquals( received.getEntityID().getEntityIdentity(), 14 );
 		// EntityType
 		Assert.assertEquals( received.getEntityType().getKind(), 1 );
 		Assert.assertEquals( received.getEntityType().getDomain(), 1 );
@@ -312,49 +344,15 @@ public class RprFomTest extends AbstractTest
 		Assert.assertEquals( received.getEntityType().getSubcategory(), 4 );
 		Assert.assertEquals( received.getEntityType().getSpecific(), 6 );
 		Assert.assertEquals( received.getEntityType().getExtra(), 8 );
-		// Alternate Entity Type
-		Assert.assertEquals( received.getAlternativeEntityType().getKind(), 3 );
-		Assert.assertEquals( received.getAlternativeEntityType().getDomain(), 3 );
-		Assert.assertEquals( received.getAlternativeEntityType().getCountry(), 13 );
-		Assert.assertEquals( received.getAlternativeEntityType().getCategory(), 1 );
-		Assert.assertEquals( received.getAlternativeEntityType().getSubcategory(), 3 );
-		Assert.assertEquals( received.getAlternativeEntityType().getSpecific(), 5 );
-		Assert.assertEquals( received.getAlternativeEntityType().getExtra(), 7 );
 		// Appearance
 		Assert.assertEquals( received.getAppearance(), appearanceBitMask );
-		// Articulation
-//		Assert.assertEquals( received.getArticulationParameter().size(), 1 );
-//		ArticulationParameter receivedParam = received.getArticulationParameter().get(0);
-//		Assert.assertEquals( receivedParam.getTypeDesignator(), ParameterTypeDesignator.ArticulatedPart );
-//		Assert.assertEquals( receivedParam.getChangeIndicator(), (short)1 );
-//		Assert.assertEquals( receivedParam.getAttachedTo(), 1 );
-//		Assert.assertEquals( receivedParam.getParameterType(), 123 );
-//		Assert.assertEquals( receivedParam.getParameterValue(), BigInteger.valueOf(123456789) );
-		// Capabilities
-		Assert.assertEquals( received.getCapabilities(), capabilities );
-		// ForceId
-		Assert.assertEquals( received.getForceID(), ForceId.Opposing );
-		// LinearVelocity
-		Assert.assertEquals( received.getLinearVelocity(), vectorRecord );
-		// Location
-		Assert.assertEquals( received.getLocation(), location );
-		// Marking
-		Assert.assertEquals( received.getMarking(), "BingoBob11c" );
-		// Orientation
-		Assert.assertEquals( received.getOrientation(), orientation );
-		// Dead Reckoning Param
-		Assert.assertEquals( received.getDeadReckoningParams().getDeadReckoningAlgorithm(), DeadReckoningAlgorithm.RPW );
-		Assert.assertEquals( received.getDeadReckoningParams().getEntityAngularVelocity(), angularVelocity );
-		Assert.assertEquals( received.getDeadReckoningParams().getEntityLinearAcceleration(), vectorRecord );
-		byte[] receivedDrData = received.getDeadReckoningParams().getDeadReckoningOtherParamaters();
-		Assert.assertEquals( receivedDrData.length, drData.length );
-		for( int i = 0; i < drData.length; i++ )
-			Assert.assertEquals(receivedDrData[i],drData[i]);
 	}
-	
-	
-	@Test(groups={"rpr-espdu2"})
-	public void testRprEntityStateDeakReckoning()
+
+	//
+	// Dead Reckoning Values
+	//
+	@Test(groups={"rpr-espdu"})
+	public void testRprEntityStateDeakReckoningReflection()
 	{
 		// 1. Prepare the values we will use
 		EntityId entityId = new EntityId( 12, 13, 14 );
@@ -374,7 +372,7 @@ public class RprFomTest extends AbstractTest
 		// 2. Create the Entity State PDU
 		EntityStatePdu espdu = new EntityStatePdu();
 		espdu.setEntityID( entityId );
-		espdu.setMarking( "DRTest" );
+		espdu.setMarking( "RprDeadReck" );
 		espdu.setEntityType( entityType );
 		espdu.setLocation( location );
 		espdu.setOrientation( orientation );
@@ -385,7 +383,7 @@ public class RprFomTest extends AbstractTest
 		left.send( espdu );
 
 		// 4. See if the right side picks it up
-		EntityStatePdu received = rightListener.waitForEntityState( "DRTest" );
+		EntityStatePdu received = rightListener.waitForEntityState( "RprDeadReck" );
 		
 		// LinearVelocity
 		Assert.assertEquals( received.getLinearVelocity(), vectorRecord );
@@ -395,20 +393,83 @@ public class RprFomTest extends AbstractTest
 		Assert.assertEquals( received.getDeadReckoningParams().getDeadReckoningAlgorithm(), DeadReckoningAlgorithm.RPW );
 		Assert.assertEquals( received.getDeadReckoningParams().getEntityAngularVelocity(), angularVelocity );
 	}
-	
-	
+
+	//
+	// Entity State Articulated Parts
+	//
+	@Test(groups={"rpr-espdu"})
+	public void testRprEntityStateArticulations()
+	{
+		// 1. Prepare the values we will use
+		EntityId entityId = new EntityId( 12, 13, 14 );
+		EntityType entityType = new EntityType( 1, 1, 225, 2, 4, 6, 8 );
+		WorldCoordinate location = new WorldCoordinate( 31.9505, 115.8605, 100 );
+		EulerAngles orientation = new EulerAngles( 1.0f, 2.0f, 3.0f );
+		// Articulations
+		short typeMetric = 1;
+		short typeClass = 4096;
+		float parameterValue = 3.14f;
+		//int parameterType = (int)articulationParameterTypeMetric << 32 | (int)articulationPartType << 48;
+		ArrayList<ArticulationParameter> articulations = new ArrayList<>();
+		ArticulationParameter parameter = ArticulationParameter.newArticulatedPart( typeMetric,
+		                                                                            typeClass,
+		                                                                            parameterValue );
+
+		parameter.setChangeIndicator( (short)77 );
+		parameter.setAttachedTo( 55 );
+		articulations.add( parameter );
+
+		// 2. Create the Entity State PDU
+		EntityStatePdu espdu = new EntityStatePdu();
+		espdu.setEntityID( entityId );
+		espdu.setEntityType( entityType );
+		espdu.setArticulationParameters( articulations );
+		espdu.setLocation( location );
+		espdu.setMarking( "RprArticula" );
+		espdu.setOrientation( orientation );
+		
+		// 3. Send it from the left
+		left.send( espdu );
+
+		// 4. See if the right side picks it up
+		EntityStatePdu received = rightListener.waitForEntityState( "RprArticula" );
+		
+		// EntityId
+		Assert.assertEquals( received.getEntityID().getSiteId(), 12 );
+		Assert.assertEquals( received.getEntityID().getAppId(), 13 );
+		Assert.assertEquals( received.getEntityID().getEntityIdentity(), 14 );
+		// EntityType
+		Assert.assertEquals( received.getEntityType().getKind(), 1 );
+		Assert.assertEquals( received.getEntityType().getDomain(), 1 );
+		Assert.assertEquals( received.getEntityType().getCountry(), 225 );
+		Assert.assertEquals( received.getEntityType().getCategory(), 2 );
+		Assert.assertEquals( received.getEntityType().getSubcategory(), 4 );
+		Assert.assertEquals( received.getEntityType().getSpecific(), 6 );
+		Assert.assertEquals( received.getEntityType().getExtra(), 8 );
+		// Articulation
+		Assert.assertEquals( received.getArticulationParameter().size(), 1 );
+		ArticulationParameter receivedParam = received.getArticulationParameter().get(0);
+		Assert.assertEquals( receivedParam.getTypeDesignator(), ParameterTypeDesignator.ArticulatedPart );
+		Assert.assertEquals( receivedParam.getChangeIndicator(), (short)77 );
+		Assert.assertEquals( receivedParam.getAttachedTo(), 55 );
+		Assert.assertEquals( receivedParam.getArticulatedPartTypeMetric(), typeMetric );
+		Assert.assertEquals( receivedParam.getArticulatedPartTypeClass(), typeClass );
+		Assert.assertEquals( receivedParam.getArticulatedPartParameterValue(), parameterValue );
+	}
+
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	// Run some stuff standalone, without the TestNG harness
 	public static void main( String[] args ) throws Exception
 	{
-		CommonSetup.commonBeforeSuiteSetup();
-		RprFomTest test = new RprFomTest();
-		test.beforeClass();
-		test.beforeMethod();
-		test.testRprEntityStateDeakReckoning();
-		test.afterMethod();
-		test.afterClass();
+		//CommonSetup.commonBeforeSuiteSetup();
+		//RprFomTest test = new RprFomTest();
+		//test.beforeClass();
+		//test.beforeMethod();
+		//test.testRprEntityStateArticulations();
+		//test.afterMethod();
+		//test.afterClass();
 	}
 }

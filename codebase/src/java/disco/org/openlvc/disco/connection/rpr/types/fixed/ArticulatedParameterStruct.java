@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.connection.rpr.types.fixed;
 
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 import org.openlvc.disco.connection.rpr.types.variant.ParameterValueVariantStruct;
@@ -70,7 +71,24 @@ public class ArticulatedParameterStruct extends HLAfixedRecord
 	
 	public ArticulationParameter getDisValue()
 	{
-		throw new RuntimeException( "Not Yet Implemented" );
+		ArticulationParameter dis = null;
+		
+		switch( this.parameterValue.getDiscriminant() )
+		{
+			case AttachedPart:
+				dis = parameterValue.getAttachedParts().getDisValue();
+				break;
+			case ArticulatedPart:
+    			dis = parameterValue.getArticulatedParts().getDisValue();
+    			break;
+		}
+
+		if( dis == null )
+			throw new DiscoException( "ArticulationParameter received from ParameterValueVariantStruct was null" );
+
+		dis.setChangeIndicator( articulatedParameterChange.getValue() );
+		dis.setAttachedTo( partAttachedTo.getValue() );
+		return dis;
 	}
 	
 	//----------------------------------------------------------

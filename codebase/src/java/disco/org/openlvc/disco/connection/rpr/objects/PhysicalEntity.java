@@ -289,13 +289,12 @@ public abstract class PhysicalEntity extends BaseEntity
 		//this.acousticSignatureIndex.setValue(  );
 		
 		// Arrays
-		ArticulatedParameterStructLengthlessArray array = new ArticulatedParameterStructLengthlessArray();
 		this.articulatedParametersArray.clear();
 		for( ArticulationParameter param : incoming.getArticulationParameter() )
 		{
 			ArticulatedParameterStruct struct = new ArticulatedParameterStruct();
 			struct.setValue( param );
-			array.addElement( struct );
+			articulatedParametersArray.addElement( struct );
 		}
 	}
 	
