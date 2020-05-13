@@ -94,6 +94,11 @@ public class Main
 				org.openlvc.dislocator.Main.main( remainingArgs );
 				return;
 			}
+			else if( firstArg.equalsIgnoreCase("--app:disjoiner") )
+			{
+				org.openlvc.disjoiner.Main.main( remainingArgs );
+				return;
+			}
 		}
 
 		// print out some information about us

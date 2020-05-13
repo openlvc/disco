@@ -39,6 +39,7 @@ public class RprConfiguration
 	private static final String PROP_FEDERATE_TYPE      = "disco.rpr.federateType";
 	private static final String PROP_CREATE_FEDERATION  = "disco.rpr.createFederation";
 	private static final String PROP_RANDOMIZE_FED_NAME = "disco.rpr.randomizeFedName";
+	private static final String PROP_LOCAL_SETTINGS     = "disco.rpr.localSettings";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -169,6 +170,31 @@ public class RprConfiguration
 	public void setRandomizeFedName( boolean value )
 	{
 		parent.setProperty( PROP_RANDOMIZE_FED_NAME, ""+value );
+	}
+
+	/**
+	 * The local settings designator can be used to pass initization information to an LRC
+	 * at the time of connection. In some RTI implementations this can be used to specify
+	 * the network location of the RTI or other important bootstarpping configuration options.
+	 * 
+	 * @return The local settings to pass to the RTI at connection time. Defaults to an empty string.
+	 */
+	public String getLocalSettings()
+	{
+		return parent.getProperty( PROP_LOCAL_SETTINGS, "" );
+	}
+	
+	/**
+	 * The local settings designator can be used to pass initization information to an LRC
+	 * at the time of connection. In some RTI implementations this can be used to specify
+	 * the network location of the RTI or other important bootstarpping configuration options.
+	 * 
+	 * @param localSettings The local settings string to pass when connecting to the RTI.
+	 */
+	public void setLocalSettings( String localSettings )
+	{
+		if( localSettings != null )
+			parent.setProperty( PROP_LOCAL_SETTINGS, localSettings );
 	}
 
 	//----------------------------------------------------------

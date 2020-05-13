@@ -18,6 +18,7 @@
 package org.openlvc.disco.configuration;
 
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
@@ -261,8 +262,17 @@ public class DiscoConfiguration
 		{
 			try
 			{
-				URL url = ClassLoader.getSystemResource( "build.properties" );
-				properties.load( url.openStream() );
+				Enumeration<URL> temp = ClassLoader.getSystemResources( "build.properties" );
+				while( temp.hasMoreElements() )
+				{
+					URL url = temp.nextElement();
+					properties.load( url.openStream() );
+					if( properties.getProperty("build.shortname","").equals("disco") )
+						break;
+					
+					// not the one we want, clear and skip to next
+					properties.clear();
+				}
 			}
 			catch( Exception e )
 			{

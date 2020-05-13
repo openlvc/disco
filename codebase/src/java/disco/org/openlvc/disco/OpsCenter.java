@@ -26,7 +26,6 @@ import org.openlvc.disco.connection.ConnectionFactory;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.connection.Metrics;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.utils.ClassLoaderUtils;
 
 public class OpsCenter
@@ -99,9 +98,12 @@ public class OpsCenter
 			if( configuration.getConnection().equals("rpr") )
 				applyRprClasspathHack();
 			
-			this.logger.debug( "Creating connection: "+configuration.getConnection() );
+			this.logger.info( "Creating connection: "+configuration.getConnection() );
 			this.connection = ConnectionFactory.getConnection( configuration.getConnection() );
 			this.connection.configure( this );
+
+			// tell people what PDUs this connection supports
+			this.logger.info( "Supported PDU Types: "+connection.getSupportedPduTypes().toString() );
 		}
 		
 		// wire up the sender and receiver to the connection and listener
@@ -243,12 +245,6 @@ public class OpsCenter
 		logger.info( "" );
 		logger.info( "Version: "+DiscoConfiguration.getVersion() );
 		logger.info( "" );
-		
-		if( logger.isDebugEnabled() )
-		{
-			// print debug information like number of threads, or settings from config file?
-			logger.debug( "Supported PDU Types: "+PduFactory.getSupportedPduTypesString() );
-		}
 	}
 
 	//----------------------------------------------------------

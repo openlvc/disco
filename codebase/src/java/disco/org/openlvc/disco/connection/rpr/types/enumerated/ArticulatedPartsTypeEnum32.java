@@ -259,7 +259,9 @@ public enum ArticulatedPartsTypeEnum32 implements ExtendedDataElement<Articulate
 		
 		ArticulatedPartsTypeEnum32 temp = MAP.get( value );
 		if( temp == null )
-			throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+			//throw new UnsupportedException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+			// let it pass through -- discarding it is too strict
+			return Other;
 		else
 			return temp;
 	}

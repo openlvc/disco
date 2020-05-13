@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.connection.rpr.types.enumerated;
 
+import org.openlvc.disco.UnsupportedException;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
 
 import hla.rti1516e.encoding.ByteWrapper;
@@ -110,6 +111,6 @@ public enum AntennaPatternEnum32 implements ExtendedDataElement<AntennaPatternEn
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
+		throw new UnsupportedException( "Unknown enumerator value: "+value+" (AntennaPatternEnum32)" );
 	}
 }

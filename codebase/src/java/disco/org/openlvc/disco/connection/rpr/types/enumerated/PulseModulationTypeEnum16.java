@@ -110,6 +110,8 @@ public enum PulseModulationTypeEnum16 implements ExtendedDataElement<PulseModula
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (PulseModulationTypeEnum16)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (PulseModulationTypeEnum16)" );
+		return Other;
 	}
 }

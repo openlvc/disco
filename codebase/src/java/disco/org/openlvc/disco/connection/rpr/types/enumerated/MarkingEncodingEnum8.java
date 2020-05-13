@@ -116,6 +116,8 @@ public enum MarkingEncodingEnum8 implements ExtendedDataElement<MarkingEncodingE
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (MarkingEncodingEnum8)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (MarkingEncodingEnum8)" );
+		return Other;
 	}
 }

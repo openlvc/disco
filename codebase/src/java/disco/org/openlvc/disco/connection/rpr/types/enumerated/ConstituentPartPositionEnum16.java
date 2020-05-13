@@ -110,6 +110,8 @@ public enum ConstituentPartPositionEnum16 implements ExtendedDataElement<Constit
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (ConstituentPartPositionEnum16)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (ConstituentPartPositionEnum16)" );
+		return Other;
 	}
 }

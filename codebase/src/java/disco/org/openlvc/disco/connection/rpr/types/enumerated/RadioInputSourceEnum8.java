@@ -117,6 +117,8 @@ public enum RadioInputSourceEnum8 implements ExtendedDataElement<RadioInputSourc
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (RadioInputSourceEnum8)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (RadioInputSourceEnum8)" );
+		return Other;
 	}
 }

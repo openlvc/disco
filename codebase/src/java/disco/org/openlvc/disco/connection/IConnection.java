@@ -17,9 +17,12 @@
  */
 package org.openlvc.disco.connection;
 
+import java.util.Collection;
+
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.field.PduType;
 
 /**
  * Represents a connection to an underlying source of incoming PDUs and a target for
@@ -38,6 +41,11 @@ public interface IConnection
 
 	public String getName();
 
+	/**
+	 * @return The PDUs that this connection supports
+	 */
+	public Collection<PduType> getSupportedPduTypes();	
+	
 	/**
 	 * Configure the provider as it is being deployed into the given {@link OpsCenter}.
 	 */

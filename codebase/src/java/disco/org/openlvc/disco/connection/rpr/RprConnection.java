@@ -20,12 +20,14 @@ package org.openlvc.disco.connection.rpr;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.UnsupportedException;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration;
 import org.openlvc.disco.connection.IConnection;
@@ -37,6 +39,7 @@ import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.model.ObjectModel;
 import org.openlvc.disco.connection.rpr.model.PubSub;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.field.PduType;
 
 import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.CallbackModel;
@@ -114,6 +117,12 @@ public class RprConnection implements IConnection
 		return "RPR FOM Connection";
 	}
 
+	@Override
+	public Collection<PduType> getSupportedPduTypes()
+	{
+		return Arrays.asList( PduType.EntityState, PduType.Transmitter, PduType.Signal ); 
+	}
+	
 	/**
 	 * Configure the provider as it is being deployed into the given {@link OpsCenter}.
 	 */
@@ -165,7 +174,14 @@ public class RprConnection implements IConnection
 	@Override
 	public void send( PDU pdu ) throws DiscoException
 	{
-		rprConverter.sendDisToHla( pdu, rtiamb );
+		try
+		{
+			rprConverter.sendDisToHla( pdu, rtiamb );
+		}
+		catch( UnsupportedException ue )
+		{
+			logger.trace( "(RprConnection) "+ue.getMessage(), ue );
+		}
 	}
 
 	/**
@@ -203,7 +219,9 @@ public class RprConnection implements IConnection
 			logger.debug( "Connecting to RTI" );
 			this.rtiamb = RtiFactoryFactory.getRtiFactory().getRtiAmbassador();
 			this.fedamb = new FederateAmbassador( this );
-			this.rtiamb.connect( this.fedamb, CallbackModel.HLA_IMMEDIATE );
+			this.rtiamb.connect( this.fedamb,
+			                     CallbackModel.HLA_IMMEDIATE,
+			                     rprConfiguration.getLocalSettings() );
 		}
 		catch( RTIexception rtie )
 		{

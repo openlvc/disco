@@ -113,6 +113,8 @@ public enum MajorRFModulationTypeEnum16 implements ExtendedDataElement<MajorRFMo
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (MajorRFModulationTypeEnum16)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (MajorRFModulationTypeEnum16)" );
+		return Other;
 	}
 }

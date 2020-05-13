@@ -108,6 +108,8 @@ public enum CombinationModulationTypeEnum16 implements ExtendedDataElement<Combi
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (CombinationModulationTypeEnum16)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (CombinationModulationTypeEnum16)" );
+		return Other;
 	}
 }

@@ -113,6 +113,8 @@ public enum RFmodulationSystemTypeEnum16 implements ExtendedDataElement<RFmodula
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (RFmodulationSystemTypeEnum16)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (RFmodulationSystemTypeEnum16)" );
+		return Other;
 	}
 }

@@ -124,6 +124,8 @@ public enum ConstituentPartStationNameEnum16 implements ExtendedDataElement<Cons
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (ConstituentPartStationNameEnum16)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (ConstituentPartStationNameEnum16)" );
+		return Other;
 	}
 }

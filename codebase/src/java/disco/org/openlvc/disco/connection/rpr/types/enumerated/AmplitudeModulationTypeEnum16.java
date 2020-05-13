@@ -117,6 +117,8 @@ public enum AmplitudeModulationTypeEnum16 implements ExtendedDataElement<Amplitu
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AmplitudeModulationTypeEnum16)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (AmplitudeModulationTypeEnum16)" );
+		return Other;
 	}
 }

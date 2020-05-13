@@ -114,6 +114,8 @@ public enum EncodingTypeEnum32 implements ExtendedDataElement<EncodingTypeEnum32
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (EncodingTypeEnum32)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (EncodingTypeEnum32)" );
+		return Unknown;
 	}
 }

@@ -123,6 +123,8 @@ public enum ForceIdentifierEnum8 implements ExtendedDataElement<ForceIdentifierE
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (ForceIdentifierEnum8)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (ForceIdentifierEnum8)" );
+		return Other;
 	}
 }

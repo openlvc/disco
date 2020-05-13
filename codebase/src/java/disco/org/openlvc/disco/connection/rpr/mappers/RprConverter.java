@@ -23,6 +23,7 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.UnsupportedException;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.model.ObjectModel;
@@ -145,19 +146,20 @@ public class RprConverter
 	 */
 	public void sendDisToHla( PDU pdu, RTIambassador rtiamb )
 	{
-		if( this.objectMappersByDisType.containsKey(pdu.getType()) )
+		PduType pdutype = pdu.getType();
+		if( this.objectMappersByDisType.containsKey(pdutype) )
 		{
 			// This PDU maps to an HLA object type -- convert and send
-			this.objectMappersByDisType.get(pdu.getType()).sendDisToHla( pdu, rtiamb );
+			this.objectMappersByDisType.get(pdutype).sendDisToHla( pdu, rtiamb );
 		}
-		else if( this.interactionMappersByDisType.containsKey(pdu.getType()) )
+		else if( this.interactionMappersByDisType.containsKey(pdutype) )
 		{
 			// This PDU maps to an HLA interaction type -- convert and send
-			this.interactionMappersByDisType.get(pdu.getType()).sendDisToHla( pdu, rtiamb );
+			this.interactionMappersByDisType.get(pdutype).sendDisToHla( pdu, rtiamb );
 		}
 		else
 		{
-			logger.warn( "(RprConnection) PDU type [%s] not supported yet", pdu.getType() );
+			throw new UnsupportedException( "PDU type ["+pdutype+"] not supported yet" );
 		}
 	}
 

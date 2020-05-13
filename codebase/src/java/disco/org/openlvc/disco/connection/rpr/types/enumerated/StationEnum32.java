@@ -515,7 +515,9 @@ public enum StationEnum32 implements ExtendedDataElement<StationEnum32>
 		
 		StationEnum32 temp = MAP.get( value );
 		if( temp == null )
-			throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (StationEnum32)" );
+			// Don't be so strict
+			// throw new UnsupportedException( "Unknown enumerator value: "+value+" (StationEnum32)" );
+			return Nothing_Empty;
 		else
 			return temp;
 	}

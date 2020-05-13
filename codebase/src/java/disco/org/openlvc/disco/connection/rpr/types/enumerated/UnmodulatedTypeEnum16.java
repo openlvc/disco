@@ -108,6 +108,8 @@ public enum UnmodulatedTypeEnum16 implements ExtendedDataElement<UnmodulatedType
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (UnmodulatedTypeEnum16)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (UnmodulatedTypeEnum16)" );
+		return Other;
 	}
 }

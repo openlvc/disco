@@ -118,6 +118,8 @@ public enum ConstituentPartNatureEnum16 implements ExtendedDataElement<Constitue
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (ConstituentPartNatureEnum16)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (ConstituentPartNatureEnum16)" );
+		return Other;
 	}
 }

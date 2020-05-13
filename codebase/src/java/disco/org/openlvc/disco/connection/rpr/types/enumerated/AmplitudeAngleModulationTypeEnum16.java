@@ -107,6 +107,8 @@ public enum AmplitudeAngleModulationTypeEnum16 implements ExtendedDataElement<Am
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (AmplitudeAngleModulationTypeEnum16)" );
+		// Don't be so strict
+		//throw new UnsupportedException( "Unknown enumerator value: "+value+" (AmplitudeAngleModulationTypeEnum16)" );
+		return Other;
 	}
 }

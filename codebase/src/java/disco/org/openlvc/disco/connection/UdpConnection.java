@@ -26,6 +26,7 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.Collection;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
@@ -34,6 +35,8 @@ import org.openlvc.disco.configuration.UdpConfiguration;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.PduFactory;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.utils.NetworkUtils;
 import org.openlvc.disco.utils.Platform;
 import org.openlvc.disco.utils.SocketOptions;
@@ -91,6 +94,12 @@ public class UdpConnection implements IConnection
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////// Accessor and Mutator Methods ///////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
+	public Collection<PduType> getSupportedPduTypes()
+	{
+		return PduFactory.getSupportedPduTypes();
+	}
+
 	@Override
 	public void configure( OpsCenter opscenter ) throws DiscoException
 	{

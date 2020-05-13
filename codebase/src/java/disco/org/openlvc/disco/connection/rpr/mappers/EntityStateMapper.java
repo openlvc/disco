@@ -19,6 +19,7 @@ package org.openlvc.disco.connection.rpr.mappers;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.UnsupportedException;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.objects.Aircraft;
@@ -346,7 +347,7 @@ public class EntityStateMapper extends AbstractMapper implements IObjectMapper
 			{
 				case Land: return new GroundVehicle();
 				case Air: return new Aircraft();
-				default: throw new DiscoException( "Unsupported Platform Domain: "+type.getDomainEnum().name() );
+				default: throw new UnsupportedException( "Unsupported Platform Domain: "+type.getDomainEnum().name() );
 			}
 		}
 		else if( kind == Kind.Lifeform )
@@ -355,7 +356,7 @@ public class EntityStateMapper extends AbstractMapper implements IObjectMapper
 		}
 		else
 		{
-			throw new DiscoException( "Unsupported Entity Kind: "+kind.name() );
+			throw new UnsupportedException( "Unsupported Entity Kind: "+kind.name() );
 		}
 	}
 	

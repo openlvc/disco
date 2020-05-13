@@ -123,6 +123,8 @@ public enum ComplianceStateEnum32 implements ExtendedDataElement<ComplianceState
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (ComplianceStateEnum32)" );
+		// Don't be so strict
+		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (ComplianceStateEnum32)" );
+		return Other;
 	}
 }
