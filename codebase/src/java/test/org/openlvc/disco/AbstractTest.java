@@ -17,8 +17,11 @@
  */
 package org.openlvc.disco;
 
+import java.util.function.BooleanSupplier;
+
 import org.openlvc.disco.common.CommonSetup;
 import org.openlvc.disco.common.TestListener;
+import org.openlvc.disco.common.TimeoutException;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.testng.Assert;
 
@@ -120,7 +123,48 @@ public class AbstractTest
 			             "], expected: "+builder.toString(), exception );
 		}
 	}
-	
+
+	/**
+	 * Wait up to the given milliseconds for the supplier to return true. To use this, you can
+	 * pass in a lambda that returns a boolean. For example:
+	 * <p/>
+	 * <pre>waitFor( () -> {return somethingd(); }, millis );</pre>
+	 * 
+	 * <p/>
+	 * This method will try up to 10 times, sleeping for 1/10th of the millis value each attempt
+	 * 
+	 * 
+	 * @param supplier The supplier to keep checking against
+	 * @param millis How long we should wait
+	 * @throws TimeoutException If the supplier doesn't return true before time expires
+	 */
+	protected void waitFor( BooleanSupplier supplier, long millis ) throws TimeoutException
+	{
+		long chunk = millis/10;
+		while( chunk > 0 )
+		{
+			if( supplier.getAsBoolean() )
+				return;
+
+			// was false, wait a bit
+			--chunk;
+			snooze( chunk );
+		}
+		
+		throw new TimeoutException( "Waiting too long for condition to be true" );
+	}
+
+	protected void snooze( long millis )
+	{
+		try
+		{
+			Thread.sleep( millis );
+		}
+		catch( InterruptedException ie )
+		{
+			// no-op, just return
+		}
+	}
 
 
 	//----------------------------------------------------------

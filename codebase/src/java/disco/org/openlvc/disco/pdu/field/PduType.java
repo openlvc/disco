@@ -19,6 +19,7 @@ package org.openlvc.disco.pdu.field;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -132,6 +133,11 @@ public enum PduType
 	private static final Map<Short,PduType> CACHE = Arrays.stream( PduType.values() )
 	                                                      .collect( Collectors.toMap(PduType::value, 
 	                                                                                 type -> type) );
+	
+	private static final EnumSet<PduType> SUPPORTED_TYPES = EnumSet.copyOf( Arrays.stream( PduType.values() )
+	                                                                              .filter( type -> type.isSupported() )
+	                                                                              .collect( Collectors.toList() ) );
+	                                                              
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -233,5 +239,10 @@ public enum PduType
 		}
 		
 		return list;
+	}
+	
+	public static EnumSet<PduType> getSupportedPdus()
+	{
+		return SUPPORTED_TYPES;
 	}
 }
