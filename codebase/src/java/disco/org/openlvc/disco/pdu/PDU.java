@@ -36,7 +36,7 @@ public abstract class PDU
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	protected PduHeader header;
-	protected long received;
+	protected long localTimestamp; // NOT the DIS timestamp, just a regular millis since epoch thang
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -44,13 +44,13 @@ public abstract class PDU
 	protected PDU( PduHeader header )
 	{
 		this.header = header;
-		this.received = System.currentTimeMillis();
+		this.localTimestamp = System.currentTimeMillis();
 	}
 
 	protected PDU()
 	{
 		this.header = new PduHeader();
-		this.received = System.currentTimeMillis();
+		this.localTimestamp = System.currentTimeMillis();
 	}
 
 	//----------------------------------------------------------
@@ -96,14 +96,14 @@ public abstract class PDU
 		header.setExerciseId( exerciseId );
 	}
 	
-	public long getReceived()
+	public long getLocalTimestamp()
 	{
-		return received;
+		return localTimestamp;
 	}
 	
-	public void setReceived( long received )
+	public void setLocalTimestamp( long received )
 	{
-		this.received = received;
+		this.localTimestamp = received;
 	}
 	
 	public final void writePdu( DisOutputStream dos ) throws IOException

@@ -19,6 +19,7 @@ package org.openlvc.disco.application;
 
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.radio.TransmitterPdu;
 
 /**
  * The {@link PduStore} is the core PDU repository for a Disco {@link DisApplication}.
@@ -35,13 +36,18 @@ public class PduStore
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private EntityStateStore entityStore;
+	private TransmitterStore transmitterStore;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduStore()
+	protected PduStore( DisApplication app )
 	{
-		this.entityStore = new EntityStateStore();
+		this.entityStore = new EntityStateStore( this );
+		this.transmitterStore = new TransmitterStore( this ); // depends on EntityStore
+		
+		app.getDeleteReaper().registerTarget( entityStore );
+		app.getDeleteReaper().registerTarget( transmitterStore );
 	}
 
 	//----------------------------------------------------------
@@ -52,12 +58,13 @@ public class PduStore
 	{
 		switch( pdu.getType() )
 		{
-			case EntityState:
-				entityStore.receivePdu( (EntityStatePdu)pdu );
-				break;
+			case EntityState: entityStore.receivePdu( (EntityStatePdu)pdu ); break;
+			case Transmitter: transmitterStore.receivePdu( (TransmitterPdu)pdu ); break;
 
 			// PDUs to support next
-			case Transmitter:
+			case Emission:
+				break;
+			case Designator:
 				break;
 			case Signal:
 				break;
@@ -71,10 +78,6 @@ public class PduStore
 				break;
 			case SetData:
 				break;
-			case Emission:
-				break;
-			case Designator:
-				break;
 			default:
 				break;
 		}
@@ -86,11 +89,17 @@ public class PduStore
 	public void clear()
 	{
 		this.entityStore.clear();
+		this.transmitterStore.clear();
 	}
-	
+
 	public EntityStateStore getEntityStore()
 	{
 		return this.entityStore;
+	}
+	
+	public TransmitterStore getTransmitterStore()
+	{
+		return this.transmitterStore;
 	}
 
 	//----------------------------------------------------------

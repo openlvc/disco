@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.DiscoConfiguration;
@@ -56,10 +57,15 @@ public class DisApplication
 	//----------------------------------------------------------
 	private DiscoConfiguration configuration;
 	private OpsCenter opscenter;
+	private Logger logger;
 
 	// PDU Storage and Management
 	private PduStore pduStore;
 	private ConcurrentMap<PduType,List<IPduSubscriber>> pduSubscribers;
+	
+	// Heartbeats and Delete Timeouts
+	private DeleteReaper deleteReaper;
+	
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -69,8 +75,11 @@ public class DisApplication
 		this.configuration = new DiscoConfiguration();
 		this.opscenter = null; // set in start()
 		
+		// Heartbeats and Delete Timeouts
+		this.deleteReaper = new DeleteReaper( this );
+
 		// PDU Storage and Management
-		this.pduStore = new PduStore();
+		this.pduStore = new PduStore( this );
 		this.pduSubscribers = new ConcurrentHashMap<>();
 		// initialize the subscriber lists so that we don't have to check each time
 		for( PduType type : PduType.getSupportedPdus() )
@@ -92,6 +101,9 @@ public class DisApplication
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void start()
 	{
+		// fetch our logger so that we're ready
+		this.logger = configuration.getDiscoLogger();
+		
 		// burn the existing pdu store to avoid stale data when re-openings happening
 		this.pduStore.clear();
 		
@@ -101,10 +113,16 @@ public class DisApplication
 		
 		// open the connection up
 		this.opscenter.open();
+		
+		// start the recurring tasks
+		this.deleteReaper.start();
 	}
 	
 	public void stop()
 	{
+		// close off the recurring tasks
+		this.deleteReaper.stop();
+		
 		// close off the stream of data
 		this.opscenter.close();
 	}
@@ -142,9 +160,53 @@ public class DisApplication
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	protected Logger getLogger()
+	{
+		return this.logger;
+	}
+	
+	public DiscoConfiguration getConfiguration()
+	{
+		return this.configuration;
+	}
+	
 	public PduStore getPduStore()
 	{
 		return this.pduStore;
+	}
+
+	///////////////////////////////////
+	/// Delete Reaper Methods   ///////
+	///////////////////////////////////
+	protected DeleteReaper getDeleteReaper()
+	{
+		return this.deleteReaper;
+	}
+	
+	/**
+	 * Specify the application delete timeout.
+	 * <p/>
+	 * 
+	 * Periodically (typically 1/5th of the given value) a thread will loop over all the data
+	 * we have collected and remove any that has not been updated within the last x milliseconds
+	 * (as given in the argument).
+	 * 
+	 * @param millis How long it can be between updates before data is considered stale and removed.
+	 *               Time in milliseconds.
+	 */
+	public void setDeleteTimeout( long millis )
+	{
+		this.deleteReaper.setDeleteTimeout( millis );
+	}
+
+	/**
+	 * @return The max period of time between updates that associated data will be considered
+	 *         valid for. If the last time we received a PDU was beyond this many milliseconds
+	 *         ago, that data will be removed.
+	 */
+	public long getDeleteTimeout()
+	{
+		return this.deleteReaper.getDeleteTimeout();
 	}
 	
 	//----------------------------------------------------------
@@ -168,4 +230,15 @@ public class DisApplication
 		}
 	}
 
+	
+	public static void main( String[] args ) throws Exception
+	{
+		DisApplication app = new DisApplication();
+		app.getConfiguration().getLoggingConfiguration().setLevel( "TRACE" );
+		app.start();
+		
+		Thread.sleep( 30000 );
+		app.stop();
+	}
+	
 }

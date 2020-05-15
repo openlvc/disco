@@ -33,7 +33,7 @@ import org.openlvc.disco.utils.LLA;
  * Tracks the current state of all known {@link EntityStatePdu}s received from the network
  * for later access. As updates are received the previous state is replaced and released.
  */
-public class EntityStateStore
+public class EntityStateStore implements IDeleteReaperManaged
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -48,7 +48,7 @@ public class EntityStateStore
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected EntityStateStore()
+	protected EntityStateStore( PduStore store )
 	{
 		this.byId = new ConcurrentHashMap<>();
 		this.byMarking = new ConcurrentHashMap<>();
@@ -130,11 +130,30 @@ public class EntityStateStore
 		return new HashSet<>( byMarking.keySet() );
 	}
 	
+	/**
+	 * Return all the entities that have been updated only AFTER the given timestamp (millis
+	 * since the epoch). Note that we use Disco's local timestamp, NOT the DIS timestamp.
+	 * 
+	 * @param time The oldest time a PDU can have been updated to be returned
+	 * @return The set of all PDUs that have been updated since the given time, which may be empty
+	 */
+	public Set<EntityStatePdu> getEntityStatesUpdatedSince( long time )
+	{
+		return null;
+	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Location Based Query Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public Set<EntityStatePdu> getEntityStatesNear( EntityStatePdu entity, long radiusMeters )
+	/**
+	 * Get the set of Entity States whose location is within the radius of the specified entity's
+	 * location. If none are close, an empty set is returned.
+	 * 
+	 * @param location     The entity we want to find other entities in proximity to
+	 * @param radiusMeters Limit of how far a entity can be from the given entity
+	 * @return             Set of all entities within the given radius of the given entity
+	 */
+	public Set<EntityStatePdu> getEntityStatesNear( EntityStatePdu entity, int radiusMeters )
 	{
 		// only do this once
 		LLA target = entity.getLocation().toLLA();
@@ -144,7 +163,15 @@ public class EntityStateStore
 		                    .collect( Collectors.toSet() );
 	}
 	
-	public Set<EntityStatePdu> getEntityStatesNear( WorldCoordinate location, long radiusMeters )
+	/**
+	 * Get the set of Entity States whose location is within the specified radius of the specified
+	 * location. If none are close, an empty set is returned.
+	 * 
+	 * @param location     The location we want to find entities in proximity to
+	 * @param radiusMeters Limit of how far a entity can be from the location
+	 * @return             Set of all entities within the given radius of the given location
+	 */
+	public Set<EntityStatePdu> getEntityStatesNear( WorldCoordinate location, int radiusMeters )
 	{
 		// only do this once
 		LLA target = location.toLLA();
@@ -154,6 +181,26 @@ public class EntityStateStore
 		                    .collect( Collectors.toSet() );
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Delete Timeout Support Methods   ///////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
+	public Set<EntityStatePdu> removeStaleData( long oldestTimestamp )
+	{
+		Set<EntityStatePdu> removed = new HashSet<>();
+		
+		byId.values().parallelStream()
+		             .filter( espdu -> espdu.getLocalTimestamp() < oldestTimestamp )
+		             .forEach( espdu -> {
+		            	 byId.remove( espdu.getEntityID() );
+		            	 byMarking.remove( espdu.getMarking() );
+		            	 removed.add( espdu );
+		              });
+		
+		return removed;
+	}
+
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
