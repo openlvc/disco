@@ -154,6 +154,15 @@ public class AbstractTest
 		throw new TimeoutException( "Waiting too long for condition to be true" );
 	}
 
+	/**
+	 * Same as {@link #waitFor(BooleanSupplier, long)} but with a default wait time (2 seconds).
+	 * @param supplier The supplier to check against
+	 */
+	protected void waitFor( BooleanSupplier supplier )
+	{
+		waitFor( supplier, 2000 );
+	}
+	
 	protected void snooze( long millis )
 	{
 		try

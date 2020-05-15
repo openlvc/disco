@@ -119,7 +119,6 @@ public class EntityStateStoreTest extends AbstractTest
 		super.waitFor( () -> {return entityStore.size() > 0;}, 100 );
 		// check to make sure the store has what we want
 		Assert.assertTrue( entityStore.hasEntityState("PhatEntity") );
-		Assert.assertTrue( entityStore.hasEntityState("PhatEntity") );
 		Assert.assertEquals( entityStore.size(), 1 );
 
 		// Check the entity values
@@ -133,6 +132,29 @@ public class EntityStateStoreTest extends AbstractTest
 		Set<String> markings = entityStore.getAllMarkings();
 		Assert.assertEquals( markings.size(), 1 );
 		Assert.assertTrue( markings.contains("PhatEntity") );
+		
+		// 4. Update the PDU to change some key settings and make sure that
+		//    these are reflected accurately
+		source.setMarking( "Ph@tEntity" );
+		remote.send( source );
+		super.waitFor( () -> entityStore.hasEntityState("Ph@tEntity") );
+		
+		// we got the update, make sure everything is still cool
+		Assert.assertEquals( entityStore.size(), 1 );
+		// Check the entity values
+		received = entityStore.getEntityState("PhatEntity");
+		Assert.assertNull( received );
+		received = entityStore.getEntityState("Ph@tEntity");
+		Assert.assertEquals( received.getEntityID(), entityId );
+		Assert.assertEquals( received.getEntityType(), entityType );
+		Assert.assertEquals( received.getLocation(), location );
+		Assert.assertEquals( received.getOrientation(), orientation );
+		
+		// Check property fetch methods
+		markings = entityStore.getAllMarkings();
+		Assert.assertEquals( markings.size(), 1 );
+		Assert.assertFalse( markings.contains("PhatEntity") );
+		Assert.assertTrue( markings.contains("Ph@tEntity") );
 	}
 
 	//----------------------------------------------------------

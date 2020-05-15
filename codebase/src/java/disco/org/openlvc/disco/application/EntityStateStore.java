@@ -21,11 +21,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
+import org.openlvc.disco.utils.LLA;
 
 /**
  * Tracks the current state of all known {@link EntityStatePdu}s received from the network
@@ -40,16 +42,16 @@ public class EntityStateStore
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private ConcurrentMap<String,EntityStatePdu> byMarking;
 	private ConcurrentMap<EntityId,EntityStatePdu> byId;
+	private ConcurrentMap<String,EntityStatePdu> byMarking;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	protected EntityStateStore()
 	{
-		this.byMarking = new ConcurrentHashMap<>();
 		this.byId = new ConcurrentHashMap<>();
+		this.byMarking = new ConcurrentHashMap<>();
 	}
 
 	//----------------------------------------------------------
@@ -61,8 +63,20 @@ public class EntityStateStore
 	////////////////////////////////////////////////////////////////////////////////////////////
 	protected void receivePdu( EntityStatePdu pdu )
 	{
-		byMarking.put( pdu.getMarking(), pdu );
-		byId.put( pdu.getEntityID(), pdu );
+		// bang the entity into the ID indexed store
+		EntityStatePdu existing = byId.put( pdu.getEntityID(), pdu );
+
+		// if we are discovering this entity for first time, store in marking indexed store as well
+		if( existing == null )
+		{
+			byMarking.put( pdu.getMarking(), pdu );
+		}
+		else if( existing.getMarking().equals(pdu.getMarking()) == false )
+		{
+			// marking has changed, need to update the marking indexed store
+			byMarking.remove( existing.getMarking() );
+			byMarking.put( pdu.getMarking(), pdu );
+		}
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -120,14 +134,24 @@ public class EntityStateStore
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Location Based Query Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public Set<EntityStatePdu> getEntityStatesNear( EntityStatePdu target, double radiusKm )
+	public Set<EntityStatePdu> getEntityStatesNear( EntityStatePdu entity, long radiusMeters )
 	{
-		return new HashSet<>();
+		// only do this once
+		LLA target = entity.getLocation().toLLA();
+
+		return byId.values().parallelStream()
+		                    .filter( other -> target.distanceBetweenHavershine(other.getLocation().toLLA()) < radiusMeters )
+		                    .collect( Collectors.toSet() );
 	}
 	
-	public Set<EntityStatePdu> getEntityStatesNear( WorldCoordinate location, double radiusKm )
+	public Set<EntityStatePdu> getEntityStatesNear( WorldCoordinate location, long radiusMeters )
 	{
-		return new HashSet<>();
+		// only do this once
+		LLA target = location.toLLA();
+		
+		return byId.values().parallelStream()
+		                    .filter( other -> target.distanceBetweenHavershine(other.getLocation().toLLA()) < radiusMeters )
+		                    .collect( Collectors.toSet() );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
