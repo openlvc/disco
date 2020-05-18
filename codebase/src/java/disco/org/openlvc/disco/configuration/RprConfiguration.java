@@ -102,6 +102,11 @@ public class RprConfiguration
 		parent.setProperty( PROP_RTI_PROVIDER, provider.name() );
 	}
 	
+	public void setRtiProvider( String provider )
+	{
+		setRtiProvider( RtiProvider.valueOf(provider) ); 
+	}
+	
 	public RtiProvider getRtiProvider()
 	{
 		return RtiProvider.valueOf( parent.getProperty(PROP_RTI_PROVIDER,RtiProvider.Portico.name()) );
@@ -144,7 +149,7 @@ public class RprConfiguration
 	//
 	public String getFederationName()
 	{
-		return parent.getProperty( PROP_FEDERATION, "" );
+		return parent.getProperty( PROP_FEDERATION, "Disco" );
 	}
 	
 	public void setFederationName( String federationName )
@@ -154,7 +159,7 @@ public class RprConfiguration
 
 	public String getFederateName()
 	{
-		return parent.getProperty( PROP_FEDERATE, "Disco Federate" );
+		return parent.getProperty( PROP_FEDERATE, "Disco" );
 	}
 
 	public void setFederateName( String federateName )
@@ -164,7 +169,7 @@ public class RprConfiguration
 	
 	public String getFederateType()
 	{
-		return parent.getProperty( PROP_FEDERATE_TYPE, "Disco Federate" );
+		return parent.getProperty( PROP_FEDERATE_TYPE, "OpenLVC Disco Federate" );
 	}
 
 	public void setFederateType( String federateType )
@@ -174,7 +179,7 @@ public class RprConfiguration
 
 	public boolean isCreateFederation()
 	{
-		return Boolean.valueOf( parent.getProperty(PROP_CREATE_FEDERATION,"false") );
+		return Boolean.valueOf( parent.getProperty(PROP_CREATE_FEDERATION,"true") );
 	}
 	
 	public void setCreateFederation( boolean createFederation )
