@@ -17,8 +17,8 @@
  */
 package org.openlvc.disco.connection.rpr.types.enumerated;
 
-import org.portico.impl.hla1516e.types.encoding.HLA1516eInteger32BE;
-import org.portico.utils.bithelpers.BitHelpers;
+import org.openlvc.disco.connection.rpr.types.basic.HLAinteger32BE;
+import org.openlvc.disco.utils.BitHelpers;
 
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
@@ -35,14 +35,14 @@ public class HLAboolean implements hla.rti1516e.encoding.HLAboolean
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLA1516eInteger32BE value;
+	private HLAinteger32BE value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	public HLAboolean()
 	{
-		this.value = new HLA1516eInteger32BE( HLAfalse );
+		this.value = new HLAinteger32BE( HLAfalse );
 	}
 
 	public HLAboolean( boolean value )
