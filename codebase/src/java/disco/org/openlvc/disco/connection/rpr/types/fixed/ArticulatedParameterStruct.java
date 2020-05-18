@@ -86,7 +86,7 @@ public class ArticulatedParameterStruct extends HLAfixedRecord
 		if( dis == null )
 			throw new DiscoException( "ArticulationParameter received from ParameterValueVariantStruct was null" );
 
-		dis.setChangeIndicator( articulatedParameterChange.getValue() );
+		dis.setChangeIndicator( articulatedParameterChange.getUnsignedValue() ); // get as UNSIGNED!!!
 		dis.setAttachedTo( partAttachedTo.getValue() );
 		return dis;
 	}
