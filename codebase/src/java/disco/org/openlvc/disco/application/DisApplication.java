@@ -234,7 +234,10 @@ public class DisApplication
 	public static void main( String[] args ) throws Exception
 	{
 		DisApplication app = new DisApplication();
-		app.getConfiguration().getLoggingConfiguration().setLevel( "TRACE" );
+		//app.getConfiguration().getLoggingConfiguration().setLevel( "TRACE" );
+		//app.getConfiguration().getRprConfiguration().setRtiProvider( "Pitch" );
+		//app.getConfiguration().getRprConfiguration().setRtiInstallDir( "C:\\Program Files\\prti1516e" );
+		//app.getConfiguration().setConnection( "rpr" );
 		app.start();
 		
 		Thread.sleep( 30000 );
