@@ -110,15 +110,25 @@ public class Recorder implements IPduListener
 		this.sessionWriter.open();
 		
 		//
-		// Set up the DIS properties
+		// Set up the Disco Configuration
 		//
 		// Create the Disco configuration from the base config data
+		// DIS Configuration
 		this.discoConfiguration = new DiscoConfiguration();
 		discoConfiguration.getLoggingConfiguration().disable();
 		discoConfiguration.getUdpConfiguration().setAddress( configuration.getDisAddress() );
 		discoConfiguration.getUdpConfiguration().setPort( configuration.getDisPort() );
 		discoConfiguration.getUdpConfiguration().setNetworkInterface( configuration.getDisInterface() );
 		discoConfiguration.getDisConfiguration().setExerciseId( configuration.getDisExerciseId() );
+		// HLA Configuration
+		discoConfiguration.getRprConfiguration().setFederateName( configuration.getHlaFederateName() );
+		discoConfiguration.getRprConfiguration().setFederationName( configuration.getHlaFederationName() );
+		discoConfiguration.getRprConfiguration().setRtiProvider( configuration.getHlaRtiProvider() );
+		discoConfiguration.getRprConfiguration().setRtiInstallDir( configuration.getHlaRtiInstallDir() );
+		discoConfiguration.getRprConfiguration().setCreateFederation( configuration.isHlaCreateFederation() );
+		discoConfiguration.getRprConfiguration().setLocalSettings( configuration.getHlaRtiLocalSettings() );
+		if( configuration.useHla() )
+			discoConfiguration.setConnection( "rpr" );
 		// PDU processing options
 		discoConfiguration.setPduSender( configuration.getPduSender() );
 		discoConfiguration.setPduReceiver( configuration.getPduReceiver() );

@@ -26,7 +26,22 @@ public class RprConfiguration
 	//----------------------------------------------------------
 	//                       ENUMERATIONS
 	//----------------------------------------------------------
-	public enum RtiProvider { Portico, Pitch; }
+	public enum RtiProvider
+	{
+		Portico("C:\\Program Files\\Portico"),
+		Pitch("C:\\Program Files\\prti1516e");
+		
+		private String defaultInstallDir;
+		private RtiProvider( String defaultDir )
+		{
+			this.defaultInstallDir = defaultDir;
+		}
+		
+		public String getDefaultInstallDirectory()
+		{
+			return this.defaultInstallDir;
+		}
+	}
 
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -66,6 +81,9 @@ public class RprConfiguration
 		List<File> paths = new ArrayList<>();
 		
 		String rtihome = getRtiInstallDir();
+		if( rtihome.equals("") )
+			rtihome = ".";
+
 		switch( getRtiProvider() )
 		{
 			case Portico:
@@ -91,14 +109,32 @@ public class RprConfiguration
 
 	public void setRtiInstallDir( String rtidir )
 	{
+		if( rtidir == null || rtidir.trim().equals("") )
+			return;
+
 		parent.setProperty( PROP_RTI_INSTALL_DIR, rtidir );
 	}
 	
 	public String getRtiInstallDir()
 	{
 		String defaultPath = System.getenv( "RTI_HOME" );
-		if( defaultPath == null )
-			defaultPath = "";
+		if( defaultPath == null || defaultPath.equals("") )
+		{
+			// Check the default install directory for the provider.
+			RtiProvider provider = getRtiProvider();
+			File file = new File( provider.getDefaultInstallDirectory() );
+			if( file.exists() == false && provider == RtiProvider.Portico )
+			{
+    			// If the install dir isn't found, either use it or switch it depending on RTI.
+    			// For Portico, because it can be distributed as a single jar, we often just want
+    			// to dump it locally. For others, not so much.
+				defaultPath = "";
+			}
+			else
+			{
+				defaultPath = file.getAbsolutePath();
+			}
+		}
 
 		return parent.getProperty( PROP_RTI_INSTALL_DIR, defaultPath );
 	}

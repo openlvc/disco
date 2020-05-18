@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.Log4jConfiguration;
+import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 
 public class Configuration
 {
@@ -46,6 +47,15 @@ public class Configuration
 	private String disInterface;    // IP or nic to use or one of the symbols "LOOPBACK",
 	                                // "LINK_LOCAL", "SITE_LOCAL", "GLOBAL"
 	private short disExerciseId;
+	
+	// HLA Settings
+	private boolean useHla;
+	private String hlaFederationName;
+	private String hlaFederateName;
+	private boolean hlaCreateFederation;
+	private String hlaRtiProvider;
+	private String hlaRtiInstallDir;
+	private String hlaRtiLocalSettings;
 	
 	// PDU Processing
 	private String pduSender;
@@ -76,6 +86,15 @@ public class Configuration
 		this.disPort       = 3000;
 		this.disInterface  = "SITE_LOCAL";
 		this.disExerciseId = 1;
+		
+		// HLA Settings
+		this.useHla = false;
+		this.hlaFederationName = "Disco";
+		this.hlaFederateName = "Duplicator";
+		this.hlaCreateFederation = true;
+		this.hlaRtiProvider = "Portico";
+		this.hlaRtiInstallDir = "";
+		this.hlaRtiLocalSettings = "";
 		
 		// PDU Processing
 		this.pduSender = null;
@@ -109,6 +128,7 @@ public class Configuration
 				this.setToReplaying();
 			else if( argument.equalsIgnoreCase("--file") )
 				this.setFilename( args[++i] );
+			// DIS Settings
 			else if( argument.equalsIgnoreCase("--dis-address") )
 				this.setDisAddress( args[++i] );
 			else if( argument.equalsIgnoreCase("--dis-port") )
@@ -117,6 +137,22 @@ public class Configuration
 				this.setDisInterface( args[++i] );
 			else if( argument.equalsIgnoreCase("--dis-exercise-id") || argument.equalsIgnoreCase("--dis-exerciseId") )
 				this.setDisExerciseId(Short.parseShort(args[++i]) );
+			// HLA Settings
+			else if( argument.equalsIgnoreCase("--hla") )
+				this.useHla = true;
+			else if( argument.equalsIgnoreCase("--hla-federate") )
+				this.setHlaFederateName( args[++i] );
+			else if( argument.equalsIgnoreCase("--hla-federation") )
+				this.setHlaFederationName( args[++i] );
+			else if( argument.equalsIgnoreCase("--hla-rti-provider") )
+				this.setHlaRtiProvider( args[++i] );
+			else if( argument.equalsIgnoreCase("--hla-rti-installdir") )
+				this.setHlaRtiInstallDir( args[++i] );
+			else if( argument.equalsIgnoreCase("--hla-create-federation") )
+				this.setHlaCreateFederation( true );
+			else if( argument.equalsIgnoreCase("--hla-rti-settings") )
+				this.setHlaRtiLocalSettings( args[++i] );
+			// Replay Settings
 			else if( argument.equalsIgnoreCase("--status-interval") )
 				this.setStatusLogInterval( Long.parseLong(args[++i]) * 1000 ); // value in seconds
 			else if( argument.equalsIgnoreCase("--replay-realtime") ) // 
@@ -256,6 +292,92 @@ public class Configuration
 	}
 
 	//////////////////////////////////////////////////////////////////
+	/// HLA Settings /////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////
+	public boolean useHla()
+	{
+		return this.useHla;
+	}
+	
+	public void setUseHla( boolean useHla )
+	{
+		this.useHla = useHla;
+	}
+	
+	public String getHlaFederateName()
+	{
+		return this.hlaFederateName;
+	}
+
+	public void setHlaFederateName( String name )
+	{
+		this.hlaFederateName = name;
+		this.useHla = true;
+	}
+
+	public String getHlaFederationName()
+	{
+		return this.hlaFederationName;
+	}
+	
+	public void setHlaFederationName( String name )
+	{
+		this.hlaFederationName = name;
+		this.useHla = true;
+	}
+
+	public RtiProvider getHlaRtiProvider()
+	{
+		return RtiProvider.valueOf( this.hlaRtiProvider );
+	}
+
+	public void setHlaRtiProvider( RtiProvider provider )
+	{
+		this.hlaRtiProvider = provider.name();
+		this.useHla = true;
+	}
+	
+	public void setHlaRtiProvider( String provider )
+	{
+		RtiProvider.valueOf( provider ); // just checking
+		this.hlaRtiProvider = provider;
+		this.useHla = true;
+	}
+
+	public String getHlaRtiInstallDir()
+	{
+		return this.hlaRtiInstallDir;
+	}
+
+	public void setHlaRtiInstallDir( String directory )
+	{
+		this.hlaRtiInstallDir = directory;
+		this.useHla = true;
+	}
+
+	public boolean isHlaCreateFederation()
+	{
+		return this.hlaCreateFederation;
+	}
+
+	public void setHlaCreateFederation( boolean create )
+	{
+		this.hlaCreateFederation = create;
+		this.useHla = true;
+	}
+
+	public String getHlaRtiLocalSettings()
+	{
+		return this.hlaRtiLocalSettings;
+	}
+
+	public void setHlaRtiLocalSettings( String settings )
+	{
+		this.hlaRtiLocalSettings = settings;
+		this.useHla = true;
+	}
+
+	//////////////////////////////////////////////////////////////////
 	/// Recording Settings ///////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////
 	public void setStatusLogInterval( long milliseconds )
@@ -354,20 +476,32 @@ public class Configuration
 		builder.append( "Duplicator - Record or replay traffic from a DIS network\n" );
 		builder.append( "Usage: bin/duplicator [--args]\n" );
 		builder.append( "\n" );
-		builder.append( "   --record                    Make a recording (default)\n" );
-		builder.append( "   --replay                    Replay from a previous recording\n" );
-		builder.append( "   --file            (string)  File name to read from/write to\n" );
-		builder.append( "   --dis-interface   (string)  NIC to use. LOOPBACK, LINK_LOCAL, SITE_LOCAL*, GLOBAL\n" );
-		builder.append( "   --dis-address     (string)  Multicast address to use or BROADCAST (default)\n" );
-		builder.append( "   --dis-port        (number)  DIS port to listen/send on. Default: 3000\n" );
-		builder.append( "   --dis-exercise-id (number)  Exercise ID to send in outgoing and only recv on (default: 1)\n" );
-		builder.append( "   --replay-realtime           Replay as PDus happened. Delay PDUs if there was receive delay\n" );
-		builder.append( "   --replay-fast               Replay all stored PDUs as fast as possible\n" );
-		builder.append( "   --loop            (number)  Number of times to replay a session. 0 for infinite (default: 1)\n" );
-		builder.append( "   --log-level       (string)  Set the log level: OFF, ERROR, WARN, INFO(default), DEBUG, TRACE\n" );
-		builder.append( "   --status-interval (number)  Time in seconds between logging of status information (default:30)\n" );
-		builder.append( "   --pdu-receiver    (string)  PDU receive processor: single-thread (def), thread-pool, simple\n" );
-		builder.append( "   --pdu-sender      (string)  PDU send processor: single-thread (def), thread-pool, simple\n" );
+		builder.append( "   --record                        Make a recording (default)\n" );
+		builder.append( "   --replay                        Replay from a previous recording\n" );
+		builder.append( "   --file                (string)  File name to read from/write to\n" );
+		builder.append( "   --dis-interface       (string)  NIC to use. LOOPBACK, LINK_LOCAL, SITE_LOCAL*, GLOBAL\n" );
+		builder.append( "   --dis-address         (string)  Multicast address to use or BROADCAST (default)\n" );
+		builder.append( "   --dis-port            (number)  DIS port to listen/send on. Default: 3000\n" );
+		builder.append( "   --dis-exercise-id     (number)  Exercise ID to send in outgoing and only recv on (default: 1)\n" );
+		builder.append( "   --replay-realtime               Replay as PDus happened. Delay PDUs if there was receive delay\n" );
+		builder.append( "   --replay-fast                   Replay all stored PDUs as fast as possible\n" );
+		builder.append( "   --loop                (number)  Number of times to replay a session. 0 for infinite (default: 1)\n" );
+		builder.append( "   --log-level           (string)  Set the log level: OFF, ERROR, WARN, INFO(default), DEBUG, TRACE\n" );
+		builder.append( "   --status-interval     (number)  Time in seconds between logging of status information (default:30)\n" );
+		builder.append( "   --pdu-receiver        (string)  PDU receive processor: single-thread (def), thread-pool, simple\n" );
+		builder.append( "   --pdu-sender          (string)  PDU send processor: single-thread (def), thread-pool, simple\n" );
+		builder.append( "\n" );
+		builder.append( "   HLA Settings\\n" );
+		builder.append( "   If you specify any of these options it will cause Disco's HLA mode to be engaged\n" );
+		builder.append( "\n" );
+		builder.append( "   --hla                           If set, HLA will be used rather than DIS\n" );
+		builder.append( "   --hla-federate        (string)  Name of federate                     (default:Duplicator)\n" );
+		builder.append( "   --hla-federation      (string)  Name of federation to join           (default:Disco)\n" );
+		builder.append( "   --hla-rti-provider    (string)  RTI Vendor [Portico|Pitch]           (default:Portico)\n" );
+		builder.append( "   --hla-rti-installdir     (dir)  Directory where RTI is installed     (default:./) \n" );
+		builder.append( "                                   Checks RTI_HOME env-var if not set.\n" );
+		builder.append( "   --hla-create-federation         If set, try to create federation     (default:true)\n" );
+		builder.append( "   --hla-rti-settings    (string)  Local settings string given to RTI \n" );
 		builder.append( "\n" );
 		System.out.println( builder.toString() );
 	}
