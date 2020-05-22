@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<objectModel xsi:schemaLocation="http://standards.ieee.org/IEEE1516-2010 http://standards.ieee.org/downloads/1516/1516.2-2010/IEEE1516-DIF-2010.xsd" xmlns="http://standards.ieee.org/IEEE1516-2010" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelIdentification>
+        <name>Calytrix CNR - Tactical Chat</name>
+        <type>FOM</type>
+        <version>1.0</version>
+        <modificationDate>2020-05-22</modificationDate>
+        <securityClassification>Unclassified</securityClassification>
+        <purpose>Define structure for exchange of tactical chat messages via HLA</purpose>
+        <applicationDomain>All domains</applicationDomain>
+        <description>Defines message and object structures for supporting site-to-site tactical chat, primarily via IRC.</description>
+        <useLimitation></useLimitation>
+        <poc>
+            <pocType>Primary author</pocType>
+            <pocName>Tim Pokorny</pocName>
+            <pocOrg>Calytrix Technologies</pocOrg>
+            <pocTelephone>+61 (8) 9226-4288</pocTelephone>
+            <pocEmail>tim.pokorny@calytrix.com</pocEmail>
+        </poc>
+    </modelIdentification>
+ 
+    <!--  ======================================================================= -->
+    <!--                         Object Class Definitions                         -->
+    <!--  ======================================================================= -->
+    <objects>
+        <objectClass>
+            <name>HLAobjectRoot</name>
+            <objectClass>
+                <name>IRCServer</name>
+                <sharing>Subscribe</sharing>
+                <semantics>Represents core data held in an IRC Server.</semantics>
+                <attribute>
+                    <name>ServerId</name>
+                    <dataType>HLAASCIIString</dataType>
+                    <updateType>Static</updateType>
+                    <updateCondition>NA</updateCondition>
+                    <ownership>DivestAcquire</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>Unique ID for this IRC Server.</semantics>
+                </attribute>
+                <attribute>
+                    <name>Channels</name>
+                    <dataType>IRCChannelList</dataType>
+                    <updateType>On change</updateType>
+                    <updateCondition>NA</updateCondition>
+                    <ownership>DivestAcquire</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>List of channels that are active in the server.</semantics>
+                </attribute>
+                <attribute>
+                    <name>ConnectedNicks</name>
+                    <dataType>IRCNickList</dataType>
+                    <updateType>On change</updateType>
+                    <updateCondition>NA</updateCondition>
+                    <ownership>DivestAcquire</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>List of channels that are active in the server.</semantics>
+                </attribute>
+            </objectClass>
+        </objectClass>
+    </objects>
+
+    <!--  ======================================================================= -->
+    <!--                       Interaction Class Definitions                      -->
+    <!--  ======================================================================= -->
+    <interactions>
+        <interactionClass>
+            <name>HLAinteractionRoot</name>
+            <interactionClass>
+                <name>IRCMessage</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAbestEffort</transportation>
+                <order>Receive</order>
+                <semantics></semantics>
+                <parameter>
+                    <name>SimulationTime</name>
+                    <dataType>Integer64</dataType>
+                    <semantics>Milliseconds since start of exercise.</semantics>
+                </parameter>
+                <parameter>
+                    <name>WallclockTime</name>
+                    <dataType>Integer64</dataType>
+                    <semantics>Milliseconds since the epoch.</semantics>
+                </parameter>
+
+                <!-- Class: IRCChannelMessage -->
+                <interactionClass>
+                    <name>IRCChannelMessage</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>Represent a chat message to a channel or user</semantics>
+                    <parameter>
+                        <name>To</name>
+                        <dataType>HLAASCIIString</dataType>
+                        <semantics>Name of channel or user this message is sent to</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>From</name>
+                        <dataType>HLAASCIIString</dataType>
+                        <semantics>Nick this message was sent by</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Content</name>
+                        <dataType>HLAASCIIString</dataType>
+                        <semantics>Text content of the message</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Origin</name>
+                        <dataType>HLAASCIIString</dataType>
+                        <semantics>ServerId of the origin server</semantics>
+                    </parameter>
+                </interactionClass>
+
+                <!-- Class: IRCRawMessage -->
+                <interactionClass>
+                    <name>IRCChannelMessage</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>Represent a control message/IRC command to be executed</semantics>
+                    <parameter>
+                        <name>To</name>
+                        <dataType>HLAASCIIString</dataType>
+                        <semantics>Name of channel or user this message is sent to</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>From</name>
+                        <dataType>HLAASCIIString</dataType>
+                        <semantics>Nick this message was sent by</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Content</name>
+                        <dataType>HLAASCIIString</dataType>
+                        <semantics>Text content of the message</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Origin</name>
+                        <dataType>HLAASCIIString</dataType>
+                        <semantics>ServerId of the origin server</semantics>
+                    </parameter>
+                </interactionClass>
+
+            </interactionClass>
+
+        </interactionClass>
+    </interactions>
+
+    <!--  ======================================================================= -->
+    <!--                           Data Type Definitions                          -->
+    <!--  ======================================================================= -->
+    <dataTypes>
+        <!-- ==================== -->
+        <!--    Array Datatypes   -->
+        <!-- ==================== -->
+        <arrayDataTypes>
+            <arrayData>
+                <name>IRCChannelList</name>
+                <dataType>IRCChannelStruct</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>List of channels that are available in an IRC Server.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>IRCNickList</name>
+                <dataType>HLAASCIIString</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>List of channels that are available in an IRC Server.</semantics>
+            </arrayData>
+        </arrayDataTypes>
+
+        <!-- ==================== -->
+        <!--     Fixed Records    -->
+        <!-- ==================== -->
+        <fixedRecordDataTypes>
+            <fixedRecordData>
+                <name>IRCChannelStruct</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data about an IRC channel contained in an IRC Server.</semantics>
+                <field>
+                    <name>Name</name>
+                    <dataType>HLAASCIIString</dataType>
+                    <semantics>Name of the channel.</semantics>
+                </field>
+                <field>
+                    <name>Members</name>
+                    <dataType>IRCNickList</dataType>
+                    <semantics>List of Nick's in a channel.</semantics>
+                </field>
+            </fixedRecordData>
+        </fixedRecordDataTypes>
+    </dataTypes>
+
+</objectModel>
+
+
+
+
+
+
+

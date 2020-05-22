@@ -13,9 +13,9 @@
         <poc>
             <pocType>Primary author</pocType>
             <pocName>Tim Pokorny</pocName>
-            <pocOrg>Calytrix Technologies</pocOrg>
-            <pocTelephone>+1 (123) 456-7890</pocTelephone>
-            <pocEmail>nobody@example.com</pocEmail>
+            <pocOrg>OpenLVC</pocOrg>
+            <pocTelephone>None</pocTelephone>
+            <pocEmail>tpokorny@gmail.com</pocEmail>
         </poc>
     </modelIdentification>
     <switches>
