@@ -235,19 +235,39 @@ public class Configuration
 		return this.properties.getProperty( KEY_HLA_FEDERATION, "Disjoiner" );
 	}
 	
+	public void setHlaFederationName( String name )
+	{
+		this.properties.setProperty( KEY_HLA_FEDERATION, name );
+	}
+	
 	public String getHlaFederateName()
 	{
 		return this.properties.getProperty( KEY_HLA_FEDERATE, "Disjoiner" );
 	}
 
+	public void setHlaFederateName( String name )
+	{
+		this.properties.setProperty( KEY_HLA_FEDERATE, name );
+	}
+	
 	public boolean isHlaRandomizeFederateName()
 	{
 		return Boolean.valueOf( properties.getProperty(KEY_HLA_FEDERATE_RND,"true") );
 	}
 	
+	public void setHlaRandomizeFederateName( boolean shouldRandomize )
+	{
+		properties.setProperty( KEY_HLA_FEDERATE_RND, ""+shouldRandomize );
+	}
+	
 	public boolean isHlaCreateFederation()
 	{
 		return Boolean.valueOf( properties.getProperty(KEY_HLA_CREATE_FED,"true") );
+	}
+	
+	public void setHlaCreateFederation( boolean shouldCreate )
+	{
+		properties.setProperty( KEY_HLA_CREATE_FED, ""+shouldCreate );
 	}
 	
 	public String getHlaLogLevel()
