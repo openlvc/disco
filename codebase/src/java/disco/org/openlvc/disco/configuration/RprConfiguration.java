@@ -79,11 +79,16 @@ public class RprConfiguration
 	public List<File> getRtiPathExtension()
 	{
 		List<File> paths = new ArrayList<>();
-		
+
+		// Add the directory as configured by the user
 		String rtihome = getRtiInstallDir();
 		if( rtihome.equals("") )
 			rtihome = ".";
+		
+		paths.add( new File(rtihome) );
+		
 
+		// Add in some defaults for when we're trying to embed the RTI in our local distribution
 		switch( getRtiProvider() )
 		{
 			case Portico:
@@ -94,6 +99,9 @@ public class RprConfiguration
 				break;
 		}
 
+		// Add in the RTI provider default
+		paths.add( new File(getRtiProvider().getDefaultInstallDirectory()) );
+		
 		return paths;
 	}
 	
@@ -119,29 +127,41 @@ public class RprConfiguration
 
 		parent.setProperty( PROP_RTI_INSTALL_DIR, rtidir );
 	}
-	
+
+	/**
+	 * @return The path to the RTI install directory, defaulting to the default directory of the
+	 *         provider if no explicit location is set.
+	 */
 	public String getRtiInstallDir()
 	{
-		String defaultPath = System.getenv( "RTI_HOME" );
-		if( defaultPath == null || defaultPath.equals("") )
+		// Extract data from the various locations that we might use
+		String userPath = parent.getProperty( PROP_RTI_INSTALL_DIR, "" ).trim();
+		String envPath = System.getenv( "RTI_HOME" );
+		String providerPath = getRtiProvider().getDefaultInstallDirectory();
+		
+		
+		// Step 1. If the user has given us a path, use it (UNLESS it is ./)
+		if( userPath.equals("") == false &&
+			userPath.equals("./") == false &&
+			userPath.equals(".") == false )
 		{
-			// Check the default install directory for the provider.
-			RtiProvider provider = getRtiProvider();
-			File file = new File( provider.getDefaultInstallDirectory() );
-			if( file.exists() == false && provider == RtiProvider.Portico )
-			{
-    			// If the install dir isn't found, either use it or switch it depending on RTI.
-    			// For Portico, because it can be distributed as a single jar, we often just want
-    			// to dump it locally. For others, not so much.
-				defaultPath = "";
-			}
-			else
-			{
-				defaultPath = file.getAbsolutePath();
-			}
+			return userPath;
 		}
-
-		return parent.getProperty( PROP_RTI_INSTALL_DIR, defaultPath );
+		
+		// Step 2. If the environment variable is set, fall back to it
+		if( envPath != null && !envPath.trim().equals("") )
+			return envPath;
+		
+		// Step 3. If no other value is provided, fall back to the provider path but ONLY
+		//         if it exists on the file system
+		File providerFile = new File( providerPath );
+		if( providerFile.exists() )
+			return providerPath;
+		
+		// Step 4. If the provider default  doesn't exist, and the user HAS provided a value
+		//         (even if it's ./), just use that, otherwise fall back to the non-existant
+		//         provider path.
+		return parent.getProperty( PROP_RTI_INSTALL_DIR, providerFile.getAbsolutePath() );
 	}
 
 	//
