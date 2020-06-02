@@ -138,6 +138,16 @@ public class UdpConfiguration
 	}
 
 	/**
+	 * @return The address as it was configured. For example, if the symbolic name "BROADCAST" was
+	 *         used, this method will return that, rather than whatever the broadcast IP currently
+	 *         is for the interface.
+	 */
+	public String getAddressString()
+	{
+		return parent.getProperty( PROP_ADDRESS, "BROADCAST" );
+	}
+
+	/**
 	 * Sets the target address to the given one. This will be used as the target address
 	 * for the construction of all packets from here on in.
 	 */
@@ -215,6 +225,18 @@ public class UdpConfiguration
 		}
 
 		return this.networkInterface;
+	}
+
+	/**
+	 * @return The network interface as it was configured in "String" form, not transformed into
+	 *         a NetworkInterface instance. This is useful if you are using the symbolic name
+	 *         support and you want to write the value out based on current configuration. If you
+	 *         just used the interface, you'd get the interface name, but often you want the 
+	 *         symbolic name, because it's more broad.
+	 */
+	public String getNetworkInterfaceString()
+	{
+		return parent.getProperty( PROP_INTERFACE, "SITE_LOCAL" );
 	}
 	
 	public void setNetworkInterface( NetworkInterface networkInterface )
