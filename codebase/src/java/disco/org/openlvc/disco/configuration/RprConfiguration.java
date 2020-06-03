@@ -164,6 +164,14 @@ public class RprConfiguration
 		return parent.getProperty( PROP_RTI_INSTALL_DIR, providerFile.getAbsolutePath() );
 	}
 
+	/**
+	 * @return The value of {@link #getRtiInstallDir()} as a file.
+	 */
+	public File getRtiInstallDirFile()
+	{
+		return new File( getRtiInstallDir() );
+	}
+	
 	//
 	// General HLA Properties
 	//
