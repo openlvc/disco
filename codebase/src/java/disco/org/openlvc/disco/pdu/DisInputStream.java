@@ -162,6 +162,18 @@ public class DisInputStream extends DataInputStream
 	}
 
 	/**
+	 * Skips the next byte in the stream. This method is useful for skipping over 8 bit
+	 * padding fields.
+	 * 
+	 * @throws IOException thrown if the stream does not contain enough bytes beyond the read
+	 *                        marker to skip over
+	 */
+	public void skip8() throws IOException
+	{
+		checkedSkipBytes( 1 );
+	}
+	
+	/**
 	 * Skips the next two bytes in the stream. This method is useful for skipping over 16 bit
 	 * padding fields.
 	 * 
