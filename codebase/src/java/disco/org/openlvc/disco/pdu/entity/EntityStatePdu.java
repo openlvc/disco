@@ -29,14 +29,12 @@ import org.openlvc.disco.pdu.field.Domain;
 import org.openlvc.disco.pdu.field.ForceId;
 import org.openlvc.disco.pdu.field.Kind;
 import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
 import org.openlvc.disco.pdu.record.DeadReckoningParameter;
 import org.openlvc.disco.pdu.record.EntityCapabilities;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.EntityType;
 import org.openlvc.disco.pdu.record.EulerAngles;
-import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.record.VectorRecord;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
 import org.openlvc.disco.utils.BitField32;
@@ -66,12 +64,9 @@ public class EntityStatePdu extends PDU
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public EntityStatePdu( PduHeader header )
+	public EntityStatePdu()
 	{
-		super( header );
-
-		if( header.getPduType() != PduType.EntityState )
-			throw new IllegalStateException( "Expected EntityStatePdu header, found "+header.getPduType() );
+		super( PduType.EntityState );
 
 		this.entityID = new EntityId();
 		this.forceID = ForceId.Other;
@@ -86,13 +81,7 @@ public class EntityStatePdu extends PDU
 		this.capabilities = new EntityCapabilities();
 		this.articulationParameters = new ArrayList<ArticulationParameter>();
 	}
-
-	public EntityStatePdu()
-	{
-		this( new PduHeader().setPduType(PduType.EntityState) );
-		super.getHeader().setProtocolFamily( ProtocolFamily.Entity );
-	}
-
+	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------

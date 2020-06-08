@@ -32,7 +32,6 @@ import org.openlvc.disco.pdu.record.BurstDescriptor;
 import org.openlvc.disco.pdu.record.EntityCoordinate;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.EventIdentifier;
-import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.record.VectorRecord;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
 
@@ -60,12 +59,9 @@ public class DetonationPdu extends PDU
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public DetonationPdu( PduHeader header )
+	public DetonationPdu()
 	{
-		super( header );
-
-		if( header.getPduType() != PduType.Detonation )
-			throw new IllegalStateException( "Expected Detonation PDU header, found "+header.getPduType() );
+		super( PduType.Detonation );
 
 		this.firingEntityID = new EntityId();
 		this.targetEntityID = new EntityId();

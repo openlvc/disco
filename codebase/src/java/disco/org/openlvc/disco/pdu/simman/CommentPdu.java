@@ -25,9 +25,9 @@ import java.util.List;
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.FixedDatum;
-import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.record.VariableDatum;
 
 public class CommentPdu extends PDU
@@ -48,9 +48,9 @@ public class CommentPdu extends PDU
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public CommentPdu( PduHeader header )
+	public CommentPdu()
 	{
-		super( header );
+		super( PduType.Comment );
 		
 		this.originatingEntity = new EntityId();
 		this.receivingEntity = new EntityId();

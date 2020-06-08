@@ -25,13 +25,20 @@ public enum ProtocolFamily
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	Other        ( (short)0 ),
-	Entity       ( (short)1 ),
-	Warfare      ( (short)2 ),
-	Logistics    ( (short)3 ),
-	Radio        ( (short)4 ),
-	SimManagement( (short)5 ),
-	Emission     ( (short)6 );
+	Other         ( (short)0 ),
+	Entity        ( (short)1 ),
+	Warfare       ( (short)2 ),
+	Logistics     ( (short)3 ),
+	Radio         ( (short)4 ),
+	SimMgmt       ( (short)5 ),
+	Emission      ( (short)6 ),
+	EntityMgmt    ( (short)7 ),
+	Minefield     ( (short)8 ),
+	SyntheticEnv  ( (short)9 ),
+	SimMgmt_R     ( (short)10 ),
+	LiveEntity    ( (short)11 ),
+	NonRealTime   ( (short)12 ),
+	InformationOps( (short)13 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -66,12 +73,19 @@ public enum ProtocolFamily
 	{
 		switch( value )
 		{
-			 case 1: return Entity;
-			 case 2: return Warfare;
-			 case 3: return Logistics;
-			 case 4: return Radio;
-			 case 5: return SimManagement;
-			 case 6: return Emission;
+			 case  1: return Entity;
+			 case  2: return Warfare;
+			 case  3: return Logistics;
+			 case  4: return Radio;
+			 case  5: return SimMgmt;
+			 case  6: return Emission;
+			 case  7: return EntityMgmt;
+			 case  8: return Minefield;
+			 case  9: return SyntheticEnv;
+			 case 10: return SimMgmt_R;
+			 case 11: return LiveEntity;
+			 case 12: return NonRealTime;
+			 case 13: return InformationOps;
 			default: // drop through
 		}
 

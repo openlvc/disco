@@ -26,7 +26,6 @@ import org.openlvc.disco.pdu.field.CodeName;
 import org.openlvc.disco.pdu.field.DeadReckoningAlgorithm;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.EntityId;
-import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.record.VectorRecord;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
 
@@ -54,12 +53,9 @@ public class DesignatorPdu extends PDU
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public DesignatorPdu( PduHeader header )
+	public DesignatorPdu()
 	{
-		super( header );
-
-		if( header.getPduType() != PduType.Designator )
-			throw new IllegalStateException( "Expected Designator header, found "+header.getPduType() );
+		super( PduType.Designator );
 
 		this.designatingEntityId = new EntityId();
 		this.codeName = CodeName.NotSpecified;

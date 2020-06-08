@@ -26,7 +26,6 @@ import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.BurstDescriptor;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.EventIdentifier;
-import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.record.VectorRecord;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
 
@@ -60,12 +59,9 @@ public class FirePdu extends PDU
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public FirePdu( PduHeader header )
+	public FirePdu()
 	{
-		super( header );
-
-		if( header.getPduType() != PduType.Fire )
-			throw new IllegalStateException( "Expected Fire PDU header, found "+header.getPduType() );
+		super( PduType.Fire );
 
 		this.firingEntityID = new EntityId();
 		this.targetEntityID = new EntityId();

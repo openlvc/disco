@@ -39,29 +39,31 @@ public class PduHeader
 	private PduType pduType;
 	private ProtocolFamily family;
 	private long timestamp;
-	private int pdulength;
+	private int pduLength;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	public PduHeader()
 	{
-		this( ProtocolVersion.Version6, (short)1, PduType.Other, ProtocolFamily.Other, 0 );
+		this.version = ProtocolVersion.Version6;
+		this.exerciseId = (short)1;
+		this.pduType = PduType.Other;
+		this.family = this.pduType.getProtocolFamily();
+		this.timestamp = 0;
+		
+		// PDU Length
+		// A PDU header is only created in one of two circumstance:
+		//   1. We have received a PDU from an external application and it has filled the header in
+		//   2. We have created the PDU locally, and we need to fill the header in
+		//
+		// In Case 1 - This value shall be populated in the from(DisInputStream) method.
+		// In Case 2 - This value shall be populated in the to(DisInputStream,int) method.
+		//             This does mean that prior to being serialized, the header will _NOT_
+		//             contain a valid PDU length.
+		this.pduLength = -1;
 	}
 	
-	public PduHeader( ProtocolVersion version,
-	                  short exerciseId, 
-	                  PduType pduType,
-	                  ProtocolFamily family,
-	                  long timestamp )
-	{
-		this.version = version;
-		this.exerciseId = exerciseId;
-		this.pduType = pduType;
-		this.family = family;
-		this.timestamp = timestamp;
-	}
-
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -73,15 +75,22 @@ public class PduHeader
 		this.pduType = PduType.fromValue( dis.readUI8() );
 		this.family = ProtocolFamily.fromValue( dis.readUI8() );
 		this.timestamp = dis.readUI32();
-		this.pdulength = dis.readUI16(); // Length
+		this.pduLength = dis.readUI16(); // Length
 		dis.readUI16(); // padding bytes
 		
 		return this; // return ourselves so the method can be chained
 	}
 
+	/**
+	 * Write the contents of the PDU to the given output stream. We include the content
+	 * length of the 
+	 * @param dos
+	 * @param contentLength
+	 * @throws IOException
+	 */
 	public void to( DisOutputStream dos, int contentLength ) throws IOException
 	{
-		int totalLength = getByteLength() + contentLength;
+		int totalLength = getHeaderLength() + contentLength;
 		
 		dos.writeUI8( this.version.value() );
 		dos.writeUI8( exerciseId );
@@ -93,7 +102,7 @@ public class PduHeader
 		dos.writePadding( 2 );
 	}
 
-	public final int getByteLength()
+	public final int getHeaderLength()
 	{
 		return 12;
 	}
@@ -111,7 +120,12 @@ public class PduHeader
 	public void setVersion( ProtocolVersion version ) { this.version = version; }
 	
 	public PduType getPduType() { return this.pduType; }
-	public PduHeader setPduType( PduType type ) { this.pduType = type; return this; }
+	public PduHeader setPduType( PduType type )
+	{
+		this.pduType = type;
+		this.family = type.getProtocolFamily();
+		return this;
+	}
 	
 	public short getExerciseId() { return this.exerciseId; }
 	public void setExerciseId( short id ) { this.exerciseId = id; }
@@ -122,8 +136,15 @@ public class PduHeader
 	public long getTimestamp() { return this.timestamp; }
 	public void setTimestamp( long timestamp ) { this.timestamp = timestamp; }
 	
-	/** Returns size of PDU including header */
-	public long getPduSize() { return 12 + this.pdulength; } 
+	/**
+	 * @return The length of the PDU, including the header, as defined in the "Length" field of
+	 *         the header. <b>WARNING:</b> This will only be set properly on PDUs that are read
+	 *         in from a stream, or ones that have 
+	 */
+	public int getPduLength()
+	{
+		return this.pduLength;
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

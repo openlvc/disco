@@ -46,10 +46,12 @@ public abstract class PDU
 		this.header = header;
 		this.localTimestamp = System.currentTimeMillis();
 	}
-
-	protected PDU()
+	
+	protected PDU( PduType type )
 	{
 		this.header = new PduHeader();
+		this.header.setPduType( type );
+		this.header.setProtocolFamily( type.getProtocolFamily() );
 		this.localTimestamp = System.currentTimeMillis();
 	}
 
@@ -154,7 +156,7 @@ public abstract class PDU
 	 */
 	public int getPduLength()
 	{
-		return header.getByteLength() + getContentLength();
+		return header.getHeaderLength() + getContentLength();
 	}
 
 	/**

@@ -29,12 +29,10 @@ import org.openlvc.disco.pdu.field.AntennaPatternType;
 import org.openlvc.disco.pdu.field.CryptoSystem;
 import org.openlvc.disco.pdu.field.InputSource;
 import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.field.TransmitState;
 import org.openlvc.disco.pdu.record.AntennaLocation;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.ModulationType;
-import org.openlvc.disco.pdu.record.PduHeader;
 import org.openlvc.disco.pdu.record.RadioEntityType;
 
 /**
@@ -72,13 +70,10 @@ public class TransmitterPdu extends PDU
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public TransmitterPdu( PduHeader header )
+	public TransmitterPdu()
 	{
-		super( header );
+		super( PduType.Transmitter );
 
-		if( header.getPduType() != PduType.Transmitter )
-			throw new IllegalStateException( "Expected Transmitter header, found "+header.getPduType() );
-		
 		this.entityID = new EntityId();
 		this.radioId = 0;
 		this.radioEntityType = new RadioEntityType();
@@ -93,12 +88,6 @@ public class TransmitterPdu extends PDU
 		
 		setModulation( new ModulationType(), new byte[0] );
 		setAntennaPattern( AntennaPatternType.OmniDirectional, new byte[0] );
-	}
-
-	public TransmitterPdu()
-	{
-		this( new PduHeader().setPduType(PduType.Transmitter) );
-		super.getHeader().setProtocolFamily( ProtocolFamily.Radio );
 	}
 
 	//----------------------------------------------------------

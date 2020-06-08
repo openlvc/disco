@@ -24,11 +24,9 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.field.TdlType;
 import org.openlvc.disco.pdu.record.EncodingScheme;
 import org.openlvc.disco.pdu.record.EntityId;
-import org.openlvc.disco.pdu.record.PduHeader;
 
 /**
  * This class represents a Receiver PDU.
@@ -58,13 +56,10 @@ public class SignalPdu extends PDU
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public SignalPdu( PduHeader header )
+	public SignalPdu()
 	{
-		super( header );
+		super( PduType.Signal );
 
-		if( header.getPduType() != PduType.Signal )
-			throw new IllegalStateException( "Expected Signal header, found "+header.getPduType() );
-		
 		this.entityID = new EntityId();
 		this.radioID = 0;
 		this.encodingScheme = new EncodingScheme();
@@ -74,12 +69,6 @@ public class SignalPdu extends PDU
 		setData( new byte[0] );
 	}
 	
-	public SignalPdu()
-	{
-		this( new PduHeader().setPduType(PduType.Signal) );
-		super.getHeader().setProtocolFamily( ProtocolFamily.Radio );
-	}
-
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------

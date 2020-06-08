@@ -28,7 +28,6 @@ import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.field.StateUpdateIndicator;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.EventIdentifier;
-import org.openlvc.disco.pdu.record.PduHeader;
 
 public class EmissionPdu extends PDU
 {
@@ -48,12 +47,9 @@ public class EmissionPdu extends PDU
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public EmissionPdu( PduHeader header )
+	public EmissionPdu()
 	{
-		super( header );
-		
-		if( header.getPduType() != PduType.Emission )
-			throw new IllegalStateException( "Exepcted Emission header, found "+header.getPduType() );
+		super( PduType.Emission );
 		
 		this.emittingEntityId = new EntityId();
 		this.eventId = new EventIdentifier();

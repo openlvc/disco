@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2020 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -15,24 +15,25 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.pdu.radio;
+package org.openlvc.disco.pdu;
 
 import java.io.IOException;
 
-import org.openlvc.disco.pdu.DisInputStream;
-import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.pdu.record.EntityId;
 
 /**
- * This class represents a Receiver PDU.
+ * This class represetns a raw PDU whose body is not parsed, but rather just stored.
+ * We pull the PDU header out so that we can get some basic information and support
+ * the most basic of operations, but the body contents of the PDU are treated as an
+ * arbitrary blob.
  * <p/>
- * PDUs of this type contain information about...
  * 
- * @see "IEEE Std 1278.1-1995 section 4.5.7.4"
+ * This PDU is typically used in situations where we want to capture or process PDUs
+ * that are not yet supported by Disco. By wrapping them in an {@link UnparsedPdu}
+ * instance they can work through the framework safely even though we don't know what
+ * to do with them.
  */
-public class ReceiverPdu extends PDU
+public class UnparsedPdu extends PDU
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -41,18 +42,13 @@ public class ReceiverPdu extends PDU
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EntityId entityID;
-	private int radioID;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public ReceiverPdu()
+	public UnparsedPdu()
 	{
-		super( PduType.Receiver );
-
-		this.entityID = new EntityId();
-		this.radioID = 0;
+		super( PduType.Other );
 	}
 
 	//----------------------------------------------------------
@@ -65,61 +61,39 @@ public class ReceiverPdu extends PDU
 	@Override
 	public void from( DisInputStream dis ) throws IOException
 	{
-		entityID.from( dis );
-		radioID = dis.readUI16();
+		
 	}
 	
 	@Override
 	public void to( DisOutputStream dos ) throws IOException
 	{
-		entityID.to( dos );
-		dos.writeUI16( radioID );
+		
 	}
 	
 	@Override
-	public final int getContentLength()
+	public int getContentLength()
 	{
-		return 8;
-		
-		// int size = entityID.getByteLength();
-		// size += DisSizes.UI16_SIZE;	// Radio ID
-		// return size;
+		return -1;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	/// Abstract PDU Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public EntityId getEntityIdentifier()
-	{
-		return entityID;
-	}
-	
-	public void setEntityIdentifier( EntityId id )
-	{
-		entityID = id;
-	}
-	
-	public int getRadioID()
-	{
-		return radioID;
-	}
-	
-	public void setRadioID( int radioID )
-	{
-		this.radioID = radioID;
-	}
-	
 	@Override
 	public int getSiteId()
 	{
-		return this.entityID.getSiteId();
+		return 0;
 	}
 	
 	@Override
 	public int getAppId()
 	{
-		return this.entityID.getAppId();
+		return 0;
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

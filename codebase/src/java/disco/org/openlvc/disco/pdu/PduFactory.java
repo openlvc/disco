@@ -18,10 +18,8 @@
 package org.openlvc.disco.pdu;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.List;
 
-import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.PduHeader;
 
@@ -56,12 +54,6 @@ public class PduFactory
 	public static List<PduType> getSupportedPduTypes()
 	{
 		return PduType.getSupportedPduTypes();
-		/*
-		PduType[] array = { PduType.EntityState, PduType.Fire, PduType.Detonation,
-		                    PduType.Transmitter, PduType.Signal, PduType.Receiver };
-		
-		return Arrays.asList( array );
-		*/
 	}
 
 	/**
@@ -76,41 +68,10 @@ public class PduFactory
 	{
 		// Get the implementation class for this PDU type, thorwing an exception if we don't support it
 		PduType pduType = header.getPduType();
-		Constructor<? extends PDU> pduClass = pduType.getImplementationConstructor();
-		if( pduClass == null )
-			throw new UnsupportedPDU( "PDU Type not currently supported: "+pduType );
-		
-		// turn the class into an instance and return it
-		try
-		{
-			return pduClass.newInstance( header );
-		}
-		catch( Exception e )
-		{
-			throw new DiscoException( "Error creating PDU of type: "+pduType, e );
-		}
-		
-		// Old hard-coded way of supporting PDU instantiation. Still open question on whether
-		// this is much (if at all) faster than the .newInstance() approach above. Leaving here
-		// to remind me to check
-		/*
-		switch( header.getPduType() )
-		{
-			case EntityState:
-				return new EntityStatePdu( header );
-			case Fire:
-				return new FirePdu( header );
-			case Detonation:
-				return new DetonationPdu( header );
-			case Transmitter:
-				return new TransmitterPdu( header );
-			case Signal:
-				return new SignalPdu( header );
-			case Receiver:
-				return new ReceiverPdu( header );
-			default:
-				throw new UnsupportedPDU( "PDU Type not currently supported: "+header.getPduType() );
-		}*/
+		// Create a new PDU from the type
+		PDU pdu = pduType.newInstance();
+		pdu.setHeader( header );
+		return pdu;
 	}
 
 	/**
