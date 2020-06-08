@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<objectModel xsi:schemaLocation="http://standards.ieee.org/IEEE1516-2010 http://standards.ieee.org/downloads/1516/1516.2-2010/IEEE1516-DIF-2010.xsd" xmlns="http://standards.ieee.org/IEEE1516-2010" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelIdentification>
+        <name>DCSS-Time</name>
+        <type>FOM</type>
+        <version>0.1</version>
+        <modificationDate>2019-10-01</modificationDate>
+        <securityClassification>unclassified</securityClassification>
+        <purpose></purpose>
+        <applicationDomain>Training</applicationDomain>
+        <description>Published wallclock and simulation time</description>
+        <useLimitation></useLimitation>
+        <other>DRAFT</other>
+    </modelIdentification>
+    <objects>
+        <objectClass>
+            <name>HLAobjectRoot</name>
+            <objectClass>
+                <name>DCSSBaseObject</name>
+                <objectClass>
+                    <name>WallclockTime</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <semantics>Represents the wallclock and simulation times.</semantics>
+                    <attribute>
+                        <name>ZuluTime</name>
+                        <dataType>ClockTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Zulu wallclock time</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>SimulationTime</name>
+                        <dataType>ClockTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Simulation time of day.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>SimulationElapsedTime</name>
+                        <dataType>TimeMillisecondUnsignedInteger32</dataType>
+                        <updateType>Periodic</updateType>
+                        <updateCondition>1Hz</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Time in milliseconds since the start of the simulation.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>ScalingFactor</name>
+                        <dataType>Float32</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Multiplier for clock time, e.g. 2x speed, 0.5x speed.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>SimulationStartTime</name>
+                        <dataType>ClockTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Clock time when the simulation started.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>ClockState</name>
+                        <dataType>ClockStateEnum</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>State of clock - started, paused or in an error state.</semantics>
+                    </attribute>
+                </objectClass>
+            </objectClass>
+        </objectClass>
+    </objects>
+    <interactions>
+        <interactionClass>
+            <name>HLAinteractionRoot</name>
+        </interactionClass>
+    </interactions>
+    <dataTypes>
+        <simpleDataTypes/>
+        <enumeratedDataTypes>
+            <enumeratedData>
+                <name>ClockStateEnum</name>
+                <representation>HLAoctet</representation>
+                <semantics>The state of a clock.</semantics>
+                <enumerator>
+                    <name>PAUSED</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>RUNNING</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>ERROR</name>
+                    <value>2</value>
+                </enumerator>
+            </enumeratedData>
+        </enumeratedDataTypes>
+        <arrayDataTypes/>
+        <fixedRecordDataTypes/>
+        <variantRecordDataTypes/>
+    </dataTypes>
+    <notes/>
+</objectModel>

@@ -1,0 +1,1484 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<objectModel xsi:schemaLocation="http://standards.ieee.org/IEEE1516-2010 http://standards.ieee.org/downloads/1516/1516.2-2010/IEEE1516-DIF-2010.xsd" xmlns="http://standards.ieee.org/IEEE1516-2010" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelIdentification>
+        <name>Weather</name>
+        <type>FOM</type>
+        <version>0.9</version>
+        <modificationDate>2019-11-22</modificationDate>
+        <securityClassification>Unclassified</securityClassification>
+        <purpose>Boeing Weather Service Interactions</purpose>
+        <applicationDomain>Training</applicationDomain>
+        <description>Defines the HLA interactions for the Boeing weather service provided within the DCS&amp;S programme.</description>
+        <useLimitation></useLimitation>
+        <useHistory>Version 0.01 - Initial Version</useHistory>
+        <useHistory>Version 0.1 - Added EntityIdentifier, UUID, and Callsign to WeatherRequest and WeatherReponse interactions</useHistory>
+        <useHistory>Version 0.2 - Added InstanceName to the base interaction</useHistory>
+        <useHistory>Version 0.3 - Changed the FOM to correlate with the Weather Server v3.0.2 API</useHistory>
+        <useHistory>Version 0.4 - Removed the TimeOfDay interactions. Added a Weather request interaction over a path</useHistory>
+        <useHistory>Version 0.5 - Added weather segment response. Moved path and directions requests to subclass of WeatherRequestLocation</useHistory>
+        <useHistory>Version 0.6 - Added UUID to WeatherSegmentResponse</useHistory>
+        <useHistory>Version 0.7 - Added WeatherObserver and WeatherGriddedData objects</useHistory>
+        <useHistory>Version 0.8 - Modified line of sight parameters</useHistory>
+        <useHistory>Version 0.9 - Removed duplication in line of sight parameters</useHistory>
+        <poc>
+            <pocType>Primary author</pocType>
+            <pocName>Michael Jobson</pocName>
+            <pocOrg>Boeing Defence UK</pocOrg>
+            <pocEmail>michael.i.jobson@boeing.com</pocEmail>
+        </poc>
+        <poc>
+            <pocType>Contributor</pocType>
+            <pocName>Simon Tasker</pocName>
+            <pocOrg>Boeing Defence UK</pocOrg>
+        </poc>
+        <poc>
+            <pocType>Contributor</pocType>
+            <pocName>Alan Wills</pocName>
+            <pocOrg>Boeing Defence UK</pocOrg>
+            <pocEmail>alan.w.wills@boeing.com</pocEmail>
+        </poc>
+        <reference>
+            <type>Dependency</type>
+            <identification>NETN-Base_v1.0.2</identification>
+        </reference>
+        <reference>
+            <type>Dependency</type>
+            <identification>DCSS-BaseService</identification>
+        </reference>
+        <reference>
+            <type>Dependency</type>
+            <identification>RPR-Base_v2.0_draft19.10</identification>
+        </reference>
+        <other>DRAFT</other>
+    </modelIdentification>
+    <objects>
+        <objectClass>
+            <name>HLAobjectRoot</name>
+            <objectClass>
+                <name>DCSSBaseObject</name>
+                <objectClass>
+                    <name>WeatherInstance</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <semantics>Provides information about a weather instance</semantics>
+                    <attribute>
+                        <name>Id</name>
+                        <dataType>Integer64</dataType>
+                        <updateType>Static</updateType>
+                        <updateCondition>NA</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Weather instance unique identifier</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Name</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <updateType>Static</updateType>
+                        <updateCondition>NA</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The name of the weather instance</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Description</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>An optional description of the weather instance</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>InstanceType</name>
+                        <dataType>WeatherInstanceType</dataType>
+                        <updateType>Static</updateType>
+                        <updateCondition>NA</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Describes the weather instance type.  Real instances are created from historical weather data.  Live instances are created from current and forecast weather data and are automatically updated as weather data is published.  Standard weather instances are based on a standard atmosphere model and contain user-specified basic weather conditions</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>GeoArea</name>
+                        <dataType>GeoArea</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Rectangular geographic area defined by lower left and upper right coordinates.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>GeoAreaType</name>
+                        <dataType>GeoAreaType</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Describes the type of a GeoArea.  Currently only the Polygon type is supported</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>StartTime</name>
+                        <dataType>DateTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The earliest time at which the instance can be queried</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>EndTime</name>
+                        <dataType>DateTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The latest time at which the instance can be queried</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Domains</name>
+                        <dataType>DomainList</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>List of weather Domains</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Active</name>
+                        <dataType>HLAboolean</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Flag to show if this is the active weather instance, i.e. weather requests will be queried against this instance/</semantics>
+                    </attribute>
+                </objectClass>
+                <objectClass>
+                    <name>WeatherObserver</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <semantics>Encapsulates an object that is viewing the weather from a given location.</semantics>
+                    <attribute>
+                        <name>ObserverID</name>
+                        <dataType>Integer64</dataType>
+                        <updateType>Static</updateType>
+                        <updateCondition>NA</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Unique, fixed ID identifying this WeatherObserver,</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>InstanceID</name>
+                        <dataType>Integer64</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The weather instance associated with this observer.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Area</name>
+                        <dataType>GeoArea</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The area of interest for weather data points.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Altitude</name>
+                        <dataType>Float32</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Altitude AMSL for the data grid, m.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>TimeOffset</name>
+                        <dataType>Float64</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Time to query since the start of the instance, s.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>NumSamplesX</name>
+                        <dataType>Integer16</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Number of grid samples in the x (latitude) direction. Must be greater than one.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>NumSamplesY</name>
+                        <dataType>Integer16</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Number of grid samples in the y (longitude) direction. Must be greater than one.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Elements</name>
+                        <dataType>ArrayOfWeatherDataElement</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Array of the weather data elements that should be updated by the corresponding WeatherGriddedData object.</semantics>
+                    </attribute>
+                </objectClass>
+                <objectClass>
+                    <name>WeatherGriddedData</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <semantics>Represents an area of weather data, subdivided into a number of grid cells.</semantics>
+                    <attribute>
+                        <name>ObserverID</name>
+                        <dataType>Integer64</dataType>
+                        <updateType>Static</updateType>
+                        <updateCondition>NA</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The ID of the associated WeatherObserver</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>InstanceID</name>
+                        <dataType>Integer64</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The weather instance that contains the data for this object.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Area</name>
+                        <dataType>GeoArea</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Area covered by data.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Altitude</name>
+                        <dataType>Float32</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Altitude AMSL for the data grid, m.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>TimeOffset</name>
+                        <dataType>Float64</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Time of query in from start of the instance, seconds.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>NumSamplesX</name>
+                        <dataType>Integer16</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Number of grid samples in the x (latitude) direction. Must be greater than one.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>NumSamplesY</name>
+                        <dataType>Integer16</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Number of grid samples in the y (longitude) direction. Must be greater than one.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>DateTime</name>
+                        <dataType>DateTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Date time of gridded weather data.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Resolution</name>
+                        <dataType>Float64</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Resolution of gridded data, degrees.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>DataElements</name>
+                        <dataType>ArrayofGriddedDataElement</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>An array of GriddedDataElements containing all the gridded data, one GriddedDataElement per type of data.</semantics>
+                    </attribute>
+                </objectClass>
+            </objectClass>
+        </objectClass>
+    </objects>
+    <interactions>
+        <interactionClass>
+            <name>HLAinteractionRoot</name>
+            <interactionClass>
+                <name>Service</name>
+                <interactionClass>
+                    <name>WeatherRequestLocation</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>Query the weather location at a single point.</semantics>
+                    <parameter>
+                        <name>InstanceID</name>
+                        <dataType>Integer64</dataType>
+                        <semantics>Unique identifier of the weather. This attribute allows different weather patterns to be supported simultaneously, enabling the operator to switch from one weather pattern to another at runtime</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>DateTime</name>
+                        <dataType>DateTimeStruct</dataType>
+                        <semantics>Time of Request</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Location</name>
+                        <dataType>GeoPoint3D</dataType>
+                        <semantics>Location to query. For path-based subinteractions this is the start location.</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>WeatherReqType</name>
+                        <dataType>WeatherType</dataType>
+                        <semantics>Identification of which Weather type is being requested</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>UUID</name>
+                        <dataType>UuidArrayOfHLAbyte16</dataType>
+                        <semantics>16 bytes in the UUID. 
+ 
+A universally unique identifier (UUID), standardized by the Open Software Foundation (OSF) as part of the Distributed Computing Environment (DCE). 
+ 
+A UUID is a 16-byte (128-bit) number. In its canonical form, a UUID is represented by 32 hexadecimal digits, displayed in five groups separated by hyphens, in the form 8-4-4-4-12 for a total of 36 characters (32 digits and four hyphens). For example: 
+550e8400-e29b-41d4-a716-446655440000</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>EntityIdentifier</name>
+                        <dataType>EntityIdentifierStruct</dataType>
+                        <semantics>The DIS Entity ID triplet (optional)</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Callsign</name>
+                        <dataType>Callsign</dataType>
+                        <semantics>Unique identifier for an entity; a more user friendly identifier than UUID (optional)</semantics>
+                    </parameter>
+                    <interactionClass>
+                        <name>WeatherRequestBetweenLocations</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Query the weather conditions between two points.</semantics>
+                        <parameter>
+                            <name>EndLocation</name>
+                            <dataType>GeoPoint3D</dataType>
+                            <semantics>End location of query</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>DataType</name>
+                            <dataType>LineOfSightElement</dataType>
+                            <semantics>The type of data requested</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Sensitivity</name>
+                            <dataType>Float32</dataType>
+                            <semantics>A number between 0.0 and 1.0 that specifies the sensitivity of the change  detection algorithm. Low sensitivities will respond only to large changes  in weather conditions and produce a smaller number of segments. High sensitivities produce a larger number of segments but take longer to  generate. The default sensitivity is 0.5.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>WeatherRequestAlongPath</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Three floating point values representng an orientation, psi, theta and phi in euler angles in radians</semantics>
+                        <parameter>
+                            <name>PathDirection</name>
+                            <dataType>Orientation</dataType>
+                            <semantics>Direction of path from StartLocation</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>PathLength</name>
+                            <dataType>MeterFloat32</dataType>
+                            <semantics>Length of path</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>DataType</name>
+                            <dataType>LineOfSightElement</dataType>
+                            <semantics>The type of data requested</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Sensitivity</name>
+                            <dataType>Float32</dataType>
+                            <semantics>A number between 0.0 and 1.0 that specifies the sensitivity of the change  detection algorithm. Low sensitivities will respond only to large changes  in weather conditions and produce a smaller number of segments. High sensitivities produce a larger number of segments but take longer to  generate. The default sensitivity is 0.5.</semantics>
+                        </parameter>
+                    </interactionClass>
+                </interactionClass>
+                <interactionClass>
+                    <name>WeatherResponse</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>Base interaction for Weather Responses.</semantics>
+                    <parameter>
+                        <name>InstanceId</name>
+                        <dataType>Integer64</dataType>
+                        <semantics>Unique identifier of the weather. This attribute allows different weather patterns to be supported simultaneously, enabling the operator to switch from one weather pattern to another at runtime</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Time</name>
+                        <dataType>DateTimeStruct</dataType>
+                        <semantics>Date and time of requested weather</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>TimeOffset</name>
+                        <dataType>Float64</dataType>
+                        <semantics>Time since the start of the instance, seconds.</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Location</name>
+                        <dataType>GeoPoint3D</dataType>
+                        <semantics>Position of requested weather</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>WeatherResponseType</name>
+                        <dataType>WeatherType</dataType>
+                        <semantics>Identification of which child object has been populated based on request</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>UUID</name>
+                        <dataType>UuidArrayOfHLAbyte16</dataType>
+                        <semantics>16 bytes in the UUID. 
+ 
+A universally unique identifier (UUID), standardized by the Open Software Foundation (OSF) as part of the Distributed Computing Environment (DCE). 
+ 
+A UUID is a 16-byte (128-bit) number. In its canonical form, a UUID is represented by 32 hexadecimal digits, displayed in five groups separated by hyphens, in the form 8-4-4-4-12 for a total of 36 characters (32 digits and four hyphens). For example: 
+550e8400-e29b-41d4-a716-446655440000</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>EntityIdentifier</name>
+                        <dataType>EntityIdentifierStruct</dataType>
+                        <semantics>The DIS Entity ID triplet</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Callsign</name>
+                        <dataType>Callsign</dataType>
+                        <semantics>Unique identifier for an entity; a more user friendly identifier than UUID</semantics>
+                    </parameter>
+                    <interactionClass>
+                        <name>AtmosphericResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Result of an Atmosphere weather request</semantics>
+                        <parameter>
+                            <name>Temperature</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Temperature of requested atmospheric weather, degrees celsius.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Pressure</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Pressure of requested atmospheric weather, pascals.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>MSLPressure</name>
+                            <dataType>Float32</dataType>
+                            <semantics>MSL Pressure of requested atmospheric weather, pascals.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>WindDirection</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Wind Direction of requested atmospheric weather. Compass bearing in degrees.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>WindSpeed</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Wind Speed of requested atmospheric weather, metres per second.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Humidity</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Humidity of requested atmospheric weather, percentage.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>GroundResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Response interaction for a Ground weather request.</semantics>
+                        <parameter>
+                            <name>Pressure</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Pressure of requested ground weather, pascals.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>MSLPressure</name>
+                            <dataType>Float32</dataType>
+                            <semantics>MSL Pressure of request ground weather, pascals.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Temperature</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Temperature of requested ground weather, degrees celsius.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>PrecipitationRate</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Precipitation Rate of requested ground weather, mm/hr.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>ConvecPrecipitationRate</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Convec Precipitation Rate of requested ground weather, mm/hr.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>PrecipitationType</name>
+                            <dataType>PrecipitationType</dataType>
+                            <semantics>Precipitation Type of requested ground weather.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Humidity</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Humidity of requested ground weather, percentage.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>WindDirection</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Wind Direction of requested ground weather, compass bearing in degrees.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>WindSpeed</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Wind Speed of requested ground weather, metres per second.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>WindGust</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Wind Gust of requested ground weather, metres per second.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Visibility</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Visibility of requested ground weather, metres.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>CloudLayerResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Result of a Cloud Layer weather request</semantics>
+                        <parameter>
+                            <name>TotalCloudCover</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Total Cloud Cover of requested Cloud Layer weather as a percentage.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>HighCloudTop</name>
+                            <dataType>Float32</dataType>
+                            <semantics>High Cloud Top of requested Cloud Layer weather, metres.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>HighCloudBase</name>
+                            <dataType>Float32</dataType>
+                            <semantics>High Cloud Base of requested Cloud Layer weather, metres.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>HighCloudCover</name>
+                            <dataType>Float32</dataType>
+                            <semantics>High Cloud Cover of requested Cloud Layer weather as a percentage.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>HighCloudType</name>
+                            <dataType>CloudClassification</dataType>
+                            <semantics>High Cloud Type of requested Cloud Layer weather.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>MidCloudTop</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Mid Cloud Top of requested Cloud Layer weather, metres.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>MidCloudBase</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Mid Cloud Base of requested Cloud Layer weather, metres.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>MidCloudCover</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Mid Cloud Cover of requested Cloud Layer weather as a percentage.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>MidCloudType</name>
+                            <dataType>CloudClassification</dataType>
+                            <semantics>Mid Cloud Type of requested Cloud Layer weather.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>LowCloudTop</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Low Cloud Top of requested Cloud Layer weather, metres.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>LowCloudBase</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Low Cloud Base of requested Cloud Layer weather, metres.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>LowCloudCover</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Low Cloud Cover of requested Cloud Layer weather as a percentage.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>LowCloudType</name>
+                            <dataType>CloudClassification</dataType>
+                            <semantics>Low Cloud Type of requested Cloud Layer weather.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>ConvecCloudCover</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Convec Cloud Cover of requested Cloud Layer weather as a percentage.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>ConvecCloudTop</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Convec Cloud Top of requested Cloud Layer weather, metres.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>ConvecCloudBase</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Convec Cloud Base of requested Cloud Layer weather, metres.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>PrecipitationRate</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Precipitation Rate of requested Cloud Layer weather, mm/hr.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>ConvecPrecipitationRate</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Convec Precipitation Rate of requested Cloud Layer weather, mm/hr.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>PrecipitationType</name>
+                            <dataType>PrecipitationType</dataType>
+                            <semantics>Precipitation Type of requested Cloud Layer weather.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>SurfaceResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Response interaction for a Surface weather request.</semantics>
+                        <parameter>
+                            <name>WindDirection</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Direction wind is blowing from, compass angle in degrees.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>WindSpeed</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Wind speed, metres per second.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>TotalWaveHeight</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Significant height of combined wind waves and swell,  metres.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>WindWaveHeight</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Significant height of wind waves, metres.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>SwellHeight</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Significant height of swell, metres.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>PrimaryWavePeriod</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Mean period of primary waves, seconds.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>PrimaryWaveDirection</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Direction of primary waves, compass degrees.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>WindWavePeriod</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Mean period of wind waves, seconds.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>WindWaveDirection</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Direction of wind waves, compass degrees.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>SwellPeriod</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Mean period of swell waves,  seconds.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>SwellDirection</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Direction of swell waves, compass degrees.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>SubsurfaceResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Response interaction for a Subsurface weather request.</semantics>
+                        <parameter>
+                            <name>Temperature</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Temperature, degrees Celsius.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Salinity</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Salinity, PSU (g/kg)</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>CurrentSpeed</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Current speed, metres per second.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>CurrentDirection</name>
+                            <dataType>Float32</dataType>
+                            <semantics>Current direction, in compass degrees</semantics>
+                        </parameter>
+                    </interactionClass>
+                </interactionClass>
+                <interactionClass>
+                    <name>SetActiveWeatherInstance</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>Set the active weather instance for querying.</semantics>
+                    <parameter>
+                        <name>InstanceID</name>
+                        <dataType>Integer64</dataType>
+                        <semantics>The instance ID of the weather instance</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Active</name>
+                        <dataType>HLAboolean</dataType>
+                        <semantics>Set true if the supplied ID is that of the active weather instance, false otherwise</semantics>
+                    </parameter>
+                </interactionClass>
+                <interactionClass>
+                    <name>WeatherSegmentResponse</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>Response interaction for a path-based weather request</semantics>
+                    <parameter>
+                        <name>InstanceId</name>
+                        <dataType>Integer64</dataType>
+                        <semantics>Weather instance unique identifier</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>DateTime</name>
+                        <dataType>DateTimeStruct</dataType>
+                        <semantics>Date time of weather segment data.</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>TimeOffset</name>
+                        <dataType>Float64</dataType>
+                        <semantics>Time of weather segment data, in seconds from the start of the instance.</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>UUID</name>
+                        <dataType>UuidArrayOfHLAbyte16</dataType>
+                        <semantics>Unique identifier for this response, matched with request.</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>SegmentArray</name>
+                        <dataType>WeatherSegmentArray</dataType>
+                        <semantics>Array of weather segments corresponding to areas of changing weather (e.g. temperature, pressure, visibility).</semantics>
+                    </parameter>
+                </interactionClass>
+            </interactionClass>
+        </interactionClass>
+    </interactions>
+    <dataTypes>
+        <basicDataRepresentations/>
+        <simpleDataTypes>
+            <simpleData>
+                <name>Integer64</name>
+                <representation>HLAinteger64BE</representation>
+                <units>NA</units>
+                <resolution>1</resolution>
+                <accuracy>perfect</accuracy>
+                <semantics>Integer in the range [-2^63, 2^63 - 1].</semantics>
+            </simpleData>
+        </simpleDataTypes>
+        <enumeratedDataTypes>
+            <enumeratedData>
+                <name>WeatherType</name>
+                <representation>HLAoctet</representation>
+                <semantics>Available weather types.</semantics>
+                <enumerator>
+                    <name>Atmospheric</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Ground</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>CloudLayer</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>OceanSurface</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>OceanSubSurface</name>
+                    <value>5</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>PrecipitationType</name>
+                <representation>HLAoctet</representation>
+                <semantics>Enum representing different kinds of precipitation</semantics>
+                <enumerator>
+                    <name>InvalidPrecipitationType</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>Rain</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>FreezingRain</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Snow</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>Ice</name>
+                    <value>4</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>CloudClassification</name>
+                <representation>HLAoctet</representation>
+                <semantics>Enum representing cloud types</semantics>
+                <enumerator>
+                    <name>InvalidCloudClassification</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>NoCloud</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cirrus</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cirrocumulus</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cirrostratus</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>Altocumulus</name>
+                    <value>5</value>
+                </enumerator>
+                <enumerator>
+                    <name>Altostratus</name>
+                    <value>6</value>
+                </enumerator>
+                <enumerator>
+                    <name>Stratocumulus</name>
+                    <value>7</value>
+                </enumerator>
+                <enumerator>
+                    <name>Nimbostratus</name>
+                    <value>8</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cumulus</name>
+                    <value>9</value>
+                </enumerator>
+                <enumerator>
+                    <name>Stratus</name>
+                    <value>10</value>
+                </enumerator>
+                <enumerator>
+                    <name>CumulusCongestus</name>
+                    <value>11</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cumulonimbus</name>
+                    <value>12</value>
+                </enumerator>
+                <enumerator>
+                    <name>Unknown</name>
+                    <value>13</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>Source</name>
+                <representation>HLAoctet</representation>
+                <semantics>Define where the source of the weather data is coming from</semantics>
+                <enumerator>
+                    <name>UserDefined</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>Live</name>
+                    <value>1</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>WeatherUserDefinedTypes</name>
+                <representation>HLAoctet</representation>
+                <semantics>Available User Defined Weather Types</semantics>
+                <enumerator>
+                    <name>Unset</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>Clear</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>LightCloud</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>HeavyCloud</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>Rain</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>Thunderstorm</name>
+                    <value>5</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>WeatherInstanceType</name>
+                <representation>HLAoctet</representation>
+                <semantics>Describes the weather instance type.  Real instances are created from historical weather data.  Live instances are created from current and forecast weather data and are automatically updated as weather data is published.  Standard weather instances are based on a standard atmosphere model and contain user-specified basic weather conditions</semantics>
+                <enumerator>
+                    <name>InvalidInstanceType</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>Real</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Live</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Standard</name>
+                    <value>3</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>StandardAtmosphereModel</name>
+                <representation>HLAoctet</representation>
+                <semantics>Describes the type of standard atmosphere model</semantics>
+                <enumerator>
+                    <name>ISA</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>SubArcticWinter</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>SubArcticSummer</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>MidLatitudeWinter</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>MidLatitudeSummer</name>
+                    <value>5</value>
+                </enumerator>
+                <enumerator>
+                    <name>Tropical</name>
+                    <value>6</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>GeoAreaType</name>
+                <representation>HLAoctet</representation>
+                <semantics>Describes the type of a GeoArea.  Currently only the Polygon type is supported</semantics>
+                <enumerator>
+                    <name>Polygon</name>
+                    <value>1</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>Domain</name>
+                <representation>HLAoctet</representation>
+                <semantics>Represents a distinct set of weather elements. Weather instances store data for one or more domains.</semantics>
+                <enumerator>
+                    <name>InvalidDomain</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>Ground</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cloud</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Atmosphere</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>Surface</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>Subsurface</name>
+                    <value>5</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>WeatherDataElement</name>
+                <representation>HLAoctet</representation>
+                <semantics>Describes the requested type of gridded weather data.</semantics>
+                <enumerator>
+                    <name>InvalidWeatherDataElement</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>TemperatureAtAltitude</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>PressureAtAltitude</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>WindSpeedAtAltitude</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>WindDirectionAtAltitude</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>HumidityAtAltitude</name>
+                    <value>5</value>
+                </enumerator>
+                <enumerator>
+                    <name>MSLPressure</name>
+                    <value>6</value>
+                </enumerator>
+                <enumerator>
+                    <name>VerticalWindSpeed</name>
+                    <value>7</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundHumidity</name>
+                    <value>8</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundTemperature</name>
+                    <value>9</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundPressure</name>
+                    <value>10</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundWindSpeed</name>
+                    <value>11</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundWindDirection</name>
+                    <value>12</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundWindGust</name>
+                    <value>13</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundVisibility</name>
+                    <value>14</value>
+                </enumerator>
+                <enumerator>
+                    <name>PrecipitationRate</name>
+                    <value>15</value>
+                </enumerator>
+                <enumerator>
+                    <name>PrecipitationType</name>
+                    <value>16</value>
+                </enumerator>
+                <enumerator>
+                    <name>ConvecPrecipitationRate</name>
+                    <value>17</value>
+                </enumerator>
+                <enumerator>
+                    <name>TotalCloudCover</name>
+                    <value>18</value>
+                </enumerator>
+                <enumerator>
+                    <name>HighCloudTop</name>
+                    <value>19</value>
+                </enumerator>
+                <enumerator>
+                    <name>HighCloudBase</name>
+                    <value>20</value>
+                </enumerator>
+                <enumerator>
+                    <name>HighCloudCover</name>
+                    <value>21</value>
+                </enumerator>
+                <enumerator>
+                    <name>MidCloudTop</name>
+                    <value>22</value>
+                </enumerator>
+                <enumerator>
+                    <name>MidCloudBase</name>
+                    <value>23</value>
+                </enumerator>
+                <enumerator>
+                    <name>MidCloudCover</name>
+                    <value>24</value>
+                </enumerator>
+                <enumerator>
+                    <name>LowCloudTop</name>
+                    <value>25</value>
+                </enumerator>
+                <enumerator>
+                    <name>LowCloudBase</name>
+                    <value>26</value>
+                </enumerator>
+                <enumerator>
+                    <name>LowCloudCover</name>
+                    <value>27</value>
+                </enumerator>
+                <enumerator>
+                    <name>ConvecCloudCover</name>
+                    <value>28</value>
+                </enumerator>
+                <enumerator>
+                    <name>ConvecCloudTop</name>
+                    <value>29</value>
+                </enumerator>
+                <enumerator>
+                    <name>ConvecCloudBase</name>
+                    <value>30</value>
+                </enumerator>
+                <enumerator>
+                    <name>OceanSurfaceWindSpeed</name>
+                    <value>31</value>
+                </enumerator>
+                <enumerator>
+                    <name>OceanSurfaceWindDirection</name>
+                    <value>32</value>
+                </enumerator>
+                <enumerator>
+                    <name>OceanSurfaceWaveHeight</name>
+                    <value>33</value>
+                </enumerator>
+                <enumerator>
+                    <name>OceanSurfaceWaveDirection</name>
+                    <value>34</value>
+                </enumerator>
+                <enumerator>
+                    <name>OceanSubsurfaceTemperature</name>
+                    <value>35</value>
+                </enumerator>
+                <enumerator>
+                    <name>OceanSubsurfaceSalinity</name>
+                    <value>36</value>
+                </enumerator>
+                <enumerator>
+                    <name>OceanSubsurfaceCurrentSpeed</name>
+                    <value>37</value>
+                </enumerator>
+                <enumerator>
+                    <name>OceanSubsurfaceCurrentDirection</name>
+                    <value>38</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>LineOfSightElement</name>
+                <representation>HLAoctet</representation>
+                <semantics>Enumerates the possible values for a line of sight data request</semantics>
+                <enumerator>
+                    <name>Temperature</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Humidity</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Visibility</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>PrecipitationRate</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>CloudCover</name>
+                    <value>5</value>
+                </enumerator>
+            </enumeratedData>
+        </enumeratedDataTypes>
+        <arrayDataTypes>
+            <arrayData>
+                <name>WeatherSegmentArray</name>
+                <dataType>WeatherSegment</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Dynamic array of weather segments.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>GeoPolygon</name>
+                <dataType>GeoPoint2D</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>A geographic area, represented as a list of geographic points in counterclockwise order.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>DomainList</name>
+                <dataType>Domain</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>List of weather Domains</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfFloat32</name>
+                <dataType>Float32</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of floats</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayofGriddedDataElement</name>
+                <dataType>GriddedDataElement</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of gridded data elements.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfWeatherDataElement</name>
+                <dataType>WeatherDataElement</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of weather data elements to update in a gridded data object.</semantics>
+            </arrayData>
+        </arrayDataTypes>
+        <fixedRecordDataTypes>
+            <fixedRecordData>
+                <name>GeoPoint3D</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Geodetic point in three dimensions.</semantics>
+                <field>
+                    <name>Latitude</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Latitude Value, decimal degrees.</semantics>
+                </field>
+                <field>
+                    <name>Longitude</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Longitude value, decimal degrees.</semantics>
+                </field>
+                <field>
+                    <name>Altitude</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Altitude, metres.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>Orientation</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics></semantics>
+                <field>
+                    <name>Phi</name>
+                    <dataType>Float32</dataType>
+                    <semantics></semantics>
+                </field>
+                <field>
+                    <name>Psi</name>
+                    <dataType>Float32</dataType>
+                    <semantics></semantics>
+                </field>
+                <field>
+                    <name>Theta</name>
+                    <dataType>Float32</dataType>
+                    <semantics></semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>WeatherSegment</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Represents the atmospheric conditions along a line segment at a specific date and time.</semantics>
+                <field>
+                    <name>FromLocation</name>
+                    <dataType>GeoPoint3D</dataType>
+                    <semantics>Geographic point in three dimensions.</semantics>
+                </field>
+                <field>
+                    <name>ToLocation</name>
+                    <dataType>GeoPoint3D</dataType>
+                    <semantics>Geographic point in three dimensions.</semantics>
+                </field>
+                <field>
+                    <name>SegmentLength</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Length of the segment, m.</semantics>
+                </field>
+                <field>
+                    <name>ElementType</name>
+                    <dataType>LineOfSightElement</dataType>
+                    <semantics>The type of the requested data.</semantics>
+                </field>
+                <field>
+                    <name>ElementData</name>
+                    <dataType>Float32</dataType>
+                    <semantics>The value of the data type</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>GeoArea</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics></semantics>
+                <field>
+                    <name>LowerLeft</name>
+                    <dataType>GeoPoint2D</dataType>
+                    <semantics>Lower left (south-west) corner of the area.</semantics>
+                </field>
+                <field>
+                    <name>UpperRight</name>
+                    <dataType>GeoPoint2D</dataType>
+                    <semantics>Upper right (north-east) corner of the area</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>GeoPoint2D</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Geodetic point in three dimensions.</semantics>
+                <field>
+                    <name>Latitude</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Latitude Value, decimal degrees.</semantics>
+                </field>
+                <field>
+                    <name>Longitude</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Longitude Value, decimal degrees.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>GriddedDataElement</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Represents a grid element containing a datum for a specified type of data (e.g. pressure, temperature).</semantics>
+                <field>
+                    <name>Type</name>
+                    <dataType>WeatherDataElement</dataType>
+                    <semantics>The type of weather data.</semantics>
+                </field>
+                <field>
+                    <name>Values</name>
+                    <dataType>ArrayOfFloat32</dataType>
+                    <semantics>The data for this element as a list of (NumSamplesX * NumSamplesY) values, ordered in rows starting from the top left (north-west) corner.  Points where there is no data contain the NO_DATA_AVAILABLE value.</semantics>
+                </field>
+            </fixedRecordData>
+        </fixedRecordDataTypes>
+        <variantRecordDataTypes/>
+    </dataTypes>
+</objectModel>
