@@ -96,7 +96,7 @@ public class Main
 			}
 			else if( firstArg.equalsIgnoreCase("--app:disjoiner") )
 			{
-				org.openlvc.disjoiner.Main.main( remainingArgs );
+				org.openlvc.disrespector.Main.main( remainingArgs );
 				return;
 			}
 		}

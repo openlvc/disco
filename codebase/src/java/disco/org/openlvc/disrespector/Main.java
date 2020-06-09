@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disjoiner;
+package org.openlvc.disrespector;
 
 public class Main
 {
@@ -27,7 +27,7 @@ public class Main
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private Configuration configuration;
-	private Disjoiner disjoiner;
+	private Disrespector disrespector;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -42,8 +42,8 @@ public class Main
 		this.configuration = new Configuration( args );
 
 		// Run the application
-		this.disjoiner = new Disjoiner( configuration );
-		this.disjoiner.start();
+		this.disrespector = new Disrespector( configuration );
+		this.disrespector.start();
 	}
 
 	//----------------------------------------------------------
@@ -76,10 +76,10 @@ public class Main
 		@Override
 		public void run()
 		{
-			if( disjoiner == null )
+			if( disrespector == null )
 				return;
 			else
-				disjoiner.stop();
+				disrespector.stop();
 		}
 	}
 

@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disjoiner;
+package org.openlvc.disrespector;
 
 import java.io.File;
 import java.util.Properties;
@@ -30,35 +30,35 @@ public class Configuration
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	public static final String KEY_LOG_LEVEL       = "disjoiner.loglevel";
-	public static final String KEY_LOG_FILE        = "disjoiner.logfile";
+	public static final String KEY_LOG_LEVEL       = "disrespector.loglevel";
+	public static final String KEY_LOG_FILE        = "disrespector.logfile";
 
 	// DIS Settings
-	public static final String KEY_DIS_NIC         = "disjoiner.dis.nic";
-	public static final String KEY_DIS_ADDRESS     = "disjoiner.dis.address";
-	public static final String KEY_DIS_PORT        = "disjoiner.dis.port";
-	public static final String KEY_DIS_EXID        = "disjoiner.dis.exerciseId";
-	public static final String KEY_DIS_LOGLEVEL    = "disjoiner.dis.loglevel";
-	public static final String KEY_DIS_LOGFILE     = "disjoiner.dis.logfile";
+	public static final String KEY_DIS_NIC         = "disrespector.dis.nic";
+	public static final String KEY_DIS_ADDRESS     = "disrespector.dis.address";
+	public static final String KEY_DIS_PORT        = "disrespector.dis.port";
+	public static final String KEY_DIS_EXID        = "disrespector.dis.exerciseId";
+	public static final String KEY_DIS_LOGLEVEL    = "disrespector.dis.loglevel";
+	public static final String KEY_DIS_LOGFILE     = "disrespector.dis.logfile";
 
 	// HLA Settings
-	public static final String KEY_HLA_RTI_PROVIDER = "disjoiner.hla.rti.provider";
-	public static final String KEY_HLA_RTI_DIR      = "disjoiner.hla.rti.installdir";
-	public static final String KEY_HLA_RTI_LOCAL    = "disjoiner.hla.rti.localSettings";
-	public static final String KEY_HLA_FEDERATION   = "disjoiner.hla.federationName";
-	public static final String KEY_HLA_FEDERATE     = "disjoiner.hla.federateName";
-	public static final String KEY_HLA_FEDERATE_RND = "disjoiner.hla.randomizeFederateName";
-	public static final String KEY_HLA_CREATE_FED   = "disjoiner.hla.createFederation";
+	public static final String KEY_HLA_RTI_PROVIDER = "disrespector.hla.rti.provider";
+	public static final String KEY_HLA_RTI_DIR      = "disrespector.hla.rti.installdir";
+	public static final String KEY_HLA_RTI_LOCAL    = "disrespector.hla.rti.localSettings";
+	public static final String KEY_HLA_FEDERATION   = "disrespector.hla.federationName";
+	public static final String KEY_HLA_FEDERATE     = "disrespector.hla.federateName";
+	public static final String KEY_HLA_FEDERATE_RND = "disrespector.hla.randomizeFederateName";
+	public static final String KEY_HLA_CREATE_FED   = "disrespector.hla.createFederation";
 	
-	public static final String KEY_HLA_LOGLEVEL    = "disjoiner.hla.loglevel";
-	public static final String KEY_HLA_LOGFILE     = "disjoiner.hla.logfile";
+	public static final String KEY_HLA_LOGLEVEL    = "disrespector.hla.loglevel";
+	public static final String KEY_HLA_LOGFILE     = "disrespector.hla.logfile";
 	
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private Properties properties;
-	private String configFile = "etc/disjoiner.config";
+	private String configFile = "etc/disrespector.config";
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -70,7 +70,7 @@ public class Configuration
 		//
 		// place we store all the base properties
 		this.properties = new Properties();
-		this.configFile = "etc/disjoiner.config";
+		this.configFile = "etc/disrespector.config";
 
 		// see if the user specified a config file on the command line before we process it
 		this.checkArgsForConfigFile( args );
@@ -180,7 +180,7 @@ public class Configuration
 	
 	public String getDisLogFile()
 	{
-		return this.properties.getProperty( KEY_DIS_LOGFILE, "logs/disjoiner.dis.log" );
+		return this.properties.getProperty( KEY_DIS_LOGFILE, "logs/disrespector.dis.log" );
 	}
 	
 	public void setDisLogFile( File path )
@@ -232,7 +232,7 @@ public class Configuration
 	
 	public String getHlaFederationName()
 	{
-		return this.properties.getProperty( KEY_HLA_FEDERATION, "Disjoiner" );
+		return this.properties.getProperty( KEY_HLA_FEDERATION, "disrespector" );
 	}
 	
 	public void setHlaFederationName( String name )
@@ -242,7 +242,7 @@ public class Configuration
 	
 	public String getHlaFederateName()
 	{
-		return this.properties.getProperty( KEY_HLA_FEDERATE, "Disjoiner" );
+		return this.properties.getProperty( KEY_HLA_FEDERATE, "disrespector" );
 	}
 
 	public void setHlaFederateName( String name )
@@ -298,7 +298,7 @@ public class Configuration
 	
 	public String getHlaLogFile()
 	{
-		return this.properties.getProperty( KEY_HLA_LOGFILE, "logs/disjoiner.hla.log" );
+		return this.properties.getProperty( KEY_HLA_LOGFILE, "logs/disrespector.hla.log" );
 	}
 	
 	public void setHlaLogFile( File path )
@@ -392,11 +392,11 @@ public class Configuration
 	//----------------------------------------------------------
 	public static void printHelp()
 	{
-		System.out.println( "disjoiner - Bridge DIS and HLA/RPR Networks" );
-		System.out.println( "Usage: bin/disjoiner [--args]" );
+		System.out.println( "disrespector - [DIS/HLA Bridge] Bringing that HLA/RPR vagabond into your pristine DIS garden" );
+		System.out.println( "Usage: bin/disrespector [--args]" );
 		System.out.println( "" );
 
-		System.out.println( "  --config-file         string   (optional)  Location of config file                    (default: etc/disjoiner.config)" );
+		System.out.println( "  --config-file         string   (optional)  Location of config file                    (default: etc/disrespector.config)" );
 		System.out.println( "  --log-level           string   (optional)  [OFF,FATAL,ERROR,WARN,INFO,DEBUG,TRACE] for both DIS/HLA sides" );
 		System.out.println( "  --log-file            string   (optional)  Location of log file for both DIS/HLA sides" );
 		System.out.println( "" );
@@ -407,16 +407,16 @@ public class Configuration
 		System.out.println( "  --dis-interface       string   (optional)  NIC to use. Address or a special symbol:   (default: SITE_LOCAL)" );
 		System.out.println( "                                             LOOPBACK, LINK_LOCAL, SITE_LOCAL, GLOBAL" );
 		System.out.println( "  --dis-log-level       string   (optional)  Set log level for DIS side only            (default: INFO)" );
-		System.out.println( "  --dis-log-file        string   (optional)  Set log file for DIS side only             (default: logs/disjoiner.dis.log)" );
+		System.out.println( "  --dis-log-file        string   (optional)  Set log file for DIS side only             (default: logs/disrespector.dis.log)" );
 		System.out.println( "" );
 		System.out.println( "HLA Network Settings" );
 		System.out.println( "  --hla-rti-provider    string   (optional)  Portico or Pitch                           (default: Portico)" );
 		System.out.println( "  --hla-rti-dir         string   (optional)  Directory where RTI is installed           (default: RTI Specific)" );
 		System.out.println( "  --hla-local-settings  string   (optional)  Setting string given to RTI on connection" );
-		System.out.println( "  --hla-federation      string   (optional)  Name of federation to join                 (default: Disjoiner)" );
-		System.out.println( "  --hla-federate        string   (optional)  Name of federate to join as                (default: Disjoiner)" );
+		System.out.println( "  --hla-federation      string   (optional)  Name of federation to join                 (default: disrespector)" );
+		System.out.println( "  --hla-federate        string   (optional)  Name of federate to join as                (default: disrespector)" );
 		System.out.println( "  --hla-log-level       string   (optional)  Set log level for HLA side only            (default: INFO)" );
-		System.out.println( "  --hla-log-file        string   (optional)  Set log file for HLA side only             (default: logs/disjoiner.hla.log)" );
+		System.out.println( "  --hla-log-file        string   (optional)  Set log file for HLA side only             (default: logs/disrespector.hla.log)" );
 		System.out.println( "" );
 	}
 }

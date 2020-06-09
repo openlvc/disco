@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disjoiner;
+package org.openlvc.disrespector;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.IPduListener;
@@ -25,11 +25,11 @@ import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
 
 /**
- * Main container class for the Disjoiner. Here we store two connections - one attached to a DIS
+ * Main container class for the Disrespector. Here we store two connections - one attached to a DIS
  * network and the other to a HLA/RPR network. We have listeners in place that simply exchange
  * the data received between each of them.
  */
-public class Disjoiner
+public class Disrespector
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -49,13 +49,13 @@ public class Disjoiner
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public Disjoiner()
+	public Disrespector()
 	{
 		this.configuration = new Configuration( new String[]{} );
 		DiscoConfiguration.getVersion();
 	}
 	
-	public Disjoiner( Configuration configuration )
+	public Disrespector( Configuration configuration )
 	{
 		this.configuration = configuration;
 	}
