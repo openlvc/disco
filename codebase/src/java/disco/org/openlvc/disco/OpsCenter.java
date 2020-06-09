@@ -155,6 +155,7 @@ public class OpsCenter
 		}
 		
 		ClassLoaderUtils.extendClasspath( configuration.getRprConfiguration().getRtiPathExtension() );
+		logger.debug( "Extended classpath to include HLA libraries; added: "+paths );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

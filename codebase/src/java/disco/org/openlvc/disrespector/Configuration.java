@@ -224,11 +224,23 @@ public class Configuration
 		return this.properties.getProperty( KEY_HLA_RTI_DIR, "./" );
 	}
 	
+	public void setHlaRtiInstallDir( File path )
+	{
+		if( path.exists() == false )
+			throw new DiscoException( "HLA RTI install directory does not exist: "+path.getAbsolutePath() );
+		else
+			this.properties.setProperty( KEY_HLA_RTI_DIR, path.getAbsolutePath() );
+	}
+	
 	public String getHlaRtiLocalSettings()
 	{
 		return this.properties.getProperty( KEY_HLA_RTI_LOCAL, "" );
 	}
 	
+	public void setHlaRtiLocalSettings( String settings )
+	{
+		this.properties.setProperty( KEY_HLA_RTI_LOCAL, settings );
+	}
 	
 	public String getHlaFederationName()
 	{
@@ -370,6 +382,20 @@ public class Configuration
 			else if( argument.equalsIgnoreCase("--dis-log-file") )
 				this.setDisLogFile( new File(list.next()) );
 			// HLA
+			else if( argument.equalsIgnoreCase("--hla-rti-provider") )
+				this.setHlaRtiProvider( RtiProvider.valueOf(list.next()) );
+			else if( argument.equalsIgnoreCase("--hla-rti-dir") )
+				this.setHlaRtiInstallDir( new File(list.next()) );
+			else if( argument.equalsIgnoreCase("--hla-local-settings") )
+				this.setHlaRtiLocalSettings( list.next() );
+			else if( argument.equalsIgnoreCase("--hla-federation") )
+				this.setHlaFederationName( list.next() );
+			else if( argument.equalsIgnoreCase("--hla-federate") )
+				this.setHlaFederateName( list.next() );
+			else if( argument.equalsIgnoreCase("--hla-log-level") )
+				this.setHlaLogLevel( list.next() );
+			else if( argument.equalsIgnoreCase("--hla-log-file") )
+				this.setHlaLogFile( new File(list.next()) );
 			
 			// BOTH
 			else if( argument.equalsIgnoreCase("--log-level") )

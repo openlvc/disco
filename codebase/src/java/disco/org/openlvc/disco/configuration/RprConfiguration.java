@@ -28,18 +28,32 @@ public class RprConfiguration
 	//----------------------------------------------------------
 	public enum RtiProvider
 	{
-		Portico("C:\\Program Files\\Portico"),
-		Pitch("C:\\Program Files\\prti1516e");
+		Portico("C:/Program Files/Portico", "lib/portico.jar" ),
+		Pitch("C:/Program Files/prti1516e", "lib/prtifull.jar" );
 		
 		private String defaultInstallDir;
-		private RtiProvider( String defaultDir )
+		private String defaultJarPath;
+		private RtiProvider( String defaultDir, String defaultJarPath )
 		{
 			this.defaultInstallDir = defaultDir;
+			this.defaultJarPath = defaultJarPath;
 		}
-		
+
+		/**
+		 * @return The path to the default location that the RTI is installed in to.
+		 */
 		public String getDefaultInstallDirectory()
 		{
 			return this.defaultInstallDir;
+		}
+
+		/**
+		 * @return The relative path from the RTI install directory to where the main jar file
+		 *         for the RTI.
+		 */
+		public String getDefaultJarPath()
+		{
+			return this.defaultJarPath;
 		}
 	}
 
@@ -76,31 +90,47 @@ public class RprConfiguration
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Gets a set of paths that should reference the RTI install directory/jars. We take a bit of
+	 * a sledgehammer approach and include a bunch of _possible_ locations on here, just to try and
+	 * be sure. These include:
+	 * 
+	 * <ol>
+	 *   <li>Any value from the RTI_HOME environment variable, extended with a relative path to
+	 *       a jar file based on the RTI provider.</li>
+	 *   <li>Any explicitly provided RTI Install Dir from the user</li>
+	 *   <li>Any explicitly provided RTI Install Dir from the user, with an additional path relative
+	 *       to that location that points to the RTI jar (based on the Provider)</li>
+	 *   <li>The default installation directory as according to the Provider</li>
+	 *   <li>The current working directory</li>
+	 * </ol>
+	 * 
+	 * @return List of locations to use to extend classpath to try and make sure we get the RTI
+	 *         libraries available to the classloader
+	 */
 	public List<File> getRtiPathExtension()
 	{
 		List<File> paths = new ArrayList<>();
 
-		// Add the directory as configured by the user
-		String rtihome = getRtiInstallDir();
-		if( rtihome.equals("") )
-			rtihome = ".";
+		// 0. Get our RTI provider
+		RtiProvider provider = getRtiProvider();
+		String jarpath = provider.getDefaultJarPath();
 		
-		paths.add( new File(rtihome) );
+		// 1. Check for the RTI_HOME environment variable
+		String rtihome = System.getenv( "RTI_HOME" );
+		if( rtihome != null )
+			paths.add( new File(rtihome,jarpath) );
+
+		// 2. Add the user provided directory
+		String userdir = getRtiInstallDir();
+		paths.add( new File(userdir,jarpath) );
 		
-
-		// Add in some defaults for when we're trying to embed the RTI in our local distribution
-		switch( getRtiProvider() )
-		{
-			case Portico:
-				paths.add( new File(rtihome+"/lib","portico.jar") );
-				break;
-			case Pitch:
-				paths.add( new File(rtihome+"/lib","prtifull.jar") );
-				break;
-		}
-
-		// Add in the RTI provider default
-		paths.add( new File(getRtiProvider().getDefaultInstallDirectory()) );
+		// 3. Add the RTI's default install directory
+		String defaultdir = provider.getDefaultInstallDirectory();
+		paths.add( new File(defaultdir,jarpath) );
+		
+		// 4. Add the current working directory
+		paths.add( new File("./",jarpath) );
 		
 		return paths;
 	}
@@ -125,7 +155,10 @@ public class RprConfiguration
 		if( rtidir == null || rtidir.trim().equals("") )
 			return;
 
-		parent.setProperty( PROP_RTI_INSTALL_DIR, rtidir );
+		if( rtidir.equalsIgnoreCase("<default>") )
+			parent.setProperty( PROP_RTI_INSTALL_DIR, getRtiProvider().getDefaultInstallDirectory() );
+		else
+			parent.setProperty( PROP_RTI_INSTALL_DIR, rtidir );
 	}
 
 	/**
@@ -133,6 +166,24 @@ public class RprConfiguration
 	 *         provider if no explicit location is set.
 	 */
 	public String getRtiInstallDir()
+	{
+		String value = parent.getProperty( PROP_RTI_INSTALL_DIR,
+		                                   getRtiProvider().getDefaultInstallDirectory() );
+		
+		if( value.equalsIgnoreCase("<default>") )
+			return getRtiProvider().getDefaultInstallDirectory();
+		else
+			return value;
+	}
+	
+	
+	/**
+	 * @return The path to the RTI install directory, defaulting to the default directory of the
+	 *         provider if no explicit location is set.
+	 */
+	@Deprecated
+	@SuppressWarnings("unused")
+	private String getRtiInstallDirOld()
 	{
 		// Extract data from the various locations that we might use
 		String userPath = parent.getProperty( PROP_RTI_INSTALL_DIR, "" ).trim();
