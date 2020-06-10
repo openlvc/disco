@@ -76,7 +76,7 @@ public class LifecycleTest
 		{
     		TestListener listener = new TestListener();
     		OpsCenter opscenter = new OpsCenter();
-    		opscenter.setListener( listener );
+    		opscenter.setPduListener( listener );
     		opscenter.open();
     		opscenter.close();
 		}

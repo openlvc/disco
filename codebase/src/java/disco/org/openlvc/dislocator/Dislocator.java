@@ -91,7 +91,7 @@ public class Dislocator implements IPduListener
         		// Open up the Disco Operations Centre
     			logger.info( "(Mode:Network) Connecting to DIS network" );
         		opscenter = new OpsCenter( configuration.getDiscoConfiguration() );
-        		opscenter.setListener( this );
+        		opscenter.setPduListener( this );
         		opscenter.open();
         		logger.info( "Connected to DIS network" );
     		}

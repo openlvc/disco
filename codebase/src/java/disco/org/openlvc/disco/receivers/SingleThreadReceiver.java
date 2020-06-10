@@ -22,11 +22,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduReceiver;
-import org.openlvc.disco.connection.IConnection;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.pdu.UnsupportedPDU;
 import org.openlvc.disco.utils.ThreadUtils;
 
@@ -54,9 +52,9 @@ public class SingleThreadReceiver extends PduReceiver
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public SingleThreadReceiver( OpsCenter opscenter, IConnection connection, IPduListener listener )
+	public SingleThreadReceiver( OpsCenter opscenter )
 	{
-		super( opscenter, connection, listener );
+		super( opscenter );
 		
 		this.receiveQueue = new LinkedBlockingQueue<>();
 		this.receiveThread = null;   // set in open()
@@ -76,6 +74,7 @@ public class SingleThreadReceiver extends PduReceiver
 	 * This will block until the processing is done (the Simple in SimpleReceiver stands more for
 	 * Simple/Stupid than Simple/Easy).
 	 */
+	@Override
 	public void receive( byte[] array )
 	{
 		boolean result = receiveQueue.offer( array );
@@ -86,13 +85,15 @@ public class SingleThreadReceiver extends PduReceiver
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
 	public void open() throws DiscoException
 	{
 		this.droppedPackets = 0;
 		this.receiveThread = new ReceiverThread();
 		this.receiveThread.start();
 	}
-	
+
+	@Override
 	public void close() throws DiscoException
 	{
 		// try to flush the queue
@@ -158,13 +159,12 @@ public class SingleThreadReceiver extends PduReceiver
 		{
 			while( Thread.interrupted() == false )
 			{
-				byte[] packet = null;
 				try
 				{
-					packet = receiveQueue.take();
+					byte[] packet = receiveQueue.take();
 					
 					long nanoStart = System.nanoTime();
-					clientListener.receive( PDU.fromByteArray(packet) );
+					clientListener.receive( PduFactory.create(packet) );
 					long nanoTime = System.nanoTime() - nanoStart;
 
 					// take our metrics

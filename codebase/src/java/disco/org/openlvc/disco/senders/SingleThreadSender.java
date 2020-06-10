@@ -23,7 +23,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduSender;
-import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.utils.ThreadUtils;
 
@@ -47,9 +46,9 @@ public class SingleThreadSender extends PduSender
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public SingleThreadSender( OpsCenter opscenter, IConnection connection )
+	public SingleThreadSender( OpsCenter opscenter )
 	{
-		super( opscenter, connection );
+		super( opscenter );
 		
 		this.sendQueue = new LinkedBlockingQueue<>(100000);
 		this.sendThread = new SendThread();

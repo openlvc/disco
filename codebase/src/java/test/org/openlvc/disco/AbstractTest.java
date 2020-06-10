@@ -48,7 +48,7 @@ public class AbstractTest
 		configuration.getLoggingConfiguration().setLevel( CommonSetup.CONSOLE_LOG_LEVEL );
 		
 		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setListener( new TestListener() );
+		opscenter.setPduListener( new TestListener() );
 		return opscenter;
 	}
 
@@ -66,7 +66,7 @@ public class AbstractTest
 
 		// create and return the opscenter
 		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setListener( new TestListener() );
+		opscenter.setPduListener( new TestListener() );
 		return opscenter;
 	}
 

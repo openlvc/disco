@@ -17,8 +17,10 @@
  */
 package org.openlvc.disco;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.receivers.SimpleReceiver;
 import org.openlvc.disco.receivers.SingleThreadReceiver;
 import org.openlvc.disco.receivers.ThreadPoolReceiver;
@@ -46,17 +48,17 @@ public abstract class PduReceiver
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	protected Logger logger;
-	protected IConnection connection;
+	protected OpsCenter opscenter;
 	protected IPduListener clientListener;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduReceiver( OpsCenter opscenter, IConnection connection, IPduListener clientListener )
+	protected PduReceiver( OpsCenter opscenter )
 	{
 		this.logger = opscenter.getLogger();
-		this.connection = connection;
-		this.clientListener = clientListener;
+		this.opscenter = opscenter;
+		this.clientListener = opscenter.getPduListener();
 	}
 
 	//----------------------------------------------------------
@@ -101,10 +103,7 @@ public abstract class PduReceiver
 	//////////////////////////////////////////////////////////////////////////////////
 	/// Accessors and Mutators   /////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////
-	public boolean isRawPduSupported()
-	{
-		return true;
-	}
+
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
@@ -113,24 +112,71 @@ public abstract class PduReceiver
 	/**
 	 * Creates a new receiver based on the name. Valid values are:
 	 * 
-	 *   - single-thread creates {@link SingleThreadReceiver}
-	 *   - thread-pool   creates {@link ThreadPoolReceiver}
-	 *   - simple        creates {@link SimpleReceiver}
+	 * <ul>
+	 *   <li>single-thread creates {@link SingleThreadReceiver}
+	 *   <li>thread-pool   creates {@link ThreadPoolReceiver}
+	 *   <li>simple        creates {@link SimpleReceiver}
+	 * </ul>
+	 * 
+	 * If the name is not any of these, we will treat it as a class name, trying to find the class
+	 * and instantiate it. Should that also fail, we will throw an exception as the receiver type
+	 * is not supported.
+	 * <p/>
+	 * Note: To be a valid receiver that is defined by class name, it must have a constructor that
+	 * takes a single parameter of type {@link OpsCenter}.
+	 * 
+	 * @param name  The name of the receiver to create. Either one of the symbolic names, or a
+	 *              fully qualified class name.
+	 * @param opscenter The {@link OpsCenter} the receiver will be deployed into
+	 * @return A new instance of the {@link PduReceiver} specified by <code>name</code>
+	 * @throws DiscoException If there is a problem either finding or creating the receiver
 	 */
-	public static PduReceiver create( String name,
-	                                  OpsCenter opscenter,
-	                                  IConnection connection,
-	                                  IPduListener client )
-		throws DiscoException
+	public static PduReceiver create( String name, OpsCenter opscenter ) throws DiscoException
 	{
-		if( name.equalsIgnoreCase("single-thread") )
-			return new SingleThreadReceiver( opscenter, connection, client );
-		if( name.equalsIgnoreCase("thread-pool") )
-			return new ThreadPoolReceiver( opscenter, connection, client );
-		else if( name.equals("simple") )
-			return new SimpleReceiver( opscenter, connection, client );
-		else
+		// Check to see if the type is known, and if so, create and return a receiver
+		switch( name )
+		{
+			case "simple"       : return new SimpleReceiver( opscenter );
+			case "single-thread": return new SingleThreadReceiver( opscenter );
+			case "thread-pool"  : return new ThreadPoolReceiver( opscenter );
+			default: break;
+		}
+		
+		// Type isn't known, check to see if it is an appropriate class name
+		try
+		{
+			// find the class
+			Class<?> clazz = Class.forName( name );
+			// find the necessary constructor
+			Constructor<?> constructor = clazz.getConstructor( OpsCenter.class );
+			// instantiate the class
+			Object instance = constructor.newInstance( opscenter );
+			// check to make sure it is a PDU Receiver
+			if( instance instanceof PduReceiver )
+				return (PduReceiver)instance;
+			else
+				throw new DiscoException( "Class is not instance of PduReceiver: "+name );
+		}
+		catch( ClassNotFoundException e )
+		{
+			// yup, thoughts so, let's bounce
 			throw new DiscoException( "Unknown PDU Receiver: "+name );
+		}
+		catch( NoSuchMethodException nsme )
+		{
+			// constructor doesn't exist
+			throw new DiscoException( "PDU Receiver requires 1-arg constructor (OpsCenter): "+name, nsme );
+		}
+		catch( DiscoException de )
+		{
+			// not an instance of PduReceiver
+			throw de;
+		}
+		catch( InvocationTargetException | IllegalAccessException | InstantiationException ie )
+		{
+			// could not create a new instance of the object
+			throw new DiscoException( "Could not instantiate PDU Receiver class: "+name );
+		}
 	}
 
 }

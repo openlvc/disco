@@ -209,11 +209,4 @@ public abstract class PDU
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	/**
-	 * Convert the given bytes into a PDU. This just delegates to {@link PduFactory#create(byte[])}.
-	 */
-	public static PDU fromByteArray( byte[] bytes ) throws IOException
-	{
-		return PduFactory.create( bytes );
-	}
 }

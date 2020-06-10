@@ -107,12 +107,14 @@ public class OpsCenter
 		}
 		
 		// wire up the sender and receiver to the connection and listener
-		this.pduReceiver = PduReceiver.create( configuration.getPduReceiver(), this, connection, pduListener );
-		this.pduSender = PduSender.create( configuration.getPduSender(), this, this.connection );
+		if( this.pduReceiver == null )
+			this.pduReceiver = PduReceiver.create( configuration.getPduReceiver(), this );
+		if( this.pduSender == null )
+			this.pduSender = PduSender.create( configuration.getPduSender(), this );
 		
 		// open the flood gates!
-		this.connection.open();
 		this.pduReceiver.open();
+		this.connection.open();
 		
 		this.open = true;
 		logger.info( "OpsCenter is up and running... Can you dig it?" );
@@ -165,7 +167,7 @@ public class OpsCenter
 	 * Set the {@link IPduListener} that incoming messages will be routed to. Has no effect
 	 * after {@link #open()} has been called.
 	 */
-	public void setListener( IPduListener receiver )
+	public void setPduListener( IPduListener receiver )
 	{
 		this.pduListener = receiver;
 	}
@@ -223,10 +225,45 @@ public class OpsCenter
 			this.configuration = configuration;
 	}
 	
+	public IConnection getConnection()
+	{
+		return this.connection;
+	}
+
+	/**
+	 * Set the {@link PduReceiver} to use. This will override any receiver information from the
+	 * configuration data. This must be called _before_ the center is opened, otherwise it will
+	 * be ignored.
+	 * 
+	 * @param receiver The {@link PduReceiver} that should be used.
+	 */
+	public void setPduReceiver( PduReceiver receiver )
+	{
+		this.pduReceiver = receiver;
+	}
+
 	public PduReceiver getPduReceiver()
 	{
 		return this.pduReceiver;
 	}
+	
+	/**
+	 * Set the {@link PduSender} to use. This will override any receiver information from the
+	 * configuration data. This must be called _before_ the center is opened, otherwise it will
+	 * be ignored.
+	 * 
+	 * @param sender The {@link PduSender} that should be used.
+	 */
+	public void setPduSender( PduSender sender )
+	{
+		this.pduSender = sender;
+	}
+	
+	// Not used yet - so let's now open any more tendrils if we don't need to
+	//public PduSender getPduSender()
+	//{
+	//	return this.pduSender;
+	//}
 	
 	public Metrics getMetrics()
 	{

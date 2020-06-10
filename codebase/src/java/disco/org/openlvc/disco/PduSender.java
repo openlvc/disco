@@ -17,6 +17,9 @@
  */
 package org.openlvc.disco;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.pdu.PDU;
@@ -45,15 +48,17 @@ public abstract class PduSender
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	protected Logger logger;
+	protected OpsCenter opscenter;
 	protected IConnection connection;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduSender( OpsCenter opscenter, IConnection connection )
+	protected PduSender( OpsCenter opscenter )
 	{
 		this.logger = opscenter.getLogger();
-		this.connection = connection;
+		this.opscenter = opscenter;
+		this.connection = opscenter.getConnection();
 	}
 
 	//----------------------------------------------------------
@@ -82,20 +87,70 @@ public abstract class PduSender
 	/**
 	 * Creates a new sender based on the name. Valid values are:
 	 * 
-	 *   - single-thread creates {@link SingleThreadSender}
-	 *   - thread-pool   creates {@link ThreadPoolSender}
-	 *   - simple        creates {@link SimpleSender}
+	 * <ul>
+	 *   <li>single-thread creates {@link SingleThreadSender}
+	 *   <li>thread-pool   creates {@link ThreadPoolSender}
+	 *   <li>simple        creates {@link SimpleSender}
+	 * </ul>
+	 * 
+	 * If the name is not any of these, we will treat it as a class name, trying to find the class
+	 * and instantiate it. Should that also fail, we will throw an exception as the receiver type
+	 * is not supported.
+	 * <p/>
+	 * Note: To be a valid sender that is defined by class name, it must have a constructor that
+	 * takes a single parameter of type {@link OpsCenter}.
+	 * 
+	 * @param name  The name of the sender to create. Either one of the symbolic names, or a
+	 *              fully qualified class name.
+	 * @param opscenter The {@link OpsCenter} the sender will be deployed into
+	 * @return A new instance of the {@link PduSender} specified by <code>name</code>
+	 * @throws DiscoException If there is a problem either finding or creating the sender
 	 */
-	public static PduSender create( String name, OpsCenter opscenter, IConnection connection )
-		throws DiscoException
+	public static PduSender create( String name, OpsCenter opscenter ) throws DiscoException
 	{
-		if( name.equalsIgnoreCase("single-thread") )
-			return new SingleThreadSender( opscenter, connection );
-		if( name.equalsIgnoreCase("thread-pool") )
-			return new ThreadPoolSender( opscenter, connection );
-		else if( name.equals("simple") )
-			return new SimpleSender( opscenter, connection );
-		else
+		// Check to see if the type is known, and if so, create and return
+		switch( name )
+		{
+			case "simple"       : return new SimpleSender( opscenter );
+			case "single-thread": return new SingleThreadSender( opscenter );
+			case "thread-pool"  : return new ThreadPoolSender( opscenter );
+			default: break;
+		}
+		
+		// Type isn't known, check to see if it is an appropriate class name
+		try
+		{
+			// find the class
+			Class<?> clazz = Class.forName( name );
+			// find the necessary constructor
+			Constructor<?> constructor = clazz.getConstructor( OpsCenter.class );
+			// instantiate the class
+			Object instance = constructor.newInstance( opscenter );
+			// check to make sure it is a PDU PduSender
+			if( instance instanceof PduSender )
+				return (PduSender)instance;
+			else
+				throw new DiscoException( "Class is not instance of PduSender: "+name );
+		}
+		catch( ClassNotFoundException e )
+		{
+			// yup, thoughts so, let's bounce
 			throw new DiscoException( "Unknown PDU Sender: "+name );
+		}
+		catch( NoSuchMethodException nsme )
+		{
+			// constructor doesn't exist
+			throw new DiscoException( "PDU Sender requires 1-arg constructor (OpsCenter): "+name, nsme );
+		}
+		catch( DiscoException de )
+		{
+			// not an instance of PduSender
+			throw de;
+		}
+		catch( InvocationTargetException | IllegalAccessException | InstantiationException ie )
+		{
+			// could not create a new instance of the object
+			throw new DiscoException( "Could not instantiate PDU Sender class: "+name );
+		}
 	}
 }

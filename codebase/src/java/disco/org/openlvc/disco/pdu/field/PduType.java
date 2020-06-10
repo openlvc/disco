@@ -24,11 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.UnsupportedPDU;
 import org.openlvc.disco.pdu.emissions.DesignatorPdu;
 import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
@@ -184,7 +182,7 @@ public enum PduType
 	}
 	
 	/**
-	 * @return `true` if we have an associated Disco class/type for this PduType. `false` otherwise.
+	 * @return true if we have an associated Disco class/type for this PduType. false otherwise.
 	 */
 	public boolean isSupported()
 	{
@@ -194,28 +192,6 @@ public enum PduType
 	public ProtocolFamily getProtocolFamily()
 	{
 		return this.protocolFamily;
-	}
-
-	/**
-	 * Create a new instance of the given PDU type and return it. The no-arg constructor is called.
-	 * 
-	 * @return The newly created instance
-	 * @throws UnsupportedPDU If we don't have an implementation of this PDU
-	 * @throws DiscoException If there is a problem creating the new PDU instance
-	 */
-	public PDU newInstance() throws UnsupportedPDU, DiscoException
-	{
-		if( this.type == null )
-			throw new UnsupportedPDU( "PDU Type not currently supported: "+this.name() );
-		
-		try
-		{
-			return this.type.newInstance();
-		}
-		catch( IllegalAccessException | InstantiationException e )
-		{
-			throw new DiscoException( "Error creating PDU of type: "+name(), e );
-		}
 	}
 
 	//----------------------------------------------------------

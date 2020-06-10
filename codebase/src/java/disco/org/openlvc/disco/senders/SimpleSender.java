@@ -20,7 +20,6 @@ package org.openlvc.disco.senders;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduSender;
-import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.pdu.PDU;
 
 /**
@@ -40,9 +39,9 @@ public class SimpleSender extends PduSender
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public SimpleSender( OpsCenter opscenter, IConnection connection )
+	public SimpleSender( OpsCenter opscenter )
 	{
-		super( opscenter, connection );
+		super( opscenter );
 	}
 
 	//----------------------------------------------------------
@@ -53,7 +52,7 @@ public class SimpleSender extends PduSender
 	{
 		try
 		{
-			this.connection.send( pdu.toByteArray() );
+			super.connection.send( pdu.toByteArray() );
 		}
 		catch( DiscoException ioex )
 		{

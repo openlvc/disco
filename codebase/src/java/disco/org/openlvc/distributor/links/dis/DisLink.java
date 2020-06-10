@@ -73,7 +73,7 @@ public class DisLink extends LinkBase implements ILink, IPduListener
 		
 		// Create the Disco configuration from our link configuration
 		this.opsCenter = new OpsCenter( turnIntoDiscoConfiguration(linkConfiguration) );
-		this.opsCenter.setListener( this );
+		this.opsCenter.setPduListener( this );
 		this.opsCenter.open();
 
 		logger.debug( "Link is up" );

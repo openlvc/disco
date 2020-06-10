@@ -134,7 +134,7 @@ public class Recorder implements IPduListener
 		discoConfiguration.setPduReceiver( configuration.getPduReceiver() );
 		
 		this.opscenter = new OpsCenter( discoConfiguration );
-		this.opscenter.setListener( this );
+		this.opscenter.setPduListener( this );
 		
 		//
 		// Kick things off

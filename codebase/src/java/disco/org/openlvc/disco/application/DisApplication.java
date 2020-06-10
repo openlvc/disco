@@ -109,7 +109,7 @@ public class DisApplication
 		
 		// create the pieces that we need
 		this.opscenter = new OpsCenter( this.configuration );
-		this.opscenter.setListener( new PduListener() );
+		this.opscenter.setPduListener( new PduListener() );
 		
 		// open the connection up
 		this.opscenter.open();

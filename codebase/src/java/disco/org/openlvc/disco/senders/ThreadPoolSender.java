@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduSender;
-import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.utils.ThreadUtils;
 
@@ -45,9 +44,9 @@ public class ThreadPoolSender extends PduSender implements RejectedExecutionHand
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public ThreadPoolSender( OpsCenter opscenter, IConnection connection )
+	public ThreadPoolSender( OpsCenter opscenter )
 	{
-		super( opscenter, connection );
+		super( opscenter );
 		
 		this.sendQueue = new LinkedBlockingQueue<>(100000);
 		this.sendExecutor = new ThreadPoolExecutor( 2, 2, 60, TimeUnit.SECONDS, sendQueue );

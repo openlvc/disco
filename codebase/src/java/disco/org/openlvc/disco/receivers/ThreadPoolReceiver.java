@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduReceiver;
 import org.openlvc.disco.connection.IConnection;
@@ -73,9 +72,9 @@ public class ThreadPoolReceiver extends PduReceiver implements RejectedExecution
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public ThreadPoolReceiver( OpsCenter opscenter, IConnection connection, IPduListener listener )
+	public ThreadPoolReceiver( OpsCenter opscenter )
 	{
-		super( opscenter, connection, listener );
+		super( opscenter );
 		this.open = false;
 
 		// Processing
@@ -100,19 +99,17 @@ public class ThreadPoolReceiver extends PduReceiver implements RejectedExecution
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
+	@Override
 	public void open() throws DiscoException
 	{
-		// Open the connection - our executors should already be ready
-		this.connection.open();
 	}
 	
+	@Override
 	public void close() throws DiscoException
 	{
 		if( !open )
 			return;
 
-		this.connection.close();
 		this.ingestExecutor.shutdown();
 		this.inqueueExecutor.shutdown();
 		
@@ -126,6 +123,7 @@ public class ThreadPoolReceiver extends PduReceiver implements RejectedExecution
 	/**
 	 * The following has been received from the {@link IConnection} for processing.
 	 */
+	@Override
 	public void receive( byte[] array )
 	{
 		this.metricsTotalPdusReceived.incrementAndGet();

@@ -70,10 +70,10 @@ public class Disrespector
 	public void start()
 	{
 		this.disCenter = new OpsCenter( configuration.getDisConfiguration() );
-		this.disCenter.setListener( new DisToHla() );
+		this.disCenter.setPduListener( new DisToHla() );
 		
 		this.hlaCenter = new OpsCenter( configuration.getHlaConfiguration() );
-		this.hlaCenter.setListener( new HlaToDis() );
+		this.hlaCenter.setPduListener( new HlaToDis() );
 		
 		// Start the connections
 		this.hlaCenter.open();

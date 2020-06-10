@@ -110,7 +110,7 @@ public class NetworkReplayer
 			discoConfiguration.setConnection( "rpr" );
 		
 		this.opscenter = new OpsCenter( discoConfiguration );
-		this.opscenter.setListener( new NullListener() );
+		this.opscenter.setPduListener( new NullListener() );
 
 		//
 		// Run the replay

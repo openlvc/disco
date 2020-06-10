@@ -98,7 +98,7 @@ public class Disruptor
 
 		// Open up the Disco Operations Centre
 		opscenter = new OpsCenter( configuration.getDiscoConfiguration() );
-		opscenter.setListener( new PduListener() );
+		opscenter.setPduListener( new PduListener() );
 		opscenter.open();
 
 		long benchmarkStart = System.currentTimeMillis();

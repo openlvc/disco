@@ -54,7 +54,7 @@ public class SessionWriter
 	
 	// PDU Management
 	private long openingTimestamp;
-	private BlockingQueue<Track> buffer;
+	private BlockingQueue<Track> queue;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -74,7 +74,7 @@ public class SessionWriter
 
 		// PDU Management
 		this.openingTimestamp = 0;        // set in open()
-		this.buffer = new LinkedBlockingQueue<>();
+		this.queue = new LinkedBlockingQueue<>();
 	}
 
 	//----------------------------------------------------------
@@ -87,11 +87,12 @@ public class SessionWriter
 	 * 
 	 * @param pdu The PDU to add to the session
 	 */
-	public void add( PDU pdu )
+	protected void add( PDU pdu )
 	{
 		long offset = System.currentTimeMillis() - openingTimestamp;
-		this.buffer.add( new Track(pdu,offset) );
+		this.queue.add( new Track(pdu,offset) );
 	}
+	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Session Writing Methods   //////////////////////////////////////////////////////////////
@@ -209,7 +210,7 @@ public class SessionWriter
 				// Get the first PDU, blocking until it turns up 
 				try
 				{
-					flushList.add( buffer.take() );
+					flushList.add( queue.take() );
 				}
 				catch( InterruptedException ie )
 				{
@@ -218,8 +219,8 @@ public class SessionWriter
 				}
 
 				// We've got the first PDU, if there are more just keep going, but don't block
-				while( buffer.peek() != null )
-					flushList.add( buffer.poll() );
+				while( queue.peek() != null )
+					flushList.add( queue.poll() );
 
 				//
 				// Flush PDUs to disk

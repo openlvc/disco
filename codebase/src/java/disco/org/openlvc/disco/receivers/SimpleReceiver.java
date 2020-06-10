@@ -20,11 +20,9 @@ package org.openlvc.disco.receivers;
 import java.io.IOException;
 
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduReceiver;
-import org.openlvc.disco.connection.IConnection;
-import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.pdu.UnsupportedPDU;
 
 public class SimpleReceiver extends PduReceiver
@@ -40,9 +38,9 @@ public class SimpleReceiver extends PduReceiver
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public SimpleReceiver( OpsCenter opscenter, IConnection connection, IPduListener listener )
+	public SimpleReceiver( OpsCenter opscenter )
 	{
-		super( opscenter, connection, listener );
+		super( opscenter );
 	}
 
 	//----------------------------------------------------------
@@ -54,11 +52,12 @@ public class SimpleReceiver extends PduReceiver
 	 * This will block until the processing is done (the Simple in SimpleReceiver stands more for
 	 * Simple/Stupid than Simple/Easy).
 	 */
+	@Override
 	public void receive( byte[] array )
 	{
 		try
 		{
-			clientListener.receive( PDU.fromByteArray(array) );
+			clientListener.receive( PduFactory.create(array) );
 		}
 		catch( IOException ioex )
 		{
@@ -85,10 +84,12 @@ public class SimpleReceiver extends PduReceiver
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
 	public void open() throws DiscoException
 	{
 	}
 	
+	@Override
 	public void close() throws DiscoException
 	{
 	}
