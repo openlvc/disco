@@ -194,6 +194,12 @@ public class TransmitterPdu extends PDU
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/** @return String in form {siteId}-{appId}-{entityId}-{radioId} */
+	public String getFullId()
+	{
+		return entityID.toString()+"-"+radioId;
+	}
+	
 	/** Just a dup of {@link #getEntityIdentifier()} with a shorter name for compactness. */
 	public EntityId getEntityId()
 	{

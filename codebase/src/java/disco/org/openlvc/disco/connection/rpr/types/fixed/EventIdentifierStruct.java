@@ -15,18 +15,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.application;
+package org.openlvc.disco.connection.rpr.types.fixed;
 
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
+import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
+import org.openlvc.disco.pdu.record.EventIdentifier;
+import org.openlvc.disco.pdu.record.SimulationAddress;
 
-/**
- * The {@link PduStore} is the core PDU repository for a Disco {@link DisApplication}.
- * The store itself is an aggregator of a number of sub-stores that focus on methods for
- * particular PDU types. Sub-stores can be accessed through getters.
- */
-public class PduStore
+public class EventIdentifierStruct extends HLAfixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -35,76 +31,49 @@ public class PduStore
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EntityStateStore entityStore;
-	private TransmitterStore transmitterStore;
-	private EmitterStore     emitterStore;
+	private RPRunsignedInteger16BE eventCount;
+	private RTIobjectId issuingObjectIdentifier;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduStore( DisApplication app )
+	public EventIdentifierStruct()
 	{
-		this.entityStore = new EntityStateStore( this );
-		this.transmitterStore = new TransmitterStore( this ); // depends on EntityStore
-		this.emitterStore = new EmitterStore( this );         // depends on EntityStore
+		this.eventCount = new RPRunsignedInteger16BE( 0 );
+		this.issuingObjectIdentifier = new RTIobjectId();
 		
-		app.getDeleteReaper().registerTarget( entityStore );
-		app.getDeleteReaper().registerTarget( transmitterStore );
-		app.getDeleteReaper().registerTarget( emitterStore );
+		// Add to elements in parent so that it can do its generic fixed-record encoding/decoding
+		super.add( this.eventCount );
+		super.add( this.issuingObjectIdentifier );
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	protected void pduReceived( PDU pdu )
-	{
-		switch( pdu.getType() )
-		{
-			case EntityState: entityStore.receivePdu( (EntityStatePdu)pdu ); break;
-			case Transmitter: transmitterStore.receivePdu( (TransmitterPdu)pdu ); break;
-
-			// PDUs to support next
-			case Emission:
-				break;
-			case Designator:
-				break;
-			case Signal:
-				break;
-			case Fire:
-				break;
-			case Detonation:
-				break;
-			case DataQuery:
-				break;
-			case Data:
-				break;
-			case SetData:
-				break;
-			default:
-				break;
-		}
-	}
-
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void clear()
-	{
-		this.entityStore.clear();
-		this.transmitterStore.clear();
-	}
 
-	public EntityStateStore getEntityStore()
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public void setValue( EventIdentifier event )
 	{
-		return this.entityStore;
+		this.eventCount.setValue( event.getEventID() );
+		this.issuingObjectIdentifier.setValue( event.getSimulationAddress().toString() );
 	}
 	
-	public TransmitterStore getTransmitterStore()
+	public EventIdentifier getDisValue()
 	{
-		return this.transmitterStore;
+		EventIdentifier id = new EventIdentifier();
+		id.setEventID( eventCount.getValue() );
+		id.setSimulationAddress( SimulationAddress.fromString(issuingObjectIdentifier.getValue()) );
+		return id;
 	}
-
+	
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

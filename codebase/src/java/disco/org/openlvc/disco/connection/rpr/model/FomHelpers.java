@@ -499,7 +499,7 @@ public class FomHelpers
 	 */
 	public static void loadHandlesFromRti( RTIambassador rtiamb , ObjectModel model )
 	{
-		new FomHelpers().loadHandles( rtiamb, model );		
+		new FomHelpers().loadHandles( rtiamb, model );
 	}
 
 

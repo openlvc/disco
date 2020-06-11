@@ -130,7 +130,21 @@ public class SimulationAddress implements IPduComponent, Cloneable
 		this.applicationIdentifier = applicationIdentifier;
     }
 	
+	public String toString()
+	{
+		return this.siteIdentifier+"-"+this.applicationIdentifier;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static SimulationAddress fromString( String value )
+	{
+		String[] array = value.split( "," );
+		if( array.length != 2 )
+			throw new IllegalArgumentException( "Not a valid simulation address (must be 'siteId-appId'): "+value );
+		
+		return new SimulationAddress( Integer.valueOf(array[0]), Integer.valueOf(array[1]) );
+	}
+
 }

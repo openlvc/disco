@@ -186,7 +186,7 @@ public class TransmitterStore implements IDeleteReaperManaged
 	/// Delete Timeout Support Methods   ///////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
-	public Set<TransmitterPdu> removeStaleData( long timestamp )
+	public int removeStaleData( long timestamp )
 	{
 		Set<TransmitterPdu> removed = new HashSet<>();
 
@@ -196,7 +196,7 @@ public class TransmitterStore implements IDeleteReaperManaged
 		
 		byId.keySet().removeIf( entityId -> byId.get(entityId).radios.isEmpty() );
 		
-		return removed;
+		return removed.size();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

@@ -20,6 +20,7 @@ package org.openlvc.disco.connection.rpr.objects;
 import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.RelativePositionStruct;
+import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
 
 public abstract class EmbeddedSystem extends ObjectInstance
@@ -70,6 +71,9 @@ public abstract class EmbeddedSystem extends ObjectInstance
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Decoding Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	// Transmitters
+	//
 	protected void fromPdu( TransmitterPdu incoming )
 	{
 		this.entityIdentifier.setValue( incoming.getEntityId() );
@@ -81,6 +85,23 @@ public abstract class EmbeddedSystem extends ObjectInstance
 	{
 		pdu.setEntityId( entityIdentifier.getDisValue() );
 		pdu.getAntennaLocation().setRelativeAntennaLocation( relativePosition.getDisValue() );
+	}
+	
+	//
+	// Emitter Systems
+	//
+	protected void fromPdu( EmissionPdu incoming )
+	{
+		this.entityIdentifier.setValue( incoming.getEmittingEntityId() );
+		this.hostObjectIdentifier.setValue( incoming.getEmittingEntityId().toString() );
+//		this.relativePosition.setValue( incoming.getEmitterSystems().get(0).get );
+		
+		throw new RuntimeException( "Not Yet Supported" );
+	}
+	
+	protected void toPdu( EmissionPdu pdu )
+	{
+		throw new RuntimeException( "Not Yet Supported" );
 	}
 
 	//----------------------------------------------------------

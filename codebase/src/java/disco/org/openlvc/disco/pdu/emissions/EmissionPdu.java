@@ -100,7 +100,7 @@ public class EmissionPdu extends PDU
 		emitterSystems.clear(); // do we want to clear every time? partial updates are part of spec
 		for( int i = 0; i < systemCount; i++ )
 		{
-			EmitterSystem system = new EmitterSystem();
+			EmitterSystem system = new EmitterSystem(emittingEntityId);
 			system.from( dis );
 			emitterSystems.add( system );
 		}
@@ -219,6 +219,10 @@ public class EmissionPdu extends PDU
 	{
 		this.emitterSystems = emitterSystems;
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// PDU Merging Methods   //////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

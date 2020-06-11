@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.openlvc.disco.DiscoException;
 
@@ -52,6 +53,10 @@ public class ObjectModel
 	
 	private ObjectClass objectRoot;
 	private InteractionClass interactionRoot;
+	
+	// Lazy-Load Caches
+	private Map<ObjectClassHandle,ObjectClass> objectClassCache;
+	private Map<InteractionClassHandle,InteractionClass> interactionClassCache;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -69,6 +74,10 @@ public class ObjectModel
 		this.objectRoot = this.createObjectClass( "HLAobjectRoot", null );
 		this.objectRoot.addAttribute( new AttributeClass("HLAprivilegeToDelete") );
 		this.interactionRoot = this.createInteractionClass( "HLAinteractionRoot", null );
+		
+		// Lazy-Loaded Caches
+		this.objectClassCache = new HashMap<>();
+		this.interactionClassCache = new HashMap<>();
 	}
 
 	//----------------------------------------------------------
@@ -101,8 +110,6 @@ public class ObjectModel
 	public void lock()
 	{
 		// go through and cache the various 
-		
-		
 		this.locked = true;
 	}
 	
@@ -120,14 +127,25 @@ public class ObjectModel
 	{
 		return this.oclasses.get( qualifiedName );
 	}
-	
+
 	public ObjectClass getObjectClass( ObjectClassHandle handle )
 	{
-		for( ObjectClass clazz : oclasses.values() )
-			if( clazz.getHandle().equals(handle) )
-				return clazz;
+		ObjectClass clazz = this.objectClassCache.get( handle );
+		if( clazz == null )
+		{
+			Optional<ObjectClass> found =
+				oclasses.values().stream().filter( c -> c.getHandle().equals(handle) ).findFirst();
+
+			if( found.isPresent() )
+			{
+				clazz = found.get();
+				objectClassCache.put( handle, clazz );
+			}
+			else
+				throw new DiscoException( "Object Class not found [%s]", handle );
+		}
 		
-		throw new DiscoException( "Object Class not found [%s]", handle );
+		return clazz;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,11 +158,22 @@ public class ObjectModel
 	
 	public InteractionClass getInteractionClass( InteractionClassHandle handle )
 	{
-		for( InteractionClass clazz : iclasses.values() )
-			if( clazz.getHandle().equals(handle) )
-				return clazz;
+		InteractionClass clazz = this.interactionClassCache.get( handle );
+		if( clazz == null )
+		{
+			Optional<InteractionClass> found = 
+				iclasses.values().stream().filter( i -> i.getHandle().equals(handle) ).findFirst();
+			
+			if( found.isPresent() )
+			{
+				clazz = found.get();
+				interactionClassCache.put( handle, clazz );
+			}
+			else
+				throw new DiscoException( "Interaction Class not found [%s]", handle );
+		}
 		
-		throw new DiscoException( "Interaction Class not found [%s]", handle );
+		return clazz;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

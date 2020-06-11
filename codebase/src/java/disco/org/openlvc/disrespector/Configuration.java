@@ -149,7 +149,7 @@ public class Configuration
 	
 	public short getDisExerciseId()
 	{
-		return Short.parseShort( properties.getProperty(KEY_DIS_EXID,"1") );
+		return Short.parseShort( properties.getProperty(KEY_DIS_EXID,"0") );
 	}
 	
 	public String getDisLogLevel()
@@ -198,7 +198,7 @@ public class Configuration
 		dis.getUdpConfiguration().setPort( getDisPort() );
 		dis.getDisConfiguration().setExerciseId( getDisExerciseId() );
 		
-		dis.getLoggingConfiguration().setAppName( "dis>>hla" );
+		dis.getLoggingConfiguration().setAppName( "dis" );
 		dis.getLoggingConfiguration().setLevel( getDisLogLevel() );
 		dis.getLoggingConfiguration().setFile( getDisLogFile() );
 		
@@ -332,7 +332,7 @@ public class Configuration
 		hla.getRprConfiguration().setCreateFederation( isHlaCreateFederation() );
 		hla.getRprConfiguration().setRandomizeFedName( isHlaRandomizeFederateName() );
 
-		hla.getLoggingConfiguration().setAppName( "hla>>dis" );
+		hla.getLoggingConfiguration().setAppName( "rpr" );
 		hla.getLoggingConfiguration().setLevel( getHlaLogLevel() );
 		hla.getLoggingConfiguration().setFile( getHlaLogFile() );
 		

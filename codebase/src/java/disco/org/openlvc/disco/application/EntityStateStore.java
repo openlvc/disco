@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.openlvc.disco.DiscoException;
@@ -185,19 +186,19 @@ public class EntityStateStore implements IDeleteReaperManaged
 	/// Delete Timeout Support Methods   ///////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
-	public Set<EntityStatePdu> removeStaleData( long oldestTimestamp )
+	public int removeStaleData( long oldestTimestamp )
 	{
-		Set<EntityStatePdu> removed = new HashSet<>();
-		
+		AtomicInteger removed = new AtomicInteger(0);
+
 		byId.values().parallelStream()
 		             .filter( espdu -> espdu.getLocalTimestamp() < oldestTimestamp )
 		             .forEach( espdu -> {
 		            	 byId.remove( espdu.getEntityID() );
 		            	 byMarking.remove( espdu.getMarking() );
-		            	 removed.add( espdu );
+		            	 removed.incrementAndGet();
 		              });
 		
-		return removed;
+		return removed.intValue();
 	}
 
 	

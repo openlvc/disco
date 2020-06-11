@@ -17,10 +17,6 @@
  */
 package org.openlvc.disco.application;
 
-import java.util.Set;
-
-import org.openlvc.disco.pdu.PDU;
-
 /**
  * Ensures that stores that are delete timeout managed provide implementation of the feature.
  */
@@ -33,6 +29,12 @@ public interface IDeleteReaperManaged
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public Set<? extends PDU> removeStaleData( long oldestTimestamp );
-
+	/**
+	 * Remove any records that haven't been updated since the given timestamp. Return the
+	 * count of all the values removed.
+	 * 
+	 * @param oldestTimestamp Values must have been updated later than this timestamp to stay around
+	 * @return The number of values that were removed
+	 */
+	public int removeStaleData( long oldestTimestamp );
 }

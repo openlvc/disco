@@ -18,7 +18,10 @@
 package org.openlvc.disco.pdu.emissions;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -27,6 +30,7 @@ import org.openlvc.disco.pdu.field.BeamFunction;
 import org.openlvc.disco.pdu.field.HighDensityTrackJam;
 import org.openlvc.disco.pdu.record.BeamData;
 import org.openlvc.disco.pdu.record.BeamStatus;
+import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.FundamentalParameterData;
 import org.openlvc.disco.pdu.record.JammingTechnique;
 import org.openlvc.disco.pdu.record.TrackJamData;
@@ -49,11 +53,30 @@ public class EmitterBeam implements IPduComponent, Cloneable
 	private BeamStatus beamStatus;                   // Beam Status [6.2.12] (uint8)
 	private JammingTechnique jammingTechnique;
 	// Tracks
-	private List<TrackJamData> targets;
+	private Map<EntityId,TrackJamData> targets;
+	
+	// Off-Spec / Non-Spec Data 
+	private EmitterSystem parentSystem; // Link back to parent EmitterSystem
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	protected EmitterBeam( EmitterSystem parentSystem )
+	{
+		this.beamNumber = 0;
+		this.parameterIndex = 0;
+		this.parameterData = new FundamentalParameterData();
+		this.beamData = new BeamData();
+		this.beamFunction = BeamFunction.Other;
+		this.highDensityTrackJam = HighDensityTrackJam.NotSelected;
+		this.beamStatus = BeamStatus.Deactivated;
+		this.jammingTechnique = new JammingTechnique();
+		// Tracks
+		this.targets = new HashMap<>();
+		
+		// Off-Spec / Non-Spec Data
+		this.parentSystem = parentSystem;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
@@ -94,9 +117,9 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		this.targets.clear();
 		for( int i = 0; i < numberOfTargets; i++ )
 		{
-			TrackJamData target = new TrackJamData();
-			target.from( dis );
-			targets.add( target );
+			TrackJamData record = new TrackJamData();
+			record.from( dis );
+			targets.put( record.getTarget(), record );
 		}
     }
 
@@ -115,7 +138,7 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		jammingTechnique.to( dos );
 		
 		// Write the tracked entities
-		for( TrackJamData target : targets )
+		for( TrackJamData target : targets.values() )
 			target.to( dos );
     }
 	
@@ -143,6 +166,14 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		size += (targets.size() * 8);
 
 		return size;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public boolean isTargeting( EntityId id )
+	{
+		return targets.containsKey(id);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -255,31 +286,42 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		return targets.size();
 	}
 	
-	public List<TrackJamData> getTargets()
+	public Collection<TrackJamData> getTargets()
 	{
-		return targets;
+		return targets.values();
 	}
 
-	public void setTargets( List<TrackJamData> targets )
+	public void setTargets( List<TrackJamData> records )
 	{
-		this.targets = targets;
+		this.targets.clear();
+		records.forEach( record -> this.targets.put(record.getTarget(),record) );
 	}
 
-	public void addTarget( TrackJamData target )
+	public void addTarget( TrackJamData record )
 	{
-		this.targets.add( target );
+		this.targets.put( record.getTarget(), record );
 	}
 	
-	public void removeTarget( TrackJamData target )
+	public void removeTarget( TrackJamData record )
 	{
-		this.targets.remove( target );
+		this.targets.remove( record.getTarget() );
 	}
 	
-	public void removeTarget( int index )
+	////////////////////////////////////////////////////////////
+	///  Off-Spec Properties   /////////////////////////////////
+	////////////////////////////////////////////////////////////
+	// Properties that aren't defined by the spec, but create
+	// links that Disco wants to maintain.
+	public EmitterSystem getEmitterSystem()
 	{
-		this.targets.remove( index );
+		return this.parentSystem;
 	}
 	
+	protected void setEmitterSystem( EmitterSystem parentSystem )
+	{
+		this.parentSystem = parentSystem;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

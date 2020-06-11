@@ -18,26 +18,22 @@
 package org.openlvc.disco.connection.rpr.mappers;
 
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.UnsupportedException;
+import org.openlvc.disco.bus.EventHandler;
+import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.objects.Aircraft;
 import org.openlvc.disco.connection.rpr.objects.GroundVehicle;
 import org.openlvc.disco.connection.rpr.objects.Human;
 import org.openlvc.disco.connection.rpr.objects.Lifeform;
-import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.connection.rpr.objects.PhysicalEntity;
 import org.openlvc.disco.connection.rpr.objects.Platform;
-import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.Kind;
-import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.EntityType;
 
 import hla.rti1516e.AttributeHandleValueMap;
-import hla.rti1516e.ObjectInstanceHandle;
-import hla.rti1516e.RTIambassador;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
 
@@ -111,7 +107,7 @@ import hla.rti1516e.encoding.DecoderException;
  *   >> PhysicalEntity::Lifeform::Human
  *   >> PhysicalEntity::Lifeform::NonHuman
  */
-public class EntityStateMapper extends AbstractMapper implements IObjectMapper
+public class EntityStateMapper extends AbstractMapper
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -189,12 +185,23 @@ public class EntityStateMapper extends AbstractMapper implements IObjectMapper
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public EntityStateMapper( RprConverter rprConverter )
+	public EntityStateMapper( RprConnection connection ) throws DiscoException
 	{
-		super( rprConverter );
-		
+		super( connection );
+		initializeHandles();
+	}
+
+	//----------------------------------------------------------
+	//                    INSTANCE METHODS
+	//----------------------------------------------------------
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// HLA Initialization   ///////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	private void initializeHandles() throws DiscoException
+	{
 		// Cache up all the attributes we need
-		this.hlaClass = rprConverter.model.getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform" );
+		this.hlaClass = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform" );
 		if( this.hlaClass == null )
 			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform" );
 		
@@ -262,62 +269,34 @@ public class EntityStateMapper extends AbstractMapper implements IObjectMapper
 		//this.vectoringNozzleSystemData = hlaClass.getAttribute( "VectoringNozzleSystemData" );
 	}
 
-	//----------------------------------------------------------
-	//                    INSTANCE METHODS
-	//----------------------------------------------------------
-
-	@Override
-	public PduType getSupportedPduType()
-	{
-		return PduType.EntityState;
-	}
-	
-	@Override
-	public ObjectClass getSupportedHlaClass()
-	{
-		return this.hlaClass;
-	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Factory Methods   //////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public ObjectInstance createObject( ObjectInstanceHandle objectHandle )
-	{
-		Platform object = new Aircraft(); // TODO Fixme. Don't even know where to start with this one
-		object.setObjectHandle( objectHandle );
-		object.setObjectClass( hlaClass );
-		object.setMapper( this );
-		return object;
-	}
-	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS -> HLA Methods   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void sendDisToHla( PDU genericPdu, RTIambassador rtiamb )
+	@EventHandler
+	public void handlePdu( EntityStatePdu pdu )
 	{
-		EntityStatePdu pdu = genericPdu.as( EntityStatePdu.class );
-		
 		// Do we already have an object cached for this entity?
-		PhysicalEntity hlaObject = rprConverter.getDisEntity( pdu.getEntityID() );
+		PhysicalEntity hlaObject = objectStore.getLocalEntity( pdu.getEntityID() );
 
-		// If there is no known HLA object, we have to register one
+		// If there is no HLA object yet, we have to register one
 		if( hlaObject == null )
 		{
 			// No object registered yet, do it now
 			hlaObject = createObject( pdu.getEntityType() );
 			hlaObject.setObjectClass( this.hlaClass );
-			hlaObject.setMapper( this );
-			super.registerObjectInstance( hlaObject, rtiamb );
-			rprConverter.addDisEntity( pdu.getEntityID(), hlaObject );
+			super.registerObjectInstance( hlaObject );
+			objectStore.addLocalEntity( pdu.getEntityID(), hlaObject );
 		}
 
-		// Extract PDU values from the object
+		// Suck the values out of the PDU and into the object
 		hlaObject.fromPdu( pdu );
 		
 		// Send an update for the object
-		super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject), rtiamb );
+		super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject) );
+		
+		if( logger.isTraceEnabled() )
+			logger.trace( "dis >> hla (PhysicalEntity) Updated attributes for entity: id=%s, handle=%s",
+			              pdu.getEntityID(), hlaObject.getObjectHandle() );
 	}
 
 	private PhysicalEntity createObject( EntityType type )
@@ -359,7 +338,7 @@ public class EntityStateMapper extends AbstractMapper implements IObjectMapper
 			throw new UnsupportedException( "Unsupported Entity Kind: "+kind.name() );
 		}
 	}
-	
+
 	private AttributeHandleValueMap serializeToHla( PhysicalEntity object )
 	{
 		AttributeHandleValueMap map = object.getObjectAttributes();
@@ -666,34 +645,51 @@ public class EntityStateMapper extends AbstractMapper implements IObjectMapper
 	{
 		
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA -> DIS Methods   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void sendHlaToDis( ObjectInstance hlaObject,
-	                          AttributeHandleValueMap attributes,
-	                          OpsCenter opscenter )
+	@EventHandler
+	public void handleDiscover( HlaDiscover event )
 	{
+		if( hlaClass == event.theClass )
+		{
+			Platform hlaObject = new Aircraft(); // TODO Fixme. Need to take action based on class
+			hlaObject.setObjectClass( event.theClass );
+			hlaObject.setObjectHandle( event.theObject );
+			objectStore.addDiscoveredHlaObject( event.theObject, hlaObject );
+
+			if( logger.isDebugEnabled() )
+			{
+    			logger.debug( "hla >> dis (Discover) Created [%s] for discovery of object handle [%s]",
+    			              event.theClass.getLocalName(),
+    			              event.theObject );
+			}
+		}
+	}
+
+	@EventHandler
+	public void handleReflect( HlaReflect event )
+	{
+		if( (event.hlaObject instanceof PhysicalEntity) == false )
+			return;
+		
 		try
 		{
 			// Update the local object representation from the received attributes
-			deserializeFromHla( (PhysicalEntity)hlaObject, attributes );
+			deserializeFromHla( (PhysicalEntity)event.hlaObject, event.attributes );
 		}
 		catch( DecoderException de )
 		{
 			throw new DiscoException( de.getMessage(), de );
 		}
 		
-		// Turn the attribute into a PDU
-		PDU pdu = hlaObject.toPdu();
-		
-		// Send the PDU off
+		// Send the PDU off to the OpsCenter
 		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 		//         on the other side. This is inefficient and distasteful. Fix me.
-		opscenter.getPduReceiver().receive( pdu.toByteArray() );
+		opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
 	}
-
+	
 	private void deserializeFromHla( PhysicalEntity entity, AttributeHandleValueMap map )
 		throws DecoderException
 	{
@@ -1046,7 +1042,11 @@ public class EntityStateMapper extends AbstractMapper implements IObjectMapper
 	{
 		
 	}
-	
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

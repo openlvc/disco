@@ -17,38 +17,32 @@
  */
 package org.openlvc.disco.connection.rpr.mappers;
 
-import org.openlvc.disco.OpsCenter;
-import org.openlvc.disco.connection.rpr.model.InteractionClass;
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.field.PduType;
-
-import hla.rti1516e.ParameterHandleValueMap;
-import hla.rti1516e.RTIambassador;
-
 /**
- * Defines the interface that is used to map HLA Interactions to DIS PDUs and vice versa.
+ * Parent class for all HLA Bus Events.
  */
-public interface IInteractionMapper
+public abstract class HlaEvent
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 
 	//----------------------------------------------------------
+	//                   INSTANCE VARIABLES
+	//----------------------------------------------------------
+
+	//----------------------------------------------------------
+	//                      CONSTRUCTORS
+	//----------------------------------------------------------
+
+	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	
-	//
-	// Supported HLA/DIS Type Methods
-	//
-	public PduType getSupportedPduType();
-	
-	public InteractionClass getSupportedHlaClass();
-	
-	//
-	// Conversion methods for DIS->HLA and HLA->DIS
-	//
-	public void sendDisToHla( PDU pdu, RTIambassador rtiamb );
-	
-	public void sendHlaToDis( InteractionClass hlaClass, ParameterHandleValueMap parameters, OpsCenter opscenter );
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	//----------------------------------------------------------
+	//                     STATIC METHODS
+	//----------------------------------------------------------
 }

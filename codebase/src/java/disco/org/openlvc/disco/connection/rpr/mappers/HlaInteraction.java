@@ -15,18 +15,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.application;
+package org.openlvc.disco.connection.rpr.mappers;
 
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disco.connection.rpr.model.InteractionClass;
+import hla.rti1516e.ParameterHandleValueMap;
 
-/**
- * The {@link PduStore} is the core PDU repository for a Disco {@link DisApplication}.
- * The store itself is an aggregator of a number of sub-stores that focus on methods for
- * particular PDU types. Sub-stores can be accessed through getters.
- */
-public class PduStore
+public class HlaInteraction extends HlaEvent
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -35,75 +29,25 @@ public class PduStore
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EntityStateStore entityStore;
-	private TransmitterStore transmitterStore;
-	private EmitterStore     emitterStore;
+	protected InteractionClass theClass;
+	protected ParameterHandleValueMap parameters;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduStore( DisApplication app )
+	public HlaInteraction( InteractionClass theClass, ParameterHandleValueMap parameters )
 	{
-		this.entityStore = new EntityStateStore( this );
-		this.transmitterStore = new TransmitterStore( this ); // depends on EntityStore
-		this.emitterStore = new EmitterStore( this );         // depends on EntityStore
-		
-		app.getDeleteReaper().registerTarget( entityStore );
-		app.getDeleteReaper().registerTarget( transmitterStore );
-		app.getDeleteReaper().registerTarget( emitterStore );
+		this.theClass = theClass;
+		this.parameters = parameters;
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	protected void pduReceived( PDU pdu )
-	{
-		switch( pdu.getType() )
-		{
-			case EntityState: entityStore.receivePdu( (EntityStatePdu)pdu ); break;
-			case Transmitter: transmitterStore.receivePdu( (TransmitterPdu)pdu ); break;
-
-			// PDUs to support next
-			case Emission:
-				break;
-			case Designator:
-				break;
-			case Signal:
-				break;
-			case Fire:
-				break;
-			case Detonation:
-				break;
-			case DataQuery:
-				break;
-			case Data:
-				break;
-			case SetData:
-				break;
-			default:
-				break;
-		}
-	}
-
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void clear()
-	{
-		this.entityStore.clear();
-		this.transmitterStore.clear();
-	}
-
-	public EntityStateStore getEntityStore()
-	{
-		return this.entityStore;
-	}
-	
-	public TransmitterStore getTransmitterStore()
-	{
-		return this.transmitterStore;
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

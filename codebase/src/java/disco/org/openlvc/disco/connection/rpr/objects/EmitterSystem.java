@@ -15,18 +15,15 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.application;
+package org.openlvc.disco.connection.rpr.objects;
 
+import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
+import org.openlvc.disco.connection.rpr.types.enumerated.RawEnumValue16;
+import org.openlvc.disco.connection.rpr.types.enumerated.RawEnumValue8;
+import org.openlvc.disco.connection.rpr.types.fixed.EventIdentifierStruct;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.disco.pdu.radio.TransmitterPdu;
 
-/**
- * The {@link PduStore} is the core PDU repository for a Disco {@link DisApplication}.
- * The store itself is an aggregator of a number of sub-stores that focus on methods for
- * particular PDU types. Sub-stores can be accessed through getters.
- */
-public class PduStore
+public class EmitterSystem extends EmbeddedSystem
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -35,74 +32,66 @@ public class PduStore
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EntityStateStore entityStore;
-	private TransmitterStore transmitterStore;
-	private EmitterStore     emitterStore;
+	private RawEnumValue8  emitterFunctionCode;    // EmitterFunctionEnum8
+	private RawEnumValue16 emitterType;            // EmitterTypeEnum16
+	private HLAoctet       emitterIndex;
+	private EventIdentifierStruct eventIdentifier;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected PduStore( DisApplication app )
+	public EmitterSystem()
 	{
-		this.entityStore = new EntityStateStore( this );
-		this.transmitterStore = new TransmitterStore( this ); // depends on EntityStore
-		this.emitterStore = new EmitterStore( this );         // depends on EntityStore
+		super();
 		
-		app.getDeleteReaper().registerTarget( entityStore );
-		app.getDeleteReaper().registerTarget( transmitterStore );
-		app.getDeleteReaper().registerTarget( emitterStore );
+		this.emitterFunctionCode = new RawEnumValue8();
+		this.emitterType = new RawEnumValue16();
+		this.emitterIndex = new HLAoctet();
+		this.eventIdentifier = new EventIdentifierStruct();
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	protected void pduReceived( PDU pdu )
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// DIS Decoding Methods   /////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
+	public void fromPdu( PDU incoming )
 	{
-		switch( pdu.getType() )
-		{
-			case EntityState: entityStore.receivePdu( (EntityStatePdu)pdu ); break;
-			case Transmitter: transmitterStore.receivePdu( (TransmitterPdu)pdu ); break;
-
-			// PDUs to support next
-			case Emission:
-				break;
-			case Designator:
-				break;
-			case Signal:
-				break;
-			case Fire:
-				break;
-			case Detonation:
-				break;
-			case DataQuery:
-				break;
-			case Data:
-				break;
-			case SetData:
-				break;
-			default:
-				break;
-		}
+		System.out.println( "EmitterSystem::fromPdu()" );
 	}
 
+	@Override
+	public PDU toPdu()
+	{
+		System.out.println( "EmitterSystem::toPdu()" );
+		return null;
+	}
+
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void clear()
+	public RawEnumValue8 getEmitterFunctionCode()
 	{
-		this.entityStore.clear();
-		this.transmitterStore.clear();
+		return emitterFunctionCode;
 	}
 
-	public EntityStateStore getEntityStore()
+	public RawEnumValue16 getEmitterType()
 	{
-		return this.entityStore;
+		return emitterType;
 	}
-	
-	public TransmitterStore getTransmitterStore()
+
+	public HLAoctet getEmitterIndex()
 	{
-		return this.transmitterStore;
+		return emitterIndex;
+	}
+
+	public EventIdentifierStruct getEventIdentifier()
+	{
+		return eventIdentifier;
 	}
 
 	//----------------------------------------------------------

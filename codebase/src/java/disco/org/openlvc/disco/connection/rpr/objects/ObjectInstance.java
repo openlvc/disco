@@ -17,7 +17,6 @@
  */
 package org.openlvc.disco.connection.rpr.objects;
 
-import org.openlvc.disco.connection.rpr.mappers.IObjectMapper;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.pdu.PDU;
 
@@ -36,7 +35,6 @@ public abstract class ObjectInstance
 	private ObjectClass objectClass;
 	private ObjectInstanceHandle objectHandle;
 	private AttributeHandleValueMap attributes;
-	private IObjectMapper mapper;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -84,16 +82,6 @@ public abstract class ObjectInstance
 		this.attributes = attributes;
 	}
 	
-	public void setMapper( IObjectMapper mapper )
-	{
-		this.mapper = mapper;
-	}
-	
-	public IObjectMapper getMapper()
-	{
-		return this.mapper;
-	}	
-
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

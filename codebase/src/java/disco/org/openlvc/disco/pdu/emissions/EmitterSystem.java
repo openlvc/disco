@@ -18,12 +18,17 @@
 package org.openlvc.disco.pdu.emissions;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.IPduComponent;
 import org.openlvc.disco.pdu.record.EmitterSystemType;
+import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.VectorRecord;
 
 public class EmitterSystem implements IPduComponent, Cloneable
@@ -37,11 +42,25 @@ public class EmitterSystem implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	private EmitterSystemType systemType;
 	private VectorRecord location;
-	private List<EmitterBeam> beams;
+	private Map<Short,EmitterBeam> beams;
+	
+	// Off-Spec / Non-Spec Data 
+	private EntityId emittingEntity;
+	private long lastUpdated;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	protected EmitterSystem( EntityId emittingEntity )
+	{
+		this.systemType = new EmitterSystemType();
+		this.location = new VectorRecord();
+		this.beams = new HashMap<>();
+		
+		// Off-Spec / Non-Spec Data
+		this.emittingEntity = emittingEntity;
+		this.lastUpdated = System.currentTimeMillis();
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
@@ -69,9 +88,9 @@ public class EmitterSystem implements IPduComponent, Cloneable
 		beams.clear(); // FIXME Partial beam updates should be supported
 		for( int i = 0; i < numberOfBeams; i++ )
 		{
-			EmitterBeam beam = new EmitterBeam();
+			EmitterBeam beam = new EmitterBeam(this);
 			beam.from( dis );
-			beams.add( beam );
+			beams.put( beam.getBeamNumber(), beam );
 		}
 	}
 	
@@ -84,7 +103,7 @@ public class EmitterSystem implements IPduComponent, Cloneable
 		systemType.to( dos );
 		location.to( dos );
 		
-		for( EmitterBeam beam : beams )
+		for( EmitterBeam beam : beams.values() )
 			beam.to( dos );
 	}
 	
@@ -104,12 +123,28 @@ public class EmitterSystem implements IPduComponent, Cloneable
 		int size = 20;
 
 		/* Dynamic Section */
-		for( EmitterBeam beam : beams )
+		for( EmitterBeam beam : beams.values() )
 			size += beam.getByteLength();
 		
 		return size;
 	}
 	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Returns the set of contained {@link EmitterBeam}s that currently list the given
+	 * {@link EntityId} as a target in their Track/Jam data field.
+	 * 
+	 * @param target We want to find any beams targeting this entity id
+	 * @return A set of all the beams targeting the entity. Empty if there are none
+	 */
+	public final Set<EmitterBeam> getBeamsTargeting( EntityId target )
+	{
+		return beams.values().stream()
+		                     .filter( beam -> beam.isTargeting(target) )
+		                     .collect( Collectors.toSet() );
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
@@ -139,31 +174,50 @@ public class EmitterSystem implements IPduComponent, Cloneable
 		return this.beams.size();
 	}
 	
-	public List<EmitterBeam> getBeams()
+	public Collection<EmitterBeam> getBeams()
 	{
-		return beams;
+		return beams.values();
 	}
 
-	public void addBeam( EmitterBeam beam )
+	/**
+	 * Put the given Beam into this system, returning the object that is already stored
+	 * for the beam number, or null if we don't have one for this number yet.
+	 * 
+	 * @param beam The beam to replace any existing beam with
+	 * @return Null if there is no existing beam with that beam number, or the existing
+	 *         Beam object that was replaced
+	 */
+	public EmitterBeam addBeam( EmitterBeam beam )
 	{
-		this.beams.add( beam );
+		beam.setEmitterSystem( this );
+		return this.beams.put( beam.getBeamNumber(), beam );
 	}
 	
-	public void removeBeam( EmitterBeam beam )
+	public EmitterBeam removeBeam( EmitterBeam beam )
 	{
-		this.beams.remove( beam );
+		return this.beams.remove( beam.getBeamNumber() );
 	}
 	
-	public void removeBeam( int index )
+	public EmitterBeam removeBeam( short number )
 	{
-		this.beams.remove( index );
+		return this.beams.remove( number );
 	}
 	
-	public void setBeams( List<EmitterBeam> beams )
+	////////////////////////////////////////////////////////////
+	///  Off-Spec Properties   /////////////////////////////////
+	////////////////////////////////////////////////////////////
+	// Properties that aren't defined by the spec, but create
+	// links that Disco wants to maintain.
+	public EntityId getEmittingEntity()
 	{
-		this.beams = beams;
+		return this.emittingEntity;
 	}
 	
+	public long getLastUpdatedTime()
+	{
+		return this.lastUpdated;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

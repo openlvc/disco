@@ -17,7 +17,6 @@
  */
 package org.openlvc.disco.connection.rpr.objects;
 
-import org.openlvc.disco.connection.rpr.mappers.IInteractionMapper;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.pdu.PDU;
 
@@ -34,7 +33,6 @@ public abstract class InteractionInstance
 	//----------------------------------------------------------
 	private InteractionClass interactionClass;
 	private ParameterHandleValueMap parameters;
-	private IInteractionMapper mapper;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -71,16 +69,6 @@ public abstract class InteractionInstance
 		this.parameters = parameters;
 	}
 
-	public IInteractionMapper getMapper()
-	{
-		return mapper;
-	}
-
-	public void setMapper( IInteractionMapper mapper )
-	{
-		this.mapper = mapper;
-	}
-	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

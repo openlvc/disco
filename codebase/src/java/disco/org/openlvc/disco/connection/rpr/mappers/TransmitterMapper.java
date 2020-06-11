@@ -18,18 +18,14 @@
 package org.openlvc.disco.connection.rpr.mappers;
 
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.bus.EventHandler;
+import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
-import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.connection.rpr.objects.RadioTransmitter;
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
 
 import hla.rti1516e.AttributeHandleValueMap;
-import hla.rti1516e.ObjectInstanceHandle;
-import hla.rti1516e.RTIambassador;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
 
@@ -58,7 +54,7 @@ import hla.rti1516e.encoding.DecoderException;
  *     >> WorldLocation : WorldLocationStruct
  * 
  */
-public class TransmitterMapper extends AbstractMapper implements IObjectMapper
+public class TransmitterMapper extends AbstractMapper
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -67,12 +63,13 @@ public class TransmitterMapper extends AbstractMapper implements IObjectMapper
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	// HLA Handle Information
 	private ObjectClass hlaClass;
-
+	// EmbeddedSystem
 	private AttributeClass entityIdentifier;
 	private AttributeClass hostObjectIdentifier;
 	private AttributeClass relativePosition;
-	
+	// EmbeddedSystem.RadioTransmitter
 	private AttributeClass antennaPatternData;
 	private AttributeClass cryptographicMode;
 	private AttributeClass cryptoSystem;
@@ -94,12 +91,23 @@ public class TransmitterMapper extends AbstractMapper implements IObjectMapper
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public TransmitterMapper( RprConverter rprConverter )
+	public TransmitterMapper( RprConnection connection ) throws DiscoException
 	{
-		super( rprConverter );
-		
+		super( connection );
+		this.initializeHandles();
+	}
+
+	//----------------------------------------------------------
+	//                    INSTANCE METHODS
+	//----------------------------------------------------------
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// HLA Initialization   ///////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	private void initializeHandles() throws DiscoException
+	{
 		// Cache up all the attributes we need
-		this.hlaClass = rprConverter.model.getObjectClass( "HLAobjectRoot.EmbeddedSystem.RadioTransmitter" );
+		this.hlaClass = rprConnection.getFom().getObjectClass( "HLAobjectRoot.EmbeddedSystem.RadioTransmitter" );
 		if( this.hlaClass == null )
 			throw new DiscoException( "Could not find class: HLAobjectRoot.EmbeddedSystem.RadioTransmitter" );
 		
@@ -126,70 +134,36 @@ public class TransmitterMapper extends AbstractMapper implements IObjectMapper
 		this.worldLocation = hlaClass.getAttribute( "WorldLocation" );
 	}
 
-	//----------------------------------------------------------
-	//                    INSTANCE METHODS
-	//----------------------------------------------------------
-
-	@Override
-	public PduType getSupportedPduType()
-	{
-		return PduType.Transmitter;
-	}
-	
-	@Override
-	public ObjectClass getSupportedHlaClass()
-	{
-		return this.hlaClass;
-	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Factory Methods   //////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-//	@Override
-	public RadioTransmitter createObject()
-	{
-		return new RadioTransmitter();
-	}
-	
-	@Override
-	public RadioTransmitter createObject( ObjectInstanceHandle objectHandle )
-	{
-		RadioTransmitter object = new RadioTransmitter();
-		object.setObjectHandle( objectHandle );
-		object.setObjectClass( hlaClass );
-		object.setMapper( this );
-		return object;
-	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS -> HLA Methods   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void sendDisToHla( PDU genericPdu, RTIambassador rtiamb )
+	@EventHandler
+	public void handlePdu( TransmitterPdu pdu )
 	{
-		TransmitterPdu pdu = genericPdu.as( TransmitterPdu.class );
-
-		// Do we already have an object cached for this entity?
-		RadioTransmitter hlaObject = rprConverter.getDisTransmitter( pdu.getEntityId() );
-
-		// If there is no known HLA object, we have to register one
+		// Check to see if an HLA object already exists for this transmitter
+		RadioTransmitter hlaObject = objectStore.getLocalTransmitter( pdu.getEntityId() );
+		
+		// If there is no HLA object yet, we have to register one
 		if( hlaObject == null )
 		{
-			// No object registered yet, do it now
 			hlaObject = new RadioTransmitter();
 			hlaObject.setObjectClass( this.hlaClass );
-			hlaObject.setMapper( this );
-			super.registerObjectInstance( hlaObject, rtiamb );
-			rprConverter.addDisTransmitter( pdu.getEntityId(), hlaObject );
+			super.registerObjectInstance( hlaObject );
+			objectStore.addLocalTransmitter( pdu.getEntityId(), hlaObject );
 		}
 
-		// Extract PDU values from the object
+		// Suck the values out of the PDU and into the object
 		hlaObject.fromPdu( pdu );
 		
 		// Send an update for the object
-		super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject), rtiamb );
+		super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject) );
+		
+		if( logger.isTraceEnabled() )
+			logger.trace( "dis >> hla (Transmitter) Updated attributes for transmitter: id=%s, handle=%s",
+			              pdu.getFullId(), hlaObject.getObjectHandle() );
 	}
-
+	
 	private AttributeHandleValueMap serializeToHla( RadioTransmitter object )
 	{
 		AttributeHandleValueMap map = object.getObjectAttributes();
@@ -296,33 +270,49 @@ public class TransmitterMapper extends AbstractMapper implements IObjectMapper
 		
 		return map;
 	}
-	
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA -> DIS Methods   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void sendHlaToDis( ObjectInstance hlaObject,
-	                          AttributeHandleValueMap attributes,
-	                          OpsCenter opscenter )
+	@EventHandler
+	public void handleDiscover( HlaDiscover event )
 	{
+		if( hlaClass == event.theClass )
+		{
+			RadioTransmitter hlaObject = new RadioTransmitter();
+			hlaObject.setObjectClass( event.theClass );
+			hlaObject.setObjectHandle( event.theObject );
+			objectStore.addDiscoveredHlaObject( event.theObject, hlaObject );
+
+			if( logger.isDebugEnabled() )
+			{
+    			logger.debug( "hla >> dis (Discover) Created [%s] for discovery of object handle [%s]",
+    			              event.theClass.getLocalName(),
+    			              event.theObject );
+			}
+		}
+	}
+
+	@EventHandler
+	public void handleReflect( HlaReflect event )
+	{
+		if( (event.hlaObject instanceof RadioTransmitter) == false )
+			return;
+		
 		try
 		{
 			// Update the local object representation from the received attributes
-			deserializeFromHla( (RadioTransmitter)hlaObject, attributes );
+			deserializeFromHla( (RadioTransmitter)event.hlaObject, event.attributes );
 		}
 		catch( DecoderException de )
 		{
 			throw new DiscoException( de.getMessage(), de );
 		}
 		
-		// Turn the attribute into a PDU
-		PDU pdu = hlaObject.toPdu();
-		
-		// Send the PDU off
+		// Send the PDU off to the OpsCenter
 		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 		//         on the other side. This is inefficient and distasteful. Fix me.
-		opscenter.getPduReceiver().receive( pdu.toByteArray() );
+		opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
 	}
 
 	private void deserializeFromHla( RadioTransmitter object, AttributeHandleValueMap map )
@@ -468,6 +458,10 @@ public class TransmitterMapper extends AbstractMapper implements IObjectMapper
 			object.getWorldLocation().decode( wrapper );
 		}
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

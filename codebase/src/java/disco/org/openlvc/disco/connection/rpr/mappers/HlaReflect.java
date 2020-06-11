@@ -17,45 +17,40 @@
  */
 package org.openlvc.disco.connection.rpr.mappers;
 
-import org.openlvc.disco.OpsCenter;
-import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.field.PduType;
 
 import hla.rti1516e.AttributeHandleValueMap;
-import hla.rti1516e.ObjectInstanceHandle;
-import hla.rti1516e.RTIambassador;
 
-/**
- * Defines the interface that is used to map HLA Objects to DIS PDUs and vice versa.
- */
-public interface IObjectMapper
+public class HlaReflect extends HlaEvent
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
 
 	//----------------------------------------------------------
+	//                   INSTANCE VARIABLES
+	//----------------------------------------------------------
+	protected ObjectInstance hlaObject;
+	protected AttributeHandleValueMap attributes;
+
+	//----------------------------------------------------------
+	//                      CONSTRUCTORS
+	//----------------------------------------------------------
+	public HlaReflect( ObjectInstance hlaObject, AttributeHandleValueMap attributes )
+	{
+		this.hlaObject = hlaObject;
+		this.attributes = attributes;
+	}
+
+	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	
-	//
-	// Supported HLA/DIS Type Methods
-	//
-	public PduType getSupportedPduType();
-	
-	public ObjectClass getSupportedHlaClass();
-	
-	//
-	// Object Creation Methods
-	//
-	public ObjectInstance createObject( ObjectInstanceHandle handle );
-	
-	//
-	// Conversion methods for DIS->HLA and HLA->DIS
-	//
-	public void sendDisToHla( PDU pdu, RTIambassador rtiamb );
-	
-	public void sendHlaToDis( ObjectInstance hlaObject, AttributeHandleValueMap attributes, OpsCenter opscenter );
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	//----------------------------------------------------------
+	//                     STATIC METHODS
+	//----------------------------------------------------------
 }

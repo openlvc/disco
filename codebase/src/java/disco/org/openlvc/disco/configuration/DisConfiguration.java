@@ -66,7 +66,7 @@ public class DisConfiguration
 	{
 		// lazy load
 		if( this.exerciseId == -1 )
-			this.exerciseId = Short.parseShort( parent.getProperty(PROP_EXERCISE_ID,"1") );
+			this.exerciseId = Short.parseShort( parent.getProperty(PROP_EXERCISE_ID,"0") );
 
 		return this.exerciseId;
 	}

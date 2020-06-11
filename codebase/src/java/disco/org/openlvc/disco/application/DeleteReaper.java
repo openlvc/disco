@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.pdu.PDU;
 
 public class DeleteReaper implements Runnable
 {
@@ -114,9 +113,9 @@ public class DeleteReaper implements Runnable
 		
 		for( IDeleteReaperManaged target : this.targets )
 		{
-			Set<? extends PDU> removed = target.removeStaleData( timeOfDeath );
-			if( removed.size() > 0 )
-				logger.debug( "Removed [%d] records from [%s]", removed.size(), target.getClass().getSimpleName() );
+			int removed = target.removeStaleData( timeOfDeath );
+			if( removed > 0 )
+				logger.debug( "Removed [%d] records from [%s]", removed, target.getClass().getSimpleName() );
 		}
 	}
 

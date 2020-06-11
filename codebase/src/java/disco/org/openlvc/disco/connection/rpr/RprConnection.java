@@ -27,17 +27,24 @@ import java.util.Random;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
-import org.openlvc.disco.UnsupportedException;
+import org.openlvc.disco.bus.MessageBus;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.connection.Metrics;
-import org.openlvc.disco.connection.rpr.mappers.RprConverter;
+import org.openlvc.disco.connection.rpr.mappers.EntityStateMapper;
+import org.openlvc.disco.connection.rpr.mappers.HlaDiscover;
+import org.openlvc.disco.connection.rpr.mappers.HlaEvent;
+import org.openlvc.disco.connection.rpr.mappers.HlaInteraction;
+import org.openlvc.disco.connection.rpr.mappers.HlaReflect;
+import org.openlvc.disco.connection.rpr.mappers.SignalMapper;
+import org.openlvc.disco.connection.rpr.mappers.TransmitterMapper;
 import org.openlvc.disco.connection.rpr.model.FomHelpers;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.model.ObjectModel;
 import org.openlvc.disco.connection.rpr.model.PubSub;
+import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 
@@ -73,7 +80,7 @@ public class RprConnection implements IConnection
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private OpsCenter opscenter;
-	protected Logger logger;
+	private Logger logger;
 	private DiscoConfiguration discoConfiguration;
 	private RprConfiguration rprConfiguration;
 
@@ -81,11 +88,13 @@ public class RprConnection implements IConnection
 	private RTIambassador rtiamb;
 	private FederateAmbassador fedamb;
 
-	// Internal Tracking
-	protected ObjectModel objectModel;
-	protected RprConverter rprConverter;
+	// Internal Data Storage and Message Passing
+	private ObjectModel objectModel;
+	private ObjectStore objectStore;
+	private MessageBus<PDU> pduBus;
+	private MessageBus<HlaEvent> hlaBus;
 
-	// metrics
+	// Metrics
 	private Metrics metrics;
 
 	//----------------------------------------------------------
@@ -102,9 +111,14 @@ public class RprConnection implements IConnection
 		this.rtiamb = null;      // set in initializeFederation()
 		this.fedamb = null;      // set in initializeFederation()
 		
-		// Internal Tracking
+		// Internal Data Storage and Message Passing
 		this.objectModel = null;  // set in initializeFederation()
-		this.rprConverter = null; // set in initializeFederation()
+		this.objectStore = null;  // set in open()
+		this.pduBus = null;       // set in open()
+		this.hlaBus = null;       // set in open()
+		
+		// Metrics
+		this.metrics = null;      // set in open()
 	}
 
 	//----------------------------------------------------------
@@ -128,6 +142,7 @@ public class RprConnection implements IConnection
 	
 	/**
 	 * Configure the provider as it is being deployed into the given {@link OpsCenter}.
+	 * Find the RPR FOM modules we need to use and make sure we can parse them.
 	 */
 	@Override
 	public void configure( OpsCenter opscenter ) throws DiscoException
@@ -147,15 +162,57 @@ public class RprConnection implements IConnection
 	@Override
 	public void open() throws DiscoException
 	{
+		// Step 0. Re-initialize local stores and busses
+		//
+		this.objectStore = new ObjectStore();
+		this.pduBus = new MessageBus<>();
+		this.pduBus.setThrowExceptionOnError( true ); // we want this so we can do discard counting
+		this.hlaBus = new MessageBus<>();
+		this.hlaBus.setThrowExceptionOnError( true );
+
 		this.metrics = new Metrics();
 
+		// Step 1. FOM Module Locate/Parse
+		//
+		// Find and parse all the FOM modules we'll need, building up a structure we
+		// can query in the event handlers
+		URL[] modules = getRprModules();
+		if( modules.length == 0 )
+			throw new DiscoException( "Did not find the RPR FOM Modules" );
+		
+		logger.debug( "Parsing FOM modules "+Arrays.toString(modules) );
+		this.objectModel = FomHelpers.parse( modules );
+
+		// Step 2. Initialize Mappers
+		//
+		// Set up the mappers. Must come before initializeFederation() because we do
+		// pub/sub in there, which will cause us to start receiving HLA traffic
+		this.registerMappers();
+		
+		// Step 3. Initialize Federation
+		//
 		// Initalize and connect to the federation
 		this.initializeFederation();
 	}
 
-
 	/**
-	 * Close out the connection to this provider.
+	 * Create the set of mappers we have to work with and register them with the DIS/HLA busses
+	 */
+	private void registerMappers()
+	{
+		EntityStateMapper esMapper = new EntityStateMapper(this);
+		TransmitterMapper txMapper = new TransmitterMapper(this);
+		SignalMapper      sgMapper = new SignalMapper(this);
+		
+		// Subscribe to PDU Bus
+		pduBus.subscribe( esMapper, txMapper, sgMapper );
+		
+		// Subscribe to HLA Event Bus
+		hlaBus.subscribe( esMapper, txMapper, sgMapper );
+	}
+	
+	/**
+	 * Resign from the federation and disconnect from the RTI
 	 */
 	@Override
 	public void close() throws DiscoException
@@ -181,12 +238,12 @@ public class RprConnection implements IConnection
 	{
 		try
 		{
-			rprConverter.sendDisToHla( pdu, rtiamb );
+			pduBus.publish( pdu );
 			metrics.pduSent( pdu.getPduLength() );
 		}
-		catch( UnsupportedException ue )
+		catch( DiscoException de )
 		{
-			logger.trace( "(RprConnection) "+ue.getMessage(), ue );
+			logger.trace( "(RprConnection) "+de.getMessage(), de );
 			metrics.pduDiscarded();
 		}
 		catch( Exception e )
@@ -240,20 +297,7 @@ public class RprConnection implements IConnection
 		}
 		
 		//
-		// Step 2. Parse the modules we are interested in
-		//
-		// We do this now to make sure everything is OK for our initialization before
-		// we even worry about the RTI
-		URL[] modules = getRprModules();
-		if( modules.length == 0 )
-			throw new DiscoException( "Did not find the RPR FOM Modules" );
-		
-		logger.debug( "Parsing FOM models "+Arrays.toString(modules) );
-		this.objectModel = FomHelpers.parse( modules );
-
-		
-		//
-		// Step 3. Create the Federation (if required)
+		// Step 2. Create the Federation (if required)
 		//
 		String federation = rprConfiguration.getFederationName();
 		if( this.rprConfiguration.isCreateFederation() )
@@ -261,7 +305,7 @@ public class RprConnection implements IConnection
 			try
 			{
 				logger.debug( "Creating Federation ["+federation+"]" );
-				this.rtiamb.createFederationExecution( federation, modules );
+				this.rtiamb.createFederationExecution( federation, getRprModules() );
 			}
 			catch( FederationExecutionAlreadyExists feae )
 			{
@@ -275,7 +319,7 @@ public class RprConnection implements IConnection
 		}
 		
 		//
-		// Step 4. Join the Federation
+		// Step 3. Join the Federation
 		//
 		// Note: By default, if we fail to join a federation because the name we want is taken,
 		//       then we try to randomize the name we use and have another go. Well, we give it
@@ -291,7 +335,10 @@ public class RprConnection implements IConnection
 			{
 				String federateName = federate+federateSuffix;
 				logger.debug( "Joining Federation ["+federation+"] as ["+federateName+"]" );
-				this.rtiamb.joinFederationExecution( federateName, federateType, federation, modules );
+				this.rtiamb.joinFederationExecution( federateName,
+				                                     federateType,
+				                                     federation,
+				                                     getRprModules() );
 				
 				// everything good! let's bust out
 				break;
@@ -314,21 +361,21 @@ public class RprConnection implements IConnection
 		}
 		
 		//
-		// Step 5. Cache Handles
+		// Step 4. Cache Handles
 		//
 		// Get all the handles for the classes/attributes we may need to know about
 		logger.debug( "Loading handles for FOM" );
 		FomHelpers.loadHandlesFromRti( this.rtiamb, this.objectModel );
 
-		//
-		// Step 6. Set up our RPR Conversion Engine.
-		//         We must do this BEFORE pub/sub, otherwise we'll get discoveries for
-		//         objects we don't know how to convert.
-		//
-		this.rprConverter = new RprConverter( objectModel, logger );
+//		//
+//		// Step x. Set up our RPR Conversion Engine.
+//		//         We must do this BEFORE pub/sub, otherwise we'll get discoveries for
+//		//         objects we don't know how to convert.
+//		//
+//		this.rprConverter = new RprConverter( objectModel, logger );
 
 		//
-		// Step 7. Publish and Subscribe
+		// Step 5. Publish and Subscribe -- this will start data flowing from the HLA
 		//
 		this.publishAndSubscribe();
 	}
@@ -401,67 +448,106 @@ public class RprConnection implements IConnection
 	////////////////////////////////////////////////////////////////////////////////////////////
 	///  HLA -> DIS Receive Methods   //////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	protected void receiveHlaDiscover( ObjectInstanceHandle object, ObjectClassHandle clazz )
+	//
+	// DISCOVER OBJECT
+	//
+	protected void receiveHlaDiscover( ObjectInstanceHandle theObject, ObjectClassHandle theClass )
 	{
-		try
-		{
-			rprConverter.discoverHlaObject( object, clazz );
-		}
-		catch( Exception e )
-		{
-			logger.error( "(HLA->DIS) Error during object discover: "+e.getMessage(), e );
-		}
+		logger.debug( "hla >> dis (Discover) object=%s, class=%s", theObject, theClass );
+
+		// Find the metadata information we have for the class
+		ObjectClass objectClass = objectModel.getObjectClass( theClass );
+		if( objectClass == null )
+			logger.error( "hla >> dis (Discover) Received discover for unknown class: handle="+theClass );
+
+		// Publish to the HLA bus so that someone picks this up and creates the local object
+		hlaBus.publish( new HlaDiscover(theObject,objectClass) );
 	}
 	
+	//
+	// REFLECT ATTRIBUTE VALUES
+	//
 	protected void receiveHlaReflection( ObjectInstanceHandle objectHandle,
 	                                     AttributeHandleValueMap attributes )
 	{
-		try
-		{
-			// convert the object to a PDU
-			rprConverter.sendHlaToDis( objectHandle, attributes, opscenter );
+		logger.trace( "hla >> dis (Reflect) >> object=%s, attribute=%d", objectHandle, attributes.size() );
 
-			int size = attributes.values().stream().mapToInt(v -> v.length).sum();
-			metrics.pduReceived(size);
-		}
-		catch( Exception e )
+		// Find the local object representation for this object handle
+		ObjectInstance hlaObject = objectStore.getDiscoveredHlaObject( objectHandle );
+		if( hlaObject == null )
 		{
-			logger.error( "(HLA->DIS) Error during object reflection: "+e.getMessage(), e );
+			logger.warn( "hla >> dis (Reflect) Reflection for object prior to discovery: "+objectHandle );
+			return;
 		}
+		
+		// Publish a reflection event to the bus
+		hlaBus.publish( new HlaReflect(hlaObject,attributes) );
+
+		// Track metrics
+		int size = attributes.values().stream().mapToInt(v -> v.length).sum();
+		metrics.pduReceived(size);
 	}
 
+	//
+	// DELETE OBJECT
+	//
 	protected void receiveHlaRemove( ObjectInstanceHandle objectHandle )
 	{
-		try
-		{
-			rprConverter.removeHlaObject( objectHandle );
-		}
-		catch( Exception e )
-		{
-			logger.error( "(HLA->DIS) Error during object removal: "+e.getMessage(), e );
-		}
+		logger.debug( "hla >> dis (Remove) >> object=%s", objectHandle );
+		objectStore.removeDiscoveredHlaObject( objectHandle );
 	}
 	
+	//
+	// RECEIVE INTERACTION
+	//
 	protected void receiveHlaInteraction( InteractionClassHandle classHandle,
 	                                      ParameterHandleValueMap parameters )
 	{
-		try
+		logger.trace( "hla >> dis (Interaction) >> class=%s, parameters=%d", classHandle, parameters.size() );
+
+		// Find the class of interaction that this is
+		InteractionClass theClass = objectModel.getInteractionClass( classHandle );
+		if( theClass == null )
 		{
-			// convert the interaction to a PDU
-			rprConverter.sendHlaToDis( classHandle, parameters, opscenter );
-			
-			int size = parameters.values().stream().mapToInt(v -> v.length).sum();
-			metrics.pduReceived(size);
+			logger.warn( "hla >> dis (Interaction) Received for unknown class: "+classHandle );
+			return;
 		}
-		catch( Exception e )
-		{
-			logger.error( "(HLA->DIS) Error during object reflection: "+e.getMessage(), e );
-		}
+
+		// Publish an interaction event to the bus
+		hlaBus.publish( new HlaInteraction(theClass,parameters) );
+		
+		// Track metrics
+		int size = parameters.values().stream().mapToInt(v -> v.length).sum();
+		metrics.pduReceived(size);
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public Logger getLogger()
+	{
+		return this.logger;
+	}
+
+	public ObjectModel getFom()
+	{
+		return this.objectModel;
+	}
+	
+	public ObjectStore getObjectStore()
+	{
+		return this.objectStore;
+	}
+	
+	public RTIambassador getRtiAmb()
+	{
+		return this.rtiamb;
+	}
+	
+	public OpsCenter getOpsCenter()
+	{
+		return this.opscenter;
+	}
 
 	private URL[] getRprModules()
 	{
@@ -475,6 +561,8 @@ public class RprConnection implements IConnection
 			loader.getResource( "hla/rpr2/RPR-Base_v2.0_draft21.xml" ),
 			loader.getResource( "hla/rpr2/RPR-Communication_v2.0_draft21.xml" ),
 			loader.getResource( "hla/rpr2/RPR-Physical_v2.0_draft21.xml" ),
+			loader.getResource( "hla/rpr2/RPR-DER_v2.0_draft21.xml" ),
+			loader.getResource( "hla/rpr2/RPR-SIMAN_v2.0_draft21.xml" )
 		};
 	}
 

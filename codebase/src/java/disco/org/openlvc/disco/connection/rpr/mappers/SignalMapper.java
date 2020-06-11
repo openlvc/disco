@@ -18,21 +18,19 @@
 package org.openlvc.disco.connection.rpr.mappers;
 
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.bus.EventHandler;
+import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ParameterClass;
 import org.openlvc.disco.connection.rpr.objects.EncodedAudioRadioSignal;
 import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.radio.SignalPdu;
 
 import hla.rti1516e.ParameterHandleValueMap;
-import hla.rti1516e.RTIambassador;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
 
-public class SignalMapper extends AbstractMapper implements IInteractionMapper
+public class SignalMapper extends AbstractMapper
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -48,49 +46,40 @@ public class SignalMapper extends AbstractMapper implements IInteractionMapper
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public SignalMapper( RprConverter rprConverter )
+	public SignalMapper( RprConnection connection )
 	{
-		super( rprConverter );
-		
-		// Cache up all the attributes we need
-		
-		// EncodedAudio
-		this.hlaClass = rprConverter.model.getInteractionClass( "HLAinteractionRoot.RadioSignal.EncodedAudioRadioSignal" );
-		if( this.hlaClass == null )
-			throw new DiscoException( "Could not find class: HLAinteractionRoot.RadioSignal.EncodedAudioRadioSignal" );
-		
-		this.audioData = hlaClass.getParameter( "AudioData" );
+		super( connection );
+		initializeHandles();
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	@Override
-	public PduType getSupportedPduType()
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// HLA Initialization   ///////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	private void initializeHandles() throws DiscoException
 	{
-		return PduType.Signal;
-	}
-	
-	@Override
-	public InteractionClass getSupportedHlaClass()
-	{
-		return this.hlaClass;
+		// EncodedAudio
+		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.RadioSignal.EncodedAudioRadioSignal" );
+		if( this.hlaClass == null )
+			throw new DiscoException( "Could not find class: HLAinteractionRoot.RadioSignal.EncodedAudioRadioSignal" );
+		
+		this.audioData = hlaClass.getParameter( "AudioData" );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS -> HLA Methods   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void sendDisToHla( PDU genericPdu, RTIambassador rtiamb )
+	@EventHandler
+	public void handlePdu( SignalPdu pdu )
 	{
-		SignalPdu pdu = genericPdu.as( SignalPdu.class );
-
 		InteractionInstance interaction = null;
 		switch( pdu.getEncodingScheme().getEncodingClass() )
 		{
 			case EncodedVoice:
-				interaction = serializeAudioSignal( pdu, rtiamb );
+				interaction = serializeAudioSignal( pdu );
 				break;
 			case RawBinaryData:
 			case ApplicationSpecificData:
@@ -100,10 +89,10 @@ public class SignalMapper extends AbstractMapper implements IInteractionMapper
 		}
 
 		// Send the interaction
-		super.sendInteraction( interaction, interaction.getParameters(), rtiamb );
+		super.sendInteraction( interaction, interaction.getParameters() );
 	}
-
-	private InteractionInstance serializeAudioSignal( SignalPdu pdu, RTIambassador rtiamb )
+	
+	private InteractionInstance serializeAudioSignal( SignalPdu pdu )
 	{
 		// Create the interaction object
 		EncodedAudioRadioSignal signal = new EncodedAudioRadioSignal();
@@ -113,7 +102,7 @@ public class SignalMapper extends AbstractMapper implements IInteractionMapper
 		signal.fromPdu( pdu );
 		
 		// Serialize it to a set of Parameters
-		ParameterHandleValueMap map = super.createParameters( this.hlaClass, rtiamb );
+		ParameterHandleValueMap map = super.createParameters( this.hlaClass );
 		signal.setParameters( map );
 		
 		// Populdate the Parameters
@@ -126,37 +115,34 @@ public class SignalMapper extends AbstractMapper implements IInteractionMapper
 		return signal;
 	}
 	
-	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA -> DIS Methods   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void sendHlaToDis( InteractionClass hlaClass,
-	                          ParameterHandleValueMap parameters,
-	                          OpsCenter opscenter )
+	@EventHandler
+	public void handleInteraction( HlaInteraction event )
 	{
-		InteractionInstance interaction = null;
-		
-		// Deserialize the parameters into the right signal type
-		try
+		if( hlaClass == event.theClass )
 		{
-    		if( hlaClass.equals(this.hlaClass) )
-    			interaction = deserializeAudioSignal( parameters );
-    		else
-    			; // Unsupported Type
+			InteractionInstance interaction = null;
+			
+			// Deserialize the parameters into the right signal type
+			try
+			{
+	    		if( hlaClass.equals(this.hlaClass) )
+	    			interaction = deserializeAudioSignal( event.parameters );
+	    		else
+	    			; // Unsupported Type
+			}
+			catch( DecoderException de )
+			{
+				throw new DiscoException( de.getMessage(), de );
+			}
+			
+			// Send the PDU off to the OpsCenter
+			// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
+			//         on the other side. This is inefficient and distasteful. Fix me.
+			opscenter.getPduReceiver().receive( interaction.toPdu().toByteArray() );
 		}
-		catch( DecoderException de )
-		{
-			throw new DiscoException( de.getMessage(), de );
-		}
-		
-		// Turn the attribute into a PDU
-		PDU pdu = interaction.toPdu();
-		
-		// Send the PDU off
-		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
-		//         on the other side. This is inefficient and distasteful. Fix me.
-		opscenter.getPduReceiver().receive( pdu.toByteArray() );
 	}
 
 	private InteractionInstance deserializeAudioSignal( ParameterHandleValueMap map )
@@ -177,5 +163,4 @@ public class SignalMapper extends AbstractMapper implements IInteractionMapper
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-
 }

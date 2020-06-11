@@ -17,9 +17,12 @@
  */
 package org.openlvc.disco.connection.rpr.mappers;
 
+import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.connection.rpr.ObjectStore;
+import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
-import org.openlvc.disco.connection.rpr.model.ObjectModel;
 import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 
@@ -30,9 +33,11 @@ import hla.rti1516e.RTIambassador;
 import hla.rti1516e.exceptions.RTIexception;
 
 /**
- * Parent mapper that can provide some useful utility methods to all children.
+ * Parent type to all mappers. Just exists to capture the common infrastructure pieces we
+ * want to pull out and use in pretty much every mapper. Those attributes are declared protected
+ * so that they are directly available to child mappers.
  */
-public abstract class AbstractMapper
+public class AbstractMapper
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -41,37 +46,46 @@ public abstract class AbstractMapper
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	protected ObjectModel model2;
-	protected RprConverter rprConverter;
+	protected RprConnection rprConnection;
+	protected ObjectStore   objectStore;
+	protected Logger        logger;
+	protected OpsCenter     opscenter;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected AbstractMapper( RprConverter rprConverter )
+	protected AbstractMapper( RprConnection connection )
 	{
-		this.rprConverter = rprConverter;
+		this.rprConnection = connection;
+		this.objectStore = rprConnection.getObjectStore();
+		this.logger = rprConnection.getLogger();
+		this.opscenter = rprConnection.getOpsCenter();
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	private final RTIambassador getRtiAmb()
+	{
+		return rprConnection.getRtiAmb();
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA Object Helpers   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-
-	protected void registerObjectInstance( ObjectInstance object, RTIambassador rtiamb )
+	protected void registerObjectInstance( ObjectInstance object )
+		throws DiscoException
 	{
 		try
 		{
 			// register the object and store its handle
 			ObjectInstanceHandle objectHandle =
-				rtiamb.registerObjectInstance( object.getObjectClass().getHandle() );
+				getRtiAmb().registerObjectInstance( object.getObjectClass().getHandle() );
 			object.setObjectHandle( objectHandle );
 			
 			// create an AHVM for the object once, with enough room to hold all attributes
 			int size = object.getObjectClass().getAllAttributes().size();
-			AttributeHandleValueMap ahvm = rtiamb.getAttributeHandleValueMapFactory().create( size );
+			AttributeHandleValueMap ahvm = getRtiAmb().getAttributeHandleValueMapFactory().create( size );
 			object.setObjectAttributes( ahvm );
 		}
 		catch( RTIexception rtie )
@@ -80,17 +94,16 @@ public abstract class AbstractMapper
 		}
 	}
 
-	protected void sendAttributeUpdate( ObjectInstance object,
-	                                    AttributeHandleValueMap attributes,
-	                                    RTIambassador rtiamb )
+	protected void sendAttributeUpdate( ObjectInstance object, AttributeHandleValueMap attributes )
+		throws DiscoException
 	{
 		try
 		{
 			// update the cached attributes in the object
 			// send the attributes out
-			rtiamb.updateAttributeValues( object.getObjectHandle(),
-			                              attributes,
-			                              null );
+			getRtiAmb().updateAttributeValues( object.getObjectHandle(),
+			                                   attributes,
+			                                   null );
 		}
 		catch( RTIexception rtie )
 		{
@@ -102,12 +115,11 @@ public abstract class AbstractMapper
 	/// HLA Interaction Helpers   //////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	protected void sendInteraction( InteractionInstance interaction,
-	                                ParameterHandleValueMap parameters,
-	                                RTIambassador rtiamb )
+	                                ParameterHandleValueMap parameters )
 	{
 		try
 		{
-			rtiamb.sendInteraction( interaction.getInteractionClass().getHandle(), parameters, null );
+			getRtiAmb().sendInteraction( interaction.getInteractionClass().getHandle(), parameters, null );
 		}
 		catch( RTIexception rtie )
 		{
@@ -115,17 +127,21 @@ public abstract class AbstractMapper
 		}
 	}
 
-	protected ParameterHandleValueMap createParameters( InteractionClass clazz, RTIambassador rtiamb )
+	protected ParameterHandleValueMap createParameters( InteractionClass clazz )
 	{
 		try
 		{
-			return rtiamb.getParameterHandleValueMapFactory().create( clazz.getAllParameters().size() );
+			return getRtiAmb().getParameterHandleValueMapFactory().create( clazz.getAllParameters().size() );
 		}
 		catch( RTIexception rtie )
 		{
 			throw new DiscoException( rtie.getMessage(), rtie );
 		}
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
