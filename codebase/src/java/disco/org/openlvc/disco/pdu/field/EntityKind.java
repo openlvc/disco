@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.field;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum EntityKind
@@ -82,7 +83,7 @@ public enum EntityKind
 			default: // drop through
 		}
 		
-		if( DiscoConfiguration.STRICT_MODE )
+		if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" not a valid EntityKind" );
 		else
 			return Other;

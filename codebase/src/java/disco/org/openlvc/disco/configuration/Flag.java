@@ -1,5 +1,5 @@
 /*
- *   Copyright 2015 Open LVC Project.
+ *   Copyright 2020 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -15,66 +15,58 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.pdu.field;
+package org.openlvc.disco.configuration;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
-import org.openlvc.disco.pdu.DisSizes;
-
-public enum MarkingCharSet
+/**
+ * PDU parsing/processing flags that should be obeyed when PDUs are being read or written.
+ */
+public enum Flag
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	Unused( (short)0 ),
-	ASCII( (short)1 ),
-	ArmyMarking( (short)2 ),
-	DigitChevron( (short)3 );
+	/**
+	 * Throw an exception if there are value range or validity issues
+	 * found for fields when deserializing PDUs.
+	 */
+	Strict,
+	
+	/**
+	 * When unsupported PDUs are found, parse them into an {@link UnparsedPdu}.
+	 * This type parses the header, but not the body. This is useful for wrapping
+	 * unsupported PDUs in a cloak that lets them pass safely through the framework
+	 * to PDU listeners that don't want to process the PDU body (forwarder, logger, ...).
+	 */ 
+	Unparsed,
+
+	/**
+	 * Use {@link UnparsedPdu}s exclusively. Never attempt to turn a PDU into a type
+	 * that we can interrogate more deeply. Useful for forwarders/loggers who just
+	 * want to pass the data without processing it deeply.
+	 */
+	UnparsedExclusive;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private short value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private MarkingCharSet( short value )
-	{
-		this.value = value;
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public int getValue()
-	{
-		return this.value;
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static int getByteLength()
+	public static Flag valueOfIgnoreCase( String name )
 	{
-		return DisSizes.UI8_SIZE;
-	}
-
-	public static MarkingCharSet fromValue( short value )
-	{
-		switch( value )
-		{
-			 case 0: return Unused;
-			 case 1: return ASCII;
-			 case 2: return ArmyMarking;
-			 case 3: return DigitChevron;
-			default: // drop through
-		}
+		for( Flag flag : values() )
+			if( flag.name().equalsIgnoreCase(name) )
+				return flag;
 		
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" is not a valid MarkingCharSet value" );
-		else
-			return Unused;
+		throw new IllegalArgumentException( "Not a valid flag: "+name );
 	}
-	
 }

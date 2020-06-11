@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.field;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum Domain
@@ -71,10 +72,10 @@ public enum Domain
 			 case 4: return Subsurface;
 			 case 5: return Space;
 			 case 0: return Other;
-			default: // drop through
+			default: break;
 		}
 
-		if( DiscoConfiguration.STRICT_MODE )
+		if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" not a valid Domain" );
 		else
 			return Other;

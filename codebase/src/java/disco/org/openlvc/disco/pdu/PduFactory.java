@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.PduHeader;
 
@@ -65,13 +67,23 @@ public class PduFactory
 	 */
 	public static PDU create( PduHeader header ) throws UnsupportedPDU, DiscoException
 	{
+		// If the configuration it set to use Unparsed PDUs exclusively, just do that
+		if( DiscoConfiguration.isSet(Flag.UnparsedExclusive) )
+			return new UnparsedPdu().setHeader(header);
+
 		// Get the implementation class for this PDU type
 		PduType type = header.getPduType();
 		Class<? extends PDU> implementationClass = type.getImplementationClass();
 		
 		// If we don't have an implementation class, the PDU is unsupported
 		if( implementationClass == null )
-			throw new UnsupportedPDU( "PDU Type not supported: "+type.name() );
+		{
+			if( DiscoConfiguration.isSet(Flag.Unparsed) )
+				return new UnparsedPdu().setHeader(header);
+			else
+				throw new UnsupportedPDU( "PDU Type not supported: "+type.name() );
+			
+		}
 		
 		// Create a new PDU instance from the type and return it
 		try
@@ -133,7 +145,7 @@ public class PduFactory
 		header.from( instream );
 
 		// 2. Read in the body
-		PDU pdu = PduFactory.create( header );
+		PDU pdu = create( header );
 		pdu.from( instream );
 		
 		return pdu;

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 
 public enum Fuse
 {
@@ -148,8 +149,7 @@ public enum Fuse
 		Fuse result = CACHE.get( value );
 		if( result != null )
 			return result;
-
-		if( DiscoConfiguration.STRICT_MODE )
+		else if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" not a valid Fuse number" );
 		else
 			return Other;

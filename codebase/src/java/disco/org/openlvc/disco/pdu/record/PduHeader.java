@@ -146,6 +146,18 @@ public class PduHeader
 		return this.pduLength;
 	}
 
+	/**
+	 * @return Value of PDU length (from header), LESS the size of the header itself. Clamped to
+	 *         0 as the lowest possible value.
+	 */
+	public final int getExpectedContentLength()
+	{
+		if( pduLength == -1 )
+			return 0;
+		else
+			return pduLength - getHeaderLength();
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

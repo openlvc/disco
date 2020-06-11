@@ -18,6 +18,7 @@
 package org.openlvc.disco.configuration;
 
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -29,7 +30,10 @@ public class DiscoConfiguration
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	/** Should parsing problems result in exceptions? */
+	private static final EnumSet<Flag> FLAGS = EnumSet.noneOf( Flag.class );
+	
+	/** @deprecated Use {@link Flag}s to set these on DiscoConfiguration now */
+	@Deprecated
 	public static boolean STRICT_MODE = Boolean.valueOf( System.getProperty("disco.strict","false") );
 	
 	public static final String PROP_CONNECTION = "disco.connection";
@@ -248,6 +252,38 @@ public class DiscoConfiguration
 		}
 	}
 	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// System Flags    ////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public static boolean isSet( Flag flag )
+	{
+		return FLAGS.contains( flag );
+	}
+	
+	public static void set( Flag flag )
+	{
+		FLAGS.add( flag );
+	}
+	
+	public static void clear( Flag flag )
+	{
+		FLAGS.remove( flag );
+	}
+	
+	public static void clearAllFlags()
+	{
+		FLAGS.clear();
+	}
+
+	/**
+	 * @return The flags that have been set. This is a copy of the storage set, so changes to it
+	 *         will not cause any changes to the underlying configuration.
+	 */
+	public static EnumSet<Flag> getFlags()
+	{
+		return EnumSet.copyOf( FLAGS );
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// System Properties    ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

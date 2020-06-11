@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum Country
@@ -335,9 +336,7 @@ public enum Country
 		Country temp = CACHE.get( value );
 		if( temp != null )
 			return temp;
-
-		// Missing
-		if( DiscoConfiguration.STRICT_MODE )
+		else if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" not a valid Country Code" );
 		else
 			return Other;

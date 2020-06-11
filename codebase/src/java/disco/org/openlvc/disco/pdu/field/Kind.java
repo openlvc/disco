@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.field;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum Kind
@@ -79,10 +80,10 @@ public enum Kind
 			 case 8: return Expendable;
 			 case 9: return SensorEmitter;
 			 case 0: return Other;
-			default: // drop through
+			default: break;
 		}
 
-		if( DiscoConfiguration.STRICT_MODE )
+		if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" not a valid Kind" );
 		else
 			return Other;

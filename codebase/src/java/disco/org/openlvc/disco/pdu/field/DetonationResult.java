@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 
 public enum DetonationResult
 {
@@ -93,7 +94,7 @@ public enum DetonationResult
 			return temp;
 
 		// Missing
-		if( DiscoConfiguration.STRICT_MODE )
+		if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" not a valid Detonation Result" );
 		else
 			return Other;

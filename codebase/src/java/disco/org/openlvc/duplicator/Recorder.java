@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.utils.StringUtils;
@@ -132,7 +133,12 @@ public class Recorder implements IPduListener
 		// PDU processing options
 		discoConfiguration.setPduSender( configuration.getPduSender() );
 		discoConfiguration.setPduReceiver( configuration.getPduReceiver() );
+
+		// Tell Disco to process every PDU as an UnparsedPdu so that we don't get
+		// caught up on unsupported PDU types
+		DiscoConfiguration.set( Flag.UnparsedExclusive );
 		
+		// Create the OpsCenter and link up with it
 		this.opscenter = new OpsCenter( discoConfiguration );
 		this.opscenter.setPduListener( this );
 		
@@ -177,11 +183,6 @@ public class Recorder implements IPduListener
 	@Override
 	public void receive( PDU pdu )
 	{
-		this.add( pdu );
-	}
-	
-	public void add( PDU pdu )
-	{
 		// increment count for this PDU type
 		int typeIndex = pdu.getType().ordinal();
 		pduCounter[typeIndex] += 1;
@@ -190,7 +191,7 @@ public class Recorder implements IPduListener
 		
 		sessionWriter.add( pdu ); // non-blocking call
 	}
-
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

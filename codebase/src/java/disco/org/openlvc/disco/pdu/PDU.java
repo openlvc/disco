@@ -83,9 +83,10 @@ public abstract class PDU
 		return header;
 	}
 	
-	public void setHeader( PduHeader header )
+	public PDU setHeader( PduHeader header )
 	{
 		this.header = header;
+		return this;
 	}
 	
 	public final short getExerciseId()
@@ -93,9 +94,10 @@ public abstract class PDU
 		return header.getExerciseId();
 	}
 	
-	public final void setExerciseId( short exerciseId )
+	public final PDU setExerciseId( short exerciseId )
 	{
 		header.setExerciseId( exerciseId );
+		return this;
 	}
 	
 	public long getLocalTimestamp()
@@ -103,9 +105,10 @@ public abstract class PDU
 		return localTimestamp;
 	}
 	
-	public void setLocalTimestamp( long received )
+	public PDU setLocalTimestamp( long received )
 	{
 		this.localTimestamp = received;
+		return this;
 	}
 	
 	public final void writePdu( DisOutputStream dos ) throws IOException
@@ -114,9 +117,10 @@ public abstract class PDU
 		to( dos );
 	}
 
-	public final void writeHeader( DisOutputStream dos ) throws IOException
+	public final PDU writeHeader( DisOutputStream dos ) throws IOException
 	{
 		this.header.to( dos, getContentLength() );
+		return this;
 	}
 	
 	/**

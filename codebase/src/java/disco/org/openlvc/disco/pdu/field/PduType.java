@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.emissions.DesignatorPdu;
@@ -207,9 +208,7 @@ public enum PduType
 		PduType type = CACHE.get( value );
 		if( type != null )
 			return type;
-
-		// Missing
-		if( DiscoConfiguration.STRICT_MODE )
+		else if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" not a valid PDUType number" );
 		else
 			return Other;

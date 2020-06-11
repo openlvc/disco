@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.field;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum ProtocolFamily
@@ -86,10 +87,10 @@ public enum ProtocolFamily
 			 case 11: return LiveEntity;
 			 case 12: return NonRealTime;
 			 case 13: return InformationOps;
-			default: // drop through
+			default:  break;
 		}
 
-		if( DiscoConfiguration.STRICT_MODE )
+		if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" is not a valid value for ProtocolFamily" );
 		else
 			return Other;

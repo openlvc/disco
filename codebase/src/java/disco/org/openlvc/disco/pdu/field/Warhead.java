@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 
 /**
  * The warhead shall be specified by a 16-bit enumeration.
@@ -139,9 +140,7 @@ public enum Warhead
 		Warhead result = CACHE.get( value );
 		if( result != null )
 			return result;
-
-		// Missing
-		if( DiscoConfiguration.STRICT_MODE )
+		else if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" not a valid Warhead number" );
 		else
 			return Other;

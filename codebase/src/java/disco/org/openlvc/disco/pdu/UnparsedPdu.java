@@ -38,10 +38,12 @@ public class UnparsedPdu extends PDU
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static final byte[] EMPTY = new byte[0];
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private byte[] payload;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -49,11 +51,19 @@ public class UnparsedPdu extends PDU
 	public UnparsedPdu()
 	{
 		super( PduType.Other );
+		
+		this.payload = EMPTY;
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+
+	@Override
+	public String toString()
+	{
+		return "(Unparsed) "+super.header.getPduType()+", length="+super.header.getPduLength();
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// IPduComponent Methods   ////////////////////////////////////////////////////////////////
@@ -61,19 +71,20 @@ public class UnparsedPdu extends PDU
 	@Override
 	public void from( DisInputStream dis ) throws IOException
 	{
-		
+		this.payload = new byte[header.getExpectedContentLength()];
+		dis.read( payload );
 	}
 	
 	@Override
 	public void to( DisOutputStream dos ) throws IOException
 	{
-		
+		dos.write( payload );
 	}
 	
 	@Override
 	public int getContentLength()
 	{
-		return -1;
+		return payload.length;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

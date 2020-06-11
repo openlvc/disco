@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 
 /**
@@ -103,7 +104,7 @@ public enum BeamFunction
 		BeamFunction found = CACHE.get( value );
 		if( found != null )
 			return found;
-		else if( DiscoConfiguration.STRICT_MODE )
+		else if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" is not a valid ForceId" );
 		else
 			return Other;

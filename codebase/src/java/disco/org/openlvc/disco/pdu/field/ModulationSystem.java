@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.field;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
 
@@ -98,7 +99,7 @@ public enum ModulationSystem
 		}
 		
 		// Missing
-		if( DiscoConfiguration.STRICT_MODE )
+		if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" not a valid ModulationSystem" );
 		else
 			return Other;

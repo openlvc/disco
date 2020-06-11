@@ -112,6 +112,9 @@ public class OpsCenter
 		if( this.pduSender == null )
 			this.pduSender = PduSender.create( configuration.getPduSender(), this );
 		
+		// log out the active PDU processing flags
+		logger.debug( "Flags: "+DiscoConfiguration.getFlags() );
+		
 		// open the flood gates!
 		this.pduReceiver.open();
 		this.connection.open();

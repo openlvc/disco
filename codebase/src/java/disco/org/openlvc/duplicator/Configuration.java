@@ -20,6 +20,8 @@ package org.openlvc.duplicator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.configuration.Log4jConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 
@@ -152,6 +154,9 @@ public class Configuration
 				this.setHlaCreateFederation( true );
 			else if( argument.equalsIgnoreCase("--hla-rti-settings") )
 				this.setHlaRtiLocalSettings( args[++i] );
+			// PDU Processing flags
+			else if( argument.equalsIgnoreCase("--flag") )
+				DiscoConfiguration.set( Flag.valueOfIgnoreCase(args[++i]) );
 			// Replay Settings
 			else if( argument.equalsIgnoreCase("--status-interval") )
 				this.setStatusLogInterval( Long.parseLong(args[++i]) * 1000 ); // value in seconds

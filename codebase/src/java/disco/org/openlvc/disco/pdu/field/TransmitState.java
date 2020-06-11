@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.field;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum TransmitState
@@ -65,10 +66,10 @@ public enum TransmitState
 			case 0: return Off;
 			case 1: return OnButNotTransmitting;
 			case 2: return OnAndTransmitting;
-			default: // drop through
+			default: break;
 		}
 
-		if( DiscoConfiguration.STRICT_MODE )
+		if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" is not a valid value for TransmitterState" );
 		else
 			return Off;

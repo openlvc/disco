@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.PDU;
 
 /**
@@ -109,6 +110,10 @@ public class NetworkReplayer
 		if( configuration.useHla() )
 			discoConfiguration.setConnection( "rpr" );
 		
+		// Tell Disco to process every PDU as an UnparsedPdu so that we don't get
+		// caught up on unsupported PDU types
+		DiscoConfiguration.set( Flag.UnparsedExclusive );
+
 		this.opscenter = new OpsCenter( discoConfiguration );
 		this.opscenter.setPduListener( new NullListener() );
 

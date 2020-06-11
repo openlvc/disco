@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.field;
 
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 
 public enum InputSource
@@ -75,7 +76,7 @@ public enum InputSource
 			if( source.value == value )
 				return source;
 
-		if( DiscoConfiguration.STRICT_MODE )		
+		if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" is not a valid value for InputSource" );
 		else
 			return Other;
