@@ -32,14 +32,16 @@ public class HlaDiscover extends HlaEvent
 	//----------------------------------------------------------
 	protected ObjectInstanceHandle theObject;
 	protected ObjectClass theClass;
+	protected String objectName;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public HlaDiscover( ObjectInstanceHandle theObject, ObjectClass theClass )
+	public HlaDiscover( ObjectInstanceHandle theObject, ObjectClass theClass, String objectName )
 	{
 		this.theObject = theObject;
 		this.theClass = theClass;
+		this.objectName = objectName;
 	}
 
 	//----------------------------------------------------------

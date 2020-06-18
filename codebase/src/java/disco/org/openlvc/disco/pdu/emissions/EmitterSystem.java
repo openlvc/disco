@@ -51,15 +51,23 @@ public class EmitterSystem implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected EmitterSystem( EntityId emittingEntity )
+	public EmitterSystem()
 	{
 		this.systemType = new EmitterSystemType();
 		this.location = new VectorRecord();
 		this.beams = new HashMap<>();
 		
 		// Off-Spec / Non-Spec Data
-		this.emittingEntity = emittingEntity;
+		this.emittingEntity = null;
 		this.lastUpdated = System.currentTimeMillis();
+	}
+
+	public EmitterSystem( EntityId emittingEntity )
+	{
+		this();
+
+		// Off-Spec / Non-Spec Data
+		this.emittingEntity = emittingEntity;
 	}
 
 	//----------------------------------------------------------
@@ -212,13 +220,59 @@ public class EmitterSystem implements IPduComponent, Cloneable
 	{
 		return this.emittingEntity;
 	}
+
+	// Keep protected - should be called by the EmissionPdu when it adds it
+	protected void setEmittingEntity( EntityId entity )
+	{
+		this.emittingEntity = entity;
+	}
 	
 	public long getLastUpdatedTime()
 	{
 		return this.lastUpdated;
 	}
 
+	public short getEmitterNumber()
+	{
+		return systemType.getNumber();
+	}
+	
+	public EmitterSystemId getEmitterSystemId()
+	{
+		return new EmitterSystemId();
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	
+	public class EmitterSystemId
+	{
+		@Override
+		public int hashCode()
+		{
+			// Combination of
+			//   SiteId      >> Trim to 8-bit  (range to 256)
+			//   AppId       >> Trim to 4-bit  (range to 16)
+			//   EntityId    >> Keep at 16-bit (these frequently randomly assigned in range)
+			//   System Num  >> Trim to 4-bit  (caps max systems for entity at 16; seems fair)
+			
+			int index    = systemType.getNumber();
+			int siteId   = emittingEntity.getSiteId()   & 0x00ff; // mask out above first 8-bits
+			int appId    = emittingEntity.getAppId()    & 0x000f; // mask out above first 4-bits
+			int entityId = emittingEntity.getEntityId() & 0xffff; // mask out above first 16-bits
+			
+			return (index  << 28)  |
+			       (siteId << 20)  |
+			       (appId  << 16)  |
+			       (entityId);
+		}
+		
+		@Override
+		public String toString()
+		{
+			return emittingEntity.toString()+"-"+systemType.getNumber();
+		}
+	}
+	
 }

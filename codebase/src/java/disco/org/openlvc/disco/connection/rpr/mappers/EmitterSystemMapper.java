@@ -22,7 +22,13 @@ import org.openlvc.disco.bus.EventHandler;
 import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
+import org.openlvc.disco.connection.rpr.objects.EmitterSystemRpr;
 import org.openlvc.disco.pdu.emissions.EmissionPdu;
+import org.openlvc.disco.pdu.emissions.EmitterSystem;
+
+import hla.rti1516e.AttributeHandleValueMap;
+import hla.rti1516e.encoding.ByteWrapper;
+import hla.rti1516e.encoding.DecoderException;
 
 public class EmitterSystemMapper extends AbstractMapper
 {
@@ -85,31 +91,77 @@ public class EmitterSystemMapper extends AbstractMapper
 	@EventHandler
 	public void handlePdu( EmissionPdu pdu )
 	{
-		// Check to see if an HLA object already exists for this transmitter
-//		RadioTransmitter hlaObject = objectStore.getLocalTransmitter( pdu.getEntityId() );
-//		
-//		// If there is no HLA object yet, we have to register one
-//		if( hlaObject == null )
-//		{
-//			hlaObject = new RadioTransmitter();
-//			hlaObject.setObjectClass( this.hlaClass );
-//			RtiHelpers.registerObjectInstance( hlaObject, rprConnection.getRtiAmb() );
-//			objectStore.addLocalTransmitter( pdu.getEntityId(), hlaObject );
-//		}
-//
-//		// Suck the values out of the PDU and into the object
-//		hlaObject.fromPdu( pdu );
-//		
-//		// Send an update for the object
-//		RtiHelpers.sendAttributeUpdate( hlaObject,
-//		                                serializeToHla(hlaObject),
-//		                                rprConnection.getRtiAmb() );
-//		
-//		if( logger.isTraceEnabled() )
-//			logger.trace( "(Transmitter) Updated attributes for transmitter: id=%s, handle=%s",
-//			              pdu.getFullId(), hlaObject.getObjectHandle() );
+		for( EmitterSystem disSystem : pdu.getEmitterSystems() )
+		{
+			// FIXME - Currently only allows attachment to _local_ entities
+			EmitterSystemRpr hlaObject = objectStore.getLocalEmitter( disSystem.getEmitterSystemId() );
+
+			// If there is no HLA object yet, we have to register one
+			if( hlaObject == null )
+			{
+				hlaObject = new EmitterSystemRpr();
+				hlaObject.setObjectClass( this.hlaClass );
+				super.registerObjectInstance( hlaObject );
+				objectStore.addLocalEmitter( disSystem.getEmitterSystemId(), hlaObject );
+			}
+			
+			// Suck the values out of the PDU and into the object
+			hlaObject.fromDis( disSystem, pdu.getEventId() );
+			
+			// Additional Items
+			// EmbeddedSystem HostObjectIdentifier: Need to look this up in the store
+			hlaObject.setHostObjectIdentifier( objectStore.getHostIdForEntityId(pdu.getEmittingEntityId()) );
+			
+			// Send an update for the object
+			super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject) );
+			
+			if( logger.isTraceEnabled() )
+				logger.trace( "(EmitterSystem) Updated attributes for emitter: id=%s, handle=%s",
+				              disSystem.getEmitterSystemId(), hlaObject.getObjectHandle() );
+		}
 	}
-	
+
+	private AttributeHandleValueMap serializeToHla( EmitterSystemRpr object )
+	{
+		AttributeHandleValueMap map = object.getObjectAttributes();
+		
+		// EntityIdentifier
+		ByteWrapper wrapper = new ByteWrapper( object.getEntityIdentifier().getEncodedLength() );
+		object.getEntityIdentifier().encode(wrapper);
+		map.put( entityIdentifier.getHandle(), wrapper.array() );
+		
+		// HostObjectIdentifier
+		wrapper = new ByteWrapper( object.getHostObjectIdentifier().getEncodedLength() );
+		object.getHostObjectIdentifier().encode(wrapper);
+		map.put( hostObjectIdentifier.getHandle(), wrapper.array() );
+		
+		// RelativePosition
+		wrapper = new ByteWrapper( object.getRelativePosition().getEncodedLength() );
+		object.getRelativePosition().encode(wrapper);
+		map.put( relativePosition.getHandle(), wrapper.array() );
+		
+		// EmitterFunctionCode
+		wrapper = new ByteWrapper( object.getEmitterFunctionCode().getEncodedLength() );
+		object.getEmitterFunctionCode().encode(wrapper);
+		map.put( emitterFunctionCode.getHandle(), wrapper.array() );
+		
+		// EmitterType
+		wrapper = new ByteWrapper( object.getEmitterType().getEncodedLength() );
+		object.getEmitterType().encode(wrapper);
+		map.put( emitterType.getHandle(), wrapper.array() );
+		
+		// EmitterIndex
+		wrapper = new ByteWrapper( object.getEmitterIndex().getEncodedLength() );
+		object.getEmitterIndex().encode(wrapper);
+		map.put( emitterIndex.getHandle(), wrapper.array() );
+		
+		// EventIdentifier
+		wrapper = new ByteWrapper( object.getEventIdentifier().getEncodedLength() );
+		object.getEventIdentifier().encode(wrapper);
+		map.put( eventIdentifier.getHandle(), wrapper.array() );
+		
+		return map;
+	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA -> DIS Methods   ///////////////////////////////////////////////////////////////////
@@ -119,20 +171,100 @@ public class EmitterSystemMapper extends AbstractMapper
 	{
 		if( hlaClass == event.theClass )
 		{
-//			if( logger.isDebugEnabled() )
-//			{
-//    			logger.debug( "(HLA->DIS) Created [%s] for discovery of object handle [%s]",
-//    			              event.theClass.getLocalName(),
-//    			              event.theObject );
-//			}
+			EmitterSystemRpr hlaObject = new EmitterSystemRpr();
+			hlaObject.setObjectClass( event.theClass );
+			hlaObject.setObjectHandle( event.theObject );
+			hlaObject.setObjectName( event.objectName );
+			objectStore.addDiscoveredHlaObject( event.theObject, hlaObject );
+			
+			if( logger.isDebugEnabled() )
+			{
+    			logger.debug( "hla >> dis (Discover) Created [%s] for discovery of object handle [%s]",
+    			              event.theClass.getLocalName(),
+    			              event.theObject );
+			}
+			
+			// Request an attribute update for the object so that we can get everything we need
+			super.requestAttributeUpdate( hlaObject );
 		}
 	}
 
 	@EventHandler
 	public void handleReflect( HlaReflect event )
 	{
+		if( (event.hlaObject instanceof EmitterSystemRpr) == false )
+			return;
+		
+		try
+		{
+			// Update the local object representation from the received attributes
+			deserializeFromHla( (EmitterSystemRpr)event.hlaObject, event.attributes );
+		}
+		catch( DecoderException de )
+		{
+			throw new DiscoException( de.getMessage(), de );
+		}
+		
+		// Send the PDU off to the OpsCenter
+		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
+		//         on the other side. This is inefficient and distasteful. Fix me.
+		if( event.hlaObject.isLoaded() )
+			opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
 	}
-	
+
+	private void deserializeFromHla( EmitterSystemRpr object, AttributeHandleValueMap map )
+		throws DecoderException
+	{
+		// EntityIdentifier
+		if( map.containsKey(entityIdentifier.getHandle()) )
+		{
+    		ByteWrapper wrapper = new ByteWrapper( map.get(entityIdentifier.getHandle()) );
+    		object.getEntityIdentifier().decode( wrapper );
+		}
+		
+		// HostObjectIdentifier
+		if( map.containsKey(hostObjectIdentifier.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(hostObjectIdentifier.getHandle()) );
+			object.getHostObjectIdentifier().decode( wrapper );
+		}
+		
+		// RelativePosition
+		if( map.containsKey(relativePosition.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(relativePosition.getHandle()) );
+			object.getRelativePosition().decode( wrapper );
+		}
+		
+		// EmitterFunctionCode
+		if( map.containsKey(emitterFunctionCode.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(emitterFunctionCode.getHandle()) );
+			object.getEmitterFunctionCode().decode( wrapper );
+		}
+		
+		// EmitterType
+		if( map.containsKey(emitterType.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(emitterType.getHandle()) );
+			object.getEmitterType().decode( wrapper );
+		}
+		
+		// EmitterIndex
+		if( map.containsKey(emitterIndex.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(emitterIndex.getHandle()) );
+			object.getEmitterIndex().decode( wrapper );
+		}
+		
+		// EventIdentifier
+		if( map.containsKey(eventIdentifier.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(eventIdentifier.getHandle()) );
+			object.getEventIdentifier().decode( wrapper );
+		}
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

@@ -17,7 +17,9 @@
  */
 package org.openlvc.disco.connection.rpr.objects;
 
+import org.openlvc.disco.connection.rpr.ObjectStore;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
+import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.pdu.PDU;
 
 import hla.rti1516e.AttributeHandleValueMap;
@@ -35,23 +37,76 @@ public abstract class ObjectInstance
 	private ObjectClass objectClass;
 	private ObjectInstanceHandle objectHandle;
 	private AttributeHandleValueMap attributes;
+	private RTIobjectId rtiId; // This is so stupid. A second unique id, all because the HLA
+	                           // spec doesn't define a concrete type for handles. Shoot me.
+	private boolean loaded;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	protected ObjectInstance()
+	{
+		this.objectClass  = null;
+		this.objectHandle = null;
+		this.attributes   = null;
+		this.rtiId        = null;
+		this.loaded       = false;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	/**
+	 * Update the values of the RPR representation from those contained in the provided PDU.
+	 * 
+	 * @param pdu The PDU to load the local values from.
+	 */
 	public abstract void fromPdu( PDU pdu );
 
+	/**
+	 * Serialize this RPR object representation to an appropriate PDU.<br/>
+	 * A reference to the {@link ObjectStore} that caches important information is passed in
+	 * to allow translation between any contained RPR types and their DIS equivalents (such
+	 * as translating between RTIobjectIds and DIS EntityIds).
+	 * 
+	 * @return A serialized version of the object as the appropriate DIS PDU.
+	 */
 	public abstract PDU toPdu();
+
+	/**
+	 * Implemented by child classes. This should return true once enough information has been
+	 * set on the class (either via reflection or local settings) that it can be considered as
+	 * "loaded". Once this call returns true, so will the public facing {@link #isLoaded()}.
+	 * 
+	 * @return True if the object has enough information to be considered loaded. False otherwise.
+	 */
+	protected abstract boolean checkLoaded();
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-
+	/**
+	 * @return True if the object should be considered as "loaded". An object is loaded once we
+	 *         have both discovered it, and have received a reflection for all the _required_
+	 *         attributes. What is required will differ on a class-by-class basis and is left to
+	 *         subclasses of {@link ObjectInstance} to decide.
+	 */
+	public boolean isLoaded()
+	{
+		// If loaded is false, we should re-check it. This could be expensive, so we
+		// only do it as long as we're _NOT_ loaded. Once we are we stop caring.
+		if( this.loaded == false )
+			this.loaded = checkLoaded();
+		
+		return this.loaded;
+	}
+	
+	protected void setLoaded( boolean loaded )
+	{
+		this.loaded = loaded;
+	}
+	
 	public void setObjectClass( ObjectClass objectClass )
 	{
 		this.objectClass = objectClass;
@@ -80,6 +135,16 @@ public abstract class ObjectInstance
 	public void setObjectAttributes( AttributeHandleValueMap attributes )
 	{
 		this.attributes = attributes;
+	}
+	
+	public void setObjectName( String objectName )
+	{
+		this.rtiId = new RTIobjectId( objectName );
+	}
+	
+	public RTIobjectId getRtiObjectId()
+	{
+		return this.rtiId;
 	}
 	
 	//----------------------------------------------------------

@@ -109,6 +109,10 @@ public class EmissionPdu extends PDU
 	@Override
 	public void to( DisOutputStream dos ) throws IOException
 	{
+		// Before we serialize make sure that all the EmitterSystems reference our emitting entity
+		emitterSystems.forEach( system -> system.setEmittingEntity(this.emittingEntityId) );
+		
+		// Serialize
 		emittingEntityId.to( dos );
 		eventId.to( dos );
 		dos.writeUI8( stateUpdateIndicator.value() );
@@ -203,6 +207,7 @@ public class EmissionPdu extends PDU
 	public void addEmitterSystem( EmitterSystem system )
 	{
 		this.emitterSystems.add( system );
+		system.setEmittingEntity( this.emittingEntityId );
 	}
 	
 	public void removeEmitterSystem( EmitterSystem system )

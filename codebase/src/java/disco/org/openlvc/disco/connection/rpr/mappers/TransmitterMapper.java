@@ -156,6 +156,10 @@ public class TransmitterMapper extends AbstractMapper
 		// Suck the values out of the PDU and into the object
 		hlaObject.fromPdu( pdu );
 		
+		// Additional Items
+		// EmbeddedSystem HostObjectIdentifier: Need to look this up in the store
+		hlaObject.setHostObjectIdentifier( objectStore.getHostIdForEntityId(pdu.getEntityId()) );
+		
 		// Send an update for the object
 		super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject) );
 		
@@ -279,9 +283,11 @@ public class TransmitterMapper extends AbstractMapper
 	{
 		if( hlaClass == event.theClass )
 		{
+			// Create the object and store it locally
 			RadioTransmitter hlaObject = new RadioTransmitter();
 			hlaObject.setObjectClass( event.theClass );
 			hlaObject.setObjectHandle( event.theObject );
+			hlaObject.setObjectName( event.objectName );
 			objectStore.addDiscoveredHlaObject( event.theObject, hlaObject );
 
 			if( logger.isDebugEnabled() )
@@ -290,6 +296,9 @@ public class TransmitterMapper extends AbstractMapper
     			              event.theClass.getLocalName(),
     			              event.theObject );
 			}
+			
+			// Request an attribute update for the object so that we can get everything we need
+			super.requestAttributeUpdate( hlaObject );
 		}
 	}
 
@@ -312,7 +321,8 @@ public class TransmitterMapper extends AbstractMapper
 		// Send the PDU off to the OpsCenter
 		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 		//         on the other side. This is inefficient and distasteful. Fix me.
-		opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
+		if( event.hlaObject.isLoaded() )
+			opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
 	}
 
 	private void deserializeFromHla( RadioTransmitter object, AttributeHandleValueMap map )

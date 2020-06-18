@@ -26,6 +26,7 @@ import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 
+import hla.rti1516e.AttributeHandleSet;
 import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.ObjectInstanceHandle;
 import hla.rti1516e.ParameterHandleValueMap;
@@ -82,6 +83,7 @@ public class AbstractMapper
 			ObjectInstanceHandle objectHandle =
 				getRtiAmb().registerObjectInstance( object.getObjectClass().getHandle() );
 			object.setObjectHandle( objectHandle );
+			object.setObjectName( getRtiAmb().getObjectInstanceName(objectHandle) );
 			
 			// create an AHVM for the object once, with enough room to hold all attributes
 			int size = object.getObjectClass().getAllAttributes().size();
@@ -111,6 +113,23 @@ public class AbstractMapper
 		}	
 	}
 
+	protected void requestAttributeUpdate( ObjectInstance object )
+	{
+		try
+		{
+			// Generate the attribute handle set
+			AttributeHandleSet ahs = getRtiAmb().getAttributeHandleSetFactory().create();
+			object.getObjectClass().getAllAttributes().forEach( ac -> ahs.add(ac.getHandle()) );
+			
+			// Sent the request
+			getRtiAmb().requestAttributeValueUpdate( object.getObjectHandle(), ahs, null );
+		}
+		catch( RTIexception rtie )
+		{
+			throw new DiscoException( rtie.getMessage(), rtie );
+		}
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA Interaction Helpers   //////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

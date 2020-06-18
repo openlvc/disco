@@ -32,7 +32,7 @@ public enum BeamFunction
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	Other(0),
+	Other(0,true),
 	Search(1),
 	HeightFinding(2),
 	Acquisition(3),
@@ -44,7 +44,7 @@ public enum BeamFunction
 	MissileBeacon(9),
 	MissileFusing(10),
 	ActiveRadarMissileSeeker(11),
-	Jamming(12),
+	Jamming(12,true),
 	IFF(13),
 	NavigationWeather(14),
 	Meteorological(15),
@@ -55,7 +55,7 @@ public enum BeamFunction
 	TimeSharedTrack(22),
 	TimeSharedCommandGuidance(23),
 	TimeSharedIllumination(24),
-	TimeSharedJamming(25);
+	TimeSharedJamming(25,true);
 
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -66,13 +66,20 @@ public enum BeamFunction
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private short value;
+	private boolean jamming; // This is a Jammer beam; otherwise it's a Radar beam
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private BeamFunction( int value )
+	private BeamFunction( int value, boolean jamming )
 	{
 		this.value = (short)value;
+		this.jamming = jamming;
+	}
+	
+	private BeamFunction( int value  )
+	{
+		this( value, false );
 	}
 
 	//----------------------------------------------------------
@@ -81,6 +88,16 @@ public enum BeamFunction
 	public short value()
 	{
 		return this.value;
+	}
+
+	public boolean isJamming()
+	{
+		return this.jamming;
+	}
+	
+	public boolean isTracking()
+	{
+		return this.jamming == false;
 	}
 
 	//----------------------------------------------------------

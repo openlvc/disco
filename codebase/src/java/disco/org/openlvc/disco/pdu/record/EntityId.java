@@ -173,6 +173,11 @@ public class EntityId implements IPduComponent, Cloneable
 		this.appId = appId;
 	}
 
+	public int getEntityId()
+	{
+		return entityId;
+	}
+	
 	public int getEntityIdentity()
 	{
 		return entityId;

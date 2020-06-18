@@ -173,7 +173,24 @@ public class JammingTechnique implements IPduComponent, Cloneable
 		this.specific = (short)specific;
 	}
 	
+	public int toInteger()
+	{
+		return (kind << 24)       |
+		       (category << 16)   |
+		       (subcategory << 8) |
+		       (specific);
+	}
+	
+	public void fromInteger( int value )
+	{
+		this.kind        = (short)((value >> 24) & 255);
+		this.category    = (short)((value >> 16) & 255);
+		this.subcategory = (short)((value >>  8) & 255);
+		this.specific    = (short)((value) & 255);
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+ 
 }

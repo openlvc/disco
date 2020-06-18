@@ -61,7 +61,7 @@ public class EmitterBeam implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected EmitterBeam( EmitterSystem parentSystem )
+	public EmitterBeam()
 	{
 		this.beamNumber = 0;
 		this.parameterIndex = 0;
@@ -73,6 +73,14 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		this.jammingTechnique = new JammingTechnique();
 		// Tracks
 		this.targets = new HashMap<>();
+		
+		// Off-Spec / Non-Spec Data
+		this.parentSystem = null;
+	}
+
+	public EmitterBeam( EmitterSystem parentSystem )
+	{
+		this();
 		
 		// Off-Spec / Non-Spec Data
 		this.parentSystem = parentSystem;
@@ -300,6 +308,20 @@ public class EmitterBeam implements IPduComponent, Cloneable
 	public void addTarget( TrackJamData record )
 	{
 		this.targets.put( record.getTarget(), record );
+	}
+
+	/**
+	 * Adds the given EntityId as a target, getting the other required data from the local
+	 * beam and linked emitter settings.
+	 * 
+	 * @param id The id of the entity being tracked or jammed
+	 */
+	public void addTarget( EntityId id )
+	{
+		TrackJamData record = new TrackJamData(id);
+		record.setBeamNumber( beamNumber );
+		if( parentSystem != null )
+			record.setEmitterNumber( parentSystem.getEmitterNumber() );
 	}
 	
 	public void removeTarget( TrackJamData record )

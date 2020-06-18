@@ -77,6 +77,17 @@ public class EntityTypeStruct extends HLAfixedRecord
 		       this.category.getValue()+"."+this.subcategory.getValue()+"."+
 		       this.specific.getValue()+"."+this.extra.getValue();
 	}
+	
+	public boolean isDefaults()
+	{
+		return this.kind.getValue()        == 0 &&
+		       this.domain.getValue()      == 0 &&
+		       this.countryCode.getValue() == 0 &&
+		       this.category.getValue()    == 0 &&
+		       this.subcategory.getValue() == 0 &&
+		       this.specific.getValue()    == 0 &&
+		       this.extra.getValue()       == 0;
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////

@@ -15,12 +15,9 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.types.fixed;
+package org.openlvc.disco.connection.rpr.types.array;
 
-import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
-import org.openlvc.disco.pdu.record.EntityId;
-
-public class EntityIdentifierStruct extends HLAfixedRecord
+public class RTIobjectIdArray extends HLAvariableArray<RTIobjectId>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -29,20 +26,13 @@ public class EntityIdentifierStruct extends HLAfixedRecord
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private FederateIdentifierStruct federateIdentifier;
-	private RPRunsignedInteger16BE entityNumber;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public EntityIdentifierStruct()
+	public RTIobjectIdArray()
 	{
-		this.federateIdentifier = new FederateIdentifierStruct();
-		this.entityNumber = new RPRunsignedInteger16BE( 0 );
-		
-		// Add to the elements to the parent so that it can do its generic fixed-record stuff
-		super.add( this.federateIdentifier );
-		super.add( this.entityNumber );
+		super( new RTIobjectId.Factory() );
 	}
 
 	//----------------------------------------------------------
@@ -52,28 +42,6 @@ public class EntityIdentifierStruct extends HLAfixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public boolean isDefaults()
-	{
-		return federateIdentifier.getSiteId() == 0 &&
-		       federateIdentifier.getApplicationId() == 0 &&
-		       entityNumber.getValue() == 0;
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// DIS Mappings Methods   /////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue( EntityId entityId )
-	{
-		this.federateIdentifier.setValue( entityId );
-		this.entityNumber.setValue( entityId.getEntityIdentity() );
-	}
-
-	public EntityId getDisValue()
-	{
-		return new EntityId( federateIdentifier.getSiteId(),
-		                     federateIdentifier.getApplicationId(),
-		                     entityNumber.getValue() );
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

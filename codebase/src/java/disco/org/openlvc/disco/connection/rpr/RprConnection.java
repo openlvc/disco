@@ -367,13 +367,6 @@ public class RprConnection implements IConnection
 		logger.debug( "Loading handles for FOM" );
 		FomHelpers.loadHandlesFromRti( this.rtiamb, this.objectModel );
 
-//		//
-//		// Step x. Set up our RPR Conversion Engine.
-//		//         We must do this BEFORE pub/sub, otherwise we'll get discoveries for
-//		//         objects we don't know how to convert.
-//		//
-//		this.rprConverter = new RprConverter( objectModel, logger );
-
 		//
 		// Step 5. Publish and Subscribe -- this will start data flowing from the HLA
 		//
@@ -386,6 +379,9 @@ public class RprConnection implements IConnection
 		List<String> classes = new ArrayList<>();
 		classes.add( "HLAobjectRoot.EmbeddedSystem.RadioTransmitter" );
 		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform" );
+		classes.add( "HLAobjectRoot.EmbeddedSystem.EmitterSystem" );
+		classes.add( "HLAobjectRoot.EmitterBeam.RadarBeam" );
+		classes.add( "HLAobjectRoot.EmitterBeam.JammerBeam" );
 		for( String qualifiedName : classes )
 		{
 			logger.debug( "PubSub for "+qualifiedName );
@@ -451,7 +447,9 @@ public class RprConnection implements IConnection
 	//
 	// DISCOVER OBJECT
 	//
-	protected void receiveHlaDiscover( ObjectInstanceHandle theObject, ObjectClassHandle theClass )
+	protected void receiveHlaDiscover( ObjectInstanceHandle theObject,
+	                                   ObjectClassHandle theClass,
+	                                   String objectName )
 	{
 		logger.debug( "hla >> dis (Discover) object=%s, class=%s", theObject, theClass );
 
@@ -461,7 +459,7 @@ public class RprConnection implements IConnection
 			logger.error( "hla >> dis (Discover) Received discover for unknown class: handle="+theClass );
 
 		// Publish to the HLA bus so that someone picks this up and creates the local object
-		hlaBus.publish( new HlaDiscover(theObject,objectClass) );
+		hlaBus.publish( new HlaDiscover(theObject,objectClass,objectName) );
 	}
 	
 	//

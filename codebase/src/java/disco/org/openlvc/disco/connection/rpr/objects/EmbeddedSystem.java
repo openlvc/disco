@@ -20,7 +20,6 @@ package org.openlvc.disco.connection.rpr.objects;
 import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.RelativePositionStruct;
-import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
 
 public abstract class EmbeddedSystem extends ObjectInstance
@@ -50,6 +49,13 @@ public abstract class EmbeddedSystem extends ObjectInstance
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
+	protected boolean checkLoaded()
+	{
+		return entityIdentifier.isDefaults() == false &&             // Entity ID initialized
+		       hostObjectIdentifier.getValue().equals("") == false;  // RTIobjectId initialized
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,6 +67,22 @@ public abstract class EmbeddedSystem extends ObjectInstance
 	public RTIobjectId getHostObjectIdentifier()
 	{
 		return hostObjectIdentifier;
+	}
+
+	/**
+	 * Set the local host object identifier to <i>match</i> the given {@link RTIobjectId}.
+	 * This won't store a reference to the ID, but rather make the local one use the same
+	 * string. This way, we are safe to modify the local without affecting the original.
+	 * 
+	 * @param hostIdentifier The ID of the host object that this platform is attached to
+	 *                       and for which we should copy the value from.
+	 */
+	public void setHostObjectIdentifier( RTIobjectId hostIdentifier )
+	{
+		if( hostIdentifier == null )
+			this.hostObjectIdentifier.setValue( "" );
+		else
+			this.hostObjectIdentifier.setValue( hostIdentifier.getValue() );
 	}
 
 	public RelativePositionStruct getRelativePosition()
@@ -77,8 +99,10 @@ public abstract class EmbeddedSystem extends ObjectInstance
 	protected void fromPdu( TransmitterPdu incoming )
 	{
 		this.entityIdentifier.setValue( incoming.getEntityId() );
-		this.hostObjectIdentifier.setValue( incoming.getEntityId().toString() );
 		this.relativePosition.setValue( incoming.getAntennaLocation().getRelativeAntennaLocation() );
+
+		// Do in Mapper - Required access to RTIobjectId <> DIS EntityId cache
+		//this.hostObjectIdentifier.setValue( incoming.getEntityId().toString() );
 	}
 	
 	protected void toPdu( TransmitterPdu pdu )
@@ -87,23 +111,6 @@ public abstract class EmbeddedSystem extends ObjectInstance
 		pdu.getAntennaLocation().setRelativeAntennaLocation( relativePosition.getDisValue() );
 	}
 	
-	//
-	// Emitter Systems
-	//
-	protected void fromPdu( EmissionPdu incoming )
-	{
-		this.entityIdentifier.setValue( incoming.getEmittingEntityId() );
-		this.hostObjectIdentifier.setValue( incoming.getEmittingEntityId().toString() );
-//		this.relativePosition.setValue( incoming.getEmitterSystems().get(0).get );
-		
-		throw new RuntimeException( "Not Yet Supported" );
-	}
-	
-	protected void toPdu( EmissionPdu pdu )
-	{
-		throw new RuntimeException( "Not Yet Supported" );
-	}
-
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

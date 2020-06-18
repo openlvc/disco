@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
+import hla.rti1516e.encoding.DataElementFactory;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
@@ -43,6 +44,11 @@ public class RTIobjectId implements DataElement
 		this.value = "";
 	}
 
+	public RTIobjectId( String value )
+	{
+		this.value = value;
+	}
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -61,6 +67,15 @@ public class RTIobjectId implements DataElement
 		return this.value;
 	}
 	
+	@Override
+	public boolean equals( Object object )
+	{
+		if( object instanceof RTIobjectId )
+			return ((RTIobjectId)object).value.equals( this.value );
+		else
+			return false;
+	}
+
 	/////////////////////////////////////////////////////////////////////////////////////////
 	/// DataElement Methods /////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////
@@ -112,4 +127,14 @@ public class RTIobjectId implements DataElement
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	/////////////////////////////////////////////////////////////////////////////////////////
+	/// DataElement Factory /////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////
+	public static class Factory implements DataElementFactory<RTIobjectId>
+	{
+		public RTIobjectId createElement( int index )
+		{
+			return new RTIobjectId();
+		}
+	}
 }

@@ -57,6 +57,13 @@ public abstract class BaseEntity extends ObjectInstance
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
+	protected boolean checkLoaded()
+	{
+		return entityType.isDefaults() == false &&
+		       entityIdentifier.isDefaults() == false;
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

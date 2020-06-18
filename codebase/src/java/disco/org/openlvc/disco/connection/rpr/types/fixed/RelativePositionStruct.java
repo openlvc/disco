@@ -19,6 +19,7 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 
 import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
 import org.openlvc.disco.pdu.record.EntityCoordinate;
+import org.openlvc.disco.pdu.record.VectorRecord;
 
 public class RelativePositionStruct extends HLAfixedRecord
 {
@@ -67,11 +68,25 @@ public class RelativePositionStruct extends HLAfixedRecord
 		this.bodyZDistance.setValue( position.getZ() );
 	}
 	
+	public void setValue( VectorRecord vector )
+	{
+		this.bodyXDistance.setValue( vector.getFirstComponent() );
+		this.bodyYDistance.setValue( vector.getSecondComponent() );
+		this.bodyZDistance.setValue( vector.getThirdComponent() );
+	}
+
 	public EntityCoordinate getDisValue()
 	{
 		return new EntityCoordinate( bodyXDistance.getValue(),
 		                             bodyYDistance.getValue(),
 		                             bodyZDistance.getValue() );
+	}
+
+	public VectorRecord getDisVectorValue()
+	{
+		return new VectorRecord( bodyXDistance.getValue(),
+		                         bodyYDistance.getValue(),
+		                         bodyZDistance.getValue() );
 	}
 
 	//----------------------------------------------------------

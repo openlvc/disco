@@ -60,7 +60,7 @@ public class FederateAmbassador extends NullFederateAmbassador
 	                                    ObjectClassHandle theClass,
 	                                    String objectName )
 	{
-		connection.receiveHlaDiscover( theObject, theClass );
+		connection.receiveHlaDiscover( theObject, theClass, objectName );
 	}
 
 	// 6.9
