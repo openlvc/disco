@@ -145,6 +145,22 @@ public class MessageBus<T>
 		}
 	}
 
+	public void unsubscribe( Object... subscribers )
+	{
+		for( Object subscriber: subscribers )
+			unsubscribe( subscriber );
+	}
+
+	public void unsubscribe( Object subscriber )
+	{
+		// remove from subscriber map
+		for( List<CallablePair> list : subscribers.values() )
+			list.removeIf( pair -> pair.target == subscriber );
+
+		// remove from error handler map
+		errorHandlers.removeIf( pair -> pair.target == subscriber );
+	}
+
 	/**
 	 * Return true if the given method is a valid {@link EventHandler}. To be this it must:
 	 * <ul>

@@ -17,18 +17,14 @@
  */
 package org.openlvc.disco.application;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.bus.MessageBus;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.field.PduType;
+
+import com.sun.corba.se.pept.transport.EventHandler;
 
 /**
  * For applications that don't want to work directly with the complete stream of PDUs, or want
@@ -61,7 +57,7 @@ public class DisApplication
 
 	// PDU Storage and Management
 	private PduStore pduStore;
-	private ConcurrentMap<PduType,List<IPduSubscriber>> pduSubscribers;
+	private MessageBus<PDU> pduBus;
 	
 	// Heartbeats and Delete Timeouts
 	private DeleteReaper deleteReaper;
@@ -80,10 +76,7 @@ public class DisApplication
 
 		// PDU Storage and Management
 		this.pduStore = new PduStore( this );
-		this.pduSubscribers = new ConcurrentHashMap<>();
-		// initialize the subscriber lists so that we don't have to check each time
-		for( PduType type : PduType.getSupportedPdus() )
-			pduSubscribers.put( type, new CopyOnWriteArrayList<>() );
+		this.pduBus = new MessageBus<>();
 	}
 
 	public DisApplication( DiscoConfiguration configuration )
@@ -128,34 +121,48 @@ public class DisApplication
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/// PDU Sender Methods   ///////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Send the given PDU out to the network through whatever connection Disco is configured for.
+	 * 
+	 * @param pdu The PDU to serialize and send
+	 */
+	public void send( PDU pdu )
+	{
+		opscenter.send( pdu );
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
 	/// PDU Subscriber Methods   ///////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void addSubscription( PduType pduType, IPduSubscriber... subscribers )
+	/**
+	 * Add a PDU subscriber. This subscriber should contain methods that carry the
+	 * {@link EventHandler} annotation. As PDUs are received, they will be passed
+	 * through to all subscribers with event handlers methods that match the PDU type
+	 * (or any parent type).
+	 * 
+	 * @param subscriber The subscriber to call
+	 * @throws DiscoException If the subscriber incorrectly uses the message bus annotations
+	 * @see org.openlvc.disco.bus.MessageBus
+	 * @see org.openlvc.disco.bus.EventHandler
+	 * @see org.openlvc.disco.bus.ErrorHandler
+	 */
+	public void addSubscriber( Object subscriber )
 	{
-		// check to make sure we're tracking a subscriber set for this PDU type
-		if( this.pduSubscribers.containsKey(pduType) == false )
-			this.pduSubscribers.put( pduType, new CopyOnWriteArrayList<>() );
-
-		pduSubscribers.get(pduType).addAll( Arrays.asList(subscribers) );
-	}
-	
-	public void removeSubscription( PduType pduType, IPduSubscriber... subscribers )
-	{
-		if( pduSubscribers.containsKey(pduType) )
-			pduSubscribers.get(pduType).removeAll( Arrays.asList(subscribers) );
-	}
-	
-	public void removeAllSubscriptions( IPduSubscriber subscriber )
-	{
-		pduSubscribers.forEach( (k,v) -> v.remove(subscriber) );
-	}
-	
-	public boolean isSubscribedTo( IPduSubscriber subscriber, PduType pduType )
-	{
-		return pduSubscribers.containsKey(pduType) &&
-		       pduSubscribers.get(pduType).contains(subscriber);
+		this.pduBus.subscribe( subscriber );
 	}
 
+	/**
+	 * Remove any subscriptions that the provided subscriber object has. This will only work
+	 * for this specific instance.
+	 * 
+	 * @param subscriber The instance to remove subscriptions for.
+	 */
+	public void removeSubscriber( Object subscriber )
+	{
+		this.pduBus.unsubscribe( subscriber );
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
@@ -225,8 +232,7 @@ public class DisApplication
 			pduStore.pduReceived( pdu );
 			
 			// Step 2: Notify all subscribers
-			PduType type = pdu.getType();
-			pduSubscribers.get(type).forEach( subscriber -> subscriber.pduReceived(type,pdu) );
+			pduBus.publish( pdu );
 		}
 	}
 
