@@ -28,7 +28,6 @@ import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
-import org.openlvc.disco.utils.LLA;
 
 /**
  * Tracks the current state of all known {@link EntityStatePdu}s received from the network
@@ -156,12 +155,7 @@ public class EntityStateStore implements IDeleteReaperManaged
 	 */
 	public Set<EntityStatePdu> getEntityStatesNear( EntityStatePdu entity, int radiusMeters )
 	{
-		// only do this once
-		LLA target = entity.getLocation().toLLA();
-
-		return byId.values().parallelStream()
-		                    .filter( other -> target.distanceBetweenHavershine(other.getLocation().toLLA()) < radiusMeters )
-		                    .collect( Collectors.toSet() );
+		return getEntityStatesNear( entity.getLocation(), radiusMeters );
 	}
 	
 	/**
@@ -174,11 +168,8 @@ public class EntityStateStore implements IDeleteReaperManaged
 	 */
 	public Set<EntityStatePdu> getEntityStatesNear( WorldCoordinate location, int radiusMeters )
 	{
-		// only do this once
-		LLA target = location.toLLA();
-		
 		return byId.values().parallelStream()
-		                    .filter( other -> target.distanceBetweenHavershine(other.getLocation().toLLA()) < radiusMeters )
+		                    .filter( other -> WorldCoordinate.getStraightLineDistanceBetween(location, other.getLocation()) < radiusMeters )
 		                    .collect( Collectors.toSet() );
 	}
 

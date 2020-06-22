@@ -177,5 +177,25 @@ public class WorldCoordinate implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	/**
+	 * Returns the straight line distance between two WorldCoordinate instances.
+	 * <p/>
+	 * Note: As the name suggests, this method measures the straight line distance between two points in
+	 * the WGS84 reference frame. It is ideally suited for points within the local horizon, or ground
+	 * to air calculations.
+	 * <p/>
+	 * For surface distances that span over the horizon, a great circle distance should be used
+	 * 
+	 * @param a the start WorldCoordinate
+	 * @param b the end WorldCoordinate
+	 * @return the straight-line distance between a and b, measured in meters
+	 */
+	public static double getStraightLineDistanceBetween( WorldCoordinate a, WorldCoordinate b )
+	{
+		double x = b.x - a.x;
+		double y = b.y - a.y;
+		double z = b.z - a.z;
+		return Math.sqrt( x*x + y*y + z*z );
+	}
 }
 
