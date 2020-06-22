@@ -18,6 +18,7 @@
 package org.openlvc.disco.application;
 
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
 
@@ -63,10 +64,9 @@ public class PduStore
 		{
 			case EntityState: entityStore.receivePdu( (EntityStatePdu)pdu ); break;
 			case Transmitter: transmitterStore.receivePdu( (TransmitterPdu)pdu ); break;
-
+			case Emission: emitterStore.receivePdu( (EmissionPdu)pdu ); break;
+			
 			// PDUs to support next
-			case Emission:
-				break;
 			case Designator:
 				break;
 			case Signal:
@@ -93,6 +93,7 @@ public class PduStore
 	{
 		this.entityStore.clear();
 		this.transmitterStore.clear();
+		this.emitterStore.clear();
 	}
 
 	public EntityStateStore getEntityStore()
@@ -103,6 +104,11 @@ public class PduStore
 	public TransmitterStore getTransmitterStore()
 	{
 		return this.transmitterStore;
+	}
+	
+	public EmitterStore getEmitterStore()
+	{
+		return this.emitterStore;
 	}
 
 	//----------------------------------------------------------
