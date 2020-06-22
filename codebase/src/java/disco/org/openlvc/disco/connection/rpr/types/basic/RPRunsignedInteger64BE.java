@@ -49,6 +49,11 @@ public class RPRunsignedInteger64BE implements DataElement
 		this.value = value;
 	}
 
+	public RPRunsignedInteger64BE( long value )
+	{
+		this.setValue( value );
+	}
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------

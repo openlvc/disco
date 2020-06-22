@@ -27,8 +27,6 @@ import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.EntityId;
-import org.openlvc.disco.pdu.record.FixedDatum;
-import org.openlvc.disco.pdu.record.VariableDatum;
 
 public class DataQueryPdu extends PDU
 {
@@ -43,8 +41,8 @@ public class DataQueryPdu extends PDU
 	private EntityId receivingEntity;
 	private long requestId;
 	private long timeInterval;
-	private List<FixedDatum> fixedRecords;
-	private List<VariableDatum> variableRecords;
+	private List<Long> fixedRecordIds;
+	private List<Long> variableRecordIds;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -56,8 +54,8 @@ public class DataQueryPdu extends PDU
 		this.receivingEntity = new EntityId();
 		this.requestId = 0;
 		this.timeInterval = 0;
-		this.fixedRecords = new ArrayList<>();
-		this.variableRecords = new ArrayList<>();
+		this.fixedRecordIds = new ArrayList<>();
+		this.variableRecordIds = new ArrayList<>();
 	}
 
 	//----------------------------------------------------------
@@ -77,21 +75,13 @@ public class DataQueryPdu extends PDU
 		int fixedCount = (int)dis.readUI32();
 		int variableCount = (int)dis.readUI32();
 		
-		fixedRecords.clear();
+		fixedRecordIds.clear();
 		for( int i = 0; i < fixedCount; i++ )
-		{
-			FixedDatum record = new FixedDatum();
-			record.from( dis );
-			fixedRecords.add( record );
-		}
+			fixedRecordIds.add( dis.readUI32() );
 
-		variableRecords.clear();
+		variableRecordIds.clear();
 		for( int i = 0; i < variableCount; i++ )
-		{
-			VariableDatum record = new VariableDatum();
-			record.from( dis );
-			variableRecords.add( record );
-		}
+			variableRecordIds.add( dis.readUI32() );
 	}
 	
 	public void to( DisOutputStream dos ) throws IOException
@@ -103,15 +93,15 @@ public class DataQueryPdu extends PDU
 		dos.writeUI32( this.timeInterval );
 		
 		// write the number of fixed and variable datums
-		dos.writeUI32( this.fixedRecords.size() );
-		dos.writeUI32( this.variableRecords.size() );
+		dos.writeUI32( this.fixedRecordIds.size() );
+		dos.writeUI32( this.variableRecordIds.size() );
 		
 		// write the actual records
-		for( FixedDatum record : this.fixedRecords )
-			record.to( dos );
+		for( Long id : this.fixedRecordIds )
+			dos.writeUI32( id );
 		
-		for( VariableDatum record : this.variableRecords )
-			record.to( dos );
+		for( Long id : this.variableRecordIds )
+			dos.writeUI32( id );
 	}
 
 	@Override
@@ -126,13 +116,11 @@ public class DataQueryPdu extends PDU
 		size += DisSizes.UI32_SIZE; // VariableCount             // 4
 
 		size += 64-bit * FIXED COUNT                             // (8*FIXED)
-		size += forEach( VARIABLE.byteLength )                   // NFI
+		size += 64-bit * VARIABLE COUNT                          // (8*VARIABLE)
 		return size;
 		*/
 		
-		int size = 28 + (8*fixedRecords.size());
-		for( VariableDatum record : variableRecords )
-			size += record.getByteLength();
+		int size = 28 + (8*fixedRecordIds.size()) + (8*variableRecordIds.size());
 		
 		return size;
 	}
@@ -195,60 +183,40 @@ public class DataQueryPdu extends PDU
 		this.receivingEntity = id;
 	}
 
-	public int getFixedDatumCount()
+	public int getFixedDatumIdCount()
 	{
-		return this.fixedRecords.size();
+		return this.fixedRecordIds.size();
 	}
 	
-	public int getVariableDatumCount()
+	public int getVariableDatumIdCount()
 	{
-		return this.variableRecords.size();
+		return this.variableRecordIds.size();
 	}
 
-	public void add( FixedDatum fixedRecord )
+	public void addFixedRecordId( long fixedRecordId )
 	{
-		if( fixedRecord != null )
-			fixedRecords.add( fixedRecord );
+		this.fixedRecordIds.add( fixedRecordId );
 	}
 	
-	public void add( VariableDatum variableRecord )
+	public void addVariableRecordId( long variableRecordId )
 	{
-		if( variableRecord != null )
-			variableRecords.add( variableRecord );
-	}
-
-	/**
-	 * @return Remove the datum at the given index and return, or null if there wasn't one there
-	 * @throws ArrayIndexOutOfBoundsException if the index is beyond stored bounds for the list
-	 */
-	public FixedDatum removeFixedDatum( int index ) throws ArrayIndexOutOfBoundsException
-	{
-		return fixedRecords.remove( index );
-	}
-
-	/**
-	 * @return Remove the datum at the given index and return, or null if there wasn't one there
-	 * @throws ArrayIndexOutOfBoundsException if the index is beyond stored bounds for the list
-	 */
-	public VariableDatum removeVariableDatum( int index ) throws ArrayIndexOutOfBoundsException
-	{
-		return variableRecords.remove( index );
+		this.variableRecordIds.add( variableRecordId );
 	}
 
 	/**
 	 * @return Unmodifiable list of all contained fixed datum records
 	 */
-	public List<FixedDatum> getFixedDatumRecords()
+	public List<Long> getFixedDatumIds()
 	{
-		return Collections.unmodifiableList( this.fixedRecords );
+		return Collections.unmodifiableList( this.fixedRecordIds );
 	}
 	
 	/**
 	 * @return Unmodifiable list of all contained variable datum records
 	 */
-	public List<VariableDatum> getVariableDatumRecords()
+	public List<Long> getVariableDatumIds()
 	{
-		return Collections.unmodifiableList( this.variableRecords );
+		return Collections.unmodifiableList( this.variableRecordIds );
 	}
 
 	//----------------------------------------------------------

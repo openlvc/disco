@@ -38,7 +38,7 @@ public class VariableDatum implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private int datumId;
+	private long datumId;
 	private byte[] datumValue;
 	private byte[] datumPadding; // auto-calculated
 
@@ -50,7 +50,7 @@ public class VariableDatum implements IPduComponent, Cloneable
 		this( 0, new byte[]{} );
 	}
 
-	public VariableDatum( int datumId, byte[] datumValue )
+	public VariableDatum( long datumId, byte[] datumValue )
 	{
 		this.datumId = datumId;
 		this.setDatumValue( datumValue );
@@ -94,7 +94,7 @@ public class VariableDatum implements IPduComponent, Cloneable
 	@Override
     public void from( DisInputStream dis ) throws IOException
     {
-		this.datumId = (int)dis.readUI32();
+		this.datumId = dis.readUI32();
 		
 		int lengthInBits = (int)dis.readUI32();
 		int lengthInBytes = lengthInBits / 8;
@@ -123,32 +123,32 @@ public class VariableDatum implements IPduComponent, Cloneable
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public int getDatumId()
+	public long getDatumId()
 	{
 		return datumId;
 	}
 
-	public void setDatumId( int datumId )
+	public void setDatumId( long datumId )
 	{
 		this.datumId = datumId;
 	}
 
-	public final int getDatumLengthInBits()
+	public final long getDatumLengthInBits()
 	{
 		return datumValue.length * 8;
 	}
 	
-	public final int getDatumLengthInBytes()
+	public final long getDatumLengthInBytes()
 	{
 		return datumValue.length;
 	}
 	
-	public final int getPaddingLengthInBits()
+	public final long getPaddingLengthInBits()
 	{
 		return datumPadding.length * 8;
 	}
 
-	public final int getPaddingLengthInBytes()
+	public final long getPaddingLengthInBytes()
 	{
 		return datumPadding.length;
 	}
@@ -170,6 +170,14 @@ public class VariableDatum implements IPduComponent, Cloneable
 		return this.datumValue;
 	}
 
+	public byte[] getDatumValueWithPadding()
+	{
+		byte[] value = new byte[datumValue.length+datumPadding.length];
+		System.arraycopy( datumValue, 0, value, 0, datumValue.length );
+		System.arraycopy( datumPadding, 0, value, datumValue.length, datumPadding.length );
+		return value;
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

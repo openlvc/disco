@@ -37,8 +37,8 @@ public class FixedDatum implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private int datumId;
-	private int datumValue;
+	private long datumId;
+	private long datumValue;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -48,7 +48,7 @@ public class FixedDatum implements IPduComponent, Cloneable
 		this( 0, 0 );
 	}
 
-	public FixedDatum( int datumId, int datumValue )
+	public FixedDatum( long datumId, long datumValue )
 	{
 		this.datumId = datumId;
 		this.datumValue = datumValue;
@@ -89,15 +89,15 @@ public class FixedDatum implements IPduComponent, Cloneable
 	@Override
     public void from( DisInputStream dis ) throws IOException
     {
-		this.datumId = (int)dis.readUI32();
-		this.datumValue = (int)dis.readUI32();
+		this.datumId = dis.readUI32();
+		this.datumValue = dis.readUI32();
     }
 
 	@Override
     public void to( DisOutputStream dos ) throws IOException
     {
-		dos.writeUI32( (long)this.datumId );
-		dos.writeUI32( (long)this.datumValue );
+		dos.writeUI32( this.datumId );
+		dos.writeUI32( this.datumValue );
     }
 	
 	@Override
@@ -109,22 +109,22 @@ public class FixedDatum implements IPduComponent, Cloneable
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public int getDatumId()
+	public long getDatumId()
 	{
 		return datumId;
 	}
 
-	public void setDatumId( int datumId )
+	public void setDatumId( long datumId )
 	{
 		this.datumId = datumId;
 	}
 
-	public int getDatumValue()
+	public long getDatumValue()
 	{
 		return datumValue;
 	}
 
-	public void setDatumValue( int datumValue )
+	public void setDatumValue( long datumValue )
 	{
 		this.datumValue = datumValue;
 	}
