@@ -32,7 +32,6 @@ import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.BeamFunction;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
-import org.openlvc.disco.utils.LLA;
 
 public class EmitterStore implements IDeleteReaperManaged
 {
@@ -128,8 +127,6 @@ public class EmitterStore implements IDeleteReaperManaged
 	
 	public Set<EmitterBeam> getActiveBeamsNear( WorldCoordinate location, int radiusMeters )
 	{
-		// Turn the target location into an LLA
-		LLA targetLLA = location.toLLA();
 
 		Set<EmitterBeam> beams = new HashSet<>();
 		
@@ -142,11 +139,10 @@ public class EmitterStore implements IDeleteReaperManaged
 			if( espdu == null )
 				continue; // no entity? ruh-roh
 			
-			// turn the entity location into an LLA
-			LLA entityLLA = espdu.getLocation().toLLA();
+			WorldCoordinate entityLocation = espdu.getLocation();
 			
 			// is this entity close to where our target is?
-			if( targetLLA.distanceBetweenHavershine(entityLLA) > radiusMeters )
+			if( WorldCoordinate.getStraightLineDistanceBetween(location, entityLocation) > radiusMeters )
 				continue;
 			
 			// we are in proximity; find all the active beams
