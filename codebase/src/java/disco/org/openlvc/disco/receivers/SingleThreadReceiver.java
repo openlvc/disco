@@ -26,7 +26,6 @@ import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduReceiver;
 import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.pdu.UnsupportedPDU;
-import org.openlvc.disco.utils.ThreadUtils;
 
 /**
  * Places all incoming packets on a queue and processes them in a single, separate thread.
@@ -99,8 +98,15 @@ public class SingleThreadReceiver extends PduReceiver
 		// try to flush the queue
 		logger.info( "Received shutdown notice -- flushing recv queue (%d pdus)", receiveQueue.size() );
 		long startWait = System.currentTimeMillis();
+		
+		// TODO This is causing deadlocks if there are things in the receiveQueue on shutdown
+		// Have commented it out for the moment and put in a receiveQueue.clear() instead
+		/*
 		while( receiveQueue.isEmpty() == false )
 			ThreadUtils.exceptionlessSleep(500);
+		*/
+		
+		receiveQueue.clear();
 
 		logger.info( "Queue has been flushed. Took %d ms", System.currentTimeMillis()-startWait );
 
