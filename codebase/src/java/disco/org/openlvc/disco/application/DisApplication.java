@@ -24,8 +24,6 @@ import org.openlvc.disco.bus.MessageBus;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
 
-import com.sun.corba.se.pept.transport.EventHandler;
-
 /**
  * For applications that don't want to work directly with the complete stream of PDUs, or want
  * additional management services on top of a raw DIS connection, the {@link DisApplication}
