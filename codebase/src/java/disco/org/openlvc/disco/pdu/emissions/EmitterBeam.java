@@ -322,6 +322,8 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		record.setBeamNumber( beamNumber );
 		if( parentSystem != null )
 			record.setEmitterNumber( parentSystem.getEmitterNumber() );
+		
+		targets.put( id, record );
 	}
 	
 	public void removeTarget( TrackJamData record )
