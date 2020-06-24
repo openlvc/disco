@@ -15,20 +15,22 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.objects;
+package org.openlvc.disco.connection.rpr.interactions;
 
 import org.openlvc.disco.connection.rpr.types.array.FixedDatumStructLengthlessArray;
 import org.openlvc.disco.connection.rpr.types.array.VariableDatumStructArray;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
+import org.openlvc.disco.connection.rpr.types.enumerated.RawEnumValue32;
 import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.FixedDatumStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.VariableDatumStruct;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.field.RequestStatus;
 import org.openlvc.disco.pdu.record.FixedDatum;
 import org.openlvc.disco.pdu.record.VariableDatum;
-import org.openlvc.disco.pdu.simman.DataPdu;
+import org.openlvc.disco.pdu.simman.ActionResponsePdu;
 
-public class Data extends InteractionInstance
+public class ActionResponse extends InteractionInstance
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -40,20 +42,22 @@ public class Data extends InteractionInstance
 	private EntityIdentifierStruct originatingEntity;
 	private EntityIdentifierStruct receivingEntity;
 	private RPRunsignedInteger32BE requestIdentifier;
+	private RawEnumValue32 requestStatus;
 	private FixedDatumStructLengthlessArray fixedDatums;
 	private VariableDatumStructArray variableDatumSet;
-	
+
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public Data()
+	public ActionResponse()
 	{
 		super();
 		this.originatingEntity = new EntityIdentifierStruct();
-		this.receivingEntity   = new EntityIdentifierStruct();
+		this.receivingEntity = new EntityIdentifierStruct();
 		this.requestIdentifier = new RPRunsignedInteger32BE();
-		this.fixedDatums       = new FixedDatumStructLengthlessArray();
-		this.variableDatumSet  = new VariableDatumStructArray();
+		this.requestStatus = new RawEnumValue32();
+		this.fixedDatums = new FixedDatumStructLengthlessArray();
+		this.variableDatumSet = new VariableDatumStructArray();
 	}
 
 	//----------------------------------------------------------
@@ -66,16 +70,19 @@ public class Data extends InteractionInstance
 	@Override
 	public void fromPdu( PDU incoming )
 	{
-		DataPdu pdu = incoming.as( DataPdu.class );
+		ActionResponsePdu pdu = incoming.as( ActionResponsePdu.class );
 
 		// OriginatingEntity
-		originatingEntity.setValue( pdu.getOriginatingEntity() );
-
+		this.originatingEntity.setValue( pdu.getOriginatingEntity() );
+		
 		// ReceivingEntity
-		receivingEntity.setValue( pdu.getReceivingEntity() );
+		this.receivingEntity.setValue( pdu.getReceivingEntity() );
 		
 		// RequestIdentifier
-		requestIdentifier.setValue( pdu.getRequestId() );
+		this.requestIdentifier.setValue( pdu.getRequestId() );
+		
+		// RequestStatus
+		this.requestStatus.setValue( pdu.getRequestStatus().value() );
 		
 		// FixedDatums
 		fixedDatums.clear();
@@ -94,17 +101,20 @@ public class Data extends InteractionInstance
 	@Override
 	public PDU toPdu()
 	{
-		DataPdu pdu = new DataPdu();
+		ActionResponsePdu pdu = new ActionResponsePdu();
 		
 		// OriginatingEntity
-		pdu.setOriginatingEntity( originatingEntity.getDisValue() );
+		pdu.setOriginatingEntity( this.originatingEntity.getDisValue() );
 		
 		// ReceivingEntity
-		pdu.setReceivingEntity( receivingEntity.getDisValue() );
+		pdu.setReceivingEntity( this.receivingEntity.getDisValue() );
 		
 		// RequestIdentifier
-		pdu.setRequestId( requestIdentifier.getValue() );
+		pdu.setRequestId( this.requestIdentifier.getValue() );
 		
+		// RequestStatus
+		pdu.setRequestStatus( RequestStatus.fromValue(this.requestStatus.getValue()) );
+
 		// FixedDatums
 		for( FixedDatumStruct struct : fixedDatums )
 			pdu.add( struct.getDisValue() );
@@ -134,6 +144,11 @@ public class Data extends InteractionInstance
 		return requestIdentifier;
 	}
 
+	public RawEnumValue32 getRequestStatus()
+	{
+		return requestStatus;
+	}
+
 	public FixedDatumStructLengthlessArray getFixedDatums()
 	{
 		return fixedDatums;
@@ -143,7 +158,6 @@ public class Data extends InteractionInstance
 	{
 		return variableDatumSet;
 	}
-	
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

@@ -15,21 +15,20 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.objects.custom;
+package org.openlvc.disco.connection.rpr.custom.dcss.interactions;
 
-import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
+import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.types.EncoderFactory;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger64BE;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.custom.IrcMessagePdu;
+import org.openlvc.disco.pdu.custom.IrcRawMessagePdu;
 
 import hla.rti1516e.encoding.HLAASCIIstring;
 
 /**
- * Simple IRC message wrapper interaction. Should look at making this a proper "Signal" interaction,
- * but for now the simple approach will work.
+ * Wrapper class for an IRC command message that isn't part of general chat.
  */
-public class IRCChannelMessage extends InteractionInstance
+public class IRCRawMessage extends InteractionInstance
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -38,23 +37,25 @@ public class IRCChannelMessage extends InteractionInstance
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAASCIIstring channelName;
-	private HLAASCIIstring sender;
-	private HLAASCIIstring message;
+	private HLAASCIIstring prefix;
+	private HLAASCIIstring command;
+	private HLAASCIIstring commandParameters;
 	private RPRunsignedInteger64BE timeReceived;
+	private HLAASCIIstring sender;
 	private HLAASCIIstring origin;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public IRCChannelMessage()
+	public IRCRawMessage()
 	{
 		super();
 		
-		this.channelName  = EncoderFactory.createHLAASCIIstring();
-		this.sender       = EncoderFactory.createHLAASCIIstring();
-		this.message      = EncoderFactory.createHLAASCIIstring();
+		this.prefix       = EncoderFactory.createHLAASCIIstring();
+		this.command      = EncoderFactory.createHLAASCIIstring();
+		this.commandParameters = EncoderFactory.createHLAASCIIstring();
 		this.timeReceived = new RPRunsignedInteger64BE();
+		this.sender       = EncoderFactory.createHLAASCIIstring();
 		this.origin       = EncoderFactory.createHLAASCIIstring();
 	}
 
@@ -68,20 +69,23 @@ public class IRCChannelMessage extends InteractionInstance
 	@Override
 	public void fromPdu( PDU incoming )
 	{
-		IrcMessagePdu pdu = incoming.as( IrcMessagePdu.class );
+		IrcRawMessagePdu pdu = incoming.as( IrcRawMessagePdu.class );
 
-		// ChannelName
-		channelName.setValue( pdu.getChannelName() );
+		// Prefix
+		prefix.setValue( pdu.getPrefix() );
 		
-		// Sender
-		sender.setValue( pdu.getSender() );
+		// Command
+		command.setValue( pdu.getCommand() );
 		
-		// Message
-		message.setValue( pdu.getMessage() );
+		// CommandParameters
+		commandParameters.setValue( pdu.getCommandParameters() );
 		
 		// TimeReceived
 		timeReceived.setValue( pdu.getTimeReceived() );
-		
+
+		// Sender
+		sender.setValue( pdu.getSender() );
+
 		// Origin
 		origin.setValue( pdu.getOrigin() );
 	}
@@ -92,20 +96,23 @@ public class IRCChannelMessage extends InteractionInstance
 	@Override
 	public PDU toPdu()
 	{
-		IrcMessagePdu pdu = new IrcMessagePdu();
+		IrcRawMessagePdu pdu = new IrcRawMessagePdu();
 		
-		// ChannelName
-		pdu.setChannelName( channelName.getValue() );
+		// Prefix
+		pdu.setPrefix( prefix.getValue() );
 		
-		// Sender
-		pdu.setSender( sender.getValue() );
+		// Command
+		pdu.setCommand( command.getValue() );
 		
-		// Message
-		pdu.setMessage( message.getValue() );
+		// CommandParameters
+		pdu.setCommandParameters( commandParameters.getValue() );
 		
 		// TimeReceived
 		pdu.setTimeReceived( timeReceived.getValue() );
 		
+		// Sender
+		pdu.setSender( sender.toString() );
+
 		// Origin
 		pdu.setOrigin( origin.getValue() );
 		
@@ -115,19 +122,19 @@ public class IRCChannelMessage extends InteractionInstance
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public HLAASCIIstring getChannelName()
+	public HLAASCIIstring getPrefix()
 	{
-		return channelName;
+		return prefix;
 	}
 
-	public HLAASCIIstring getSender()
+	public HLAASCIIstring getCommand()
 	{
-		return sender;
+		return command;
 	}
 
-	public HLAASCIIstring getMessage()
+	public HLAASCIIstring getCommandParameters()
 	{
-		return message;
+		return commandParameters;
 	}
 
 	public RPRunsignedInteger64BE getTimeReceived()
@@ -135,11 +142,15 @@ public class IRCChannelMessage extends InteractionInstance
 		return timeReceived;
 	}
 
+	public HLAASCIIstring getSender()
+	{
+		return sender;
+	}
+
 	public HLAASCIIstring getOrigin()
 	{
 		return origin;
-	}
-	
+	}	
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

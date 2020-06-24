@@ -15,17 +15,21 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.objects;
+package org.openlvc.disco.connection.rpr.custom.dcss.interactions;
 
-import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.connection.rpr.types.basic.StreamTag;
-import org.openlvc.disco.connection.rpr.types.fixed.AudioDataTypeStruct;
+import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
+import org.openlvc.disco.connection.rpr.types.EncoderFactory;
+import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger64BE;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.field.EncodingClass;
-import org.openlvc.disco.pdu.field.EncodingType;
-import org.openlvc.disco.pdu.radio.SignalPdu;
+import org.openlvc.disco.pdu.custom.IrcMessagePdu;
 
-public class EncodedAudioRadioSignal extends InteractionInstance
+import hla.rti1516e.encoding.HLAASCIIstring;
+
+/**
+ * Simple IRC message wrapper interaction. Should look at making this a proper "Signal" interaction,
+ * but for now the simple approach will work.
+ */
+public class IRCChannelMessage extends InteractionInstance
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -34,16 +38,24 @@ public class EncodedAudioRadioSignal extends InteractionInstance
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private AudioDataTypeStruct audioData;
+	private HLAASCIIstring channelName;
+	private HLAASCIIstring sender;
+	private HLAASCIIstring message;
+	private RPRunsignedInteger64BE timeReceived;
+	private HLAASCIIstring origin;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public EncodedAudioRadioSignal()
+	public IRCChannelMessage()
 	{
 		super();
 		
-		this.audioData = new AudioDataTypeStruct();
+		this.channelName  = EncoderFactory.createHLAASCIIstring();
+		this.sender       = EncoderFactory.createHLAASCIIstring();
+		this.message      = EncoderFactory.createHLAASCIIstring();
+		this.timeReceived = new RPRunsignedInteger64BE();
+		this.origin       = EncoderFactory.createHLAASCIIstring();
 	}
 
 	//----------------------------------------------------------
@@ -56,27 +68,22 @@ public class EncodedAudioRadioSignal extends InteractionInstance
 	@Override
 	public void fromPdu( PDU incoming )
 	{
-		SignalPdu pdu = incoming.as( SignalPdu.class );
-		if( pdu.getEncodingScheme().getEncodingClass() != EncodingClass.EncodedVoice )
-			throw new DiscoException( "Expected EncodedVoice Signal PDU" );
+		IrcMessagePdu pdu = incoming.as( IrcMessagePdu.class );
 
-		// StreamTag
-		audioData.setStreamTag( StreamTag.encode(pdu.getEntityId(),pdu.getRadioID()) );
-
-		// EncodingType
-		audioData.setEncodingType( pdu.getEncodingScheme().getEncodingType().value() );
+		// ChannelName
+		channelName.setValue( pdu.getChannelName() );
 		
-		// SampleRate
-		audioData.setSampleRate( pdu.getSampleRate() );
+		// Sender
+		sender.setValue( pdu.getSender() );
 		
-		// SampleCount
-		audioData.setSampleCount( pdu.getSamples() );
-
-		// Data
-		audioData.setDataLength( pdu.getDataLength() );
+		// Message
+		message.setValue( pdu.getMessage() );
 		
-		// DataLength
-		audioData.setData( pdu.getData() );
+		// TimeReceived
+		timeReceived.setValue( pdu.getTimeReceived() );
+		
+		// Origin
+		origin.setValue( pdu.getOrigin() );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,24 +92,22 @@ public class EncodedAudioRadioSignal extends InteractionInstance
 	@Override
 	public PDU toPdu()
 	{
-		SignalPdu pdu = new SignalPdu();
+		IrcMessagePdu pdu = new IrcMessagePdu();
 		
-		// Entity Identification
-		StreamTag.decode( audioData.getStreamTag(), pdu );
+		// ChannelName
+		pdu.setChannelName( channelName.getValue() );
 		
-		// Encoding
-		pdu.getEncodingScheme().setEncodingClass( EncodingClass.EncodedVoice );
-		pdu.getEncodingScheme().setEncodingType( EncodingType.fromValue((short)audioData.getEncodingType()) );
+		// Sender
+		pdu.setSender( sender.getValue() );
 		
-		// SampleRate
-		pdu.setSampleRate( audioData.getSampleRate() );
+		// Message
+		pdu.setMessage( message.getValue() );
 		
-		// SampleCount
-		pdu.setSamples( (int)audioData.getSampleCount() );
+		// TimeReceived
+		pdu.setTimeReceived( timeReceived.getValue() );
 		
-		// DataLength -- set in pdu.setData()
-		// Data
-		pdu.setData( audioData.getData() );
+		// Origin
+		pdu.setOrigin( origin.getValue() );
 		
 		return pdu;
 	}
@@ -110,13 +115,33 @@ public class EncodedAudioRadioSignal extends InteractionInstance
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public AudioDataTypeStruct getAudioData()
+	public HLAASCIIstring getChannelName()
 	{
-		return audioData;
+		return channelName;
+	}
+
+	public HLAASCIIstring getSender()
+	{
+		return sender;
+	}
+
+	public HLAASCIIstring getMessage()
+	{
+		return message;
+	}
+
+	public RPRunsignedInteger64BE getTimeReceived()
+	{
+		return timeReceived;
+	}
+
+	public HLAASCIIstring getOrigin()
+	{
+		return origin;
 	}
 	
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	
 }

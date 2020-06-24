@@ -24,11 +24,11 @@ import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.connection.rpr.ObjectStore;
 import org.openlvc.disco.connection.rpr.RprConnection;
+import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.model.FomHelpers;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.model.PubSub;
-import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.pdu.field.PduType;
 

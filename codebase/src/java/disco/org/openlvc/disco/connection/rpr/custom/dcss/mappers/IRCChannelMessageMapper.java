@@ -15,20 +15,20 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.mappers.custom;
+package org.openlvc.disco.connection.rpr.custom.dcss.mappers;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
+import org.openlvc.disco.connection.rpr.custom.dcss.interactions.IRCChannelMessage;
+import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
 import org.openlvc.disco.connection.rpr.mappers.HlaInteraction;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ParameterClass;
-import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
-import org.openlvc.disco.connection.rpr.objects.custom.IRCRawMessage;
-import org.openlvc.disco.pdu.custom.IrcRawMessagePdu;
+import org.openlvc.disco.pdu.custom.IrcMessagePdu;
 import org.openlvc.disco.pdu.field.PduType;
 
 import hla.rti1516e.ParameterHandleValueMap;
@@ -38,7 +38,7 @@ import hla.rti1516e.encoding.DecoderException;
 /**
  * Mapper to/from IRC FOM channel message interactions.
  */
-public class IRCRawMessageMapper extends AbstractMapper
+public class IRCChannelMessageMapper extends AbstractMapper
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -48,11 +48,10 @@ public class IRCRawMessageMapper extends AbstractMapper
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private InteractionClass hlaClass;
-	private ParameterClass prefix;
-	private ParameterClass command;
-	private ParameterClass commandParameters;
-	private ParameterClass timeReceived;
+	private ParameterClass channelName;
 	private ParameterClass sender;
+	private ParameterClass message;
+	private ParameterClass timeReceived;
 	private ParameterClass origin;
 
 	//----------------------------------------------------------
@@ -66,7 +65,7 @@ public class IRCRawMessageMapper extends AbstractMapper
 	@Override
 	public Collection<PduType> getSupportedPdus()
 	{
-		return Arrays.asList( PduType.IRCRawMessage );
+		return Arrays.asList( PduType.IRCMessage );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,16 +75,15 @@ public class IRCRawMessageMapper extends AbstractMapper
 	protected void initialize() throws DiscoException
 	{
 		// Cache up the handles
-		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.Service.IRCRawlMessage" );
+		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.Service.IRCChannelMessage" );
 		if( this.hlaClass == null )
-			throw new DiscoException( "Could not find class: HLAinteractionRoot.Service.IRCRawlMessage" );
+			throw new DiscoException( "Could not find class: HLAinteractionRoot.Service.IRCChannelMessage" );
 		
-		this.prefix             = hlaClass.getParameter( "Prefix" );
-		this.command            = hlaClass.getParameter( "Command" );
-		this.commandParameters  = hlaClass.getParameter( "CommandParameters" );
-		this.timeReceived       = hlaClass.getParameter( "TimeReceived" );
-		this.sender             = hlaClass.getParameter( "Sender" );
-		this.origin             = hlaClass.getParameter( "Origin" );
+		this.channelName    = hlaClass.getParameter( "ChannelName" );
+		this.sender         = hlaClass.getParameter( "Sender" );
+		this.message        = hlaClass.getParameter( "Message" );
+		this.timeReceived   = hlaClass.getParameter( "TimeReceived" );
+		this.origin         = hlaClass.getParameter( "Origin" );
 		
 		// Do publication and subscription
 		super.publishAndSubscribe( hlaClass );
@@ -96,7 +94,7 @@ public class IRCRawMessageMapper extends AbstractMapper
 	/// DIS -> HLA Methods   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	@EventHandler
-	public void handlePdu( IrcRawMessagePdu pdu )
+	public void handlePdu( IrcMessagePdu pdu )
 	{
 		// Populate the Interaction
 		InteractionInstance interaction = serializeSetData( pdu );
@@ -105,10 +103,10 @@ public class IRCRawMessageMapper extends AbstractMapper
 		super.sendInteraction( interaction, interaction.getParameters() );
 	}
 
-	private InteractionInstance serializeSetData( IrcRawMessagePdu pdu )
+	private InteractionInstance serializeSetData( IrcMessagePdu pdu )
 	{
 		// Create the interaction object
-		IRCRawMessage ircMessage = new IRCRawMessage();
+		IRCChannelMessage ircMessage = new IRCChannelMessage(); 
 		ircMessage.setInteractionClass( hlaClass );
 		
 		// Populate it from the PDU
@@ -119,30 +117,25 @@ public class IRCRawMessageMapper extends AbstractMapper
 		ircMessage.setParameters( map );
 		
 		// Populate the Parameters
-		// Prefix
-		ByteWrapper wrapper = new ByteWrapper( ircMessage.getPrefix().getEncodedLength() );
-		ircMessage.getPrefix().encode( wrapper );
-		map.put( prefix.getHandle(), wrapper.array() );
-		
-		// Command
-		wrapper = new ByteWrapper( ircMessage.getCommand().getEncodedLength() );
-		ircMessage.getCommand().encode( wrapper );
-		map.put( command.getHandle(), wrapper.array() );
-		
-		// CommandParameters
-		wrapper = new ByteWrapper( ircMessage.getCommandParameters().getEncodedLength() );
-		ircMessage.getCommandParameters().encode( wrapper );
-		map.put( commandParameters.getHandle(), wrapper.array() );
-		
-		// TimeReceived
-		wrapper = new ByteWrapper( ircMessage.getTimeReceived().getEncodedLength() );
-		ircMessage.getTimeReceived().encode( wrapper );
-		map.put( timeReceived.getHandle(), wrapper.array() );
+		// ChannelName
+		ByteWrapper wrapper = new ByteWrapper( ircMessage.getChannelName().getEncodedLength() );
+		ircMessage.getChannelName().encode( wrapper );
+		map.put( channelName.getHandle(), wrapper.array() );
 		
 		// Sender
 		wrapper = new ByteWrapper( ircMessage.getSender().getEncodedLength() );
 		ircMessage.getSender().encode( wrapper );
 		map.put( sender.getHandle(), wrapper.array() );
+		
+		// Message
+		wrapper = new ByteWrapper( ircMessage.getMessage().getEncodedLength() );
+		ircMessage.getMessage().encode( wrapper );
+		map.put( message.getHandle(), wrapper.array() );
+		
+		// TimeReceived
+		wrapper = new ByteWrapper( ircMessage.getTimeReceived().getEncodedLength() );
+		ircMessage.getTimeReceived().encode( wrapper );
+		map.put( timeReceived.getHandle(), wrapper.array() );
 		
 		// Origin
 		wrapper = new ByteWrapper( ircMessage.getOrigin().getEncodedLength() );
@@ -161,7 +154,7 @@ public class IRCRawMessageMapper extends AbstractMapper
 	{
 		if( hlaClass == event.theClass )
 		{
-			IRCRawMessage interaction = null;
+			IRCChannelMessage interaction = null;
 			
 			// Deserialize the parameters into an interaction instance
 			try
@@ -180,40 +173,34 @@ public class IRCRawMessageMapper extends AbstractMapper
 		}
 	}
 
-	private IRCRawMessage deserializeIrcChannelMessage( ParameterHandleValueMap map )
+	private IRCChannelMessage deserializeIrcChannelMessage( ParameterHandleValueMap map )
 		throws DecoderException
 	{
 		// Create an instance to decode in to
-		IRCRawMessage interaction = new IRCRawMessage();
+		IRCChannelMessage interaction = new IRCChannelMessage();
 
-		if( map.containsKey(prefix.getHandle()) )
+		if( map.containsKey(channelName.getHandle()) )
 		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(prefix.getHandle()) );
-			interaction.getPrefix().decode( wrapper );
-		}
-		
-		if( map.containsKey(command.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(command.getHandle()) );
-			interaction.getCommand().decode( wrapper );
-		}
-		
-		if( map.containsKey(commandParameters.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(commandParameters.getHandle()) );
-			interaction.getCommandParameters().decode( wrapper );
-		}
-		
-		if( map.containsKey(timeReceived.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(timeReceived.getHandle()) );
-			interaction.getTimeReceived().decode( wrapper );
+			ByteWrapper wrapper = new ByteWrapper( map.get(channelName.getHandle()) );
+			interaction.getChannelName().decode( wrapper );
 		}
 		
 		if( map.containsKey(sender.getHandle()) )
 		{
 			ByteWrapper wrapper = new ByteWrapper( map.get(sender.getHandle()) );
 			interaction.getSender().decode( wrapper );
+		}
+		
+		if( map.containsKey(message.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(message.getHandle()) );
+			interaction.getMessage().decode( wrapper );
+		}
+		
+		if( map.containsKey(timeReceived.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(timeReceived.getHandle()) );
+			interaction.getTimeReceived().decode( wrapper );
 		}
 		
 		if( map.containsKey(origin.getHandle()) )

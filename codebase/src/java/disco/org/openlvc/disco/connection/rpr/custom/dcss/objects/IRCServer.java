@@ -15,20 +15,19 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.objects.custom;
+package org.openlvc.disco.connection.rpr.custom.dcss.objects;
 
-import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.array.IRCChannelArray;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.array.IRCNickArray;
+import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.connection.rpr.types.EncoderFactory;
-import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger64BE;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.custom.IrcRawMessagePdu;
+import org.openlvc.disco.pdu.record.EntityId;
+import org.openlvc.disco.pdu.simman.DataPdu;
 
 import hla.rti1516e.encoding.HLAASCIIstring;
 
-/**
- * Wrapper class for an IRC command message that isn't part of general chat.
- */
-public class IRCRawMessage extends InteractionInstance
+public class IRCServer extends ObjectInstance
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -37,31 +36,36 @@ public class IRCRawMessage extends InteractionInstance
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAASCIIstring prefix;
-	private HLAASCIIstring command;
-	private HLAASCIIstring commandParameters;
-	private RPRunsignedInteger64BE timeReceived;
-	private HLAASCIIstring sender;
-	private HLAASCIIstring origin;
+	private HLAASCIIstring serverId;
+	private IRCChannelArray channels;
+	private IRCNickArray connectedNicks;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public IRCRawMessage()
+	public IRCServer()
 	{
-		super();
-		
-		this.prefix       = EncoderFactory.createHLAASCIIstring();
-		this.command      = EncoderFactory.createHLAASCIIstring();
-		this.commandParameters = EncoderFactory.createHLAASCIIstring();
-		this.timeReceived = new RPRunsignedInteger64BE();
-		this.sender       = EncoderFactory.createHLAASCIIstring();
-		this.origin       = EncoderFactory.createHLAASCIIstring();
+		this.serverId = EncoderFactory.createHLAASCIIstring();
+		//this.serverId = new HLAASCIIstring( "IRC-"+StringUtils.generateRandomString(6) );
+		this.channels = new IRCChannelArray();
+		this.connectedNicks = new IRCNickArray();
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+
+	@Override
+	protected boolean checkReady()
+	{
+		return !this.serverId.getValue().equals("");
+	}
+	
+	@Override
+	public EntityId getDisId()
+	{
+		return null;
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Decoding Methods   /////////////////////////////////////////////////////////////////
@@ -69,25 +73,14 @@ public class IRCRawMessage extends InteractionInstance
 	@Override
 	public void fromPdu( PDU incoming )
 	{
-		IrcRawMessagePdu pdu = incoming.as( IrcRawMessagePdu.class );
+		DataPdu pdu = incoming.as( DataPdu.class );
 
-		// Prefix
-		prefix.setValue( pdu.getPrefix() );
+		// ServerId
+		this.serverId.setValue( pdu.toString() );
 		
-		// Command
-		command.setValue( pdu.getCommand() );
+		// Channels
 		
-		// CommandParameters
-		commandParameters.setValue( pdu.getCommandParameters() );
-		
-		// TimeReceived
-		timeReceived.setValue( pdu.getTimeReceived() );
-
-		// Sender
-		sender.setValue( pdu.getSender() );
-
-		// Origin
-		origin.setValue( pdu.getOrigin() );
+		// ConnectedNicks
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -96,61 +89,34 @@ public class IRCRawMessage extends InteractionInstance
 	@Override
 	public PDU toPdu()
 	{
-		IrcRawMessagePdu pdu = new IrcRawMessagePdu();
-		
-		// Prefix
-		pdu.setPrefix( prefix.getValue() );
-		
-		// Command
-		pdu.setCommand( command.getValue() );
-		
-		// CommandParameters
-		pdu.setCommandParameters( commandParameters.getValue() );
-		
-		// TimeReceived
-		pdu.setTimeReceived( timeReceived.getValue() );
-		
-		// Sender
-		pdu.setSender( sender.toString() );
+		DataPdu pdu = new DataPdu();
 
-		// Origin
-		pdu.setOrigin( origin.getValue() );
+		// ServerId
+		
+		// Channels
+		
+		// Connected Nicks
 		
 		return pdu;
 	}
-
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public HLAASCIIstring getPrefix()
+	public HLAASCIIstring getServerId()
 	{
-		return prefix;
+		return this.serverId;
 	}
-
-	public HLAASCIIstring getCommand()
+	
+	public IRCChannelArray getChannels()
 	{
-		return command;
+		return this.channels;
 	}
-
-	public HLAASCIIstring getCommandParameters()
+	
+	public IRCNickArray getConnectedNicks()
 	{
-		return commandParameters;
+		return this.connectedNicks;
 	}
-
-	public RPRunsignedInteger64BE getTimeReceived()
-	{
-		return timeReceived;
-	}
-
-	public HLAASCIIstring getSender()
-	{
-		return sender;
-	}
-
-	public HLAASCIIstring getOrigin()
-	{
-		return origin;
-	}	
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

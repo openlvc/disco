@@ -45,7 +45,7 @@
                 </attribute>
                 <attribute>
                     <name>Channels</name>
-                    <dataType>IRCChannelList</dataType>
+                    <dataType>IRCChannelArray</dataType>
                     <updateType>On change</updateType>
                     <updateCondition>NA</updateCondition>
                     <ownership>DivestAcquire</ownership>
@@ -56,7 +56,7 @@
                 </attribute>
                 <attribute>
                     <name>ConnectedNicks</name>
-                    <dataType>IRCNickList</dataType>
+                    <dataType>IRCNickArray</dataType>
                     <updateType>On change</updateType>
                     <updateCondition>NA</updateCondition>
                     <ownership>DivestAcquire</ownership>
@@ -170,14 +170,14 @@
         <!-- ==================== -->
         <arrayDataTypes>
             <arrayData>
-                <name>IRCChannelList</name>
+                <name>IRCChannelArray</name>
                 <dataType>IRCChannelStruct</dataType>
                 <cardinality>Dynamic</cardinality>
                 <encoding>HLAvariableArray</encoding>
                 <semantics>List of channels that are available in an IRC Server.</semantics>
             </arrayData>
             <arrayData>
-                <name>IRCNickList</name>
+                <name>IRCNickArray</name>
                 <dataType>HLAASCIIString</dataType>
                 <cardinality>Dynamic</cardinality>
                 <encoding>HLAvariableArray</encoding>
@@ -200,7 +200,7 @@
                 </field>
                 <field>
                     <name>Members</name>
-                    <dataType>IRCNickList</dataType>
+                    <dataType>IRCNickArray</dataType>
                     <semantics>List of Nick's in a channel.</semantics>
                 </field>
             </fixedRecordData>

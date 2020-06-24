@@ -22,10 +22,10 @@ import java.util.Collection;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
+import org.openlvc.disco.connection.rpr.interactions.EncodedAudioRadioSignal;
+import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ParameterClass;
-import org.openlvc.disco.connection.rpr.objects.EncodedAudioRadioSignal;
-import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.radio.SignalPdu;
 

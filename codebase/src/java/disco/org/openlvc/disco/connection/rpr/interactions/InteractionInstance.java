@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.objects;
+package org.openlvc.disco.connection.rpr.interactions;
 
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.pdu.PDU;

@@ -22,10 +22,10 @@ import java.util.Collection;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
+import org.openlvc.disco.connection.rpr.interactions.DataQuery;
+import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ParameterClass;
-import org.openlvc.disco.connection.rpr.objects.DataQuery;
-import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.simman.DataQueryPdu;
 
