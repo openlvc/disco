@@ -158,9 +158,10 @@ public class EntityId implements IPduComponent, Cloneable
 		return this.siteId;
 	}
 	
-	public void setSiteId( int siteId )
+	public EntityId setSiteId( int siteId )
 	{
 		this.siteId = siteId;
+		return this;
 	}
 	
 	public int getAppId()
@@ -168,9 +169,10 @@ public class EntityId implements IPduComponent, Cloneable
 		return this.appId;
 	}
 	
-	public void setAppId( int appId )
+	public EntityId setAppId( int appId )
 	{
 		this.appId = appId;
+		return this;
 	}
 
 	public int getEntityId()
@@ -183,11 +185,19 @@ public class EntityId implements IPduComponent, Cloneable
 		return entityId;
 	}
 	
-	public void setEntityId( int entityIdentity )
+	public EntityId setEntityId( int entityIdentity )
 	{
 		this.entityId = entityIdentity;
+		return this;
 	}
 
+	public void setFullEntityId( int siteId, int appId, int entityId )
+	{
+		this.setSiteId( siteId );
+		this.setAppId( appId );
+		this.setEntityId( entityId );
+	}
+	
 	public String toString()
 	{
 		return siteId+"-"+appId+"-"+entityId;

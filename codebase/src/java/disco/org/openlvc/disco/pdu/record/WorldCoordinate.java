@@ -197,5 +197,10 @@ public class WorldCoordinate implements IPduComponent, Cloneable
 		double z = b.z - a.z;
 		return Math.sqrt( x*x + y*y + z*z );
 	}
+	
+	public static WorldCoordinate fromLLA( double latitude, double longitude, double altitude )
+	{
+		return new LLA(latitude,longitude,altitude).toWorldCoordinate();
+	}
 }
 

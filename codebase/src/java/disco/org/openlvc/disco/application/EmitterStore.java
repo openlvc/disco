@@ -94,6 +94,7 @@ public class EmitterStore implements IDeleteReaperManaged
 				continue;
 
 			// Update the values of the system itself
+			existing.setLastUpdatedTime( incoming.getLastUpdatedTime() );
 			existing.setLocation( incoming.getLocation() );
 
 			// We also have this system. Loop through all incoming beams and either add them

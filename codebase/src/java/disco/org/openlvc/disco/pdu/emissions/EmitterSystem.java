@@ -227,11 +227,6 @@ public class EmitterSystem implements IPduComponent, Cloneable
 		this.emittingEntity = entity;
 	}
 	
-	public long getLastUpdatedTime()
-	{
-		return this.lastUpdated;
-	}
-
 	public short getEmitterNumber()
 	{
 		return systemType.getNumber();
@@ -241,6 +236,25 @@ public class EmitterSystem implements IPduComponent, Cloneable
 	{
 		return new EmitterSystemId();
 	}
+
+	//
+	// Off-Spec Support
+	//
+	/**
+	 * @return The last time this system was updated (typically the wall-clock time when the system
+	 *         was created. This is local wallclock time only and not related to the DIS timestamp.
+	 */
+	public long getLastUpdatedTime()
+	{
+		return this.lastUpdated;
+	}
+
+	public void setLastUpdatedTime( long time )
+	{
+		this.lastUpdated = time;
+	}
+
+
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
