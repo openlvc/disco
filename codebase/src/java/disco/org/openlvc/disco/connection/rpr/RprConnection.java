@@ -168,7 +168,6 @@ public class RprConnection implements IConnection
 		this.pduBus = new MessageBus<>();
 		this.pduBus.setThrowExceptionOnError( true ); // we want this so we can do discard counting
 		this.hlaBus = new MessageBus<>();
-		this.hlaBus.setThrowExceptionOnError( true );
 
 		this.metrics = new Metrics();
 

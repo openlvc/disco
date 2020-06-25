@@ -262,7 +262,19 @@ public class MessageBus<T>
 	{
 		return this.throwExceptionOnError;
 	}
-	
+
+	/**
+	 * If this is set to true, should any event handler generate an exception, that exception
+	 * will be thrown and propagate up out of {@link #publish(Object)} events. By default, they
+	 * are captured and sent to any registered {@link ErrorHandler}s.
+	 * <p/>
+	 * Unless you know what you are doing, we recommend leaving this alone. One side effect is
+	 * that it will cause the processing of any chain of subscribers to stop, so if one subscriber
+	 * fails, the others may or may not have received the message. Use the error handlers if you
+	 * can help it.
+	 * 
+	 * @param value True if exceptions in handlers should propagate out, false to turn this off.
+	 */
 	public void setThrowExceptionOnError( boolean value )
 	{
 		this.throwExceptionOnError = value;

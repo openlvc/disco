@@ -652,9 +652,6 @@ public class EntityStateMapper extends AbstractMapper
 	@EventHandler
 	public void handleDiscover( HlaDiscover event )
 	{
-		if( System.currentTimeMillis() > 0 )
-			throw new RuntimeException( "Guessing this shouldn't work, because we'll be subscribed to subclasses" );
-
 		if( hlaClass == event.theClass )
 		{
 			Platform hlaObject = new Aircraft(); // TODO Fixme. Need to take action based on class

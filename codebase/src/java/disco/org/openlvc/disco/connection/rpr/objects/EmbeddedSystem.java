@@ -52,8 +52,7 @@ public abstract class EmbeddedSystem extends ObjectInstance
 	@Override
 	protected boolean checkLoaded()
 	{
-		return entityIdentifier.isDefaults() == false &&             // Entity ID initialized
-		       hostObjectIdentifier.getValue().equals("") == false;  // RTIobjectId initialized
+		return !entityIdentifier.isDefaults(); // Entity ID initialized
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
