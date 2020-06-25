@@ -182,6 +182,10 @@ public class MessageBus<T>
 		if( method.getDeclaredAnnotation(EventHandler.class) == null )
 			return false;
 		
+		// Check to make sure the class the method is in is accessible
+		if( Modifier.isPublic(method.getDeclaringClass().getModifiers()) == false )
+			throw new DiscoException( "@EventHandler methods must be in public classes; not-public: "+method.getDeclaringClass() );
+
 		// Is the method public?
 		if( Modifier.isPublic(method.getModifiers()) == false )
 			throw new DiscoException( "@EventHandler methods must be public; found: "+method.toGenericString() );
@@ -205,8 +209,12 @@ public class MessageBus<T>
 		if( method.getDeclaredAnnotation(ErrorHandler.class) == null )
 			return false;
 		
+		// Check to make sure the class the method is in is accessible
+		if( Modifier.isPublic(method.getDeclaringClass().getModifiers()) == false )
+			throw new DiscoException( "@ErrorHandler methods must be in public classes; not-public: "+method.getDeclaringClass() );
+
 		// Is the method public?
-		if( Modifier.isPublic(method.getModifiers()) )
+		if( Modifier.isPublic(method.getModifiers()) == false )
 			throw new DiscoException( "@ErrorHandler methods must be public; found: "+method.toGenericString() );
 		
 		if( Modifier.isStatic(method.getModifiers()) )

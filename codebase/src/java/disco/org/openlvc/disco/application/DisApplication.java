@@ -20,6 +20,7 @@ package org.openlvc.disco.application;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.bus.ErrorHandler;
 import org.openlvc.disco.bus.MessageBus;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
@@ -75,6 +76,7 @@ public class DisApplication
 		// PDU Storage and Management
 		this.pduStore = new PduStore( this );
 		this.pduBus = new MessageBus<>();
+		this.pduBus.subscribe( new ApplicationBusErrorReporter() );
 	}
 
 	public DisApplication( DiscoConfiguration configuration )
@@ -234,7 +236,19 @@ public class DisApplication
 		}
 	}
 
-	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Private Inner Class: BusErrorReporter   ////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public class ApplicationBusErrorReporter
+	{
+		@ErrorHandler
+		public void receive( Throwable throwable, Object target )
+		{
+			logger.error( throwable );
+		}
+	}
+
+
 	public static void main( String[] args ) throws Exception
 	{
 		DisApplication app = new DisApplication();
