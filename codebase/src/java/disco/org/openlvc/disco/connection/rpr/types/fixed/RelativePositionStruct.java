@@ -21,7 +21,7 @@ import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
 import org.openlvc.disco.pdu.record.EntityCoordinate;
 import org.openlvc.disco.pdu.record.VectorRecord;
 
-public class RelativePositionStruct extends HLAfixedRecord
+public class RelativePositionStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

@@ -24,7 +24,7 @@ import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
  * of the IsPartOf PDU (DIS v6) which we don't have support for yet either. For now, this will
  * simply not be sent with any update.
  */
-public class IsPartOfStruct extends HLAfixedRecord
+public class IsPartOfStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

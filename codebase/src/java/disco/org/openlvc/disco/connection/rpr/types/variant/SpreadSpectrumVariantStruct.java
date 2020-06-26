@@ -22,7 +22,7 @@ import org.openlvc.disco.connection.rpr.types.enumerated.SpreadSpectrumEnum16;
 import org.openlvc.disco.connection.rpr.types.fixed.SINCGARSModulationStruct;
 import org.openlvc.disco.pdu.field.SpreadSpectrum;
 
-public class SpreadSpectrumVariantStruct extends HLAvariantRecord<SpreadSpectrumEnum16>
+public class SpreadSpectrumVariantStruct extends DiscoHlaVariantRecord<SpreadSpectrumEnum16>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -37,7 +37,7 @@ public class SpreadSpectrumVariantStruct extends HLAvariantRecord<SpreadSpectrum
 	//----------------------------------------------------------
 	public SpreadSpectrumVariantStruct()
 	{
-		super();
+		super( SpreadSpectrumEnum16.None );
 		
 		super.setVariant( SpreadSpectrumEnum16.None,                    new HLAinteger32BE()/*dummy*/ );
 		super.setVariant( SpreadSpectrumEnum16.SINCGARSFrequencyHop,    new SINCGARSModulationStruct() );

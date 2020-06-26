@@ -23,7 +23,7 @@ import org.openlvc.disco.connection.rpr.types.fixed.BeamAntennaStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.SphericalHarmonicAntennaStruct;
 import org.openlvc.disco.pdu.field.AntennaPatternType;
 
-public class AntennaPatternVariantStruct extends HLAvariantRecord<AntennaPatternEnum32>
+public class AntennaPatternVariantStruct extends DiscoHlaVariantRecord<AntennaPatternEnum32>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -38,13 +38,11 @@ public class AntennaPatternVariantStruct extends HLAvariantRecord<AntennaPattern
 	//----------------------------------------------------------
 	public AntennaPatternVariantStruct()
 	{
-		super();
+		super( AntennaPatternEnum32.OmniDirectional );
 		
 		super.setVariant( AntennaPatternEnum32.OmniDirectional, new HLAinteger32BE()/*dummy*/ );
 		super.setVariant( AntennaPatternEnum32.Beam, new BeamAntennaStruct() );
 		super.setVariant( AntennaPatternEnum32.SphericalHarmonic, new SphericalHarmonicAntennaStruct() );
-		
-		super.setDiscriminant( AntennaPatternEnum32.OmniDirectional );
 	}
 
 	//----------------------------------------------------------

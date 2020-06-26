@@ -27,7 +27,7 @@ import org.openlvc.disco.pdu.field.Domain;
 import org.openlvc.disco.pdu.field.EntityKind;
 import org.openlvc.disco.pdu.record.RadioEntityType;
 
-public class RadioTypeStruct extends HLAfixedRecord
+public class RadioTypeStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

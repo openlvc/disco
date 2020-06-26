@@ -20,7 +20,7 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 import org.openlvc.disco.connection.rpr.types.basic.HLAinteger16BE;
 import org.openlvc.disco.connection.rpr.types.basic.HLAinteger32BE;
 
-public class SINCGARSModulationStruct extends HLAfixedRecord
+public class SINCGARSModulationStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

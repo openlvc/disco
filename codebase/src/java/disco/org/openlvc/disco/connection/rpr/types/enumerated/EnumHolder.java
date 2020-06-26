@@ -54,6 +54,22 @@ public class EnumHolder<T extends ExtendedDataElement<T>> implements DataElement
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
+	public int hashCode()
+	{
+		return value.hashCode();
+	}
+	
+	@Override
+	@SuppressWarnings("rawtypes")
+	public boolean equals( Object o )
+	{
+		if( o instanceof EnumHolder )
+			return ((EnumHolder)o).value == this.value;
+		else
+			return false;
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

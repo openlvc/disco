@@ -22,7 +22,7 @@ import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 import org.openlvc.disco.pdu.record.EventIdentifier;
 import org.openlvc.disco.pdu.record.SimulationAddress;
 
-public class EventIdentifierStruct extends HLAfixedRecord
+public class EventIdentifierStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

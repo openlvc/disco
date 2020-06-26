@@ -20,7 +20,7 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
 import org.openlvc.disco.pdu.record.FixedDatum;
 
-public class FixedDatumStruct extends HLAfixedRecord
+public class FixedDatumStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

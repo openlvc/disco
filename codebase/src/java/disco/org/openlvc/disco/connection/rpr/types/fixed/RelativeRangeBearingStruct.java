@@ -19,7 +19,7 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 
 import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
 
-public class RelativeRangeBearingStruct extends HLAfixedRecord
+public class RelativeRangeBearingStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

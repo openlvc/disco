@@ -20,7 +20,7 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
 import org.openlvc.disco.pdu.record.AngularVelocityVector;
 
-public class AngularVelocityVectorStruct extends HLAfixedRecord
+public class AngularVelocityVectorStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

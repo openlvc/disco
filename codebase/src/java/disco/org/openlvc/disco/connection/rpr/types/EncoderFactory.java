@@ -17,6 +17,9 @@
  */
 package org.openlvc.disco.connection.rpr.types;
 
+import org.openlvc.disco.DiscoException;
+
+import hla.rti1516e.RtiFactoryFactory;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DataElementFactory;
 import hla.rti1516e.encoding.HLAASCIIchar;
@@ -43,12 +46,14 @@ import hla.rti1516e.encoding.HLAunicodeChar;
 import hla.rti1516e.encoding.HLAunicodeString;
 import hla.rti1516e.encoding.HLAvariableArray;
 import hla.rti1516e.encoding.HLAvariantRecord;
+import hla.rti1516e.exceptions.RTIinternalError;
 
 public class EncoderFactory
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static hla.rti1516e.encoding.EncoderFactory RTI_FACTORY = null;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -62,236 +67,252 @@ public class EncoderFactory
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	public HLAASCIIchar createHLAASCIIchar()
+	public static HLAASCIIchar createHLAASCIIchar()
 	{
-		return new org.openlvc.disco.connection.rpr.types.simple.HLAASCIIchar();
+		return factory().createHLAASCIIchar();
 	}
 
-	public HLAASCIIchar createHLAASCIIchar( byte b )
+	public static HLAASCIIchar createHLAASCIIchar( byte b )
 	{
-		return new org.openlvc.disco.connection.rpr.types.simple.HLAASCIIchar( b );
+		return factory().createHLAASCIIchar(b);
 	}
 
-	public HLAASCIIstring createHLAASCIIstring()
+	public static HLAASCIIstring createHLAASCIIstring()
 	{
-		return new org.openlvc.disco.connection.rpr.types.simple.HLAASCIIstring();
+		return factory().createHLAASCIIstring();
 	}
 
-	public HLAASCIIstring createHLAASCIIstring( String s )
+	public static HLAASCIIstring createHLAASCIIstring( String s )
 	{
-		return new org.openlvc.disco.connection.rpr.types.simple.HLAASCIIstring( s );
+		return factory().createHLAASCIIstring(s);
 	}
 
-	public HLAboolean createHLAboolean()
+	public static HLAboolean createHLAboolean()
 	{
-		return new org.openlvc.disco.connection.rpr.types.enumerated.HLAboolean();
+		return factory().createHLAboolean();
 	}
 
-	public HLAboolean createHLAboolean( boolean b )
+	public static HLAboolean createHLAboolean( boolean b )
 	{
-		return new org.openlvc.disco.connection.rpr.types.enumerated.HLAboolean( b );
+		return factory().createHLAboolean(b);
 	}
 
-	public HLAbyte createHLAbyte()
+	public static HLAbyte createHLAbyte()
 	{
-		return new org.openlvc.disco.connection.rpr.types.simple.HLAbyte();
+		return factory().createHLAbyte();
 	}
 
-	public HLAbyte createHLAbyte( byte b )
+	public static HLAbyte createHLAbyte( byte b )
 	{
-		return new org.openlvc.disco.connection.rpr.types.simple.HLAbyte( b );
+		return factory().createHLAbyte(b);
 	}
 
 	public <T extends DataElement> HLAvariantRecord<T> createHLAvariantRecord( T discriminant )
 	{
-		throw new RuntimeException( "Not Yet Implemented" );
+		return factory().createHLAvariantRecord( discriminant );
 	}
 
-	public HLAfixedRecord createHLAfixedRecord()
+	public static HLAfixedRecord createHLAfixedRecord()
 	{
-		return new org.openlvc.disco.connection.rpr.types.fixed.HLAfixedRecord();
+		return factory().createHLAfixedRecord();
 	}
 
 	public <T extends DataElement> HLAfixedArray<T>
 	       createHLAfixedArray( DataElementFactory<T> factory, int size )
 	{
-		return new org.openlvc.disco.connection.rpr.types.array.HLAfixedArray<T>( factory, size );
+		return factory().createHLAfixedArray( factory, size );
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T extends DataElement> HLAfixedArray<T> createHLAfixedArray( T... elements )
 	{
-		return new org.openlvc.disco.connection.rpr.types.array.HLAfixedArray<T>( elements );
+		return factory().createHLAfixedArray( elements );
 	}
 
-	public HLAfloat32BE createHLAfloat32BE()
+	public static HLAfloat32BE createHLAfloat32BE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE();
+		return factory().createHLAfloat32BE();
 	}
 
-	public HLAfloat32BE createHLAfloat32BE( float f )
+	public static HLAfloat32BE createHLAfloat32BE( float f )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE( f );
+		return factory().createHLAfloat32BE(f);
 	}
 
-	public HLAfloat32LE createHLAfloat32LE()
+	public static HLAfloat32LE createHLAfloat32LE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAfloat32LE();
+		return factory().createHLAfloat32LE();
 	}
 
-	public HLAfloat32LE createHLAfloat32LE( float f )
+	public static HLAfloat32LE createHLAfloat32LE( float f )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAfloat32LE( f );
+		return factory().createHLAfloat32LE(f);
 	}
 
-	public HLAfloat64BE createHLAfloat64BE()
+	public static HLAfloat64BE createHLAfloat64BE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAfloat64BE();
+		return factory().createHLAfloat64BE();
 	}
 
-	public HLAfloat64BE createHLAfloat64BE( double d )
+	public static HLAfloat64BE createHLAfloat64BE( double d )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAfloat64BE( d );
+		return factory().createHLAfloat64BE(d);
 	}
 
-	public HLAfloat64LE createHLAfloat64LE()
+	public static HLAfloat64LE createHLAfloat64LE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAfloat64LE();
+		return factory().createHLAfloat64LE();
 	}
 
-	public HLAfloat64LE createHLAfloat64LE( double d )
+	public static HLAfloat64LE createHLAfloat64LE( double d )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAfloat64LE( d );
+		return factory().createHLAfloat64LE(d);
 	}
 
-	public HLAinteger16BE createHLAinteger16BE()
+	public static HLAinteger16BE createHLAinteger16BE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger16BE();
+		return factory().createHLAinteger16BE();
 	}
 
-	public HLAinteger16BE createHLAinteger16BE( short s )
+	public static HLAinteger16BE createHLAinteger16BE( short s )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger16BE( s );
+		return factory().createHLAinteger16BE(s);
 	}
 
-	public HLAinteger16LE createHLAinteger16LE()
+	public static HLAinteger16LE createHLAinteger16LE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger16LE();
+		return factory().createHLAinteger16LE();
 	}
 
-	public HLAinteger16LE createHLAinteger16LE( short s )
+	public static HLAinteger16LE createHLAinteger16LE( short s )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger16LE( s );
+		return factory().createHLAinteger16LE(s);
 	}
 
-	public HLAinteger32BE createHLAinteger32BE()
+	public static HLAinteger32BE createHLAinteger32BE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger32BE();
+		return factory().createHLAinteger32BE();
 	}
 
-	public HLAinteger32BE createHLAinteger32BE( int i )
+	public static HLAinteger32BE createHLAinteger32BE( int i )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger32BE( i );
+		return factory().createHLAinteger32BE(i);
 	}
 
-	public HLAinteger32LE createHLAinteger32LE()
+	public static HLAinteger32LE createHLAinteger32LE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger32LE();
+		return factory().createHLAinteger32LE();
 	}
 
-	public HLAinteger32LE createHLAinteger32LE( int i )
+	public static HLAinteger32LE createHLAinteger32LE( int i )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger32LE( i );
+		return factory().createHLAinteger32LE(i);
 	}
 
-	public HLAinteger64BE createHLAinteger64BE()
+	public static HLAinteger64BE createHLAinteger64BE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger64BE();
+		return factory().createHLAinteger64BE();
 	}
 
-	public HLAinteger64BE createHLAinteger64BE( long l )
+	public static HLAinteger64BE createHLAinteger64BE( long l )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger64BE( l );
+		return factory().createHLAinteger64BE(l);
 	}
 
-	public HLAinteger64LE createHLAinteger64LE()
+	public static HLAinteger64LE createHLAinteger64LE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger64LE();
+		return factory().createHLAinteger64LE();
 	}
 
-	public HLAinteger64LE createHLAinteger64LE( long l )
+	public static HLAinteger64LE createHLAinteger64LE( long l )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAinteger64LE( l );
+		return factory().createHLAinteger64LE(l);
 	}
 
-	public HLAoctet createHLAoctet()
+	public static HLAoctet createHLAoctet()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAoctet();
+		return factory().createHLAoctet();
 	}
 
-	public HLAoctet createHLAoctet( byte b )
+	public static HLAoctet createHLAoctet( byte b )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAoctet( b );
+		return factory().createHLAoctet(b);
 	}
 
-	public HLAoctetPairBE createHLAoctetPairBE()
+	public static HLAoctetPairBE createHLAoctetPairBE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAoctetPairBE();
+		return factory().createHLAoctetPairBE();
 	}
 
-	public HLAoctetPairBE createHLAoctetPairBE( short s )
+	public static HLAoctetPairBE createHLAoctetPairBE( short s )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAoctetPairBE( s );
+		return factory().createHLAoctetPairBE(s);
 	}
 
-	public HLAoctetPairLE createHLAoctetPairLE()
+	public static HLAoctetPairLE createHLAoctetPairLE()
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAoctetPairLE();
+		return factory().createHLAoctetPairLE();
 	}
 
-	public HLAoctetPairLE createHLAoctetPairLE( short s )
+	public static HLAoctetPairLE createHLAoctetPairLE( short s )
 	{
-		return new org.openlvc.disco.connection.rpr.types.basic.HLAoctetPairLE( s );
+		return factory().createHLAoctetPairLE(s);
 	}
 
-	public HLAopaqueData createHLAopaqueData()
+	public static HLAopaqueData createHLAopaqueData()
 	{
-		throw new RuntimeException( "Not Yet Implemented" );
+		return factory().createHLAopaqueData();
 	}
 
-	public HLAopaqueData createHLAopaqueData( byte[] b )
+	public static HLAopaqueData createHLAopaqueData( byte[] b )
 	{
-		throw new RuntimeException( "Not Yet Implemented" );
+		return factory().createHLAopaqueData(b);
 	}
 
-	public HLAunicodeChar createHLAunicodeChar()
+	public static HLAunicodeChar createHLAunicodeChar()
 	{
-		throw new RuntimeException( "Not Yet Implemented" );
+		return factory().createHLAunicodeChar();
 	}
 
-	public HLAunicodeChar createHLAunicodeChar( short c )
+	public static HLAunicodeChar createHLAunicodeChar( short c )
 	{
-		throw new RuntimeException( "Not Yet Implemented" );
+		return factory().createHLAunicodeChar(c);
 	}
 
-	public HLAunicodeString createHLAunicodeString()
+	public static HLAunicodeString createHLAunicodeString()
 	{
-		return new org.openlvc.disco.connection.rpr.types.simple.HLAunicodeString();
+		return factory().createHLAunicodeString();
 	}
 
-	public HLAunicodeString createHLAunicodeString( String s )
+	public static HLAunicodeString createHLAunicodeString( String s )
 	{
-		return new org.openlvc.disco.connection.rpr.types.simple.HLAunicodeString( s );
+		return factory().createHLAunicodeString(s);
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T extends DataElement> HLAvariableArray<T>
 	       createHLAvariableArray( DataElementFactory<T> factory, T... elements )
 	{
-		return new org.openlvc.disco.connection.rpr.types.array.HLAvariableArray<T>( factory, elements );
+		return factory().createHLAvariableArray( factory, elements );
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	private static final hla.rti1516e.encoding.EncoderFactory factory()
+	{
+		if( RTI_FACTORY == null )
+		{
+			try
+			{
+				RTI_FACTORY = RtiFactoryFactory.getRtiFactory().getEncoderFactory();
+			}
+			catch( RTIinternalError e )
+			{
+				throw new DiscoException( e );
+			}
+		}
+		
+		return RTI_FACTORY;
+	}
 }

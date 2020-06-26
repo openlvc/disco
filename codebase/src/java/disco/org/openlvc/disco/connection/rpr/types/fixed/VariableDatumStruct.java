@@ -24,7 +24,7 @@ import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger64BE;
 import org.openlvc.disco.pdu.record.VariableDatum;
 
-public class VariableDatumStruct extends HLAfixedRecord
+public class VariableDatumStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

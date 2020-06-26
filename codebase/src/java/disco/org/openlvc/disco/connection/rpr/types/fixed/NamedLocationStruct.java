@@ -20,7 +20,7 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 import org.openlvc.disco.connection.rpr.types.basic.HLAinteger16BE;
 import org.openlvc.disco.connection.rpr.types.variant.StationNameLocationVariantStruct;
 
-public class NamedLocationStruct extends HLAfixedRecord
+public class NamedLocationStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

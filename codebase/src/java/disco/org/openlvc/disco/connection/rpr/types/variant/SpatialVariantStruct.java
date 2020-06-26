@@ -28,7 +28,7 @@ import org.openlvc.disco.connection.rpr.types.fixed.SpatialStaticStruct;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.DeadReckoningAlgorithm;
 
-public class SpatialVariantStruct extends HLAvariantRecord<DeadReckoningAlgorithmEnum8>
+public class SpatialVariantStruct extends DiscoHlaVariantRecord<DeadReckoningAlgorithmEnum8>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -39,7 +39,7 @@ public class SpatialVariantStruct extends HLAvariantRecord<DeadReckoningAlgorith
 	//----------------------------------------------------------
 	public SpatialVariantStruct()
 	{
-		super();
+		super( DeadReckoningAlgorithmEnum8.Static );
 		
 		super.setVariant( DeadReckoningAlgorithmEnum8.Static, new SpatialStaticStruct() );
 		super.setVariant( DeadReckoningAlgorithmEnum8.DRM_FPW, new SpatialFPStruct() );
@@ -94,7 +94,7 @@ public class SpatialVariantStruct extends HLAvariantRecord<DeadReckoningAlgorith
 	public void toPdu( EntityStatePdu pdu )
 	{
 		// Set the DR type flag
-		DeadReckoningAlgorithm dr = DeadReckoningAlgorithm.fromValue(super.activeDiscriminant.getUnsignedValue());
+		DeadReckoningAlgorithm dr = DeadReckoningAlgorithm.fromValue(getDiscriminant().getUnsignedValue());
 		pdu.getDeadReckoningParams().setDeadReckoningAlgorithm( dr );
 
 		// Set the values depending on which DR implementation it is

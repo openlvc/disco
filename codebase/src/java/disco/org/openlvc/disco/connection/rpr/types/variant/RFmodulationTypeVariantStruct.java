@@ -27,7 +27,7 @@ import org.openlvc.disco.connection.rpr.types.enumerated.PulseModulationTypeEnum
 import org.openlvc.disco.connection.rpr.types.enumerated.UnmodulatedTypeEnum16;
 import org.openlvc.disco.pdu.field.MajorModulationType;
 
-public class RFmodulationTypeVariantStruct extends HLAvariantRecord<MajorRFModulationTypeEnum16>
+public class RFmodulationTypeVariantStruct extends DiscoHlaVariantRecord<MajorRFModulationTypeEnum16>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -42,9 +42,8 @@ public class RFmodulationTypeVariantStruct extends HLAvariantRecord<MajorRFModul
 	//----------------------------------------------------------
 	public RFmodulationTypeVariantStruct()
 	{
-		super();
+		super( MajorRFModulationTypeEnum16.Other );
 		
-		super.setVariant( MajorRFModulationTypeEnum16.Other, EnumHolder.from(MajorRFModulationTypeEnum16.Other) );
 		super.setVariant( MajorRFModulationTypeEnum16.Other, EnumHolder.from(MajorRFModulationTypeEnum16.Other) );
 		super.setVariant( MajorRFModulationTypeEnum16.Amplitude, EnumHolder.from(AmplitudeModulationTypeEnum16.Other) );
 		super.setVariant( MajorRFModulationTypeEnum16.AmplitudeAndAngle, EnumHolder.from(AmplitudeAngleModulationTypeEnum16.Other) );

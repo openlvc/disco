@@ -24,7 +24,7 @@ import org.openlvc.disco.connection.rpr.types.fixed.AttachedPartsStruct;
 import org.openlvc.disco.pdu.field.ParameterTypeDesignator;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
 
-public class ParameterValueVariantStruct extends HLAvariantRecord<ParameterTypeEnum32>
+public class ParameterValueVariantStruct extends DiscoHlaVariantRecord<ParameterTypeEnum32>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -39,7 +39,7 @@ public class ParameterValueVariantStruct extends HLAvariantRecord<ParameterTypeE
 	//----------------------------------------------------------
 	public ParameterValueVariantStruct()
 	{
-		super();
+		super( ParameterTypeEnum32.ArticulatedPart );
 		
 		super.setVariant( ParameterTypeEnum32.ArticulatedPart, new ArticulatedPartsStruct() );
 		super.setVariant( ParameterTypeEnum32.AttachedPart, new AttachedPartsStruct() );
@@ -79,19 +79,25 @@ public class ParameterValueVariantStruct extends HLAvariantRecord<ParameterTypeE
 	}
 
 	/**
-	 * @return The attached parts variant struct (whether it is the active disciminant or not)
+	 * @return The attached parts variant struct but only if it is active, otherwise null
 	 */
 	public AttachedPartsStruct getAttachedParts()
 	{
-		return (AttachedPartsStruct)associations.get( ParameterTypeEnum32.AttachedPart );
+		if( getDiscriminant() != ParameterTypeEnum32.AttachedPart )
+			return null;
+		else
+			return (AttachedPartsStruct)getValue();
 	}
 	
 	/**
-	 * @return The articulated parts variant struct (whether it is the active disciminant or not)
+	 * @return The articulated parts variant struct but only if it is active, otherwise null
 	 */
 	public ArticulatedPartsStruct getArticulatedParts()
 	{
-		return (ArticulatedPartsStruct)associations.get( ParameterTypeEnum32.ArticulatedPart );
+		if( getDiscriminant() != ParameterTypeEnum32.ArticulatedPart )
+			return null;
+		else
+			return (ArticulatedPartsStruct)getValue();
 	}
 
 	//----------------------------------------------------------

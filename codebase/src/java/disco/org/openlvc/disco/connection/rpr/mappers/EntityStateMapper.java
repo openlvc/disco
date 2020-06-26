@@ -668,6 +668,12 @@ public class EntityStateMapper extends AbstractMapper
 			
 			// Request an attribute update for the object so that we can get everything we need
 			super.requestAttributeUpdate( hlaObject );
+			if( logger.isTraceEnabled() )
+			{
+				logger.trace( "hla >> dis (Discover) Requested attribute update for [%d] attributes of [%s]",
+				              hlaObject.getObjectAttributes().size(),
+				              hlaObject.getObjectHandle().toString() );
+			}
 		}
 	}
 
@@ -684,6 +690,7 @@ public class EntityStateMapper extends AbstractMapper
 		}
 		catch( DecoderException de )
 		{
+			de.printStackTrace();
 			throw new DiscoException( de.getMessage(), de );
 		}
 		

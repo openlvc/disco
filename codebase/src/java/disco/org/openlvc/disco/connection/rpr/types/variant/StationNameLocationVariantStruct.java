@@ -21,7 +21,7 @@ import org.openlvc.disco.connection.rpr.types.enumerated.ConstituentPartStationN
 import org.openlvc.disco.connection.rpr.types.fixed.RelativePositionStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.RelativeRangeBearingStruct;
 
-public class StationNameLocationVariantStruct extends HLAvariantRecord<ConstituentPartStationNameEnum16>
+public class StationNameLocationVariantStruct extends DiscoHlaVariantRecord<ConstituentPartStationNameEnum16>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -32,7 +32,7 @@ public class StationNameLocationVariantStruct extends HLAvariantRecord<Constitue
 	//----------------------------------------------------------
 	public StationNameLocationVariantStruct()
 	{
-		super();
+		super( ConstituentPartStationNameEnum16.Other );
 		
 		super.setVariant( ConstituentPartStationNameEnum16.OnStationXYZ, new RelativePositionStruct() );
 		super.setVariant( ConstituentPartStationNameEnum16.OnStationRangeBearing, new RelativeRangeBearingStruct() );

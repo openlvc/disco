@@ -22,7 +22,7 @@ import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.ReferenceSystemEnum8;
 import org.openlvc.disco.pdu.record.EulerAngles;
 
-public class BeamAntennaStruct extends HLAfixedRecord
+public class BeamAntennaStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

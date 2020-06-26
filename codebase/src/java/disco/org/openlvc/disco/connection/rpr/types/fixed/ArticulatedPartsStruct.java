@@ -23,7 +23,7 @@ import org.openlvc.disco.connection.rpr.types.enumerated.ArticulatedTypeMetricEn
 import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
 
-public class ArticulatedPartsStruct extends HLAfixedRecord
+public class ArticulatedPartsStruct extends DiscoHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
