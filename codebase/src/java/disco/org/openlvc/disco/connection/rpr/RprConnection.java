@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
@@ -175,7 +176,7 @@ public class RprConnection implements IConnection
 		//
 		// Find and parse all the FOM modules we'll need, building up a structure we
 		// can query in the event handlers
-		URL[] modules = getRprModules();
+		URL[] modules = getRprJoinModules();
 		if( modules.length == 0 )
 			throw new DiscoException( "Did not find the RPR FOM Modules" );
 		
@@ -304,7 +305,7 @@ public class RprConnection implements IConnection
 			try
 			{
 				logger.debug( "Creating Federation ["+federation+"]" );
-				this.rtiamb.createFederationExecution( federation, getRprModules() );
+				this.rtiamb.createFederationExecution( federation, getRprCreateModules() );
 			}
 			catch( FederationExecutionAlreadyExists feae )
 			{
@@ -337,7 +338,7 @@ public class RprConnection implements IConnection
 				this.rtiamb.joinFederationExecution( federateName,
 				                                     federateType,
 				                                     federation,
-				                                     getRprModules() );
+				                                     getRprJoinModules() );
 				
 				// everything good! let's bust out
 				break;
@@ -546,22 +547,40 @@ public class RprConnection implements IConnection
 		return this.opscenter;
 	}
 
-	private URL[] getRprModules()
+	private URL[] getRprJoinModules()
 	{
 		// Get references to all the FOM modules we want to load
 		ClassLoader loader = getClass().getClassLoader();
-		return new URL[]
-		{
-		 	//loader.getResource( "hla/rpr2/RPR-DiscoDefaults.xml" ),
-		 	loader.getResource( "hla/rpr2/HLAstandardMIM.xml" ),
-			loader.getResource( "hla/rpr2/RPR-Foundation_v2.0_draft21.xml" ),
-			loader.getResource( "hla/rpr2/RPR-Base_v2.0_draft21.xml" ),
-			loader.getResource( "hla/rpr2/RPR-Communication_v2.0_draft21.xml" ),
-			loader.getResource( "hla/rpr2/RPR-Physical_v2.0_draft21.xml" ),
-			loader.getResource( "hla/rpr2/RPR-DER_v2.0_draft21.xml" ),
-			loader.getResource( "hla/rpr2/RPR-SIMAN_v2.0_draft21.xml" )
-		};
+		ArrayList<URL> joinlist = new ArrayList<>();
+		joinlist.add( loader.getResource("hla/rpr2/HLAstandardMIM.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-Foundation_v2.0_draft21.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-Base_v2.0_draft21.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-Communication_v2.0_draft21.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-Physical_v2.0_draft21.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-DER_v2.0_draft21.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-SIMAN_v2.0_draft21.xml") );
+		return joinlist.toArray( new URL[]{} );
 	}
+	
+	private URL[] getRprCreateModules()
+	{
+		// When creating a federation we have to provide some switch values.
+		// Let's take the join modules array and add the switches to the front.
+		
+		// Get the join modules
+		URL[] joinModules = getRprJoinModules();
+
+		// Get the create-only modules
+		ClassLoader loader = getClass().getClassLoader();
+		URL[] createModules = new URL[] {
+		    loader.getResource( "hla/rpr2/RPR-DiscoDefaults.xml")
+		};
+		
+		// Slam the arrays together and return
+		return Stream.concat( Arrays.stream(createModules), Arrays.stream(joinModules) )
+		             .toArray( URL[]::new );
+	}
+		
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

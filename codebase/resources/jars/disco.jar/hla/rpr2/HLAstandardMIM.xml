@@ -2921,6 +2921,7 @@
       </note>
    </notes>
 
+   <!--
     <switches>
         <autoProvide isEnabled="true"/>
         <conveyRegionDesignatorSets isEnabled="false"/>
@@ -2934,4 +2935,5 @@
         <delaySubscriptionEvaluation isEnabled="false"/>
         <automaticResignAction resignAction="CancelThenDeleteThenDivest"/>
     </switches>
+    -->
 </objectModel>
