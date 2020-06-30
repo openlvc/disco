@@ -15,12 +15,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.types.array;
+package org.openlvc;
 
-import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
-import hla.rti1516e.encoding.DataElementFactory;
+import org.openlvc.disco.application.DisApplication;
+import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
+import org.openlvc.disco.pdu.emissions.EmitterBeam;
 
-public class SignalDataLengthlessArray1Plus extends RPRlengthlessArray<HLAoctet>
+public class PooTest
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -33,10 +35,6 @@ public class SignalDataLengthlessArray1Plus extends RPRlengthlessArray<HLAoctet>
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public SignalDataLengthlessArray1Plus( HLAoctet... values )
-	{
-		super( new SignalDataLengthlessArray1Plus.Factory(), values );
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
@@ -45,40 +43,50 @@ public class SignalDataLengthlessArray1Plus extends RPRlengthlessArray<HLAoctet>
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void setValue( byte[] values )
-	{
-		clear();
-		for( byte temp : values )
-			this.add( new HLAoctet(temp) );
-	}
-
-	public byte[] getDisValue()
-	{
-		byte[] bytes = new byte[this.size()];
-		for( int i = 0; i < this.size(); i++ )
-			bytes[i] = super.get(i).getValue();
-		
-		return bytes;
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-
-	public static SignalDataLengthlessArray1Plus from( HLAoctet... values )
+	public static DiscoConfiguration getRprConfiguration()
 	{
-		return new SignalDataLengthlessArray1Plus( values );
+		DiscoConfiguration configuration = new DiscoConfiguration();
+		configuration.getRprConfiguration().setFederateName( "Poo" );
+		configuration.getRprConfiguration().setFederationName( "VRF" );
+		configuration.getRprConfiguration().setRtiProvider( RtiProvider.Pitch );
+		configuration.setConnection( "rpr" );
+		return configuration;
 	}
 	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// DataElement Factory Methods   //////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	private static class Factory implements DataElementFactory<HLAoctet>
+	public static DiscoConfiguration getDisConfiguration()
 	{
-    	@Override
-    	public HLAoctet createElement( int index )
-    	{
-    		return new HLAoctet();
-    	}
+		DiscoConfiguration configuration = new DiscoConfiguration();
+		configuration.getUdpConfiguration().setAddress( "BROADCAST" );
+		configuration.getUdpConfiguration().setNetworkInterface( "SITE_LOCAL" );
+		return configuration;
+	}
+	
+	public static void main( String[] args ) throws Exception
+	{
+		DiscoConfiguration configuration = getRprConfiguration();
+		//configuration.getLoggingConfiguration().setLevel( "TRACE" );
+		DisApplication app = new DisApplication( configuration );
+		app.start();
+		
+		while( true )
+		{
+			Thread.sleep( 2000 );
+			
+			long time = System.currentTimeMillis();
+
+			// Entities
+			System.out.println( time+" [Entities]: "+app.getPduStore().getEntityStore().getAllMarkings().size() );
+			// Emitters
+			for( EmitterBeam beam : app.getPduStore().getEmitterStore().getActiveBeams() )
+			{
+				boolean noParams = beam.getParameterData() == null;
+				System.out.println( time+" [Beam] "+noParams+": "+beam.toString() );
+			}
+			System.out.println( " == End of Record ==" );
+		}
 	}
 }

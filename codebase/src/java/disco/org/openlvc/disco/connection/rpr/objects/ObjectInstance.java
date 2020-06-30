@@ -41,6 +41,8 @@ public abstract class ObjectInstance
 	                           // spec doesn't define a concrete type for handles. Shoot me.
 	private boolean loaded;
 
+	private long lastUpdated;
+
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -51,6 +53,7 @@ public abstract class ObjectInstance
 		this.attributes   = null;
 		this.rtiId        = null;
 		this.loaded       = false;
+		this.lastUpdated  = -1;
 	}
 
 	//----------------------------------------------------------
@@ -145,6 +148,16 @@ public abstract class ObjectInstance
 	public RTIobjectId getRtiObjectId()
 	{
 		return this.rtiId;
+	}
+	
+	public long getLastUpdatedTime()
+	{
+		return this.lastUpdated;
+	}
+	
+	public void setLastUpdatedTimeToNow()
+	{
+		this.lastUpdated = System.currentTimeMillis();
 	}
 	
 	//----------------------------------------------------------

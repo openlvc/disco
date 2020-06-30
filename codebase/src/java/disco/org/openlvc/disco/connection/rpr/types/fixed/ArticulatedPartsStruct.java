@@ -46,8 +46,8 @@ public class ArticulatedPartsStruct extends DiscoHlaFixedRecord
 		this.value = new HLAfloat32BE( 0 );
 		
 		// Add to the elements in the parent so that it can do its generic fixed-record stuff
-		super.add( typeMetric );
 		super.add( theClass );
+		super.add( typeMetric );
 		super.add( value );
 	}
 
@@ -64,16 +64,16 @@ public class ArticulatedPartsStruct extends DiscoHlaFixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void setValue( ArticulationParameter articulation )
 	{
-		this.typeMetric.setEnum( ArticulatedTypeMetricEnum32.valueOf(articulation.getArticulatedPartTypeMetric()) );
 		this.theClass.setEnum( ArticulatedPartsTypeEnum32.valueOf(articulation.getArticulatedPartTypeClass()) );
+		this.typeMetric.setEnum( ArticulatedTypeMetricEnum32.valueOf(articulation.getArticulatedPartTypeMetric()) );
 		this.value.setValue( articulation.getArticulatedPartParameterValue() );
 	}
 
 	public ArticulationParameter getDisValue()
 	{
 		ArticulationParameter parameter = new ArticulationParameter();
-		parameter.setArticulatedPartTypeMetric( (short)this.typeMetric.getEnum().getValue() );
 		parameter.setArticulatedPartTypeClass( (int)this.theClass.getEnum().getValue() );
+		parameter.setArticulatedPartTypeMetric( (short)this.typeMetric.getEnum().getValue() );
 		parameter.setArticulatedPartParameterValue( this.value.getValue() );
 		return parameter;
 	}

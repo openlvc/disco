@@ -49,6 +49,14 @@ public class EntityIdentifierStruct extends DiscoHlaFixedRecord
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
+	public String toString()
+	{
+		return federateIdentifier.getSiteId()+"-"+
+		       federateIdentifier.getApplicationId()+"-"+
+		       entityNumber.getValue();
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

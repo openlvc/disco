@@ -20,7 +20,6 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 import org.openlvc.disco.pdu.record.EventIdentifier;
-import org.openlvc.disco.pdu.record.SimulationAddress;
 
 public class EventIdentifierStruct extends DiscoHlaFixedRecord
 {
@@ -69,7 +68,7 @@ public class EventIdentifierStruct extends DiscoHlaFixedRecord
 	{
 		EventIdentifier id = new EventIdentifier();
 		id.setEventID( eventCount.getValue() );
-		id.setSimulationAddress( SimulationAddress.fromString(issuingObjectIdentifier.getValue()) );
+		//id.setSimulationAddress( SimulationAddress.fromString(issuingObjectIdentifier.getValue()) );
 		return id;
 	}
 	

@@ -64,7 +64,7 @@ public class EmitterBeamMapper extends AbstractMapper
 	private AttributeClass frequencyRange;
 	private AttributeClass pulseRepetitionFrequency;
 	private AttributeClass pulseWidth;
-	private AttributeClass sweepSync;
+	private AttributeClass sweepSynch;
 	// JammerBeam
 	private AttributeClass jammingModeSequence;
 	private AttributeClass highDensityJam;
@@ -115,7 +115,7 @@ public class EmitterBeamMapper extends AbstractMapper
 		this.frequencyRange = jammerClass.getAttribute( "FrequencyRange" );
 		this.pulseRepetitionFrequency = jammerClass.getAttribute( "PulseRepetitionFrequency" );
 		this.pulseWidth = jammerClass.getAttribute( "PulseWidth" );
-		this.sweepSync = jammerClass.getAttribute( "SweepSync" );
+		this.sweepSynch = jammerClass.getAttribute( "SweepSynch" );
 		// JammerBeam
 		this.jammingModeSequence = jammerClass.getAttribute( "JammingModeSequence" );
 		this.highDensityJam = jammerClass.getAttribute( "HighDensityJam" );
@@ -259,7 +259,7 @@ public class EmitterBeamMapper extends AbstractMapper
 		// SweepSync
 		wrapper = new ByteWrapper( object.getSweepSync().getEncodedLength() );
 		object.getSweepSync().encode(wrapper);
-		map.put( sweepSync.getHandle(), wrapper.array() );
+		map.put( sweepSynch.getHandle(), wrapper.array() );
 		
 		if( object instanceof JammerBeam )
 		{
@@ -307,12 +307,13 @@ public class EmitterBeamMapper extends AbstractMapper
 		if( event.theClass == this.jammerClass ||
 			event.theClass == this.radarClass )
 		{
+System.out.println( "handleDiscover(EmitterBeam)" );
 			EmitterBeamRpr hlaObject = event.theClass == this.jammerClass ? new JammerBeam() :
 			                                                                new RadarBeam();
 			hlaObject.setObjectClass( event.theClass );
 			hlaObject.setObjectHandle( event.theObject );
 			hlaObject.setObjectName( event.objectName );
-			objectStore.addDiscoveredHlaObject( event.theObject, hlaObject );
+			objectStore.addDiscoveredHlaObject( hlaObject );
 
 			if( logger.isDebugEnabled() )
 			{
@@ -375,6 +376,8 @@ public class EmitterBeamMapper extends AbstractMapper
 		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 		//         on the other side. This is inefficient and distasteful. Fix me.
 		opscenter.getPduReceiver().receive( pdu.toByteArray() );
+		rprSystem.setLastUpdatedTimeToNow();
+		rprBeam.setLastUpdatedTimeToNow();
 	}
 	
 	private void translateTargets( EmitterBeamRpr rprBeam, EmitterBeam disBeam )
@@ -507,9 +510,9 @@ public class EmitterBeamMapper extends AbstractMapper
 		}
 
 		// SweepSync
-		if( map.containsKey(sweepSync.getHandle()) )
+		if( map.containsKey(sweepSynch.getHandle()) )
 		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(sweepSync.getHandle()) );
+    		ByteWrapper wrapper = new ByteWrapper( map.get(sweepSynch.getHandle()) );
     		object.getSweepSync().decode( wrapper );
 		}
 		

@@ -69,6 +69,7 @@ public class RprConfiguration
 	private static final String PROP_CREATE_FEDERATION  = "disco.rpr.createFederation";
 	private static final String PROP_RANDOMIZE_FED_NAME = "disco.rpr.randomizeFedName";
 	private static final String PROP_LOCAL_SETTINGS     = "disco.rpr.localSettings";
+	private static final String PROP_RPR_HEARTBEAT_TIME = "disco.rpr.heartbeatPeriod";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -315,6 +316,32 @@ public class RprConfiguration
 	{
 		if( localSettings != null )
 			parent.setProperty( PROP_LOCAL_SETTINGS, localSettings );
+	}
+
+	/**
+	 * DIS requires heartbeats, HLA does not. This value is the max period of time we will allow
+	 * a PDU to _not_ be sent for an HLA discovered object before we artifically generate one.
+	 * This only impacts objects discovered from/originating from the HLA. If 0, the heartbeater
+	 * is disabled.
+	 * 
+	 * @return The max period between PDU heartbeats in milliseconds
+	 */
+	public long getHeartbeatPeriod()
+	{
+		return Long.parseLong(parent.getProperty(PROP_RPR_HEARTBEAT_TIME,"30000") );
+	}
+
+	/**
+	 * DIS requires heartbeats, HLA does not. This value is the max period of time we will allow
+	 * a PDU to _not_ be sent for an HLA discovered object before we artifically generate one.
+	 * This only impacts objects discovered from/originating from the HLA. If set to 0, the
+	 * heartbeater is disabled.
+	 * 
+	 * @param period The max period between PDUs before we generate an artifical update. Milliseconds.
+	 */
+	public void setHeartbeatPeriod( long period )
+	{
+		parent.setProperty( PROP_RPR_HEARTBEAT_TIME, ""+period );
 	}
 
 	//----------------------------------------------------------

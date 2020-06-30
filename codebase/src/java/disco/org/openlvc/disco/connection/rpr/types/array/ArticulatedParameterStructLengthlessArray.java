@@ -35,9 +35,9 @@ public class ArticulatedParameterStructLengthlessArray
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public ArticulatedParameterStructLengthlessArray()
+	public ArticulatedParameterStructLengthlessArray( ArticulatedParameterStruct... values )
 	{
-		super( new ArticulatedParameterStructLengthlessArray.Factory() );
+		super( new ArticulatedParameterStructLengthlessArray.Factory(), values );
 	}
 
 	//----------------------------------------------------------
@@ -54,13 +54,7 @@ public class ArticulatedParameterStructLengthlessArray
 	
 	public static ArticulatedParameterStructLengthlessArray from( ArticulatedParameterStruct... values )
 	{
-		ArticulatedParameterStructLengthlessArray array =
-			new ArticulatedParameterStructLengthlessArray();
-
-		for( ArticulatedParameterStruct value : values )
-			array.addElement( value );
-		
-		return array;
+		return new ArticulatedParameterStructLengthlessArray( values );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

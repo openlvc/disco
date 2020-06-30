@@ -294,7 +294,7 @@ public abstract class PhysicalEntity extends BaseEntity
 		{
 			ArticulatedParameterStruct struct = new ArticulatedParameterStruct();
 			struct.setValue( param );
-			articulatedParametersArray.addElement( struct );
+			articulatedParametersArray.add( struct );
 		}
 	}
 	

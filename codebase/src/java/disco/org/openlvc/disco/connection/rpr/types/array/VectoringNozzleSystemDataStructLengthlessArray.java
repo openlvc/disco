@@ -35,9 +35,9 @@ public class VectoringNozzleSystemDataStructLengthlessArray
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public VectoringNozzleSystemDataStructLengthlessArray()
+	public VectoringNozzleSystemDataStructLengthlessArray( VectoringNozzleSystemDataStruct... values )
 	{
-		super( new VectoringNozzleSystemDataStructLengthlessArray.Factory() );
+		super( new VectoringNozzleSystemDataStructLengthlessArray.Factory(), values );
 	}
 
 	//----------------------------------------------------------
@@ -54,13 +54,7 @@ public class VectoringNozzleSystemDataStructLengthlessArray
 	
 	public static VectoringNozzleSystemDataStructLengthlessArray from( VectoringNozzleSystemDataStruct... values )
 	{
-		VectoringNozzleSystemDataStructLengthlessArray array =
-			new VectoringNozzleSystemDataStructLengthlessArray();
-
-		for( VectoringNozzleSystemDataStruct value : values )
-			array.addElement( value );
-		
-		return array;
+		return new VectoringNozzleSystemDataStructLengthlessArray( values );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

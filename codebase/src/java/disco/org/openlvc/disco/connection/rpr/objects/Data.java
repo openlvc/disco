@@ -80,7 +80,7 @@ public class Data extends InteractionInstance
 		// FixedDatums
 		fixedDatums.clear();
 		for( FixedDatum fd : pdu.getFixedDatumRecords() )
-			fixedDatums.addElement( new FixedDatumStruct(fd.getDatumId(),fd.getDatumValue()) );
+			fixedDatums.add( new FixedDatumStruct(fd.getDatumId(),fd.getDatumValue()) );
 
 		// VariableDatumSet
 		variableDatumSet.clear();

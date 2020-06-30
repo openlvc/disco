@@ -34,9 +34,9 @@ public class CoefficientsLengthlessArray1Plus extends RPRlengthlessArray<HLAfloa
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public CoefficientsLengthlessArray1Plus()
+	public CoefficientsLengthlessArray1Plus( HLAfloat32BE... values )
 	{
-		super( new CoefficientsLengthlessArray1Plus.Factory() );
+		super( new CoefficientsLengthlessArray1Plus.Factory(), values );
 	}
 
 	//----------------------------------------------------------
@@ -53,12 +53,7 @@ public class CoefficientsLengthlessArray1Plus extends RPRlengthlessArray<HLAfloa
 	
 	public static CoefficientsLengthlessArray1Plus from( HLAfloat32BE... values )
 	{
-		CoefficientsLengthlessArray1Plus array = new CoefficientsLengthlessArray1Plus();
-
-		for( HLAfloat32BE value : values )
-			array.addElement( value );
-		
-		return array;
+		return new CoefficientsLengthlessArray1Plus( values );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

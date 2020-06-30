@@ -104,7 +104,7 @@ public class RadioTransmitter extends EmbeddedSystem
 		super();
 		
 		this.antennaPatternDataArray = new AntennaPatternVariantStructLengthlessArray();
-		this.antennaPatternDataArray.addElement( new AntennaPatternVariantStruct() );
+		this.antennaPatternDataArray.add( new AntennaPatternVariantStruct() );
 
 		this.cryptographicMode = new EnumHolder<>( CryptographicModeEnum32.BasebandEncryption );
 		this.cryptoSystem = new EnumHolder<>( CryptographicSystemTypeEnum16.Other );

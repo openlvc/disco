@@ -18,6 +18,7 @@
 package org.openlvc.disco.connection.rpr.types.array;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import hla.rti1516e.encoding.ByteWrapper;
@@ -49,7 +50,7 @@ import hla.rti1516e.encoding.EncoderException;
  * 
  * @param <T>
  */
-public class RPRlengthlessArray<T extends DataElement> extends HLAvariableArray<T>
+public class RPRlengthlessArray<T extends DataElement> implements DataElement, Iterable<T>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -58,6 +59,9 @@ public class RPRlengthlessArray<T extends DataElement> extends HLAvariableArray<
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private DataElementFactory<T> factory;
+	private List<T> items;
+	private int boundary;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -65,7 +69,18 @@ public class RPRlengthlessArray<T extends DataElement> extends HLAvariableArray<
 	@SafeVarargs
 	public RPRlengthlessArray( DataElementFactory<T> factory, T... values )
 	{
-		super( factory, values );
+		// perform checks
+		if( factory == null )
+			throw new IllegalArgumentException( "Cannot create HLA array type with null factory" );
+		
+		// initialize
+		this.factory = factory;
+		this.items = new ArrayList<>();
+		this.boundary = -1;
+
+		// populate
+		for( T value : values )
+			items.add(value);
 	}
 
 	//----------------------------------------------------------
@@ -76,48 +91,115 @@ public class RPRlengthlessArray<T extends DataElement> extends HLAvariableArray<
 	/// Data Element Methods   /////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
+	public int getOctetBoundary()
+	{
+		if( boundary == -1 )
+		{
+			// Get the max boundary of any contained item
+			int maxBoundary = 1; // Minimum of HLAoctet
+			for( T item : items )
+				maxBoundary = Math.max(item.getOctetBoundary(),maxBoundary);
+			
+			// cache it
+			this.boundary = maxBoundary;
+		}
+		
+		return boundary;
+	}
+
+	@Override
 	public int getEncodedLength()
 	{
-		return super.getEncodedLength()-4;
+		int counter = 0;
+		for( DataElement item : this.items )
+		{
+			int boundary = item.getOctetBoundary();
+			int padding = counter % boundary;
+			int length = item.getEncodedLength();
+			counter += (length + padding);
+		}
+
+		return counter;
 	}
 
-	public void encode( ByteWrapper byteWrapper ) throws EncoderException
+	@Override
+	public void encode( ByteWrapper buffer ) throws EncoderException
 	{
-		if( byteWrapper.remaining() < this.getEncodedLength() )
-		{
-			throw new EncoderException( "Insufficient buffer space remaining to encode this value ("+
-			                            "required="+this.getEncodedLength()+
-			                            ", available="+byteWrapper.remaining() );
-		}
-		
-		// Write the elements
-		for( T element : super.elements )
-			element.encode( byteWrapper );
+		// no length to store, so just pass through to each data element
+		items.forEach( item -> item.encode(buffer) );
 	}
 
-	public void decode( ByteWrapper byteWrapper ) throws DecoderException
+	@Override
+	public byte[] toByteArray() throws EncoderException
 	{
-		// Hopefully we've been initialized
-		// If not, we could just decode as many as we have in the array currently and pray
-		// that there is enough space in the wrapper, but let's just exception out for now.
-		if( super.factory == null )
-			throw new DecoderException( "No factory to create elements from" );
-		
-		List<T> newlist = new ArrayList<T>();
+		ByteWrapper buffer = new ByteWrapper( getEncodedLength() );
+		encode( buffer );
+		return buffer.array();
+	}
 
-		// Grab as many as we can until we exhause the wrapper
-		// Don't know what the boundary will be, so let's start with the default
-		int boundary = this.factory.createElement(0).getOctetBoundary();
-		
-		while( byteWrapper.remaining() >= boundary )
+	@Override
+	public void decode( ByteWrapper buffer ) throws DecoderException
+	{
+		int count = 0;
+		while( buffer.remaining() > 0 )
 		{
-			T element = this.factory.createElement(0);
-			element.decode( byteWrapper );
-			newlist.add( element );
+			// If we have an element already in the array, decode over it, otherwise create
+			T element = null;
+			if( items.size() > count )
+				element = items.get(count);
+			else
+				element = createElement();
+			
+			// Decode into the element
+			element.decode( buffer );
+			++count;
 		}
 		
-		// store the new list
-		this.elements = newlist;
+		// Burn any elements after what we just decoded
+		while( items.size() > count )
+			items.remove(count);
+	}
+
+	@Override
+	public void decode( byte[] bytes ) throws DecoderException
+	{
+		this.decode( new ByteWrapper(bytes) );
+	}
+
+	private final T createElement()
+	{
+		T temp = factory.createElement(0);
+		items.add( temp );
+		return temp;
+	}	
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
+	public Iterator<T> iterator()
+	{
+		return items.iterator();
+	}
+
+	public int size()
+	{
+		return items.size();
+	}
+	
+	public void clear()
+	{
+		items.clear();
+	}
+	
+	public void add( T value )
+	{
+		items.add( value );
+	}
+	
+	public T get( int index )
+	{
+		return items.get( index );
 	}
 
 	//----------------------------------------------------------

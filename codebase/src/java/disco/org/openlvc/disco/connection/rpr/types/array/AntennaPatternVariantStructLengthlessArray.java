@@ -35,9 +35,9 @@ public class AntennaPatternVariantStructLengthlessArray
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public AntennaPatternVariantStructLengthlessArray()
+	public AntennaPatternVariantStructLengthlessArray( AntennaPatternVariantStruct... values )
 	{
-		super( new AntennaPatternVariantStructLengthlessArray.Factory() );
+		super( new AntennaPatternVariantStructLengthlessArray.Factory(), values );
 	}
 
 	//----------------------------------------------------------
@@ -54,13 +54,7 @@ public class AntennaPatternVariantStructLengthlessArray
 	
 	public static AntennaPatternVariantStructLengthlessArray from( AntennaPatternVariantStruct... values )
 	{
-		AntennaPatternVariantStructLengthlessArray array =
-			new AntennaPatternVariantStructLengthlessArray();
-
-		for( AntennaPatternVariantStruct value : values )
-			array.addElement( value );
-		
-		return array;
+		return new AntennaPatternVariantStructLengthlessArray( values );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

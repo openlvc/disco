@@ -15,14 +15,21 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.application;
+package org.openlvc.disco.connection.rpr;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.openlvc.disco.connection.rpr.objects.BaseEntity;
+import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 
-public class DeleteReaper implements Runnable
+/**
+ * This class generates artifical heartbeat PDUs for objects that have been discovered from
+ * the HLA. It will loop over the object store and for appropriate types (PhysicalEntity for
+ * example) it will generate a heartbeat PDU if there has not been one on a configurable period
+ * of time.
+ */
+public class RprHeartbeater implements Runnable
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -31,23 +38,19 @@ public class DeleteReaper implements Runnable
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private DisApplication app;
-	private Set<IDeleteReaperManaged> targets;
-	private volatile long deleteTimeout;
+	private RprConnection connection;
 	private Logger logger;
-	
+	private volatile long heartbeatPeriod;
 	private Thread thread;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected DeleteReaper( DisApplication app )
+	protected RprHeartbeater( RprConnection connection )
 	{
-		this.app = app;
-		this.targets = new HashSet<>();
-		this.deleteTimeout = 60000;
+		this.connection = connection;
 		this.logger = null; // set in run()
-		
+		this.heartbeatPeriod = 60000;
 		this.thread = null; // set in start()
 	}
 
@@ -55,12 +58,9 @@ public class DeleteReaper implements Runnable
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Lifecycle Methods   ////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
 	public void start()
 	{
-		this.thread = new Thread( this, "DeleteReaper" );
+		this.thread = new Thread( this, "RprHeartbeater" );
 		this.thread.start();
 	}
 	
@@ -77,15 +77,15 @@ public class DeleteReaper implements Runnable
 	
 	public void run()
 	{
-		this.logger = app.getLogger();
-		if( this.deleteTimeout == 0 )
+		this.logger = this.connection.getLogger();
+		if( this.heartbeatPeriod == 0 )
 		{
-			logger.info( "Disabling delete timeout reaper: Delete timeout is 0" );
+			logger.info( "Disabling RPR Heartbeater: Heartbeat period set to 0" );
 			return;
 		}
 		else
 		{
-			logger.info( "Starting delete timeout reaper: Max age %d millis", deleteTimeout );
+			logger.info( "Starting RPR Heartbeater: Max age %d millis", heartbeatPeriod );
 		}
 
 		while( Thread.interrupted() == false )
@@ -93,7 +93,7 @@ public class DeleteReaper implements Runnable
 			// Sleep for a while; typically a period 1/5th the delete timeout
 			try
 			{
-				long sleepTime = Math.max( 3000, deleteTimeout/5 ); // wait at least 3 seconds
+				long sleepTime = Math.max( 3000, heartbeatPeriod/5 ); // run at least every 3s
 				Thread.sleep( sleepTime );
 			}
 			catch( InterruptedException ie )
@@ -101,42 +101,44 @@ public class DeleteReaper implements Runnable
 				return;
 			}
 			
-			// Collect all the souls
-			harvest();
+			// Process all objects and announce
+			flush();
 		}
 	}
-	
-	private void harvest()
+
+	private void flush()
 	{
-		long timeOfDeath = System.currentTimeMillis()-app.getDeleteTimeout();
-		logger.trace( "Removing data not updated since %1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS", timeOfDeath );
+		long staleTime = System.currentTimeMillis()-heartbeatPeriod;
+		logger.trace( "hla >> dis (Heartbeat) Check for objects to heartbeat (not updated since %1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS)",
+		              staleTime );
 		
-		for( IDeleteReaperManaged target : this.targets )
+		// Entity States
+		List<ObjectInstance> oldies =
+			connection.getObjectStore().getDiscoveredHlaObjectsNotUpdatedSince( staleTime );
+		
+		int pduCount = 0;
+		for( ObjectInstance hlaObject : oldies )
 		{
-			int removed = target.removeStaleData( timeOfDeath );
-			if( removed > 0 )
-				logger.debug( "Removed [%d] records from [%s]", removed, target.getClass().getSimpleName() );
+			if( hlaObject instanceof BaseEntity == false )
+				continue;
+
+			// This is an entity state; flush it
+			connection.getOpsCenter().send( hlaObject.toPdu() );
+			++pduCount;
+			if( logger.isTraceEnabled() )
+			{
+				logger.trace( "hla >> dis (Heartbeat) Sent heartbeat EntityState for %s",
+				              ((BaseEntity)hlaObject).getEntityIdentifier().toString() );
+			}
 		}
+		
+		logger.trace( "hla >> dis (Heartbeat) Sent %d heartbeat PDUs", pduCount );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void registerTarget( IDeleteReaperManaged target )
-	{
-		this.targets.add( target );
-	}
-	
-	public void setDeleteTimeout( long millis )
-	{
-		this.deleteTimeout = millis;
-	}
-	
-	public long getDeleteTimeout()
-	{
-		return this.deleteTimeout;
-	}
-		
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

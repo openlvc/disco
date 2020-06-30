@@ -35,9 +35,9 @@ public class PropulsionSystemDataStructLengthlessArray
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public PropulsionSystemDataStructLengthlessArray()
+	public PropulsionSystemDataStructLengthlessArray( PropulsionSystemDataStruct... values )
 	{
-		super( new PropulsionSystemDataStructLengthlessArray.Factory() );
+		super( new PropulsionSystemDataStructLengthlessArray.Factory(), values );
 	}
 
 	//----------------------------------------------------------
@@ -54,12 +54,7 @@ public class PropulsionSystemDataStructLengthlessArray
 	
 	public static PropulsionSystemDataStructLengthlessArray from( PropulsionSystemDataStruct... values )
 	{
-		PropulsionSystemDataStructLengthlessArray array = new PropulsionSystemDataStructLengthlessArray();
-
-		for( PropulsionSystemDataStruct value : values )
-			array.addElement( value );
-		
-		return array;
+		return new PropulsionSystemDataStructLengthlessArray( values );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

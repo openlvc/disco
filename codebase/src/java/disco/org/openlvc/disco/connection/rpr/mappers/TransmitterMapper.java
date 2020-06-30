@@ -288,7 +288,7 @@ public class TransmitterMapper extends AbstractMapper
 			hlaObject.setObjectClass( event.theClass );
 			hlaObject.setObjectHandle( event.theObject );
 			hlaObject.setObjectName( event.objectName );
-			objectStore.addDiscoveredHlaObject( event.theObject, hlaObject );
+			objectStore.addDiscoveredHlaObject( hlaObject );
 
 			if( logger.isDebugEnabled() )
 			{
@@ -322,7 +322,10 @@ public class TransmitterMapper extends AbstractMapper
 		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 		//         on the other side. This is inefficient and distasteful. Fix me.
 		if( event.hlaObject.isLoaded() )
+		{
 			opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
+			event.hlaObject.setLastUpdatedTimeToNow();
+		}
 	}
 
 	private void deserializeFromHla( RadioTransmitter object, AttributeHandleValueMap map )

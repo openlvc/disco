@@ -80,12 +80,12 @@ public class DataQuery extends InteractionInstance
 		// FixedDatums
 		fixedDatumIdentifiers.clear();
 		for( Long fixed : pdu.getFixedDatumIds() )
-			fixedDatumIdentifiers.addElement( new RPRunsignedInteger32BE(fixed) );
+			fixedDatumIdentifiers.add( new RPRunsignedInteger32BE(fixed) );
 
 		// VariableDatumSet
 		variableDatumIdentifiers.clear();
 		for( Long variable : pdu.getVariableDatumIds() )
-			variableDatumIdentifiers.addElement( new RPRunsignedInteger32BE(variable) );
+			variableDatumIdentifiers.add( new RPRunsignedInteger32BE(variable) );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

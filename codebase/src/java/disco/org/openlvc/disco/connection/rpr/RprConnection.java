@@ -28,16 +28,22 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.bus.ErrorHandler;
 import org.openlvc.disco.bus.MessageBus;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.connection.Metrics;
+import org.openlvc.disco.connection.rpr.mappers.DataMapper;
+import org.openlvc.disco.connection.rpr.mappers.DataQueryMapper;
+import org.openlvc.disco.connection.rpr.mappers.EmitterBeamMapper;
+import org.openlvc.disco.connection.rpr.mappers.EmitterSystemMapper;
 import org.openlvc.disco.connection.rpr.mappers.EntityStateMapper;
 import org.openlvc.disco.connection.rpr.mappers.HlaDiscover;
 import org.openlvc.disco.connection.rpr.mappers.HlaEvent;
 import org.openlvc.disco.connection.rpr.mappers.HlaInteraction;
 import org.openlvc.disco.connection.rpr.mappers.HlaReflect;
+import org.openlvc.disco.connection.rpr.mappers.SetDataMapper;
 import org.openlvc.disco.connection.rpr.mappers.SignalMapper;
 import org.openlvc.disco.connection.rpr.mappers.TransmitterMapper;
 import org.openlvc.disco.connection.rpr.model.FomHelpers;
@@ -95,6 +101,9 @@ public class RprConnection implements IConnection
 	private MessageBus<PDU> pduBus;
 	private MessageBus<HlaEvent> hlaBus;
 
+	// Local Services
+	private RprHeartbeater pduHeartbeater;
+	
 	// Metrics
 	private Metrics metrics;
 
@@ -117,6 +126,9 @@ public class RprConnection implements IConnection
 		this.objectStore = null;  // set in open()
 		this.pduBus = null;       // set in open()
 		this.hlaBus = null;       // set in open()
+
+		// Local Services
+		this.pduHeartbeater = null; // set in open()
 		
 		// Metrics
 		this.metrics = null;      // set in open()
@@ -138,7 +150,13 @@ public class RprConnection implements IConnection
 	@Override
 	public Collection<PduType> getSupportedPduTypes()
 	{
-		return Arrays.asList( PduType.EntityState, PduType.Transmitter, PduType.Signal ); 
+		return Arrays.asList( PduType.EntityState,
+		                      PduType.Transmitter,
+		                      PduType.Signal,
+		                      PduType.Emission,
+		                      PduType.DataQuery,
+		                      PduType.Data,
+		                      PduType.SetData ); 
 	}
 	
 	/**
@@ -169,6 +187,8 @@ public class RprConnection implements IConnection
 		this.pduBus = new MessageBus<>();
 		this.pduBus.setThrowExceptionOnError( true ); // we want this so we can do discard counting
 		this.hlaBus = new MessageBus<>();
+		this.hlaBus.subscribe( new HlaBusExceptionLogger() );
+		this.pduHeartbeater = new RprHeartbeater( this );
 
 		this.metrics = new Metrics();
 
@@ -193,6 +213,9 @@ public class RprConnection implements IConnection
 		//
 		// Initalize and connect to the federation
 		this.initializeFederation();
+		
+		// Step 4. Start Local Services
+		this.pduHeartbeater.start();
 	}
 
 	/**
@@ -200,15 +223,28 @@ public class RprConnection implements IConnection
 	 */
 	private void registerMappers()
 	{
-		EntityStateMapper esMapper = new EntityStateMapper(this);
-		TransmitterMapper txMapper = new TransmitterMapper(this);
-		SignalMapper      sgMapper = new SignalMapper(this);
+		// Entity & Warfare
+		EntityStateMapper   esMapper  = new EntityStateMapper(this);
+		// Communications
+		TransmitterMapper   txMapper  = new TransmitterMapper(this);
+		SignalMapper        sgMapper  = new SignalMapper(this);
+		// Emissions
+		EmitterSystemMapper emsMapper = new EmitterSystemMapper(this);
+		EmitterBeamMapper   embMapper = new EmitterBeamMapper(this);
+		// Sim Mgmt
+		DataQueryMapper     dqMapper  = new DataQueryMapper(this);
+		DataMapper          daMapper  = new DataMapper(this);
+		SetDataMapper       sdMapper  = new SetDataMapper(this);
 		
 		// Subscribe to PDU Bus
 		pduBus.subscribe( esMapper, txMapper, sgMapper );
+		pduBus.subscribe( emsMapper, embMapper );
+		pduBus.subscribe( dqMapper, daMapper, sdMapper );
 		
 		// Subscribe to HLA Event Bus
 		hlaBus.subscribe( esMapper, txMapper, sgMapper );
+		hlaBus.subscribe( emsMapper, embMapper );
+		hlaBus.subscribe( dqMapper, daMapper, sdMapper );
 	}
 	
 	/**
@@ -217,6 +253,10 @@ public class RprConnection implements IConnection
 	@Override
 	public void close() throws DiscoException
 	{
+		// Stop local services
+		this.pduHeartbeater.stop();
+		
+		// Clean up the federation
 		this.cleanupFederation();
 	}
 
@@ -585,4 +625,19 @@ public class RprConnection implements IConnection
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Inner Class: HlaBusExceptionLogger   ///////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	// Class for capturing and logging exceptions in the processing of HLA bus handlers
+	public class HlaBusExceptionLogger
+	{
+		@ErrorHandler
+		public void hlaBusError( Throwable throwable, Object target )
+		{
+			logger.warn( "hla >> dis (Exception) "+throwable.getMessage(), throwable );
+		}
+	}
+
 }

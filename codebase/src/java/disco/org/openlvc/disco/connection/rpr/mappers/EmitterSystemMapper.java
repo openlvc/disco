@@ -81,8 +81,8 @@ public class EmitterSystemMapper extends AbstractMapper
 		// Emitter System
 		this.emitterFunctionCode = hlaClass.getAttribute( "EmitterFunctionCode" );
 		this.emitterType = hlaClass.getAttribute( "EmitterType" );
-		this.emitterIndex = hlaClass.getAttribute( "emitterIndex" );
-		this.eventIdentifier = hlaClass.getAttribute( "eventIdentifier" );
+		this.emitterIndex = hlaClass.getAttribute( "EmitterIndex" );
+		this.eventIdentifier = hlaClass.getAttribute( "EventIdentifier" );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -175,7 +175,7 @@ public class EmitterSystemMapper extends AbstractMapper
 			hlaObject.setObjectClass( event.theClass );
 			hlaObject.setObjectHandle( event.theObject );
 			hlaObject.setObjectName( event.objectName );
-			objectStore.addDiscoveredHlaObject( event.theObject, hlaObject );
+			objectStore.addDiscoveredHlaObject( hlaObject );
 			
 			if( logger.isDebugEnabled() )
 			{

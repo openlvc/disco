@@ -17,9 +17,12 @@
  */
 package org.openlvc.disco.connection.rpr;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.connection.rpr.objects.BaseEntity;
 import org.openlvc.disco.connection.rpr.objects.EmitterBeamRpr;
 import org.openlvc.disco.connection.rpr.objects.EmitterSystemRpr;
@@ -63,15 +66,15 @@ public class ObjectStore
 	public ObjectStore()
 	{
 		// DIS Object Storage
-		this.disTransmitters = new HashMap<>();
-		this.disEntities = new HashMap<>();
-		this.disEmitters = new HashMap<>();
-		this.disBeams = new HashMap<>();
+		this.disTransmitters = new ConcurrentHashMap<>();
+		this.disEntities = new ConcurrentHashMap<>();
+		this.disEmitters = new ConcurrentHashMap<>();
+		this.disBeams = new ConcurrentHashMap<>();
 		
 		// HLA Object Storage
-		this.hlaObjects = new HashMap<>();
-		this.rtiObjects = new HashMap<>();
-//		this.hlaEmitterSystems = new HashMap<>();
+		this.hlaObjects = new ConcurrentHashMap<>();
+		this.rtiObjects = new ConcurrentHashMap<>();
+//		this.hlaEmitterSystems = new ConcurrentHashMap<>();
 	}
 
 	//----------------------------------------------------------
@@ -119,7 +122,7 @@ public class ObjectStore
 		Map<Short,EmitterBeamRpr> beams = this.disBeams.get( disId );
 		if( beams == null )
 		{
-			beams = new HashMap<>();
+			beams = new ConcurrentHashMap<>();
 			this.disBeams.put( disId, beams );
 		}
 		
@@ -140,9 +143,26 @@ public class ObjectStore
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Remote HLA Object - Indexed by HLA ID   ////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public void addDiscoveredHlaObject( ObjectInstanceHandle hlaId, ObjectInstance hlaObject )
+	/**
+	 * Add the discovered HLA object to this store. It will be indexed by but its object handle
+	 * and its object name (in RPR called its RTIobjectId). If either of these values are null
+	 * insidet the given object, an exception will be thrown.
+	 *  
+	 * @param hlaObject The object to add
+	 * @throws DiscoException If the handle or name of the given object is null
+	 */
+	public void addDiscoveredHlaObject( ObjectInstance hlaObject )
+		throws DiscoException
 	{
-		this.hlaObjects.put( hlaId, hlaObject );
+		// Check to make sure we have the required values
+		if( hlaObject.getObjectHandle() == null )
+			throw new DiscoException( "Cannot add HLA Object with a null ObjectInstanceHandle" );
+		if( hlaObject.getRtiObjectId() == null )
+			throw new DiscoException( "Cannot add HLA Object with a null RTIobjectId" );
+		
+		
+		// Store the object by its ObjectInstanceHandle
+		this.hlaObjects.put( hlaObject.getObjectHandle(), hlaObject );
 		
 		// Store the object via its RTIobjectId as well. Although this is a RPR construct,
 		// it is based on the object name, which is provided in the RTI callback. As such,
@@ -192,7 +212,23 @@ public class ObjectStore
 	{
 		return this.hlaObjects.get( hlaId );
 	}
-	
+
+	/**
+	 * Get a list of all the discovered HLA objects that have NOT been updated since the given
+	 * timestamp. Will only process objects that are loaded.
+	 * 
+	 * @param timestamp The timestamp (millis since epoch) to compare object update times to
+	 * @return A list of all HLA discovered instances that have not been updated since timestamp
+	 */
+	public List<ObjectInstance> getDiscoveredHlaObjectsNotUpdatedSince( long timestamp )
+	{
+		return
+		hlaObjects.entrySet().parallelStream()
+		                     .filter( entry -> entry.getValue().isLoaded() )
+		                     .filter( entry -> entry.getValue().getLastUpdatedTime() < timestamp )
+		                     .map( entry -> entry.getValue() )
+		                     .collect( Collectors.toList() );
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// RTIobjectId Based Methods   ////////////////////////////////////////////////////////////

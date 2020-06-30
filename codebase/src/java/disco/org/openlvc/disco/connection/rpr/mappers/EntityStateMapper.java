@@ -281,11 +281,19 @@ public class EntityStateMapper extends AbstractMapper
 		// If there is no HLA object yet, we have to register one
 		if( hlaObject == null )
 		{
-			// No object registered yet, do it now
-			hlaObject = createObject( pdu.getEntityType() );
-			hlaObject.setObjectClass( this.hlaClass );
-			super.registerObjectInstance( hlaObject );
-			objectStore.addLocalEntity( pdu.getEntityID(), hlaObject );
+			try
+			{
+    			// No object registered yet, do it now
+    			hlaObject = createObject( pdu.getEntityType() );
+    			hlaObject.setObjectClass( this.hlaClass );
+    			super.registerObjectInstance( hlaObject );
+    			objectStore.addLocalEntity( pdu.getEntityID(), hlaObject );
+			}
+			catch( UnsupportedException ue )
+			{
+				logger.trace( "dis >> hla (PhysicalEntity) DISCARD "+ue.getMessage() );
+				return;
+			}
 		}
 
 		// Suck the values out of the PDU and into the object
@@ -326,7 +334,7 @@ public class EntityStateMapper extends AbstractMapper
 			{
 				case Land: return new GroundVehicle();
 				case Air: return new Aircraft();
-				default: throw new UnsupportedException( "Unsupported Platform Domain: "+type.getDomainEnum().name() );
+				default: throw new UnsupportedException( "[RPR] Unsupported Platform Domain: "+type.getDomainEnum().name() );
 			}
 		}
 		else if( kind == Kind.Lifeform )
@@ -657,7 +665,8 @@ public class EntityStateMapper extends AbstractMapper
 			Platform hlaObject = new Aircraft(); // TODO Fixme. Need to take action based on class
 			hlaObject.setObjectClass( event.theClass );
 			hlaObject.setObjectHandle( event.theObject );
-			objectStore.addDiscoveredHlaObject( event.theObject, hlaObject );
+			hlaObject.setObjectName( event.objectName );
+			objectStore.addDiscoveredHlaObject( hlaObject );
 
 			if( logger.isDebugEnabled() )
 			{
@@ -697,7 +706,11 @@ public class EntityStateMapper extends AbstractMapper
 		// Send the PDU off to the OpsCenter
 		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 		//         on the other side. This is inefficient and distasteful. Fix me.
-		opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
+		if( event.hlaObject.isLoaded() )
+		{
+			opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
+			event.hlaObject.setLastUpdatedTimeToNow();
+		}
 	}
 	
 	private void deserializeFromHla( PhysicalEntity entity, AttributeHandleValueMap map )
