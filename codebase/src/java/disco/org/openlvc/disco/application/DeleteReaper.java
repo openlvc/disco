@@ -45,7 +45,7 @@ public class DeleteReaper implements Runnable
 	{
 		this.app = app;
 		this.targets = new HashSet<>();
-		this.deleteTimeout = 5000;
+		this.deleteTimeout = 60000;
 		this.logger = null; // set in run()
 		
 		this.thread = null; // set in start()
