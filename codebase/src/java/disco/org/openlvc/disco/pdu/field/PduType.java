@@ -34,6 +34,8 @@ import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.radio.ReceiverPdu;
 import org.openlvc.disco.pdu.radio.SignalPdu;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disco.pdu.simman.ActionRequestPdu;
+import org.openlvc.disco.pdu.simman.ActionResponsePdu;
 import org.openlvc.disco.pdu.simman.CommentPdu;
 import org.openlvc.disco.pdu.simman.DataPdu;
 import org.openlvc.disco.pdu.simman.SetDataPdu;
@@ -62,8 +64,8 @@ public enum PduType
 	StartResume       ( (short)13,  ProtocolFamily.SimMgmt ),
 	StopFreeze        ( (short)14,  ProtocolFamily.SimMgmt ),
 	Acknowledge       ( (short)15,  ProtocolFamily.SimMgmt ),
-	ActionRequest     ( (short)16,  ProtocolFamily.SimMgmt ),
-	ActionResponse    ( (short)17,  ProtocolFamily.SimMgmt ),
+	ActionRequest     ( (short)16,  ProtocolFamily.SimMgmt,        ActionRequestPdu.class ),
+	ActionResponse    ( (short)17,  ProtocolFamily.SimMgmt,        ActionResponsePdu.class ),
 	DataQuery         ( (short)18,  ProtocolFamily.SimMgmt ),
 	SetData           ( (short)19,  ProtocolFamily.SimMgmt,        SetDataPdu.class ),
 	Data              ( (short)20,  ProtocolFamily.SimMgmt,        DataPdu.class ),
