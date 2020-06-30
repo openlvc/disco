@@ -146,6 +146,12 @@ public class TrackJamData implements IPduComponent, Cloneable
 		this.beamNumber = beamNumber;
 	}
 	
+	@Override
+	public String toString()
+	{
+		return target.toString();
+	}
+	
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

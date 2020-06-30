@@ -111,9 +111,8 @@ public enum BeamFunction
 	public static BeamFunction fromValue( short value )
 	{
 		// lazy-load
-		if( CACHE == null )
+		if( CACHE.isEmpty() )
 		{
-			CACHE = new HashMap<>();
 			for( BeamFunction temp : BeamFunction.values() )
 				CACHE.put( temp.value(), temp );
 		}

@@ -189,6 +189,12 @@ public class JammingTechnique implements IPduComponent, Cloneable
 		this.specific    = (short)((value) & 255);
 	}
 
+	@Override
+	public String toString()
+	{
+		return "JammingTechnique="+kind+"."+category+"."+subcategory+"."+specific;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
