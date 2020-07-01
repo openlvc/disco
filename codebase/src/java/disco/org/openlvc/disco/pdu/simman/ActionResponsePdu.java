@@ -162,7 +162,7 @@ public class ActionResponsePdu extends PDU
 		this.requestId = requestId;
 	}
 	
-	public RequestStatus getRequestStatusId()
+	public RequestStatus getRequestStatus()
 	{
 		return this.requestStatus;
 	}
