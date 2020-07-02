@@ -21,7 +21,7 @@ import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 
 import hla.rti1516e.encoding.DataElementFactory;
 
-public class MarkingArray11 extends RPRlengthlessFixedArray<HLAoctet>
+public class MarkingArray11 extends DiscoHlaFixedArray<HLAoctet>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -51,21 +51,10 @@ public class MarkingArray11 extends RPRlengthlessFixedArray<HLAoctet>
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	
-	public static MarkingArray11 from( HLAoctet... values )
-	{
-		MarkingArray11 array = new MarkingArray11();
-
-		int length = Math.min( values.length, 11 );
-		for( int i = 0; i < length; i++ )
-			array.set( values[i], i );
-
-		return array;
-	}
-	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DataElement Factory Methods   //////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	private static class Factory implements DataElementFactory<HLAoctet>
+	public static class Factory implements DataElementFactory<HLAoctet>
 	{
     	@Override
     	public HLAoctet createElement( int index )

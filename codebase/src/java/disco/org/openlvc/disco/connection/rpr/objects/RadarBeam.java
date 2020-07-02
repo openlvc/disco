@@ -71,7 +71,7 @@ public class RadarBeam extends EmitterBeamRpr
 		highDensityTrack.setValue( disBeam.isHighDensity() );
 
 		// TrackObjects
-		trackObjectIdentifiers.clear();
+		trackObjectIdentifiers.resize( disBeam.getTargets().size() );
 		for( TrackJamData target : disBeam.getTargets() )
 			trackObjectIdentifiers.addElement( new RTIobjectId(target.getTarget().toString()) );
 		throw new RuntimeException( "FIXME: RTIobjectId Translation" );
@@ -84,8 +84,8 @@ public class RadarBeam extends EmitterBeamRpr
 		// HighDensityTrackJam
 		beam.setHighDensity( highDensityTrack.getValue() );
 		
-		// TrackedObjects -- Can't do these without a reference to the ObjectStore to look up ids.
-		//                   It'll have to get done in the mapper.
+		// TrackedObjects -- Can't do this without reference to ObjectStore, so it is done in the
+		//                   EmitterBeamMapper instead.
 		//for( int i = 0; i < trackObjectIdentifiers.size(); i++ )
 		//	beam.addTarget( trackObjectIdentifiers.get(i).getAsEntityId() );
 		
@@ -104,6 +104,12 @@ public class RadarBeam extends EmitterBeamRpr
 	public RPRboolean getHighDensityTrack()
 	{
 		return highDensityTrack;
+	}
+
+	@Override
+	public RTIobjectIdArray getTargets()
+	{
+		return this.trackObjectIdentifiers;
 	}
 
 	public RTIobjectIdArray getTrackObjectIdentifiers()

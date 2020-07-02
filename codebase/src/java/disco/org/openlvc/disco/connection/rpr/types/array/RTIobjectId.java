@@ -25,7 +25,7 @@ import hla.rti1516e.encoding.DataElementFactory;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public class RTIobjectId implements DataElement
+public class RTIobjectId implements DataElement // RPRnullTerminatedArray<HLAASCIIchar>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -53,12 +53,6 @@ public class RTIobjectId implements DataElement
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	@Override
-	public String toString()
-	{
-		return this.value;
-	}
-
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,6 +65,18 @@ public class RTIobjectId implements DataElement
 	public String getValue()
 	{
 		return this.value;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return this.value;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return value.hashCode();
 	}
 	
 	@Override
@@ -94,7 +100,7 @@ public class RTIobjectId implements DataElement
 	@Override
 	public final int getEncodedLength()
 	{
-		return this.value.length();
+		return this.value.length()+1;
 	}
 
 	@Override
@@ -103,6 +109,7 @@ public class RTIobjectId implements DataElement
 		try
 		{
 			byteWrapper.put( toByteArray() );
+			byteWrapper.put( 0 ); // writes \0. put(int) really writes a byte. putInt writes an int
 		}
 		catch( Exception e )
 		{
@@ -113,21 +120,31 @@ public class RTIobjectId implements DataElement
 	@Override
 	public final byte[] toByteArray() throws EncoderException
 	{
-		return this.value.getBytes( StandardCharsets.US_ASCII );
+		int length = value.length();
+		byte[] cstring = new byte[length+1];
+		System.arraycopy( value.getBytes(StandardCharsets.US_ASCII), 0, cstring, 0, length );
+		cstring[length] = '\0';
+		return cstring;
 	}
 
 	@Override
 	public final void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
-		byte[] raw = new byte[byteWrapper.remaining()];
-		byteWrapper.get( raw );
-		this.value = new String( raw, StandardCharsets.US_ASCII );
+		// got to figure out where the first \0 is so we only parse up to there
+		byte[] raw = byteWrapper.array();
+		int offset = byteWrapper.getPos();
+		int length = 0;
+		while( raw[offset++] != 0 && offset < raw.length )
+			length++;
+		
+		this.value = new String( raw, byteWrapper.getPos(), length, StandardCharsets.US_ASCII );
+		byteWrapper.advance( length+1/* account for \0 */ );
 	}
 
 	@Override
 	public final void decode( byte[] bytes ) throws DecoderException
 	{
-		this.value = new String( bytes, StandardCharsets.US_ASCII );
+		decode( new ByteWrapper(bytes) );
 	}
 
 	//----------------------------------------------------------

@@ -19,6 +19,7 @@ package org.openlvc.disco.connection.rpr.objects;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
+import org.openlvc.disco.connection.rpr.types.array.RTIobjectIdArray;
 import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
 import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
@@ -29,7 +30,7 @@ import org.openlvc.disco.pdu.emissions.EmitterBeam;
 import org.openlvc.disco.pdu.field.BeamFunction;
 import org.openlvc.disco.pdu.record.EventIdentifier;
 
-public class EmitterBeamRpr extends ObjectInstance
+public abstract class EmitterBeamRpr extends ObjectInstance
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -81,6 +82,15 @@ public class EmitterBeamRpr extends ObjectInstance
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+
+	/**
+	 * Jammers and Radar emitters call these different things, but ultimately they're just a
+	 * list of RTIobjectIds. Let's make both of them translate it back to something generic.
+	 * 
+	 * @return The array object that holds the targets (tracked entities or jammed entities).
+	 */
+	public abstract RTIobjectIdArray getTargets();
+	
 
 	@Override
 	protected boolean checkLoaded()

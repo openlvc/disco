@@ -38,7 +38,7 @@ public class RPRunsignedInteger16BE implements DataElement
 	//----------------------------------------------------------
 	public RPRunsignedInteger16BE()
 	{
-		this.value = Short.MIN_VALUE;
+		this.value = 0;
 	}
 
 	public RPRunsignedInteger16BE( int value )

@@ -71,7 +71,6 @@ public class VariableDatumStruct extends DiscoHlaFixedRecord
 		this.datumId.setValue( record.getDatumId() );
 		this.datumLength.setValue( record.getDatumLengthInBits() );
 		
-		datumValue.clear();
 		ByteBuffer buffer = ByteBuffer.wrap( record.getDatumValueWithPadding() );
 		while( buffer.hasRemaining() )
 			datumValue.addElement( new RPRunsignedInteger64BE(buffer.getLong()) );

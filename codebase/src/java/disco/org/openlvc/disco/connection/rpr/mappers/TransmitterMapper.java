@@ -158,7 +158,7 @@ public class TransmitterMapper extends AbstractMapper
 		
 		// Additional Items
 		// EmbeddedSystem HostObjectIdentifier: Need to look this up in the store
-		hlaObject.setHostObjectIdentifier( objectStore.getHostIdForEntityId(pdu.getEntityId()) );
+		hlaObject.setHostObjectIdentifier( objectStore.getRtiIdForDisId(pdu.getEntityId()) );
 		
 		// Send an update for the object
 		super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject) );

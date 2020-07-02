@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.connection.rpr;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -169,22 +170,6 @@ public class ObjectStore
 		// unlike any attribute values, it is the one thing that will be there from the start
 		// and we can used it to index from discovery.
 		this.rtiObjects.put( hlaObject.getRtiObjectId(), hlaObject );
-
-		// We put it into the provisional map for now until we get an attribute update
-//		if( hlaObject.isLoaded() == false )
-//			this.hlaProvisionalObjects.put( hlaId, hlaObject );
-		
-//		if( hlaObject instanceof PhysicalEntity )
-//		{
-//			PhysicalEntity rprEntity = (PhysicalEntity)hlaObject;
-//			EntityId disId = rprEntity.getEntityIdentifier().getDisValue(); // WON"T FUCKING WORK BECUASE NOT REFLECTED YET
-//			disObjectIds.put( disId,  )
-//		}
-//		else if( hlaObject instanceof EmitterSystemRpr )
-//		{
-//			EmitterSystemRpr rprSystem = (EmitterSystemRpr)hlaObject;       // ALSO WON"T FUCKING WORK
-//			hlaEmitterSystems.put( rprSystem.getHostObjectIdentifier(), rprSystem );
-//		}
 	}
 
 	/**
@@ -230,6 +215,25 @@ public class ObjectStore
 		                     .collect( Collectors.toList() );
 	}
 
+	/**
+	 * Find and return all discovered HLA objects of the given type (or children of). For example,
+	 * if we pass in PhysicalEntity.class as the type, this method will find all discovered 
+	 * Platforms and Lifeforms and return them in a collection of Physical Entities. If none are
+	 * known, an empty collection is returned.
+	 * 
+	 * @param <T>   The type we're searching for.
+	 * @param clazz The type we want to find all discovered HLA objects of
+	 * @return      A collection of all the discovered obejcts.
+	 */
+	public <T extends ObjectInstance> Collection<T> getDiscoveredHlaObjectsByType( Class<T> clazz )
+	{
+		return
+		hlaObjects.values().stream().filter( oi -> clazz.isInstance(oi) )
+		                            .map( oi -> clazz.cast(oi) )
+		                            .collect( Collectors.toList() );
+	}
+
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// RTIobjectId Based Methods   ////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -244,7 +248,7 @@ public class ObjectStore
 	 * @param disId The Entity ID of the Entity we want to get the {@link RTIobjectId} for.
 	 * @return The object id of the entity with the given DIS id, or id with an empty string.
 	 */
-	public RTIobjectId getHostIdForEntityId( EntityId disId )
+	public RTIobjectId getRtiIdForDisId( EntityId disId )
 	{
 		// FIXME - Currently only look at the local (DIS) entities, not any we discover through
 		//         the RTI. Needs to be updated to allow connection to entities that aren't created
@@ -265,11 +269,26 @@ public class ObjectStore
 	 * @param id The RTI id we should find the known {@link ObjectInstance} for
 	 * @return The RPR object instance for the id, or null if none is known
 	 */
-	public ObjectInstance getHlaObjectByRtiId( RTIobjectId id )
+	public ObjectInstance getDiscoveredHlaObjectByRtiId( RTIobjectId id )
 	{
 		return this.rtiObjects.get( id );
 	}
 
+	/**
+	 * Return the set of known/discovered {@link RTIobjectId}s where the type they are in is
+	 * of the given clazz.
+	 * 
+	 * @param clazz The class we want to find all the IDs of known objects in the store
+	 * @return All known RTIobjectIds used by objects of the given type (empty if none)
+	 */
+	public Collection<RTIobjectId> getDiscoveredHlaObjectIdsForType( Class<? extends ObjectInstance> clazz )
+	{
+		return
+		hlaObjects.values().stream().filter( oi -> clazz.isInstance(oi) )
+		                            .map( oi -> oi.getRtiObjectId() )
+		                            .collect( Collectors.toList() );
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

@@ -52,16 +52,16 @@ public class EmitterSystemType implements IPduComponent, Cloneable
 	
 	public EmitterSystemType( int name, short function, short number )
 	{
-		this.name = name;
+		this.setName( name );
 		this.function = EmitterSystemFunction.fromValue( function );
-		this.number = number;
+		this.setNumber( number );
 	}
 
 	public EmitterSystemType( int name, EmitterSystemFunction function, short number )
 	{
-		this.name = name;
+		this.setName( name );
 		this.function = function;
-		this.number = number;
+		this.setNumber( number );
 	}
 
 	//----------------------------------------------------------
@@ -135,6 +135,12 @@ public class EmitterSystemType implements IPduComponent, Cloneable
 
 	public void setName( int name )
 	{
+		if( name < 0 )
+		{
+			throw new IllegalArgumentException( "Cannot set EmitterSystem field (name): Value "+
+			                                    "negative, but field is unsigned: "+name );
+		}
+
 		this.name = name;
 	}
 
@@ -155,6 +161,12 @@ public class EmitterSystemType implements IPduComponent, Cloneable
 
 	public void setNumber( short number )
 	{
+		if( number < 0 )
+		{
+			throw new IllegalArgumentException( "Cannot set EmitterSystem field (number): Value "+
+			                                    "negative, but field is unsigned: "+number );
+		}
+
 		this.number = number;
 	}
 

@@ -110,7 +110,7 @@ public class EmitterSystemMapper extends AbstractMapper
 			
 			// Additional Items
 			// EmbeddedSystem HostObjectIdentifier: Need to look this up in the store
-			hlaObject.setHostObjectIdentifier( objectStore.getHostIdForEntityId(pdu.getEmittingEntityId()) );
+			hlaObject.setHostObjectIdentifier( objectStore.getRtiIdForDisId(pdu.getEmittingEntityId()) );
 			
 			// Send an update for the object
 			super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject) );

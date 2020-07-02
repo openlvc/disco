@@ -22,7 +22,7 @@ import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.pdu.emissions.EmitterBeam;
 
-public class PooTest
+public class EmitterPrinterTest
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -50,8 +50,8 @@ public class PooTest
 	public static DiscoConfiguration getRprConfiguration()
 	{
 		DiscoConfiguration configuration = new DiscoConfiguration();
-		configuration.getRprConfiguration().setFederateName( "Poo" );
-		configuration.getRprConfiguration().setFederationName( "VRF" );
+		configuration.getRprConfiguration().setFederateName( "Test" );
+		configuration.getRprConfiguration().setFederationName( "DCSS" );
 		configuration.getRprConfiguration().setRtiProvider( RtiProvider.Pitch );
 		configuration.setConnection( "rpr" );
 		return configuration;
@@ -79,8 +79,9 @@ public class PooTest
 			long time = System.currentTimeMillis();
 
 			// Entities
-			System.out.println( time+" [Entities]: "+app.getPduStore().getEntityStore().getAllMarkings().size() );
+			//System.out.println( time+" [Entities]: "+app.getPduStore().getEntityStore().getAllMarkings().size() );
 			// Emitters
+			System.out.println( "Beam Count: "+app.getPduStore().getEmitterStore().getActiveBeams().size() );
 			for( EmitterBeam beam : app.getPduStore().getEmitterStore().getActiveBeams() )
 			{
 				boolean noParams = beam.getParameterData() == null;

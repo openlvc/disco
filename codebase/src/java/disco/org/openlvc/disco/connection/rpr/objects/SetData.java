@@ -83,7 +83,7 @@ public class SetData extends InteractionInstance
 			fixedDatums.add( new FixedDatumStruct(fd.getDatumId(),fd.getDatumValue()) );
 
 		// VariableDatumSet
-		variableDatumSet.clear();
+		variableDatumSet.resize( pdu.getVariableDatumCount() );
 		for( VariableDatum vd : pdu.getVariableDatumRecords() )
 			variableDatumSet.addElement( new VariableDatumStruct(vd) );
 	}

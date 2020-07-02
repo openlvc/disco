@@ -76,7 +76,7 @@ public class JammerBeam extends EmitterBeamRpr
 		highDensityJam.setValue( disBeam.isHighDensity() );
 
 		// JammedObjects
-		jammedObjectIdentifiers.clear();
+		jammedObjectIdentifiers.resize( disBeam.getTargets().size() );
 		for( TrackJamData target : disBeam.getTargets() )
 			jammedObjectIdentifiers.addElement( new RTIobjectId(target.getTarget().toString()) );
 		throw new RuntimeException( "FIXME: RTIobjectId Translation" );
@@ -93,8 +93,8 @@ public class JammerBeam extends EmitterBeamRpr
 		// HighDensityTrackJam
 		beam.setHighDensity( highDensityJam.getValue() );
 		
-		// JammedObjects -- Can't do these without a reference to the ObjectStore to look up ids.
-		//                  It'll have to get done in the mapper.
+		// JammedObjects -- Can't do this without reference to ObjectStore, so it is done in the
+		//                  EmitterBeamMapper instead.
 		//for( int i = 0; i < jammedObjectIdentifiers.size(); i++ )
 		//	beam.addTarget( jammedObjectIdentifiers.get(i).getAsEntityId() );
 		
@@ -118,6 +118,12 @@ public class JammerBeam extends EmitterBeamRpr
 	public RPRboolean getHighDensityJam()
 	{
 		return highDensityJam;
+	}
+
+	@Override
+	public RTIobjectIdArray getTargets()
+	{
+		return this.jammedObjectIdentifiers;
 	}
 
 	public RTIobjectIdArray getJammedObjectIdentifiers()

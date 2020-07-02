@@ -21,7 +21,7 @@ import org.openlvc.disco.connection.rpr.types.fixed.VariableDatumStruct;
 
 import hla.rti1516e.encoding.DataElementFactory;
 
-public class VariableDatumStructArray extends HLAvariableArray<VariableDatumStruct>
+public class VariableDatumStructArray extends DiscoHlaVariableArray<VariableDatumStruct>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

@@ -17,7 +17,7 @@
  */
 package org.openlvc.disco.connection.rpr.types.array;
 
-public class RTIobjectIdArray extends HLAvariableArray<RTIobjectId>
+public class RTIobjectIdArray extends DiscoHlaVariableArray<RTIobjectId>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
