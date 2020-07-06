@@ -105,11 +105,6 @@ public abstract class ObjectInstance
 		return this.loaded;
 	}
 	
-	protected void setLoaded( boolean loaded )
-	{
-		this.loaded = loaded;
-	}
-	
 	public void setObjectClass( ObjectClass objectClass )
 	{
 		this.objectClass = objectClass;

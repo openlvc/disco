@@ -60,8 +60,7 @@ public abstract class BaseEntity extends ObjectInstance
 	@Override
 	protected boolean checkLoaded()
 	{
-		return entityType.isDefaults() == false &&
-		       entityIdentifier.isDefaults() == false;
+		return entityType.isDecodeCalled() && entityIdentifier.isDecodeCalled();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

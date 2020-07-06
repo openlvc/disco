@@ -218,8 +218,8 @@ public class EmitterSystemMapper extends AbstractMapper
 		// EntityIdentifier
 		if( map.containsKey(entityIdentifier.getHandle()) )
 		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(entityIdentifier.getHandle()) );
-    		object.getEntityIdentifier().decode( wrapper );
+			ByteWrapper wrapper = new ByteWrapper( map.get(entityIdentifier.getHandle()) );
+			object.getEntityIdentifier().decode( wrapper );
 		}
 		
 		// HostObjectIdentifier

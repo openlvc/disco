@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
 
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
@@ -134,6 +135,20 @@ public class TransmitterStore implements IDeleteReaperManaged
 	{
 		Set<TransmitterPdu> results = Collections.synchronizedSet( new HashSet<>() );
 		byId.values().parallelStream().forEach( tset -> tset.collectRadiosUpdatedSince(time,results) );
+		return results;
+	}
+
+	/**
+	 * Return all transmitters that pass the given predicate and return them as a set. 
+	 * 
+	 * @param predicate The predicate we want to test the radios against 
+	 * @return A set of all the transmitters that pass the test
+	 */
+	public Set<TransmitterPdu> getTransmittersMatching( Predicate<TransmitterPdu> predicate )
+	{
+		Set<TransmitterPdu> results = Collections.synchronizedSet( new HashSet<>() );
+		byId.values().parallelStream().
+		             forEach( tset -> tset.collectRadiosMeetingPredicate(predicate,results) );
 		return results;
 	}
 	
@@ -286,6 +301,21 @@ public class TransmitterStore implements IDeleteReaperManaged
 		{
 			for( TransmitterPdu pdu : radios.values() )
 				if( pdu.getLocalTimestamp() > timestamp )
+					target.add( pdu );
+		}
+
+		/**
+		 * Find all the radios that meet the given test predicate, and if they do, add them to
+		 * the provided set.
+		 * 
+		 * @param predicate The predicate we want to test against
+		 * @param target    The target set we'll add any passing PDU to
+		 */
+		private void collectRadiosMeetingPredicate( Predicate<TransmitterPdu> predicate,
+		                                            Set<TransmitterPdu> target )
+		{
+			for( TransmitterPdu pdu : radios.values() )
+				if( predicate.test(pdu) )
 					target.add( pdu );
 		}
 		

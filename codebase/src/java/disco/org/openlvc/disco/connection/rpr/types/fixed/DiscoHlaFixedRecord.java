@@ -39,6 +39,7 @@ public class DiscoHlaFixedRecord implements HLAfixedRecord
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private HLAfixedRecord internal;
+	private boolean decodeCalled;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -89,10 +90,21 @@ public class DiscoHlaFixedRecord implements HLAfixedRecord
 	public byte[] toByteArray()
 		throws EncoderException				  { return internal.toByteArray(); }
 	public void decode( ByteWrapper wrapper )
-		throws DecoderException				  { internal.decode(wrapper); }
+		throws DecoderException				  { internal.decode(wrapper); this.decodeCalled = true; }
 	public void decode( byte[] bytes )
-		throws DecoderException               { internal.decode(bytes); }
+		throws DecoderException               { internal.decode(bytes); this.decodeCalled = true; }
 
+	/**
+	 * Determine whether we're decoded anything into this object successfully or not. Useful for
+	 * understanding when a record has been initialized by an incoming update.
+	 * 
+	 * @return True if either of the decode methods has been called on this record. False otherwise.
+	 */
+	public boolean isDecodeCalled()
+	{
+		return this.decodeCalled;
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

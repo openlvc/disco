@@ -52,7 +52,7 @@ public abstract class EmbeddedSystem extends ObjectInstance
 	@Override
 	protected boolean checkLoaded()
 	{
-		return !entityIdentifier.isDefaults(); // Entity ID initialized
+		return entityIdentifier.isDecodeCalled(); // Entity ID initialized
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
