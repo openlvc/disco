@@ -109,7 +109,6 @@ public class RTIobjectId implements DataElement // RPRnullTerminatedArray<HLAASC
 		try
 		{
 			byteWrapper.put( toByteArray() );
-			byteWrapper.put( 0 ); // writes \0. put(int) really writes a byte. putInt writes an int
 		}
 		catch( Exception e )
 		{
