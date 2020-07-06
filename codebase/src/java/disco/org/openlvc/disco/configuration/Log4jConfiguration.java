@@ -19,7 +19,9 @@ package org.openlvc.disco.configuration;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -49,6 +51,7 @@ public class Log4jConfiguration
 	private boolean consoleOn;
 	private boolean fileOn;
 	private File file;
+	private Set<Appender> additionalAppenders;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -64,6 +67,7 @@ public class Log4jConfiguration
 		this.consoleOn = true;
 		this.fileOn = false;
 		this.file = new File( "disco.log" );
+		this.additionalAppenders = new HashSet<>();
 	}
 
 	//----------------------------------------------------------
@@ -102,6 +106,12 @@ public class Log4jConfiguration
 			config.addAppender( appender, level, null );
 		}
 
+		for( Appender appender : this.additionalAppenders )
+		{
+			appender.start();
+			config.addAppender( appender, level, null );
+		}
+		
 		// set the logger level
 		config.setLevel( this.level );
 		
@@ -109,7 +119,27 @@ public class Log4jConfiguration
 		context.getConfiguration().addLogger( appName, config );
 		context.updateLoggers();
 	}
+
+	/**
+	 * Adds an additional appender to disco's logger.
+	 * <p/>
+	 * By default, Disco provides console and file appenders which are activated according to the 
+	 * configuration within this object. Additional appenders may be added through this method.
+	 * <p/>
+	 * NOTE: Appenders added by this method will not be activated until {@link #activateConfiguration()}
+	 * is called.
+	 * 
+	 * @param appender the appender to add to disco's logger
+	 */
+	public void addAdditionalAppender( Appender appender )
+	{
+		this.additionalAppenders.add( appender );
+	}
 	
+	public void removeAdditionalAppender( Appender appender )
+	{
+		this.additionalAppenders.remove( appender );
+	}
 
 	private ConsoleAppender createConsoleAppender()
 	{
