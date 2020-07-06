@@ -17,10 +17,13 @@
  */
 package org.openlvc;
 
+import java.util.Set;
+
 import org.openlvc.disco.application.DisApplication;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.pdu.emissions.EmitterBeam;
+import org.openlvc.disco.pdu.radio.TransmitterPdu;
 
 public class EmitterPrinterTest
 {
@@ -77,16 +80,32 @@ public class EmitterPrinterTest
 			Thread.sleep( 2000 );
 			
 			long time = System.currentTimeMillis();
-
+			
+			//
+			// Transmitters
+			//
+			Set<TransmitterPdu> transmitters = 
+				app.getPduStore().getTransmitterStore().getTransmittersMatching( (tx) -> tx != null );
+			System.out.println( "Transmitters ("+transmitters.size()+"):" );
+			for( TransmitterPdu pdu : transmitters )
+				System.out.println( time+" [Transmitter] "+pdu.getEntityId()+"-"+pdu.getRadioID() );
+			
+			System.out.println( "" );
+			
+			//
 			// Entities
+			//
 			//System.out.println( time+" [Entities]: "+app.getPduStore().getEntityStore().getAllMarkings().size() );
+			
+			//
 			// Emitters
-			System.out.println( "Beam Count: "+app.getPduStore().getEmitterStore().getActiveBeams().size() );
-			for( EmitterBeam beam : app.getPduStore().getEmitterStore().getActiveBeams() )
-			{
-				boolean noParams = beam.getParameterData() == null;
-				System.out.println( time+" [Beam] "+noParams+": "+beam.toString() );
-			}
+			//
+//			System.out.println( "Beam Count: "+app.getPduStore().getEmitterStore().getActiveBeams().size() );
+//			for( EmitterBeam beam : app.getPduStore().getEmitterStore().getActiveBeams() )
+//			{
+//				boolean noParams = beam.getParameterData() == null;
+//				System.out.println( time+" [Beam] "+noParams+": "+beam.toString() );
+//			}
 			System.out.println( " == End of Record ==" );
 		}
 	}
