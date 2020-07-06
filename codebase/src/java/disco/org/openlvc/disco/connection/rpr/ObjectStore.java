@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.openlvc.disco.DiscoException;
@@ -233,7 +234,24 @@ public class ObjectStore
 		                            .collect( Collectors.toList() );
 	}
 
-
+	/**
+	 * Return a collection of all the HLA objects that are both of the given type (or child) and 
+	 * match the given predicate. If there are none, an empty collection will be returned.
+	 *  
+	 * @param type The class of object we want to consider (this or any child of this)
+	 * @param predicate The test we want the objects to pass
+	 * @return The collection of ObjectInstance children of the type that pass the predicate test
+	 */
+	public <T extends ObjectInstance>
+	Collection<T> getDiscoveredHlaObjectsMatching( Class<T> type, Predicate<T> predicate )
+	{
+		return
+		hlaObjects.values().parallelStream().filter( type::isInstance )
+		                                    .map( type::cast )
+		                                    .filter( predicate::test )
+		                                    .collect( Collectors.toSet() );
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// RTIobjectId Based Methods   ////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

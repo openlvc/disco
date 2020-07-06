@@ -17,13 +17,12 @@
  */
 package org.openlvc;
 
-import java.util.Set;
-
 import org.openlvc.disco.application.DisApplication;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.pdu.emissions.EmitterBeam;
-import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disrespector.Configuration;
+import org.openlvc.disrespector.Disrespector;
 
 public class EmitterPrinterTest
 {
@@ -50,6 +49,26 @@ public class EmitterPrinterTest
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+
+	public static void main2( String[] args ) throws Exception
+	{
+		Configuration configuration = new Configuration();
+		configuration.setHlaFederateName( "Disrespector" );
+		configuration.setHlaFederationName( "DCSS" );
+		configuration.setHlaRtiProvider( RtiProvider.Pitch );
+		configuration.setDisNic( "LOOPBACK" );
+		configuration.setDisAddress( "127.255.255.255" );
+		
+		Disrespector disrespector = new Disrespector( configuration );
+		disrespector.start();
+		
+		System.out.println( "Disrespector has been called" );
+	}
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 	public static DiscoConfiguration getRprConfiguration()
 	{
 		DiscoConfiguration configuration = new DiscoConfiguration();
@@ -84,13 +103,13 @@ public class EmitterPrinterTest
 			//
 			// Transmitters
 			//
-			Set<TransmitterPdu> transmitters = 
-				app.getPduStore().getTransmitterStore().getTransmittersMatching( (tx) -> tx != null );
-			System.out.println( "Transmitters ("+transmitters.size()+"):" );
-			for( TransmitterPdu pdu : transmitters )
-				System.out.println( time+" [Transmitter] "+pdu.getEntityId()+"-"+pdu.getRadioID() );
-			
-			System.out.println( "" );
+//			Set<TransmitterPdu> transmitters = 
+//				app.getPduStore().getTransmitterStore().getTransmittersMatching( (tx) -> tx != null );
+//			System.out.println( "Transmitters ("+transmitters.size()+"):" );
+//			for( TransmitterPdu pdu : transmitters )
+//				System.out.println( time+" [Transmitter] "+pdu.getEntityId()+"-"+pdu.getRadioID() );
+//			
+//			System.out.println( "" );
 			
 			//
 			// Entities
@@ -100,12 +119,13 @@ public class EmitterPrinterTest
 			//
 			// Emitters
 			//
-//			System.out.println( "Beam Count: "+app.getPduStore().getEmitterStore().getActiveBeams().size() );
-//			for( EmitterBeam beam : app.getPduStore().getEmitterStore().getActiveBeams() )
-//			{
-//				boolean noParams = beam.getParameterData() == null;
-//				System.out.println( time+" [Beam] "+noParams+": "+beam.toString() );
-//			}
+			System.out.println( "Beam Count: "+app.getPduStore().getEmitterStore().getActiveBeams().size() );
+			for( EmitterBeam beam : app.getPduStore().getEmitterStore().getActiveBeams() )
+			{
+				boolean noParams = beam.getParameterData() == null;
+				long seconds = (System.currentTimeMillis()-beam.getEmitterSystem().getLastUpdatedTime()) / 1000;
+				System.out.println( time+" [Beam] "+noParams+": "+beam.toString()+" (Age: "+seconds+"s)" );
+			}
 			System.out.println( " == End of Record ==" );
 		}
 	}

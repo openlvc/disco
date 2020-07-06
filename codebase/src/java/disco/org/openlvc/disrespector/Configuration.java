@@ -63,6 +63,11 @@ public class Configuration
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public Configuration()
+	{
+		this( new String[]{} );
+	}
+
 	public Configuration( String[] args )
 	{
 		//

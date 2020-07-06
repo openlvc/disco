@@ -38,7 +38,7 @@ public class HLAoctet implements hla.rti1516e.encoding.HLAoctet
 	//----------------------------------------------------------
 	public HLAoctet()
 	{
-		this.value = Byte.MIN_VALUE;
+		this.value = 0;
 	}
 
 	public HLAoctet( byte value )

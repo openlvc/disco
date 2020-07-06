@@ -22,24 +22,20 @@ import org.openlvc.disco.bus.EventHandler;
 import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
-import org.openlvc.disco.connection.rpr.objects.BaseEntity;
 import org.openlvc.disco.connection.rpr.objects.EmitterBeamRpr;
 import org.openlvc.disco.connection.rpr.objects.EmitterSystemRpr;
 import org.openlvc.disco.connection.rpr.objects.JammerBeam;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.connection.rpr.objects.RadarBeam;
-import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
-import org.openlvc.disco.connection.rpr.types.array.RTIobjectIdArray;
 import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.emissions.EmitterBeam;
 import org.openlvc.disco.pdu.emissions.EmitterSystem;
-import org.openlvc.disco.pdu.record.TrackJamData;
 
 import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
 
-public class EmitterBeamMapper extends AbstractMapper
+public class EmitterBeamMapper extends AbstractEmitterMapper
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -134,20 +130,30 @@ public class EmitterBeamMapper extends AbstractMapper
 	public void handlePdu( EmissionPdu pdu )
 	{
 		//
-		// Review each EmitterSystem
+		// 1. Review each EmitterSystem
 		//
 		for( EmitterSystem disSystem : pdu.getEmitterSystems() )
 		{
-			// Get the emitter system RTIobjectId as each beam will need this
+			//
+			// 2. Get the emitter system RTIobjectId as each beam will need this
+			//
 			EmitterSystemRpr rprSystem = objectStore.getLocalEmitter( disSystem.getEmitterSystemId() );
+			if( rprSystem == null )
+			{
+				logger.warn( "(EmitterBeam) Cannot find RPR EmitterSystem [%s], skipping",
+				             disSystem.getEmitterSystemId() );
+				continue;
+			}
 
 			//  
-			// Review each Beam in each EmitterSystem
+			// 3. Review each Beam in each EmitterSystem
 			//
 			for( EmitterBeam disBeam : disSystem.getBeams() )
 			{
-				// Try to find an existing beam HLA object to update
+				//
+				// 4. Try to find an existing beam HLA object to update
 				// FIXME - Can only look up _local_ beams; what is we want to attach to remove ones?
+				//
 				EmitterBeamRpr hlaObject = objectStore.getLocalBeam( disSystem.getEmitterSystemId(),
 				                                                     disBeam.getBeamNumber() );
 				
@@ -163,21 +169,13 @@ public class EmitterBeamMapper extends AbstractMapper
 					                          hlaObject );
 				}
 				
-				// Suck the values out of the PDU and into the object
-				hlaObject.fromDis( disBeam, pdu.getEventId() );
+				//
+				// 5. Extract the EmitterBeam values from the PDU
+				//
+				super.fromPdu( rprSystem, hlaObject, disBeam, pdu.getEventId() );
 				
 				//
-				// Additional Items
-				//
-				// Tracked/Jammed Object Ids: Need to translate EntityIds to RPRobjectIds
-				translateTargetsDisToHla( disBeam, hlaObject );
-				
-				// EmitterSystemIdentifier: Need to use RTIobjectId for RPR emitter system that
-				//                          the beam belongs to
-				hlaObject.setEmitterSystemIdentifier( rprSystem.getRtiObjectId() );
-
-				//
-				// Send an update for the object
+				// 6. Send an update for the object
 				//
 				super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject) );
 
@@ -190,26 +188,6 @@ public class EmitterBeamMapper extends AbstractMapper
 		}	
 	}
 
-	/**
-	 * For each target in the track/jam section of the DIS beam, translate the entityId to a
-	 * RPRobjectId and add that to the targets for the HLA beam. This will resize the HLA array
-	 * prior to converting. 
-	 * 
-	 * @param disBeam The DIS object we are reading from
-	 * @param rprBeam The HLA object we are writing to
-	 */
-	private void translateTargetsDisToHla( EmitterBeam disBeam, EmitterBeamRpr rprBeam )
-	{
-		rprBeam.getTargets().resize( disBeam.getNumberOfTargets() );
-
-		for( TrackJamData target : disBeam.getTargets() )
-		{
-			RTIobjectId rtiId = objectStore.getRtiIdForDisId( target.getTarget() );
-			if( rtiId != null )
-				rprBeam.getTargets().addElement( rtiId );
-		}
-	}
-	
 	private AttributeHandleValueMap serializeToHla( EmitterBeamRpr object )
 	{
 		AttributeHandleValueMap map = object.getObjectAttributes();
@@ -359,13 +337,20 @@ public class EmitterBeamMapper extends AbstractMapper
 	@EventHandler
 	public void handleReflect( HlaReflect event )
 	{
+		//
+		// 1. If it isn't an Emitter Beam, skip it
+		//
 		if( (event.hlaObject instanceof EmitterBeamRpr) == false )
 			return;
 		
+		EmitterBeamRpr rprBeam = (EmitterBeamRpr)event.hlaObject;
+		
+		//
+		// 2. Update the local representation of the emitter beam
+		//
 		try
 		{
-			// Update the local object representation from the received attributes
-			deserializeFromHla( (EmitterBeamRpr)event.hlaObject, event.attributes );
+			deserializeFromHla( rprBeam, event.attributes );
 		}
 		catch( DecoderException de )
 		{
@@ -373,83 +358,29 @@ public class EmitterBeamMapper extends AbstractMapper
 		}
 
 		//
-		// WARNING - EmitterBeam's don't act like anything else.
-		//           To construct a PDU we also need to serialize the EmitterSystem it is part of,
-		//           and to do that, we need to find it.
-		// 
-		// Find Emitter System associated with this Beam so that we can construct a complete PDU
-		EmitterBeamRpr rprBeam = (EmitterBeamRpr)event.hlaObject;
+		// 3. Check to see if we have enough information to emit a PDU. If not, skip
+		//
+		if( rprBeam.isLoaded() == false )
+			return;
+		
+		//
+		// 4. To emit a beam in a PDU we need to wrap it in its parent system. Find it.
+		//
 		ObjectInstance temp = objectStore.getDiscoveredHlaObjectByRtiId( rprBeam.getEmitterSystemIdentifier() );
-		if( temp == null || (temp instanceof EmitterSystemRpr) == false )
+		if( temp == null || (temp instanceof EmitterSystemRpr)== false )
 		{
+			// Couldn't find the beam - or it wasn't even an emitter system :O
+			// Can't do anything without the emitter system details. Have to bounce.
 			logger.warn( "hla >> dis (Reflect) EmitterBeam updated, but can't find EmitterSystem: %s",
 			             rprBeam.getEmitterSystemIdentifier() );
 			return;
 		}
-
-		EmitterSystemRpr rprSystem = (EmitterSystemRpr)temp;
-
-		// Turn EmitterSystem into PDU. Will give us a PDU with a single contained system.
-		EmissionPdu pdu = (EmissionPdu)rprSystem.toPdu();
-		pdu.setEventId( rprBeam.getEventIdentifier().getDisValue() );
-		
-		// Serialize the EmitterBeam... well, most of it; add it to the system
-		EmitterBeam disBeam = rprBeam.toDis();
-		pdu.getEmitterSystems().get(0).addBeam( disBeam );
 		
 		//
-		// Additional Items
+		// 5. Generate the PDU
 		//
-		// Populate the EmitterBeam with all the right Track/Jam data which we'll have to
-		// look up from the object store
-		translateTargetsHlaToDis( rprBeam, disBeam );
-		
-		// Set the status of the beam to Active. DIS 7 has an "Active" field for a beam. Since
-		// RPR doesn't track this, we just set all RPR beams to Active
-		disBeam.setBeamActive( true );
-		
-		//
-		// Send the PDU off to the OpsCenter
-		//
-		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
-		//         on the other side. This is inefficient and distasteful. Fix me.
+		EmissionPdu pdu = super.toPdu( (EmitterSystemRpr)temp, rprBeam );
 		opscenter.getPduReceiver().receive( pdu.toByteArray() );
-		rprSystem.setLastUpdatedTimeToNow();
-		rprBeam.setLastUpdatedTimeToNow();
-	}
-
-	/**
-	 * For each tracked object in the RPR beam (expressed as an RTIobjectId), convert it
-	 * to a DIS EntityId and add that to the DIS beam.
-	 * 
-	 * @param rprBeam The RPR beam we are reading target data from
-	 * @param disBeam The DIS beam we are writing target data to
-	 */
-	private void translateTargetsHlaToDis( EmitterBeamRpr rprBeam, EmitterBeam disBeam )
-	{
-		// Get the list of targets the HLA object is specifying
-		RTIobjectIdArray targets = rprBeam.getTargets();
-		
-		// Translate from RTIobjectIds into EntityIds
-		for( int i = 0; i < targets.size(); i++ )
-		{
-			RTIobjectId targetId = targets.get(i);
-			ObjectInstance temp = objectStore.getDiscoveredHlaObjectByRtiId( targetId );
-			if( temp != null && temp instanceof BaseEntity )
-			{
-				// get the DIS ID and add it to the DIS PDU
-				disBeam.addTarget( ((BaseEntity)temp).getEntityIdentifier().getDisValue() );
-			}
-			else
-			{
-				logger.debug( "hla >> dis (Reflect) [EmitterBeam] Target unknown or not a platform, omitting: %s",
-				              targetId.toString() );
-				// This shouldn't be fatal, as it might be targeting something we don't track yet,
-				// like a specific munition or attached part that is also represented as an object.
-				// Just don't pass the target through.
-				continue;
-			}
-		}
 	}
 	
 	private void deserializeFromHla( EmitterBeamRpr object, AttributeHandleValueMap map )

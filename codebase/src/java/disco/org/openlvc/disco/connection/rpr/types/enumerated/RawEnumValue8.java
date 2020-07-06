@@ -119,11 +119,6 @@ public class RawEnumValue8 implements ExtendedDataElement<RawEnumValue8>
 		return this.value.getValue();
 	}
 	
-	public void setValue( byte value )
-	{
-		this.value.setValue( value );
-	}
-	
 	public void setUnsignedValue( short value )
 	{
 		this.value.setUnsignedValue( value );

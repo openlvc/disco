@@ -18,13 +18,9 @@
 package org.openlvc.disco.connection.rpr.objects;
 
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.connection.rpr.types.array.RTIobjectIdArray;
 import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.emissions.EmitterBeam;
-import org.openlvc.disco.pdu.record.EventIdentifier;
-import org.openlvc.disco.pdu.record.TrackJamData;
 
 public class RadarBeam extends EmitterBeamRpr
 {
@@ -59,42 +55,14 @@ public class RadarBeam extends EmitterBeamRpr
 	@Override
 	public void fromPdu( PDU incoming )
 	{
-		super.fromPdu( incoming );
-		System.out.println( "RadarBeam::fromPdu()" );
-	}
-
-	public void fromDis( EmitterBeam disBeam, EventIdentifier event )
-	{
-		super.fromDis( disBeam, event );
-		
-		// HighDensityTrackJam
-		highDensityTrack.setValue( disBeam.isHighDensity() );
-
-		// TrackObjects
-		trackObjectIdentifiers.resize( disBeam.getTargets().size() );
-		for( TrackJamData target : disBeam.getTargets() )
-			trackObjectIdentifiers.addElement( new RTIobjectId(target.getTarget().toString()) );
-		throw new RuntimeException( "FIXME: RTIobjectId Translation" );
-	}
-
-	public EmitterBeam toDis()
-	{
-		EmitterBeam beam = super.toDis();
-		
-		// HighDensityTrackJam
-		beam.setHighDensity( highDensityTrack.getValue() );
-		
-		// TrackedObjects -- Can't do this without reference to ObjectStore, so it is done in the
-		//                   EmitterBeamMapper instead.
-		//for( int i = 0; i < trackObjectIdentifiers.size(); i++ )
-		//	beam.addTarget( trackObjectIdentifiers.get(i).getAsEntityId() );
-		
-		return beam;
+		// Done in AbstractEmitterMapper
+		throw new DiscoException( "EmitterBeams (Radar) cannot be deserialized directly from PDUs" );
 	}
 
 	@Override
 	public PDU toPdu()
 	{
+		// Done in AbstractEmitterMapper
 		throw new DiscoException( "EmitterBeams (Radar) cannot be serialized directly to PDUs" );
 	}
 
@@ -102,6 +70,12 @@ public class RadarBeam extends EmitterBeamRpr
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public RPRboolean getHighDensityTrack()
+	{
+		return highDensityTrack;
+	}
+
+	@Override
+	public RPRboolean getHighDensityTrackJam()
 	{
 		return highDensityTrack;
 	}

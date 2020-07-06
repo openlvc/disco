@@ -17,12 +17,16 @@
  */
 package org.openlvc.disco.connection.rpr.mappers;
 
+import java.util.Collection;
+
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
 import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
+import org.openlvc.disco.connection.rpr.objects.EmitterBeamRpr;
 import org.openlvc.disco.connection.rpr.objects.EmitterSystemRpr;
+import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.emissions.EmitterSystem;
 
@@ -30,7 +34,7 @@ import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
 
-public class EmitterSystemMapper extends AbstractMapper
+public class EmitterSystemMapper extends AbstractEmitterMapper
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -105,13 +109,10 @@ public class EmitterSystemMapper extends AbstractMapper
 				objectStore.addLocalEmitter( disSystem.getEmitterSystemId(), hlaObject );
 			}
 			
-			// Suck the values out of the PDU and into the object
-			hlaObject.fromDis( disSystem, pdu.getEventId() );
-			
-			// Additional Items
-			// EmbeddedSystem HostObjectIdentifier: Need to look this up in the store
-			hlaObject.setHostObjectIdentifier( objectStore.getRtiIdForDisId(pdu.getEmittingEntityId()) );
-			
+			// Extract the EmitterSystem values from the PDU
+			// Emitter beams are managed directly in the EmitterBeamMapper
+			super.fromPdu( hlaObject, disSystem, pdu.getEventId() );
+
 			// Send an update for the object
 			super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject) );
 			
@@ -192,24 +193,48 @@ public class EmitterSystemMapper extends AbstractMapper
 	@EventHandler
 	public void handleReflect( HlaReflect event )
 	{
+		//
+		// 1. If this isn't an Emitter System, skip it
+		//
 		if( (event.hlaObject instanceof EmitterSystemRpr) == false )
 			return;
 		
+		EmitterSystemRpr rprSystem = (EmitterSystemRpr)event.hlaObject;
+		
+		//
+		// 2. Update the local representation of the emitter system
+		//
 		try
 		{
-			// Update the local object representation from the received attributes
-			deserializeFromHla( (EmitterSystemRpr)event.hlaObject, event.attributes );
+			deserializeFromHla( rprSystem, event.attributes );
 		}
 		catch( DecoderException de )
 		{
 			throw new DiscoException( de.getMessage(), de );
 		}
 		
-		// Send the PDU off to the OpsCenter
+		// 
+		// 3. Check to see if the system is loaded enough to emit a PDU.
+		//    If not, skip.
+		//
+		if( rprSystem.isLoaded() == false )
+			return;
+		
+		//
+		// 4. Find any beams we have that need to be updated
+		//
+		// We flush with all the known beams because they may not have been flushed when we got
+		// a reflection for them if this system wasn't loaded at the time
+		RTIobjectId emitterId = rprSystem.getRtiObjectId();
+		Collection<EmitterBeamRpr> rprBeams = objectStore.getDiscoveredHlaObjectsMatching( EmitterBeamRpr.class,
+		                                                                                   beam -> beam.isParent(emitterId) );
+		//
+		// 5. Generate the PDU
+		//
 		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 		//         on the other side. This is inefficient and distasteful. Fix me.
-		if( event.hlaObject.isLoaded() )
-			opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
+		EmissionPdu pdu = super.toPdu( rprSystem, rprBeams );
+		opscenter.getPduReceiver().receive( pdu.toByteArray() );
 	}
 
 	private void deserializeFromHla( EmitterSystemRpr object, AttributeHandleValueMap map )

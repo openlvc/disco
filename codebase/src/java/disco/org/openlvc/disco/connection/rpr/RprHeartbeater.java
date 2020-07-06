@@ -61,7 +61,7 @@ public class RprHeartbeater implements Runnable
 	public void start()
 	{
 		this.thread = new Thread( this, "RprHeartbeater" );
-		this.thread.start();
+//		this.thread.start();
 	}
 	
 	public void stop()
@@ -119,11 +119,11 @@ public class RprHeartbeater implements Runnable
 		int pduCount = 0;
 		for( ObjectInstance hlaObject : oldies )
 		{
-			if( hlaObject instanceof BaseEntity == false )
-				continue;
+//			if( hlaObject instanceof BaseEntity == false )
+//				continue;
 
 			// This is an entity state; flush it
-			connection.getOpsCenter().send( hlaObject.toPdu() );
+			connection.getOpsCenter().getPduReceiver().receive( hlaObject.toPdu().toByteArray() );
 			++pduCount;
 			if( logger.isTraceEnabled() )
 			{

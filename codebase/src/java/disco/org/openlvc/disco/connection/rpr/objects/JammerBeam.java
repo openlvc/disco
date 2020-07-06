@@ -18,14 +18,10 @@
 package org.openlvc.disco.connection.rpr.objects;
 
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.connection.rpr.types.array.RTIobjectIdArray;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
 import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.emissions.EmitterBeam;
-import org.openlvc.disco.pdu.record.EventIdentifier;
-import org.openlvc.disco.pdu.record.TrackJamData;
 
 public class JammerBeam extends EmitterBeamRpr
 {
@@ -62,48 +58,14 @@ public class JammerBeam extends EmitterBeamRpr
 	@Override
 	public void fromPdu( PDU incoming )
 	{
-		throw new DiscoException( "EmitterBeams cannot be deserialized directly from PDUs" );
+		// Done in AbstractEmitterMapper
+		throw new DiscoException( "EmitterBeams (Jammer) cannot be deserialized directly from PDUs" );
 	}
 
-	public void fromDis( EmitterBeam disBeam, EventIdentifier event )
-	{
-		super.fromDis( disBeam, event );
-		
-		// JammingModeSequence
-		jammingModeSequence.setValue( disBeam.getJammingTechnique().toInteger() );
-		
-		// HighDensityTrackJam
-		highDensityJam.setValue( disBeam.isHighDensity() );
-
-		// JammedObjects
-		jammedObjectIdentifiers.resize( disBeam.getTargets().size() );
-		for( TrackJamData target : disBeam.getTargets() )
-			jammedObjectIdentifiers.addElement( new RTIobjectId(target.getTarget().toString()) );
-		throw new RuntimeException( "FIXME: RTIobjectId Translation" );
-
-	}
-	
-	public EmitterBeam toDis()
-	{
-		EmitterBeam beam = super.toDis();
-		
-		// JammingModeSequence
-		beam.getJammingTechnique().fromInteger( (int)jammingModeSequence.getValue() );
-		
-		// HighDensityTrackJam
-		beam.setHighDensity( highDensityJam.getValue() );
-		
-		// JammedObjects -- Can't do this without reference to ObjectStore, so it is done in the
-		//                  EmitterBeamMapper instead.
-		//for( int i = 0; i < jammedObjectIdentifiers.size(); i++ )
-		//	beam.addTarget( jammedObjectIdentifiers.get(i).getAsEntityId() );
-		
-		return beam;
-	}
-	
 	@Override
 	public PDU toPdu()
 	{
+		// Done in AbstractEmitterMapper
 		throw new DiscoException( "EmitterBeams (Jammer) cannot be serialized directly to PDUs" );
 	}
 
@@ -116,6 +78,12 @@ public class JammerBeam extends EmitterBeamRpr
 	}
 
 	public RPRboolean getHighDensityJam()
+	{
+		return highDensityJam;
+	}
+	
+	@Override
+	public RPRboolean getHighDensityTrackJam()
 	{
 		return highDensityJam;
 	}

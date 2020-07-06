@@ -151,9 +151,8 @@ public enum EmitterSystemFunction
 	public static EmitterSystemFunction fromValue( short value )
 	{
 		// lazy-load
-		if( CACHE == null )
+		if( CACHE.isEmpty() )
 		{
-			CACHE = new HashMap<>();
 			for( EmitterSystemFunction temp : EmitterSystemFunction.values() )
 				CACHE.put( temp.value(), temp );
 		}

@@ -21,6 +21,7 @@ import org.openlvc.disco.connection.rpr.ObjectStore;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.record.EntityId;
 
 import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.ObjectInstanceHandle;
@@ -85,7 +86,16 @@ public abstract class ObjectInstance
 	 * @return True if the object has enough information to be considered loaded. False otherwise.
 	 */
 	protected abstract boolean checkLoaded();
+
+	/**
+	 * Every object in some way or another has a DIS ID it can be mapped to. This method will
+	 * return that ID regardless of the underlying object type.
+	 * 
+	 * @return The DIS ID, or null if one has not been assigned.
+	 */
+	public abstract EntityId getDisId();
 	
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

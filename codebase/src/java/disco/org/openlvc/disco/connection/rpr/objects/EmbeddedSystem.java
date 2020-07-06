@@ -21,6 +21,7 @@ import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.RelativePositionStruct;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disco.pdu.record.EntityId;
 
 public abstract class EmbeddedSystem extends ObjectInstance
 {
@@ -48,6 +49,12 @@ public abstract class EmbeddedSystem extends ObjectInstance
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+
+	@Override
+	public EntityId getDisId()
+	{
+		return this.entityIdentifier.getDisValue();
+	}
 
 	@Override
 	protected boolean checkLoaded()

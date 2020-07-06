@@ -21,6 +21,7 @@ import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
 import org.openlvc.disco.connection.rpr.types.fixed.EntityTypeStruct;
 import org.openlvc.disco.connection.rpr.types.variant.SpatialVariantStruct;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.record.EntityId;
 
 /**
  * NOTE: IsPartOf and associated RelativeSpatial not yet supported as the PDUs that feed this
@@ -61,6 +62,12 @@ public abstract class BaseEntity extends ObjectInstance
 	protected boolean checkLoaded()
 	{
 		return entityType.isDecodeCalled() && entityIdentifier.isDecodeCalled();
+	}
+
+	@Override
+	public EntityId getDisId()
+	{
+		return entityIdentifier.getDisValue();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

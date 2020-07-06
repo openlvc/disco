@@ -23,12 +23,11 @@ import org.openlvc.disco.connection.rpr.types.array.RTIobjectIdArray;
 import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
 import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
+import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
 import org.openlvc.disco.connection.rpr.types.enumerated.RawEnumValue8;
 import org.openlvc.disco.connection.rpr.types.fixed.EventIdentifierStruct;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.emissions.EmitterBeam;
-import org.openlvc.disco.pdu.field.BeamFunction;
-import org.openlvc.disco.pdu.record.EventIdentifier;
+import org.openlvc.disco.pdu.record.EntityId;
 
 public abstract class EmitterBeamRpr extends ObjectInstance
 {
@@ -83,6 +82,19 @@ public abstract class EmitterBeamRpr extends ObjectInstance
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
+	protected boolean checkLoaded()
+	{
+		return emitterSystemIdentifier != null &&
+		       emitterSystemIdentifier.getValue().equals( "" ) == false;
+	}
+
+	@Override
+	public EntityId getDisId()
+	{
+		throw new DiscoException( "EmitterBeamRpr is not mappable to a DIS ID" );
+	}
+
 	/**
 	 * Jammers and Radar emitters call these different things, but ultimately they're just a
 	 * list of RTIobjectIds. Let's make both of them translate it back to something generic.
@@ -90,13 +102,13 @@ public abstract class EmitterBeamRpr extends ObjectInstance
 	 * @return The array object that holds the targets (tracked entities or jammed entities).
 	 */
 	public abstract RTIobjectIdArray getTargets();
-	
 
-	@Override
-	protected boolean checkLoaded()
-	{
-		return emitterSystemIdentifier.getValue().equals( "" ) == false;
-	}
+	/**
+	 * Jammers and Radars both track this value. Provide non-casted access to it.
+	 * 
+	 * @return True of this beam uses high-density track/jam, false otherwise
+	 */
+	public abstract RPRboolean getHighDensityTrackJam();
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS Decoding Methods   /////////////////////////////////////////////////////////////////
@@ -104,117 +116,30 @@ public abstract class EmitterBeamRpr extends ObjectInstance
 	@Override
 	public void fromPdu( PDU incoming )
 	{
+		// Done in AbstractEmitterMapper
 		throw new DiscoException( "EmitterBeams cannot be deserialized directly from PDUs" );
 	}
 
-	public void fromDis( EmitterBeam disBeam, EventIdentifier event )
-	{
-		// BeamAzimuthCenter
-		beamAzimuthCenter.setValue( disBeam.getBeamData().getAzimuthCenter() );
-		
-		// BeamAzimuthSweep
-		beamAzimuthSweep.setValue( disBeam.getBeamData().getAzimuthSweep() );
-		
-		// BeamElevationCenter
-		beamElevationCenter.setValue( disBeam.getBeamData().getElevationCenter() );
-		
-		// BeamElevationSweep
-		beamElevationCenter.setValue( disBeam.getBeamData().getElevationSweep() );
-
-		// BeamFunctionCode
-		beamFunctionCode.setUnsignedValue( disBeam.getBeamFunction().value() );
-
-		// BeamIdentifier
-		beamIdentifier.setUnsignedValue( disBeam.getBeamNumber() );
-		
-		// BeamParameterIndex
-		beamParameterIndex.setValue( disBeam.getParameterIndex() );
-
-		// EffectiveRadiatedPower
-		effectiveRadiatedPower.setValue( disBeam.getParameterData().getRadiatedPower() );
-		
-		// EmissionFrequency
-		emissionFrequency.setValue( disBeam.getParameterData().getFrequency() );
-		
-		// EmitterSystemIdentifier
-		//emitterSystemIdentifier.setValue( "..." ); -- Done in mapper - must look up emitter system
-
-		// FrequencyRange
-		frequencyRange.setValue( disBeam.getParameterData().getFrequencyRange() );
-
-		// PulseRepetitionFrequency
-		pulseRepetitionFrequency.setValue( disBeam.getParameterData().getPulseRepetitionFrequency() );
-
-		// PulseWidth
-		pulseWidth.setValue( disBeam.getParameterData().getPulseWidth() );
-
-		// SweepSync
-		sweepSync.setValue( disBeam.getBeamData().getSweepSync() );
-
-		// EventIdentifier
-		eventIdentifier.setValue( event );
-	}
-
-	public EmitterBeam toDis()
-	{
-		EmitterBeam beam = new EmitterBeam();
-		
-		// BeamAzimuthCenter
-		beam.getBeamData().setAzimuthCenter( beamAzimuthCenter.getValue() );
-		
-		// BeamAzimuthSweep
-		beam.getBeamData().setAzimuthSweep( beamAzimuthSweep.getValue() );
-		
-		// BeamElevationCenter
-		beam.getBeamData().setElevationCenter( beamElevationCenter.getValue() );
-		
-		// BeamElevationSweep
-		beam.getBeamData().setElevationSweep( beamElevationSweep.getValue() );
-
-		// BeamFunctionCode
-		beam.setBeamFunction( BeamFunction.fromValue(beamFunctionCode.getValue()) );
-
-		// BeamIdentifier
-		beam.setBeamNumber( beamIdentifier.getUnsignedValue() );
-		
-		// BeamParameterIndex
-		beam.setParameterIndex( beamParameterIndex.getValue() );
-
-		// EffectiveRadiatedPower
-		beam.getParameterData().setRadiatedPower( effectiveRadiatedPower.getValue() );
-		
-		// EmissionFrequency
-		beam.getParameterData().setFrequency( emissionFrequency.getValue() );
-		
-		// EmitterSystemIdentifier
-		// emitterSystemIdentifier.setValue( "..." ); >> Done in Mapper. Need access to ObjectStore
-
-		// FrequencyRange
-		beam.getParameterData().setFrequencyRange( frequencyRange.getValue() );
-
-		// PulseRepetitionFrequency
-		beam.getParameterData().setPulseRepetitionFrequency( pulseRepetitionFrequency.getValue() );
-
-		// PulseWidth
-		beam.getParameterData().setPulseWidth( pulseWidth.getValue() );
-
-		// SweepSync
-		beam.getBeamData().setSweepSync( sweepSync.getValue() );
-
-		// EventIdentifier -- handles in the mapper
-		
-		return beam;
-	}
-	
 	@Override
 	public PDU toPdu()
 	{
+		// Done in AbstractEmitterMapper
 		throw new DiscoException( "EmitterBeams cannot be serialized directly to PDUs" );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public boolean isParent( RTIobjectId id )
+	{
+		return this.emitterSystemIdentifier != null &&
+		       this.emitterSystemIdentifier.equals(id);
+	}
+	
+	//////////////////////////////////////////////
+	// Standard HLA Type Methods  ////////////////
+	//////////////////////////////////////////////
+	
 	public HLAfloat32BE getBeamAzimuthCenter()
 	{
 		return beamAzimuthCenter;

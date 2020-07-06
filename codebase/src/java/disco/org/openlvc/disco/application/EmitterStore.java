@@ -96,6 +96,7 @@ public class EmitterStore implements IDeleteReaperManaged
 			// Update the values of the system itself
 			existing.setLastUpdatedTime( incoming.getLastUpdatedTime() );
 			existing.setLocation( incoming.getLocation() );
+			existing.setSystemType( incoming.getSystemType() );
 
 			// We also have this system. Loop through all incoming beams and either add them
 			// to our system, or replace them with the incoming newer versions
