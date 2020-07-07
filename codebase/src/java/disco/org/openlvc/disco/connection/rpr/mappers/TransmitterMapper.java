@@ -308,10 +308,12 @@ public class TransmitterMapper extends AbstractMapper
 		if( (event.hlaObject instanceof RadioTransmitter) == false )
 			return;
 		
+		RadioTransmitter rprTransmitter = (RadioTransmitter)event.hlaObject;
+
 		try
 		{
 			// Update the local object representation from the received attributes
-			deserializeFromHla( (RadioTransmitter)event.hlaObject, event.attributes );
+			deserializeFromHla( rprTransmitter, event.attributes );
 		}
 		catch( DecoderException de )
 		{
@@ -321,13 +323,18 @@ public class TransmitterMapper extends AbstractMapper
 		// Send the PDU off to the OpsCenter
 		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 		//         on the other side. This is inefficient and distasteful. Fix me.
-		if( event.hlaObject.isLoaded() )
+		if( isReady(rprTransmitter) )
 		{
 			opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
 			event.hlaObject.setLastUpdatedTimeToNow();
 		}
 	}
 
+	private boolean isReady( RadioTransmitter rprTransmitter )
+	{
+		return rprTransmitter.getEntityIdentifier().isDecodeCalled();
+	}
+	
 	private void deserializeFromHla( RadioTransmitter object, AttributeHandleValueMap map )
 		throws DecoderException
 	{

@@ -18,7 +18,6 @@
 package org.openlvc.disco.connection.rpr;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
@@ -60,7 +59,6 @@ public class ObjectStore
 	// HLA Object Storage
 	private Map<ObjectInstanceHandle,ObjectInstance> hlaObjects;
 	private Map<RTIobjectId,ObjectInstance> rtiObjects; // HLA Objects, but indexed by "RTI id"
-//	private Map<RTIobjectId,EmitterSystemRpr> hlaEmitterSystems;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -76,7 +74,6 @@ public class ObjectStore
 		// HLA Object Storage
 		this.hlaObjects = new ConcurrentHashMap<>();
 		this.rtiObjects = new ConcurrentHashMap<>();
-//		this.hlaEmitterSystems = new ConcurrentHashMap<>();
 	}
 
 	//----------------------------------------------------------
@@ -90,6 +87,7 @@ public class ObjectStore
 	{
 		this.disTransmitters.put( disId, hlaObject );
 		this.rtiObjects.put( hlaObject.getRtiObjectId(), hlaObject );
+		hlaObject.addToStore( this );
 	}
 	
 	public RadioTransmitter getLocalTransmitter( EntityId disId )
@@ -101,6 +99,7 @@ public class ObjectStore
 	{
 		this.disEntities.put( disId, hlaObject );
 		this.rtiObjects.put( hlaObject.getRtiObjectId(), hlaObject );
+		hlaObject.addToStore( this );
 	}
 
 	public PhysicalEntity getLocalEntity( EntityId disId )
@@ -112,6 +111,7 @@ public class ObjectStore
 	{
 		this.disEmitters.put( disId, hlaObject );
 		this.rtiObjects.put( hlaObject.getRtiObjectId(), hlaObject );
+		hlaObject.addToStore( this );
 	}
 	
 	public EmitterSystemRpr getLocalEmitter( EmitterSystemId disId )
@@ -130,6 +130,7 @@ public class ObjectStore
 		
 		beams.put( beamId, hlaObject );
 		this.rtiObjects.put( hlaObject.getRtiObjectId(), hlaObject );
+		hlaObject.addToStore( this );
 	}
 	
 	public EmitterBeamRpr getLocalBeam( EmitterSystemId disId, short beamId )
@@ -171,6 +172,9 @@ public class ObjectStore
 		// unlike any attribute values, it is the one thing that will be there from the start
 		// and we can used it to index from discovery.
 		this.rtiObjects.put( hlaObject.getRtiObjectId(), hlaObject );
+		
+		// Tell the object who is storing it
+		hlaObject.addToStore( this );
 	}
 
 	/**
@@ -200,23 +204,6 @@ public class ObjectStore
 	}
 
 	/**
-	 * Get a list of all the discovered HLA objects that have NOT been updated since the given
-	 * timestamp. Will only process objects that are loaded.
-	 * 
-	 * @param timestamp The timestamp (millis since epoch) to compare object update times to
-	 * @return A list of all HLA discovered instances that have not been updated since timestamp
-	 */
-	public List<ObjectInstance> getDiscoveredHlaObjectsNotUpdatedSince( long timestamp )
-	{
-		return
-		hlaObjects.entrySet().parallelStream()
-		                     .filter( entry -> entry.getValue().isLoaded() )
-		                     .filter( entry -> entry.getValue().getLastUpdatedTime() < timestamp )
-		                     .map( entry -> entry.getValue() )
-		                     .collect( Collectors.toList() );
-	}
-
-	/**
 	 * Find and return all discovered HLA objects of the given type (or children of). For example,
 	 * if we pass in PhysicalEntity.class as the type, this method will find all discovered 
 	 * Platforms and Lifeforms and return them in a collection of Physical Entities. If none are
@@ -242,14 +229,27 @@ public class ObjectStore
 	 * @param predicate The test we want the objects to pass
 	 * @return The collection of ObjectInstance children of the type that pass the predicate test
 	 */
-	public <T extends ObjectInstance>
-	Collection<T> getDiscoveredHlaObjectsMatching( Class<T> type, Predicate<T> predicate )
+	public <T extends ObjectInstance> Collection<T>
+	getDiscoveredHlaObjectsMatching( Class<T> type, Predicate<T> predicate )
 	{
 		return
 		hlaObjects.values().parallelStream().filter( type::isInstance )
 		                                    .map( type::cast )
 		                                    .filter( predicate::test )
 		                                    .collect( Collectors.toSet() );
+	}
+
+	/**
+	 * Return the collection of all known {@link ObjectInstance}s that match the given predicate.
+	 * 
+	 * @param predicate The predicate to test objects against
+	 * @return The collection of objects that match the filter
+	 */
+	public Collection<ObjectInstance>
+	getDiscoveredHlaObjectsMatching( Predicate<? super ObjectInstance> predicate )
+	{
+		return hlaObjects.values().parallelStream().filter( predicate::test )
+		                                           .collect( Collectors.toSet() );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

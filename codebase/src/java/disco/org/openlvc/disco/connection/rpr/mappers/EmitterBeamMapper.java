@@ -360,21 +360,13 @@ public class EmitterBeamMapper extends AbstractEmitterMapper
 		//
 		// 3. Check to see if we have enough information to emit a PDU. If not, skip
 		//
-		if( rprBeam.isLoaded() == false )
+		if( rprBeam.isReady() == false )
 			return;
 		
 		//
 		// 4. To emit a beam in a PDU we need to wrap it in its parent system. Find it.
 		//
 		ObjectInstance temp = objectStore.getDiscoveredHlaObjectByRtiId( rprBeam.getEmitterSystemIdentifier() );
-		if( temp == null || (temp instanceof EmitterSystemRpr)== false )
-		{
-			// Couldn't find the beam - or it wasn't even an emitter system :O
-			// Can't do anything without the emitter system details. Have to bounce.
-			logger.warn( "hla >> dis (Reflect) EmitterBeam updated, but can't find EmitterSystem: %s",
-			             rprBeam.getEmitterSystemIdentifier() );
-			return;
-		}
 		
 		//
 		// 5. Generate the PDU

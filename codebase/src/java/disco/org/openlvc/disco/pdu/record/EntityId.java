@@ -114,8 +114,8 @@ public class EntityId implements IPduComponent, Cloneable
 		//
 		// Finally, we clean out the high-16 bits for the Entity ID and keep them
 		//
-		siteId = siteId % 256;
-		appId = appId % 256;
+		int siteId = this.siteId % 256;
+		int appId = this.appId % 256;
 		return (siteId << 24) + (appId << 16) + (entityId & 65535);
 	}
 	

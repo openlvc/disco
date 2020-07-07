@@ -692,10 +692,12 @@ public class EntityStateMapper extends AbstractMapper
 		if( (event.hlaObject instanceof PhysicalEntity) == false )
 			return;
 		
+		PhysicalEntity rprEntity = (PhysicalEntity)event.hlaObject;
+
 		try
 		{
 			// Update the local object representation from the received attributes
-			deserializeFromHla( (PhysicalEntity)event.hlaObject, event.attributes );
+			deserializeFromHla( rprEntity, event.attributes );
 		}
 		catch( DecoderException de )
 		{
@@ -706,11 +708,17 @@ public class EntityStateMapper extends AbstractMapper
 		// Send the PDU off to the OpsCenter
 		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 		//         on the other side. This is inefficient and distasteful. Fix me.
-		if( event.hlaObject.isLoaded() )
+		if( isReady(rprEntity) )
 		{
-			opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
+			opscenter.getPduReceiver().receive( rprEntity.toPdu().toByteArray() );
 			event.hlaObject.setLastUpdatedTimeToNow();
 		}
+	}
+	
+	private boolean isReady( PhysicalEntity rprEntity )
+	{
+		return rprEntity.getEntityType().isDecodeCalled() &&
+		       rprEntity.getEntityIdentifier().isDecodeCalled();
 	}
 	
 	private void deserializeFromHla( PhysicalEntity entity, AttributeHandleValueMap map )

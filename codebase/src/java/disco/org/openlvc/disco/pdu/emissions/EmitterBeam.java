@@ -97,8 +97,10 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		if( highDensityTrackJam == HighDensityTrackJam.Selected )
 			targetString = "<High Density>";
 		
-		//return "(On) <Function> <Technique> <Targets>";
-		return String.format( "(%3s) Function=%s, Technique=%s, Targets=%s",
+		//return "[1-23-45:0] (On) <Function> <Technique> <Targets>";
+		return String.format( "[%s:%d] (%3s) Function=%s, %s, Targets=%s",
+		                      parentSystem.getEmittingEntity(),
+		                      beamNumber,
 		                      beamStatus.name(),
 		                      beamFunction.name(),
 		                      jammingTechnique.toString(),

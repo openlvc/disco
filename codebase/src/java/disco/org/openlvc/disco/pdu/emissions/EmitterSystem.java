@@ -210,7 +210,12 @@ public class EmitterSystem implements IPduComponent, Cloneable
 	{
 		return this.beams.remove( number );
 	}
-	
+
+	public boolean containsBeam( short number )
+	{
+		return this.beams.containsKey( number );
+	}
+
 	////////////////////////////////////////////////////////////
 	///  Off-Spec Properties   /////////////////////////////////
 	////////////////////////////////////////////////////////////

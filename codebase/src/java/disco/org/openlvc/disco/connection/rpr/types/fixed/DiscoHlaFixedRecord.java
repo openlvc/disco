@@ -46,6 +46,8 @@ public class DiscoHlaFixedRecord implements HLAfixedRecord
 	//----------------------------------------------------------
 	public DiscoHlaFixedRecord()
 	{
+		this.decodeCalled = false;
+
 		try
 		{
 			this.internal = RtiFactoryFactory.getRtiFactory()

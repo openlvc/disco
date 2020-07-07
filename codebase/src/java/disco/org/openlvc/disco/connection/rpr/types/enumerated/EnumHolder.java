@@ -41,6 +41,7 @@ public class EnumHolder<T extends ExtendedDataElement<T>> implements DataElement
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private T value;
+	private boolean decodeCalled;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -48,6 +49,7 @@ public class EnumHolder<T extends ExtendedDataElement<T>> implements DataElement
 	public EnumHolder( T value )
 	{
 		this.value = value;
+		this.decodeCalled = false;
 	}
 
 	//----------------------------------------------------------
@@ -125,6 +127,7 @@ public class EnumHolder<T extends ExtendedDataElement<T>> implements DataElement
 	public void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
 		value = value.valueOf( byteWrapper );
+		this.decodeCalled = true;
 	}
 
 
@@ -139,6 +142,18 @@ public class EnumHolder<T extends ExtendedDataElement<T>> implements DataElement
 	public void decode( byte[] bytes ) throws DecoderException
 	{
 		value = value.valueOf( bytes );
+		this.decodeCalled = true;
+	}
+
+	/**
+	 * Determine whether we're decoded anything into this object successfully or not. Useful for
+	 * understanding when a record has been initialized by an incoming update.
+	 * 
+	 * @return True if either of the decode methods has been called on this record. False otherwise.
+	 */
+	public boolean isDecodeCalled()
+	{
+		return this.decodeCalled;
 	}
 
 	//----------------------------------------------------------

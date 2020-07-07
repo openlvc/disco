@@ -217,7 +217,7 @@ public class EmitterSystemMapper extends AbstractEmitterMapper
 		// 3. Check to see if the system is loaded enough to emit a PDU.
 		//    If not, skip.
 		//
-		if( rprSystem.isLoaded() == false )
+		if( rprSystem.isReady() == false )
 			return;
 		
 		//

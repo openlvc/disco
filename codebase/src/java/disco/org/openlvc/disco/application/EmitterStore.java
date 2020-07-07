@@ -88,18 +88,21 @@ public class EmitterStore implements IDeleteReaperManaged
 		// system that we have. If we don't have one, just store the incoming system as a whole
 		for( EmitterSystem incoming : pdu.getEmitterSystems() )
 		{
-			// Find any matching existing system, adding the current one if not
-			EmitterSystem existing = set.systems.putIfAbsent( incoming.getSystemType().getNumber(), incoming );
+			// If there is an existing system for this number, get it, otherwise add it
+			EmitterSystem existing = set.systems.get( incoming.getSystemType().getNumber() );
 			if( existing == null )
+			{
+				set.systems.put( incoming.getSystemType().getNumber(), incoming );
 				continue;
+			}
 
+			// System already being tracked - update it
 			// Update the values of the system itself
 			existing.setLastUpdatedTime( incoming.getLastUpdatedTime() );
 			existing.setLocation( incoming.getLocation() );
 			existing.setSystemType( incoming.getSystemType() );
-
-			// We also have this system. Loop through all incoming beams and either add them
-			// to our system, or replace them with the incoming newer versions
+			
+			// Update the beams - either adding them or replacing them
 			for( EmitterBeam beam : incoming.getBeams() )
 				existing.addBeam( beam );
 		}

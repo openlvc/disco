@@ -207,6 +207,9 @@ public abstract class AbstractEmitterMapper extends AbstractMapper
 		// EmitterFunctionCode
 		system.getSystemType().setFunction( EmitterSystemFunction.fromValue(rprSystem.getEmitterFunctionCode().getValue()) );
 		
+		// EmitterIndex
+		system.getSystemType().setNumber( rprSystem.getEmitterIndex().getUnsignedValue() );
+		
 		// EmitterType
 		system.getSystemType().setName( rprSystem.getEmitterType().getValue() );
 		
@@ -215,6 +218,9 @@ public abstract class AbstractEmitterMapper extends AbstractMapper
 		//
 		for( EmitterBeamRpr rprBeam : rprBeams )
 		{
+			if( rprBeam.isReady() == false )
+				continue;
+			
 			EmitterBeam beam = new EmitterBeam();
 			beam.setBeamActive( true ); // No status in RPR v2.0, so let's just always set to true
 			
@@ -312,6 +318,37 @@ public abstract class AbstractEmitterMapper extends AbstractMapper
 	}
 	
 
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// General Helper Methods   ///////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	protected String toString( EmitterBeamRpr rprBeam )
+	{
+		// Get DIS ID of emitter
+		ObjectInstance emitter = objectStore.getDiscoveredHlaObjectByRtiId( rprBeam.getEmitterSystemIdentifier() );
+		
+		// Get the targets and convert to printable string
+		StringBuilder targets = new StringBuilder();
+		int skipped = 0;
+		for( RTIobjectId id : rprBeam.getTargets() )
+		{
+			ObjectInstance target = objectStore.getDiscoveredHlaObjectByRtiId( id );
+			if( target != null )
+				targets.append( target.getDisId()+", " );
+			else
+				skipped++;
+		}
+		targets.append( "(+"+skipped+")" );
+		
+		// Generate the full printable string
+		// {handle} [id:num] <Function> <Technique> <Targets>
+		return String.format( "{%s} [%s:%d] Function=%s, Targets=[%s]",
+		                      rprBeam.getObjectHandle().toString(),
+		                      emitter.getDisId(),
+		                      rprBeam.getBeamIdentifier().getValue(),
+		                      BeamFunction.fromValue( rprBeam.getBeamFunctionCode().getValue() ),
+		                      targets.toString() );
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

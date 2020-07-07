@@ -30,7 +30,7 @@ import hla.rti1516e.encoding.EncoderException;
 import hla.rti1516e.encoding.HLAvariableArray;
 import hla.rti1516e.exceptions.RTIinternalError;
 
-public class DiscoHlaVariableArray<T extends DataElement> implements HLAvariableArray<T> 
+public class DiscoHlaVariableArray<T extends DataElement> implements HLAvariableArray<T>, Iterable<T>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -40,6 +40,7 @@ public class DiscoHlaVariableArray<T extends DataElement> implements HLAvariable
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private HLAvariableArray<T> internal;
+	private boolean decodeCalled;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -47,6 +48,8 @@ public class DiscoHlaVariableArray<T extends DataElement> implements HLAvariable
 	@SuppressWarnings("unchecked")
 	public DiscoHlaVariableArray( DataElementFactory<T> factory, T... values )
 	{
+		this.decodeCalled = true;
+
 		try
 		{
 			this.internal = RtiFactoryFactory.getRtiFactory()
@@ -100,9 +103,20 @@ public class DiscoHlaVariableArray<T extends DataElement> implements HLAvariable
 	public byte[] toByteArray()
 		throws EncoderException				  { return internal.toByteArray(); }
 	public void decode( ByteWrapper wrapper )
-		throws DecoderException				  { internal.decode(wrapper); }
+		throws DecoderException				  { internal.decode(wrapper); decodeCalled = true; }
 	public void decode( byte[] bytes )
-		throws DecoderException               { internal.decode(bytes); }
+		throws DecoderException               { internal.decode(bytes); decodeCalled = true; }
+
+	/**
+	 * Determine whether we're decoded anything into this object successfully or not. Useful for
+	 * understanding when a record has been initialized by an incoming update.
+	 * 
+	 * @return True if either of the decode methods has been called on this record. False otherwise.
+	 */
+	public boolean isDecodeCalled()
+	{
+		return this.decodeCalled;
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////

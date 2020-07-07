@@ -59,12 +59,6 @@ public abstract class BaseEntity extends ObjectInstance
 	//----------------------------------------------------------
 
 	@Override
-	protected boolean checkLoaded()
-	{
-		return entityType.isDecodeCalled() && entityIdentifier.isDecodeCalled();
-	}
-
-	@Override
 	public EntityId getDisId()
 	{
 		return entityIdentifier.getDisValue();
@@ -73,6 +67,12 @@ public abstract class BaseEntity extends ObjectInstance
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	@Override
+	protected boolean checkReady()
+	{
+		return entityType.isDecodeCalled() && entityIdentifier.isDecodeCalled();
+	}
+	
 	public EntityTypeStruct getEntityType()
 	{
 		return entityType;

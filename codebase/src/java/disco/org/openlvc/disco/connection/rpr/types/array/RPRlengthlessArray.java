@@ -62,6 +62,7 @@ public class RPRlengthlessArray<T extends DataElement> implements DataElement, I
 	private DataElementFactory<T> factory;
 	private List<T> items;
 	private int boundary;
+	private boolean decodeCalled;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -77,6 +78,7 @@ public class RPRlengthlessArray<T extends DataElement> implements DataElement, I
 		this.factory = factory;
 		this.items = new ArrayList<>();
 		this.boundary = -1;
+		this.decodeCalled = false;
 
 		// populate
 		for( T value : values )
@@ -158,6 +160,8 @@ public class RPRlengthlessArray<T extends DataElement> implements DataElement, I
 		// Burn any elements after what we just decoded
 		while( items.size() > count )
 			items.remove(count);
+		
+		this.decodeCalled = true;
 	}
 
 	@Override
@@ -200,6 +204,17 @@ public class RPRlengthlessArray<T extends DataElement> implements DataElement, I
 	public T get( int index )
 	{
 		return items.get( index );
+	}
+
+	/**
+	 * Determine whether we're decoded anything into this object successfully or not. Useful for
+	 * understanding when a record has been initialized by an incoming update.
+	 * 
+	 * @return True if either of the decode methods has been called on this record. False otherwise.
+	 */
+	public boolean isDecodeCalled()
+	{
+		return this.decodeCalled;
 	}
 
 	//----------------------------------------------------------

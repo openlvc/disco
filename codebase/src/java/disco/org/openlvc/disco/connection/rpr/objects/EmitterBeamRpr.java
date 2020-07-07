@@ -83,16 +83,10 @@ public abstract class EmitterBeamRpr extends ObjectInstance
 	//----------------------------------------------------------
 
 	@Override
-	protected boolean checkLoaded()
-	{
-		return emitterSystemIdentifier != null &&
-		       emitterSystemIdentifier.getValue().equals( "" ) == false;
-	}
-
-	@Override
 	public EntityId getDisId()
 	{
-		throw new DiscoException( "EmitterBeamRpr is not mappable to a DIS ID" );
+		return new EntityId( -1,-1,-1 );
+		//throw new DiscoException( "EmitterBeamRpr is not mappable to a DIS ID" );
 	}
 
 	/**
@@ -134,6 +128,21 @@ public abstract class EmitterBeamRpr extends ObjectInstance
 	{
 		return this.emitterSystemIdentifier != null &&
 		       this.emitterSystemIdentifier.equals(id);
+	}
+	
+	@Override
+	public boolean checkReady()
+	{
+		// Has decode been called on the emitter system id?
+		if( emitterSystemIdentifier.isDecodeCalled() )
+		{
+			// Can we find the DIS id of the emitting system? (it might not have updated yet)
+			ObjectInstance emitter = super.objectStore.getDiscoveredHlaObjectByRtiId( emitterSystemIdentifier );
+			if( emitter != null && emitter.getDisId().isValid() )
+				return true;
+		}
+
+		return false;
 	}
 	
 	//////////////////////////////////////////////

@@ -35,6 +35,7 @@ public class RTIobjectId implements DataElement // RPRnullTerminatedArray<HLAASC
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private String value;
+	private boolean decodeCalled;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -42,11 +43,13 @@ public class RTIobjectId implements DataElement // RPRnullTerminatedArray<HLAASC
 	public RTIobjectId()
 	{
 		this.value = "";
+		this.decodeCalled = false;
 	}
 
 	public RTIobjectId( String value )
 	{
 		this.value = value;
+		this.decodeCalled = false;
 	}
 
 	//----------------------------------------------------------
@@ -86,6 +89,11 @@ public class RTIobjectId implements DataElement // RPRnullTerminatedArray<HLAASC
 			return ((RTIobjectId)object).value.equals( this.value );
 		else
 			return false;
+	}
+	
+	public boolean isDecodeCalled()
+	{
+		return this.decodeCalled;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////
@@ -138,6 +146,8 @@ public class RTIobjectId implements DataElement // RPRnullTerminatedArray<HLAASC
 		
 		this.value = new String( raw, byteWrapper.getPos(), length, StandardCharsets.US_ASCII );
 		byteWrapper.advance( length+1/* account for \0 */ );
+
+		this.decodeCalled = true;
 	}
 
 	@Override

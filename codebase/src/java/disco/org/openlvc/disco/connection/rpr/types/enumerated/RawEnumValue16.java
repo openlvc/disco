@@ -20,6 +20,7 @@ package org.openlvc.disco.connection.rpr.types.enumerated;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 
 import hla.rti1516e.encoding.ByteWrapper;
+import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
@@ -28,7 +29,7 @@ import hla.rti1516e.encoding.EncoderException;
  * this class just wraps the raw number that is provided to identify the enum. These types do
  * <b>NOT</b> need to be held in an {@link EnumHolder} because they are safely mutable.
  */
-public class RawEnumValue16 implements ExtendedDataElement<RawEnumValue16>
+public class RawEnumValue16 implements DataElement
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -38,6 +39,7 @@ public class RawEnumValue16 implements ExtendedDataElement<RawEnumValue16>
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private RPRunsignedInteger16BE value;
+	private boolean decodeCalled;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -45,6 +47,7 @@ public class RawEnumValue16 implements ExtendedDataElement<RawEnumValue16>
 	public RawEnumValue16()
 	{
 		this.value = new RPRunsignedInteger16BE();
+		this.decodeCalled = false;
 	}
 
 	//----------------------------------------------------------
@@ -81,34 +84,18 @@ public class RawEnumValue16 implements ExtendedDataElement<RawEnumValue16>
 	}
 
 	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// ExtendedDataElement Methods   //////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public RawEnumValue16 valueOf( ByteWrapper wrapper ) throws DecoderException
-	{
-		value.decode( wrapper );
-		return this;
-	}
-
-	@Override
-	public RawEnumValue16 valueOf( byte[] bytes ) throws DecoderException
-	{
-		value.decode( bytes );
-		return this;
-	}
-	
-	
 	@Override
 	public void decode( ByteWrapper wrapper ) throws DecoderException
 	{
 		value.decode( wrapper );
+		this.decodeCalled = true;
 	}
 
 	@Override
 	public void decode( byte[] bytes ) throws DecoderException
 	{
 		value.decode( bytes );
+		this.decodeCalled = true;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,6 +109,17 @@ public class RawEnumValue16 implements ExtendedDataElement<RawEnumValue16>
 	public void setValue( int value )
 	{
 		this.value.setValue( value );
+	}
+
+	/**
+	 * Determine whether we're decoded anything into this object successfully or not. Useful for
+	 * understanding when a record has been initialized by an incoming update.
+	 * 
+	 * @return True if either of the decode methods has been called on this record. False otherwise.
+	 */
+	public boolean isDecodeCalled()
+	{
+		return this.decodeCalled;
 	}
 
 	//----------------------------------------------------------

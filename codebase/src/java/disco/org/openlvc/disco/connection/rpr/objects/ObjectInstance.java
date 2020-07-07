@@ -40,8 +40,9 @@ public abstract class ObjectInstance
 	private AttributeHandleValueMap attributes;
 	private RTIobjectId rtiId; // This is so stupid. A second unique id, all because the HLA
 	                           // spec doesn't define a concrete type for handles. Shoot me.
-	private boolean loaded;
 
+	protected ObjectStore objectStore;
+	private boolean ready;
 	private long lastUpdated;
 
 	//----------------------------------------------------------
@@ -53,7 +54,9 @@ public abstract class ObjectInstance
 		this.objectHandle = null;
 		this.attributes   = null;
 		this.rtiId        = null;
-		this.loaded       = false;
+		
+		this.objectStore  = null;  // set when we are added to a store
+		this.ready        = false;
 		this.lastUpdated  = -1;
 	}
 
@@ -79,15 +82,6 @@ public abstract class ObjectInstance
 	public abstract PDU toPdu();
 
 	/**
-	 * Implemented by child classes. This should return true once enough information has been
-	 * set on the class (either via reflection or local settings) that it can be considered as
-	 * "loaded". Once this call returns true, so will the public facing {@link #isLoaded()}.
-	 * 
-	 * @return True if the object has enough information to be considered loaded. False otherwise.
-	 */
-	protected abstract boolean checkLoaded();
-
-	/**
 	 * Every object in some way or another has a DIS ID it can be mapped to. This method will
 	 * return that ID regardless of the underlying object type.
 	 * 
@@ -95,24 +89,39 @@ public abstract class ObjectInstance
 	 */
 	public abstract EntityId getDisId();
 	
-
+	/**
+	 * Do any checks to be sure that the object is ready to be turned into a PDU, including
+	 * validating any transitive dependency information through the object store. Once this
+	 * method returns true, it'll never be called again for the object.
+	 * 
+	 * @return True if we are ready, false otherwise.
+	 */
+	protected abstract boolean checkReady();
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/**
-	 * @return True if the object should be considered as "loaded". An object is loaded once we
-	 *         have both discovered it, and have received a reflection for all the _required_
-	 *         attributes. What is required will differ on a class-by-class basis and is left to
-	 *         subclasses of {@link ObjectInstance} to decide.
+	 * Returns whether this object is ready to be converted into a PDU yet. To be ready, it must
+	 * contain all the data it is expecting, and all the data that it needs to logically express
+	 * itself as a PDU.
+	 * <p/>
+	 * Connections between RPR objects are expressed by including a unique id as a form of
+	 * reference. Just having a valid id however doesn't mean the object on the other end has
+	 * been either discovered, or is itself ready. Use our {@link ObjectStore} reference (set
+	 * when we are added to an object store) to check transitive dependencies.
+	 * <p/>
+	 * The return value is cached, so we only perform the check until it turns true for the first
+	 * time, then we will always return true without checking.
+	 * 
+	 * @return True if this object has all info it needs to be turned into a PDU; false otherwise
 	 */
-	public boolean isLoaded()
+	public boolean isReady()
 	{
-		// If loaded is false, we should re-check it. This could be expensive, so we
-		// only do it as long as we're _NOT_ loaded. Once we are we stop caring.
-		if( this.loaded == false )
-			this.loaded = checkLoaded();
+		if( !ready )
+			ready = checkReady();
 		
-		return this.loaded;
+		return ready;
 	}
 	
 	public void setObjectClass( ObjectClass objectClass )
@@ -153,6 +162,11 @@ public abstract class ObjectInstance
 	public RTIobjectId getRtiObjectId()
 	{
 		return this.rtiId;
+	}
+	
+	public void addToStore( ObjectStore store )
+	{
+		this.objectStore = store;
 	}
 	
 	public long getLastUpdatedTime()

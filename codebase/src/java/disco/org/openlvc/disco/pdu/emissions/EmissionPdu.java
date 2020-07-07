@@ -69,15 +69,16 @@ public class EmissionPdu extends PDU
 		builder.append( "  > Emitting Entity: "+emittingEntityId.toString()+"\n" );
 		builder.append( "  > Emitter Systems: "+emitterSystems.size()+"\n" );
 		
-		int count = 0;
 		for( EmitterSystem system : emitterSystems )
 		{
-			++count;
-			builder.append( "    ["+count+"]: Function="+system.getSystemType().getFunction().name() );
+			builder.append( "    ["+system.getEmitterNumber()+"]: Function="+system.getSystemType().getFunction() );
 			builder.append( ", Beams="+system.getBeamCount()+"\n" );
 			
 			for( EmitterBeam beam : system.getBeams() )
-				builder.append( "      {Beam} " ).append( beam.toString() ).append( "\n" );
+			{
+				builder.append( "      {Beam "+beam.getBeamNumber()+"} " ).
+				        append( beam.toString() ).append( "\n" );
+			}
 		}
 		
 		return builder.toString();

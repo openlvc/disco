@@ -17,11 +17,13 @@
  */
 package org.openlvc.disco.connection.rpr;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.apache.logging.log4j.Logger;
-import org.openlvc.disco.connection.rpr.objects.BaseEntity;
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
+
+import hla.rti1516e.AttributeHandleValueMap;
 
 /**
  * This class generates artifical heartbeat PDUs for objects that have been discovered from
@@ -50,7 +52,7 @@ public class RprHeartbeater implements Runnable
 	{
 		this.connection = connection;
 		this.logger = null; // set in run()
-		this.heartbeatPeriod = 60000;
+		this.heartbeatPeriod = 5000;
 		this.thread = null; // set in start()
 	}
 
@@ -61,7 +63,7 @@ public class RprHeartbeater implements Runnable
 	public void start()
 	{
 		this.thread = new Thread( this, "RprHeartbeater" );
-//		this.thread.start();
+		this.thread.start();
 	}
 	
 	public void stop()
@@ -112,27 +114,40 @@ public class RprHeartbeater implements Runnable
 		logger.trace( "hla >> dis (Heartbeat) Check for objects to heartbeat (not updated since %1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS)",
 		              staleTime );
 		
-		// Entity States
-		List<ObjectInstance> oldies =
-			connection.getObjectStore().getDiscoveredHlaObjectsNotUpdatedSince( staleTime );
+		// Get discovered objects not updated since the timeout time
+		Collection<ObjectInstance> oldies =
+			connection.getObjectStore().getDiscoveredHlaObjectsMatching( oi -> oi.getLastUpdatedTime() < staleTime );
 		
-		int pduCount = 0;
+		// If there is nothing to do, do nothing
+		if( oldies.isEmpty() )
+			return;
+
+		// Create an empty attribute value set we'll use in the synthesized reflection calls
+		AttributeHandleValueMap empty = getEmptyAttributes();
+		
+		int updateCount = 0;
 		for( ObjectInstance hlaObject : oldies )
 		{
-//			if( hlaObject instanceof BaseEntity == false )
-//				continue;
-
-			// This is an entity state; flush it
-			connection.getOpsCenter().getPduReceiver().receive( hlaObject.toPdu().toByteArray() );
-			++pduCount;
-			if( logger.isTraceEnabled() )
-			{
-				logger.trace( "hla >> dis (Heartbeat) Sent heartbeat EntityState for %s",
-				              ((BaseEntity)hlaObject).getEntityIdentifier().toString() );
-			}
+			// Generate a fake reflection event so that we can stimulate a PDU
+			connection.receiveHlaReflection( hlaObject.getObjectHandle(), empty );
+			++updateCount;
 		}
 		
-		logger.trace( "hla >> dis (Heartbeat) Sent %d heartbeat PDUs", pduCount );
+		logger.trace( "hla >> dis (Heartbeat) Generated %d heartbeat events", updateCount );
+	}
+
+	private AttributeHandleValueMap getEmptyAttributes() throws DiscoException
+	{
+		// Is the HLA API the most terrible API to work with? Yes/Yes?
+		try
+		{
+			return connection.getRtiAmb().getAttributeHandleValueMapFactory().create( 0 );
+		}
+		catch( Exception e )
+		{
+			// won't happen... or WILL it!? Duh duh DUH.
+			throw new DiscoException( e.getMessage(), e );
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
