@@ -39,7 +39,7 @@ public class HLAinteger64BE implements hla.rti1516e.encoding.HLAinteger64BE
 	//----------------------------------------------------------
 	public HLAinteger64BE()
 	{
-		this.value = Long.MIN_VALUE;
+		this.value = 0L;
 	}
 
 	public HLAinteger64BE( long value )
@@ -88,6 +88,7 @@ public class HLAinteger64BE implements hla.rti1516e.encoding.HLAinteger64BE
 	@Override
 	public final void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
+		byteWrapper.align(8);
 		byte[] asBytes = toByteArray();
 		if( byteWrapper.remaining() < asBytes.length )
 			throw new EncoderException( "Insufficient space remaining in buffer to encode this value" );
@@ -106,6 +107,7 @@ public class HLAinteger64BE implements hla.rti1516e.encoding.HLAinteger64BE
 	@Override
 	public final void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
+		byteWrapper.align(8);
 		if( byteWrapper.remaining() < 8 )
 			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
 		
@@ -117,14 +119,10 @@ public class HLAinteger64BE implements hla.rti1516e.encoding.HLAinteger64BE
 	@Override
 	public final void decode( byte[] bytes ) throws DecoderException
 	{
-		try
-		{
-			this.value = BitHelpers.readLongBE( bytes, 0 );
-		}
-		catch( Exception e )
-		{
-			throw new DecoderException( e.getMessage(), e );
-		}
+		if( bytes.length < 8 )
+			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
+
+		this.value = BitHelpers.readLongBE( bytes, 0 );
 	}
 
 	//----------------------------------------------------------

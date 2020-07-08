@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.connection.rpr.types.basic;
 
+import org.openlvc.disco.DiscoException;
+
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
@@ -43,7 +45,7 @@ public class RPRunsignedInteger32BE implements DataElement
 
 	public RPRunsignedInteger32BE( long value )
 	{
-		this.value = value;
+		this.setValue( value );
 	}
 
 	//----------------------------------------------------------
@@ -67,6 +69,8 @@ public class RPRunsignedInteger32BE implements DataElement
 	 */
 	public void setValue( long value )
 	{
+		if( value < 0 || value > 4294967295L )
+			throw new DiscoException( "UnsignedInteger32 cannot be less than 0 or greater than 4,294,967,295: "+value );
 		this.value = value;
 	}
 
@@ -80,6 +84,15 @@ public class RPRunsignedInteger32BE implements DataElement
 		return 4;
 	}
 
+	/**
+	 * Returns the size in bytes of this element's encoding.
+	 *
+	 * @return the size in bytes of this element's encoding
+	 */
+	public int getEncodedLength()
+	{
+		return 4;
+	}
 
 	/**
 	 * Encodes this element into the specified ByteWrapper.
@@ -90,21 +103,12 @@ public class RPRunsignedInteger32BE implements DataElement
 	 */
 	public void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
-		byte[] asBytes = toByteArray();
-		if( byteWrapper.remaining() < asBytes.length )
+		byteWrapper.align(4);
+		if( byteWrapper.remaining() < 4 )
 			throw new EncoderException( "Insufficient space remaining in buffer to encode this value" );
 		
+		byte[] asBytes = toByteArray();
 		byteWrapper.put( asBytes );
-	}
-
-	/**
-	 * Returns the size in bytes of this element's encoding.
-	 *
-	 * @return the size in bytes of this element's encoding
-	 */
-	public int getEncodedLength()
-	{
-		return 4;
 	}
 
 	/**
@@ -133,6 +137,7 @@ public class RPRunsignedInteger32BE implements DataElement
 	 */
 	public void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
+		byteWrapper.align(4);
 		if( byteWrapper.remaining() < 4 )
 			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
 			

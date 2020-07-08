@@ -17,7 +17,6 @@
  */
 package org.openlvc.disco.connection.rpr.types.basic;
 
-import hla.rti1516e.RtiFactoryFactory;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElementFactory;
 import hla.rti1516e.encoding.DecoderException;
@@ -32,33 +31,24 @@ public class HLAoctet implements hla.rti1516e.encoding.HLAoctet
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private hla.rti1516e.encoding.HLAoctet value;
+	private byte value;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	public HLAoctet()
 	{
-		try
-		{
-			this.value = RtiFactoryFactory.getRtiFactory().getEncoderFactory().createHLAoctet();
-		}
-		catch( Exception e )
-		{
-			e.printStackTrace();
-		}
+		this.value = 0;
 	}
 
 	public HLAoctet( byte value )
 	{
-		this();
-		this.setValue( value );
+		this.value = value;
 	}
 
 	public HLAoctet( int value )
 	{
-		this();
-		this.setValue( (byte)value );
+		this.value = (byte)value;
 	}
 	
 	//----------------------------------------------------------
@@ -71,7 +61,7 @@ public class HLAoctet implements hla.rti1516e.encoding.HLAoctet
 	 */
 	public byte getValue()
 	{
-		return this.value.getValue();
+		return this.value;
 	}
 
 	/**
@@ -81,7 +71,7 @@ public class HLAoctet implements hla.rti1516e.encoding.HLAoctet
 	 */
 	public void setValue( byte value )
 	{
-		this.value.setValue( value );
+		this.value = value;
 	}
 
 	/**
@@ -98,7 +88,7 @@ public class HLAoctet implements hla.rti1516e.encoding.HLAoctet
 		if( value < 0 || value > 255 )
 			throw new IllegalArgumentException( "Unsigned value can only be between 0-255" );
 		
-		this.setValue( (byte)value );
+		this.value = (byte)value;
 	}
 
 	/**
@@ -106,7 +96,7 @@ public class HLAoctet implements hla.rti1516e.encoding.HLAoctet
 	 */
 	public short getUnsignedValue()
 	{
-		return (short)Byte.toUnsignedInt(this.value.getValue() );
+		return (short)Byte.toUnsignedInt(this.value);
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////
@@ -115,37 +105,46 @@ public class HLAoctet implements hla.rti1516e.encoding.HLAoctet
 	@Override
 	public int getOctetBoundary()
 	{
-		return value.getOctetBoundary();
+		return 1;
 	}
 
 	@Override
 	public void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
-		value.encode( byteWrapper );
+		if( byteWrapper.remaining() < this.getEncodedLength() )
+			throw new EncoderException( "Insufficient space remaining in buffer to encode this value" );
+		
+		byteWrapper.put( this.value );
 	}
 
 	@Override
 	public int getEncodedLength()
 	{
-		return value.getEncodedLength();
+		return 1;
 	}
 
 	@Override
 	public byte[] toByteArray() throws EncoderException
 	{
-		return value.toByteArray();
+		return new byte[]{ this.value };
 	}
 
 	@Override
 	public void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
-		value.decode( byteWrapper );
+		if( byteWrapper.remaining() < this.getEncodedLength() )
+			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
+		
+		this.value = (byte)byteWrapper.get();
 	}
 
 	@Override
 	public void decode( byte[] bytes ) throws DecoderException
 	{
-		value.decode( bytes );
+		if( bytes.length < this.getEncodedLength() )
+			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
+		
+		this.value = bytes[0];
 	}
 
 	//----------------------------------------------------------

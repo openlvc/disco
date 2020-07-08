@@ -102,6 +102,10 @@ public class RPRlengthlessArray<T extends DataElement> implements DataElement, I
 			for( T item : items )
 				maxBoundary = Math.max(item.getOctetBoundary(),maxBoundary);
 			
+			// If we don't have any items yet, create one to get a size
+			if( items.isEmpty() )
+				maxBoundary = Math.max(factory.createElement(0).getOctetBoundary(),maxBoundary);
+			
 			// cache it
 			this.boundary = maxBoundary;
 		}
@@ -117,8 +121,12 @@ public class RPRlengthlessArray<T extends DataElement> implements DataElement, I
 		{
 			int boundary = item.getOctetBoundary();
 			int padding = counter % boundary;
-			int length = item.getEncodedLength();
-			counter += (length + padding);
+			// add padding for previous element
+			if( padding != 0 )
+				counter += boundary-padding;
+
+			// add element length
+			counter += item.getEncodedLength();
 		}
 
 		return counter;

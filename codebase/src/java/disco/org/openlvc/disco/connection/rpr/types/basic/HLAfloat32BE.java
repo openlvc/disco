@@ -17,8 +17,6 @@
  */
 package org.openlvc.disco.connection.rpr.types.basic;
 
-import org.openlvc.disco.utils.BitHelpers;
-
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
@@ -39,7 +37,7 @@ public class HLAfloat32BE implements hla.rti1516e.encoding.HLAfloat32BE
 	//----------------------------------------------------------
 	public HLAfloat32BE()
 	{
-		this.value = Float.MIN_VALUE;
+		this.value = 0.0f;
 	}
 
 	public HLAfloat32BE( float value )
@@ -88,42 +86,30 @@ public class HLAfloat32BE implements hla.rti1516e.encoding.HLAfloat32BE
 	@Override
 	public final void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
-		try
-		{
-			byteWrapper.put( toByteArray() );
-		}
-		catch( Exception e )
-		{
-			throw new EncoderException( e.getMessage(), e );
-		}
+		byteWrapper.align( 4 );
+		byteWrapper.putInt( Float.floatToIntBits(value) );
 	}
 
 	@Override
 	public final byte[] toByteArray() throws EncoderException
 	{
-		byte[] buffer = new byte[4];
-		BitHelpers.putFloatBE( value, buffer, 0 );
-		return buffer;
+		ByteWrapper wrapper = new ByteWrapper(4);
+		encode(wrapper);
+		return wrapper.array();
 	}
 
 	@Override
 	public final void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
-		if( byteWrapper.remaining() < 4 )
-			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
-		
-		byte[] buffer = new byte[4];
-		byteWrapper.get( buffer );
-		decode( buffer );
+		byteWrapper.align( 4 );
+		value = Float.intBitsToFloat( byteWrapper.getInt() );
 	}
 
 	@Override
 	public final void decode( byte[] bytes ) throws DecoderException
 	{
-		if( bytes.length < 4 )
-			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
-		
-		this.value = BitHelpers.readFloatBE( bytes, 0 );
+		ByteWrapper wrapper = new ByteWrapper( bytes );
+		decode(wrapper);
 	}
 
 	//----------------------------------------------------------

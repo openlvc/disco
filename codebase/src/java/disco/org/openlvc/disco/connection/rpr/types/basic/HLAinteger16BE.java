@@ -39,7 +39,7 @@ public class HLAinteger16BE implements hla.rti1516e.encoding.HLAinteger16BE
 	//----------------------------------------------------------
 	public HLAinteger16BE()
 	{
-		this.value = Short.MIN_VALUE;
+		this.value = 0;
 	}
 
 	public HLAinteger16BE( short value )
@@ -93,14 +93,11 @@ public class HLAinteger16BE implements hla.rti1516e.encoding.HLAinteger16BE
 	@Override
 	public final void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
-		try
-		{
-			byteWrapper.put( toByteArray() );
-		}
-		catch( Exception e )
-		{
-			throw new EncoderException( e.getMessage(), e );
-		}
+		byteWrapper.align(2);
+		byte[] asBytes = toByteArray();
+		if( byteWrapper.remaining() < asBytes.length )
+			throw new EncoderException( "Insufficient space remaining in buffer to encode this value" );
+		byteWrapper.put( asBytes );
 	}
 
 	@Override
@@ -114,9 +111,10 @@ public class HLAinteger16BE implements hla.rti1516e.encoding.HLAinteger16BE
 	@Override
 	public final void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
+		byteWrapper.align(2);
 		if( byteWrapper.remaining() < 2 )
 			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
-		
+
 		byte[] buffer = new byte[2];
 		byteWrapper.get( buffer );
 		decode( buffer );

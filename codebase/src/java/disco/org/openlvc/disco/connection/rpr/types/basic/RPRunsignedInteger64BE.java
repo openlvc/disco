@@ -19,6 +19,8 @@ package org.openlvc.disco.connection.rpr.types.basic;
 
 import java.math.BigInteger;
 
+import org.openlvc.disco.DiscoException;
+
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
@@ -70,14 +72,18 @@ public class RPRunsignedInteger64BE implements DataElement
 
 	public void setValue( long value )
 	{
-		assert value >= 0 : "Unsigned integers must be greater than or equal to 0";
+		if( value < 0 )
+			throw new DiscoException( "UnsignedInteger64 cannot be less than 0: "+value );
+
 		this.value = BigInteger.valueOf( value );
 	}
 
 	public void setValue( BigInteger value )
 	{
-		assert value.compareTo(BigInteger.ZERO) >= 0 : "Unsigned integers must be greater than or equal to 0";
-		assert value.compareTo(MAX) <= 0 : "Unsigned integers must be smallre than 2^64-1";
+		if( value.compareTo(BigInteger.ZERO) == -1 ||
+			value.compareTo(MAX) == 1 )
+			throw new DiscoException( "UnsignedInteger64 cannot be less than 0 or greater than 2^64-1: "+value );
+		
 		this.value = value;
 	}
 	
@@ -93,6 +99,16 @@ public class RPRunsignedInteger64BE implements DataElement
 
 
 	/**
+	 * Returns the size in bytes of this element's encoding.
+	 *
+	 * @return the size in bytes of this element's encoding
+	 */
+	public int getEncodedLength()
+	{
+		return 8;
+	}
+
+	/**
 	 * Encodes this element into the specified ByteWrapper.
 	 *
 	 * @param byteWrapper destination for the encoded element
@@ -101,21 +117,12 @@ public class RPRunsignedInteger64BE implements DataElement
 	 */
 	public void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
+		byteWrapper.align(8);
 		byte[] asBytes = toByteArray();
 		if( byteWrapper.remaining() < asBytes.length )
 			throw new EncoderException( "Insufficient space remaining in buffer to encode this value" );
 		
 		byteWrapper.put( asBytes );
-	}
-
-	/**
-	 * Returns the size in bytes of this element's encoding.
-	 *
-	 * @return the size in bytes of this element's encoding
-	 */
-	public int getEncodedLength()
-	{
-		return 8;
 	}
 
 	/**
@@ -149,6 +156,7 @@ public class RPRunsignedInteger64BE implements DataElement
 	 */
 	public void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
+		byteWrapper.align(8);
 		if( byteWrapper.remaining() < 8 )
 			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
 			

@@ -39,7 +39,7 @@ public class HLAinteger32BE implements hla.rti1516e.encoding.HLAinteger32BE
 	//----------------------------------------------------------
 	public HLAinteger32BE()
 	{
-		this.value = Integer.MIN_VALUE;
+		this.value = 0;
 	}
 
 	public HLAinteger32BE( int value )
@@ -88,6 +88,7 @@ public class HLAinteger32BE implements hla.rti1516e.encoding.HLAinteger32BE
 	@Override
 	public final void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
+		byteWrapper.align(4);
 		byte[] asBytes = toByteArray();
 		if( byteWrapper.remaining() < asBytes.length )
 			throw new EncoderException( "Insufficient space remaining in buffer to encode this value" );
@@ -106,6 +107,7 @@ public class HLAinteger32BE implements hla.rti1516e.encoding.HLAinteger32BE
 	@Override
 	public final void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
+		byteWrapper.align(4);
 		if( byteWrapper.remaining() < 4 )
 			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
 			

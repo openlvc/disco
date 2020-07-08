@@ -73,6 +73,8 @@ public class EncodedAudioRadioSignal extends InteractionInstance
 		audioData.setSampleCount( pdu.getSamples() );
 
 		// Data
+		audioData.setDataLength( pdu.getDataLength() );
+		
 		// DataLength
 		audioData.setData( pdu.getData() );
 	}
@@ -98,6 +100,7 @@ public class EncodedAudioRadioSignal extends InteractionInstance
 		// SampleCount
 		pdu.setSamples( (int)audioData.getSampleCount() );
 		
+		// DataLength -- set in pdu.setData()
 		// Data
 		pdu.setData( audioData.getData() );
 		

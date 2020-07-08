@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.connection.rpr.types.basic;
 
+import org.openlvc.disco.DiscoException;
+
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
@@ -43,7 +45,7 @@ public class RPRunsignedInteger16BE implements DataElement
 
 	public RPRunsignedInteger16BE( int value )
 	{
-		this.value = value;
+		this.setValue( value );
 	}
 
 	//----------------------------------------------------------
@@ -67,6 +69,8 @@ public class RPRunsignedInteger16BE implements DataElement
 	 */
 	public void setValue( int value )
 	{
+		if( value < 0 || value > 65535 )
+			throw new DiscoException( "UnsignedInteger16 cannot be less than 0 or greater than 65535: "+value );
 		this.value = value;
 	}
 
@@ -82,6 +86,16 @@ public class RPRunsignedInteger16BE implements DataElement
 
 
 	/**
+	 * Returns the size in bytes of this element's encoding.
+	 *
+	 * @return the size in bytes of this element's encoding
+	 */
+	public int getEncodedLength()
+	{
+		return 2;
+	}
+
+	/**
 	 * Encodes this element into the specified ByteWrapper.
 	 *
 	 * @param byteWrapper destination for the encoded element
@@ -90,21 +104,12 @@ public class RPRunsignedInteger16BE implements DataElement
 	 */
 	public void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
+		byteWrapper.align(2);
 		byte[] asBytes = toByteArray();
 		if( byteWrapper.remaining() < asBytes.length )
 			throw new EncoderException( "Insufficient space remaining in buffer to encode this value" );
 		
 		byteWrapper.put( asBytes );
-	}
-
-	/**
-	 * Returns the size in bytes of this element's encoding.
-	 *
-	 * @return the size in bytes of this element's encoding
-	 */
-	public int getEncodedLength()
-	{
-		return 2;
 	}
 
 	/**
@@ -131,6 +136,7 @@ public class RPRunsignedInteger16BE implements DataElement
 	 */
 	public void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
+		byteWrapper.align(2);
 		if( byteWrapper.remaining() < 2 )
 			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
 			

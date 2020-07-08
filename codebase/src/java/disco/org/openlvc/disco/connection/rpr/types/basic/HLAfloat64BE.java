@@ -39,7 +39,7 @@ public class HLAfloat64BE implements hla.rti1516e.encoding.HLAfloat64BE
 	//----------------------------------------------------------
 	public HLAfloat64BE()
 	{
-		this.value = Double.MIN_VALUE;
+		this.value = 0.0;
 	}
 
 	public HLAfloat64BE( double value )
@@ -88,14 +88,8 @@ public class HLAfloat64BE implements hla.rti1516e.encoding.HLAfloat64BE
 	@Override
 	public final void encode( ByteWrapper byteWrapper ) throws EncoderException
 	{
-		try
-		{
-			byteWrapper.put( toByteArray() );
-		}
-		catch( Exception e )
-		{
-			throw new EncoderException( e.getMessage(), e );
-		}
+		byteWrapper.align(8);
+		byteWrapper.put( toByteArray() );
 	}
 
 	@Override
@@ -109,9 +103,7 @@ public class HLAfloat64BE implements hla.rti1516e.encoding.HLAfloat64BE
 	@Override
 	public final void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
-		if( byteWrapper.remaining() < 8 )
-			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
-		
+		byteWrapper.align(8);
 		byte[] buffer = new byte[8];
 		byteWrapper.get( buffer );
 		decode( buffer );
