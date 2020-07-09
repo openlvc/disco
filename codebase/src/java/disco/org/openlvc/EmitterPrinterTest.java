@@ -119,14 +119,14 @@ public class EmitterPrinterTest
 			//
 			// Emitters
 			//
-			System.out.println( "Beam Count: "+app.getPduStore().getEmitterStore().getActiveBeams().size() );
-			for( EmitterBeam beam : app.getPduStore().getEmitterStore().getActiveBeams() )
-			{
-				boolean noParams = beam.getParameterData() == null;
-				long seconds = (System.currentTimeMillis()-beam.getEmitterSystem().getLastUpdatedTime()) / 1000;
-				System.out.println( time+" [Beam] "+noParams+": "+beam.toString()+" (Age: "+seconds+"s)" );
-			}
-			System.out.println( " == End of Record ==" );
+//			System.out.println( "Beam Count: "+app.getPduStore().getEmitterStore().getActiveBeams().size() );
+//			for( EmitterBeam beam : app.getPduStore().getEmitterStore().getActiveBeams() )
+//			{
+//				boolean noParams = beam.getParameterData() == null;
+//				long seconds = (System.currentTimeMillis()-beam.getEmitterSystem().getLastUpdatedTime()) / 1000;
+//				System.out.println( time+" [Beam] "+noParams+": "+beam.toString()+" (Age: "+seconds+"s)" );
+//			}
+//			System.out.println( " == End of Record ==" );
 		}
 	}
 }

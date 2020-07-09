@@ -432,9 +432,9 @@ public class RprConnection implements IConnection
 		// PubSub Interaction Classes
 		classes.clear();
 		classes.add( "HLAinteractionRoot.RadioSignal.EncodedAudioRadioSignal" );
-		//classes.add( "HLAinteractionRoot.Data" );
-		//classes.add( "HLAinteractionRoot.DataQuery" );
-		//classes.add( "HLAinteractionRoot.SetData" );
+		classes.add( "HLAinteractionRoot.Data" );
+		classes.add( "HLAinteractionRoot.DataQuery" );
+		classes.add( "HLAinteractionRoot.SetData" );
 		for( String qualifiedName : classes )
 		{
 			logger.debug( "PubSub for "+qualifiedName );

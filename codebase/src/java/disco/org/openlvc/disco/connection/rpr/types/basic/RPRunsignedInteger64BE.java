@@ -158,7 +158,7 @@ public class RPRunsignedInteger64BE implements DataElement
 	{
 		byteWrapper.align(8);
 		if( byteWrapper.remaining() < 8 )
-			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
+			throw new DecoderException( "Insufficient space remaining in buffer to decode this value: "+byteWrapper.remaining() );
 			
 		byte[] buffer = new byte[8];
 		byteWrapper.get( buffer );
