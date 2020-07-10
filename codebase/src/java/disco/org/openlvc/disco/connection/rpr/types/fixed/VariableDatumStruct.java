@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.connection.rpr.types.fixed;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 import org.openlvc.disco.connection.rpr.types.array.UnsignedInteger64Array1Plus;
@@ -73,7 +74,7 @@ public class VariableDatumStruct extends WrappedHlaFixedRecord
 		
 		ByteBuffer buffer = ByteBuffer.wrap( record.getDatumValueWithPadding() );
 		while( buffer.hasRemaining() )
-			datumValue.addElement( new RPRunsignedInteger64BE(buffer.getLong()) );
+			datumValue.addElement( new RPRunsignedInteger64BE(BigInteger.valueOf(buffer.getLong())) );
 	}
 
 	public VariableDatum getDisValue()
@@ -84,7 +85,7 @@ public class VariableDatumStruct extends WrappedHlaFixedRecord
 		// Turn value into a byte[] and set it on the record, which will in turn compute its length
 		ByteBuffer buffer = ByteBuffer.allocate( (int)(datumLength.getValue()*8) ); // value is in bits
 		for( RPRunsignedInteger64BE temp : datumValue )
-			buffer.putLong( temp.getLongValue() );
+			buffer.putLong( temp.getValue().longValue() );
 		
 		record.setDatumValue( buffer.array() );
 		

@@ -18,9 +18,7 @@
 package org.openlvc.disco.connection.rpr.types.fixed;
 
 import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
-import org.openlvc.disco.connection.rpr.types.enumerated.ArticulatedPartsTypeEnum32;
-import org.openlvc.disco.connection.rpr.types.enumerated.ArticulatedTypeMetricEnum32;
-import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
+import org.openlvc.disco.connection.rpr.types.enumerated.RawEnumValue32;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
 
 public class ArticulatedPartsStruct extends WrappedHlaFixedRecord
@@ -32,8 +30,10 @@ public class ArticulatedPartsStruct extends WrappedHlaFixedRecord
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EnumHolder<ArticulatedTypeMetricEnum32> typeMetric;
-	private EnumHolder<ArticulatedPartsTypeEnum32> theClass;
+	//private EnumHolder<ArticulatedTypeMetricEnum32> typeMetric;
+	//private EnumHolder<ArticulatedPartsTypeEnum32> theClass;
+	private RawEnumValue32 typeMetric;
+	private RawEnumValue32 theClass;
 	private HLAfloat32BE value;
 
 	//----------------------------------------------------------
@@ -41,8 +41,10 @@ public class ArticulatedPartsStruct extends WrappedHlaFixedRecord
 	//----------------------------------------------------------
 	public ArticulatedPartsStruct()
 	{
-		this.theClass = new EnumHolder<>( ArticulatedPartsTypeEnum32.Other );
-		this.typeMetric = new EnumHolder<>( ArticulatedTypeMetricEnum32.Position );
+		//this.theClass = new EnumHolder<>( ArticulatedPartsTypeEnum32.Other );
+		//this.typeMetric = new EnumHolder<>( ArticulatedTypeMetricEnum32.Position );
+		this.typeMetric = new RawEnumValue32();
+		this.theClass = new RawEnumValue32();
 		this.value = new HLAfloat32BE( 0 );
 		
 		// Add to the elements in the parent so that it can do its generic fixed-record stuff
@@ -64,16 +66,20 @@ public class ArticulatedPartsStruct extends WrappedHlaFixedRecord
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void setValue( ArticulationParameter articulation )
 	{
-		this.theClass.setEnum( ArticulatedPartsTypeEnum32.valueOf(articulation.getArticulatedPartTypeClass()) );
-		this.typeMetric.setEnum( ArticulatedTypeMetricEnum32.valueOf(articulation.getArticulatedPartTypeMetric()) );
+		//this.theClass.setEnum( ArticulatedPartsTypeEnum32.valueOf(articulation.getArticulatedPartTypeClass()) );
+		//this.typeMetric.setEnum( ArticulatedTypeMetricEnum32.valueOf(articulation.getArticulatedPartTypeMetric()) );
+		this.theClass.setValue( articulation.getArticulatedPartTypeClass() );
+		this.typeMetric.setValue( articulation.getArticulatedPartTypeMetric() );
 		this.value.setValue( articulation.getArticulatedPartParameterValue() );
 	}
 
 	public ArticulationParameter getDisValue()
 	{
 		ArticulationParameter parameter = new ArticulationParameter();
-		parameter.setArticulatedPartTypeClass( (int)this.theClass.getEnum().getValue() );
-		parameter.setArticulatedPartTypeMetric( (short)this.typeMetric.getEnum().getValue() );
+		//parameter.setArticulatedPartTypeClass( (int)this.theClass.getEnum().getValue() );
+		//parameter.setArticulatedPartTypeMetric( (short)this.typeMetric.getEnum().getValue() );
+		parameter.setArticulatedPartTypeClass( (int)this.theClass.getValue() );
+		parameter.setArticulatedPartTypeMetric( (short)this.typeMetric.getValue() );
 		parameter.setArticulatedPartParameterValue( this.value.getValue() );
 		return parameter;
 	}

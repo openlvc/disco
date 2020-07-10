@@ -51,11 +51,6 @@ public class RPRunsignedInteger64BE implements DataElement
 		this.value = value;
 	}
 
-	public RPRunsignedInteger64BE( long value )
-	{
-		this.setValue( value );
-	}
-
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -72,8 +67,12 @@ public class RPRunsignedInteger64BE implements DataElement
 
 	public void setValue( long value )
 	{
-		if( value < 0 )
-			throw new DiscoException( "UnsignedInteger64 cannot be less than 0: "+value );
+		// Negative java long values are allowed, because we're typically only interested
+		// in the bits. In java-land, negative is just a particular interpretation of them
+		// that doesn't match up with what we're trying to do and leaves us well short of
+		// the desired unsigned range.
+		//if( value < 0 )
+		//	throw new DiscoException( "UnsignedInteger64 cannot be less than 0: "+value );
 
 		this.value = BigInteger.valueOf( value );
 	}

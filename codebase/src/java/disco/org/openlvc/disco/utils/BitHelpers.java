@@ -660,4 +660,24 @@ public class BitHelpers
 
 		return result.toString();
 	}
+	
+	public static String toBinaryString( byte[] values, int groupSize )
+	{
+		StringBuilder result = new StringBuilder();
+		
+		for( byte b : values )
+		{
+			for( int i = 7; i >= 0 ; i--)
+			{
+				int mask = 1 << i;
+				result.append( (b & mask) != 0 ? "1" : "0" );
+
+				if( i % groupSize == 0 )
+					result.append(" ");
+			}
+			result.replace( result.length()-1, result.length(), "" );
+		}
+		
+		return result.toString();
+	}
 }

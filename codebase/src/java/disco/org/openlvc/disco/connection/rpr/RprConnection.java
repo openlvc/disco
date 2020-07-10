@@ -424,10 +424,18 @@ public class RprConnection implements IConnection
 		// PubSub Object Classes
 		List<String> classes = new ArrayList<>();
 		classes.add( "HLAobjectRoot.EmbeddedSystem.RadioTransmitter" );
-		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform" );
 		classes.add( "HLAobjectRoot.EmbeddedSystem.EmitterSystem" );
 		classes.add( "HLAobjectRoot.EmitterBeam.RadarBeam" );
 		classes.add( "HLAobjectRoot.EmitterBeam.JammerBeam" );
+		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.Aircraft" );
+		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.AmphibiousVehicle" );
+		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.GroundVehicle" );
+		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.MultiDomainPlatform" );
+		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.SurfaceVessel" );
+		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.SubmersibleVessel" );
+		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.Spacecraft" );
+		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform" );
+		
 		for( String qualifiedName : classes )
 		{
 			logger.debug( "PubSub for "+qualifiedName );

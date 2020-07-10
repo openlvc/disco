@@ -17,6 +17,10 @@
  */
 package org.openlvc.disco.connection.rpr.mappers;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.UnsupportedException;
 import org.openlvc.disco.bus.EventHandler;
@@ -27,8 +31,12 @@ import org.openlvc.disco.connection.rpr.objects.Aircraft;
 import org.openlvc.disco.connection.rpr.objects.GroundVehicle;
 import org.openlvc.disco.connection.rpr.objects.Human;
 import org.openlvc.disco.connection.rpr.objects.Lifeform;
+import org.openlvc.disco.connection.rpr.objects.MultiDomainPlatform;
 import org.openlvc.disco.connection.rpr.objects.PhysicalEntity;
 import org.openlvc.disco.connection.rpr.objects.Platform;
+import org.openlvc.disco.connection.rpr.objects.Spacecraft;
+import org.openlvc.disco.connection.rpr.objects.SubmersibleVessel;
+import org.openlvc.disco.connection.rpr.objects.SurfaceVessel;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.Kind;
 import org.openlvc.disco.pdu.record.EntityType;
@@ -116,8 +124,19 @@ public class EntityStateMapper extends AbstractMapper
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private ObjectClass hlaClass;
-
+	private ObjectClass platformClass;
+	private ObjectClass airClass;
+//	private ObjectClass amphibClass;
+	private ObjectClass groundClass;
+	private ObjectClass multiDomainClass;
+	private ObjectClass surfaceClass;
+	private ObjectClass subsurfaceClass;
+	private ObjectClass spaceClass;
+	private Map<Class<? extends Platform>,ObjectClass> javaTypeToHlaClassMap;
+	private Map<ObjectClass,Supplier<? extends Platform>> hlaClassToJavaTypeMap;
+	// Lifeform
+	private ObjectClass lifeformClass;
+	
 	// Base Entity
 	private AttributeClass entityType;
 	private AttributeClass entityIdentifier;
@@ -188,6 +207,9 @@ public class EntityStateMapper extends AbstractMapper
 	public EntityStateMapper( RprConnection connection ) throws DiscoException
 	{
 		super( connection );
+		
+		this.javaTypeToHlaClassMap = new HashMap<>();
+		this.hlaClassToJavaTypeMap = new HashMap<>();
 		initializeHandles();
 	}
 
@@ -201,61 +223,88 @@ public class EntityStateMapper extends AbstractMapper
 	private void initializeHandles() throws DiscoException
 	{
 		// Cache up all the attributes we need
-		this.hlaClass = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform" );
-		if( this.hlaClass == null )
+		this.platformClass = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform" );
+		if( this.platformClass == null )
 			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform" );
 		
+		// Get all the classes
+		this.airClass          = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.Aircraft" );
+//		this.amphibClass       = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.AmphibiousVehicle" );
+		this.groundClass       = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.GroundVehicle" );
+		this.multiDomainClass  = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.MultiDomainPlatform" );
+		this.surfaceClass      = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.SurfaceVessel" );
+		this.subsurfaceClass   = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.SubmersibleVessel" );
+		this.spaceClass        = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.Spacecraft" );
+		this.lifeformClass     = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform" );
+
+		if( this.airClass == null )
+			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.Aircraft" );
+//		if( this.amphibClass == null )
+//			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.AmphibiousVehicle" );
+		if( this.groundClass == null )
+			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.GroundVehicle" );
+		if( this.multiDomainClass == null )
+			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.MultiDomainPlatform" );
+		if( this.surfaceClass == null )
+			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.SurfaceVessel" );
+		if( this.subsurfaceClass == null )
+			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.SubmersibleVessel" );
+		if( this.spaceClass == null )
+			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.Spacecraft" );
+		if( this.lifeformClass == null )
+			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform" );
+
 		// Base Entity
-		this.entityType = hlaClass.getAttribute( "EntityType" );
-		this.entityIdentifier = hlaClass.getAttribute( "EntityIdentifier" );
+		this.entityType = platformClass.getAttribute( "EntityType" );
+		this.entityIdentifier = platformClass.getAttribute( "EntityIdentifier" );
 		//this.isPartOf = hlaClass.getAttribute( "IsPartOf" );
-		this.spatial = hlaClass.getAttribute( "Spatial" );
+		this.spatial = platformClass.getAttribute( "Spatial" );
 		//this.relativeSpatial = hlaClass.getAttribute( "RelativeSpatial" );
 
 		// Physical Entity
 		// Metadata
-		this.alternateEntityType = hlaClass.getAttribute( "AlternateEntityType" );
-		this.forceIdentifier = hlaClass.getAttribute( "ForceIdentifier" );
-		this.marking = hlaClass.getAttribute( "Marking" );
+		this.alternateEntityType = platformClass.getAttribute( "AlternateEntityType" );
+		this.forceIdentifier = platformClass.getAttribute( "ForceIdentifier" );
+		this.marking = platformClass.getAttribute( "Marking" );
 
 		// Status
-		this.damageState = hlaClass.getAttribute( "DamageState" );
-		this.camouflageType = hlaClass.getAttribute( "CamouflageType" );
-		this.trailingEffectsCode = hlaClass.getAttribute( "TrailingEffectsCode" );
+		this.damageState = platformClass.getAttribute( "DamageState" );
+		this.camouflageType = platformClass.getAttribute( "CamouflageType" );
+		this.trailingEffectsCode = platformClass.getAttribute( "TrailingEffectsCode" );
 
 		// Apperance
-		this.engineSmokeOn = hlaClass.getAttribute( "EngineSmokeOn" );
-		this.firePowerDisabled = hlaClass.getAttribute( "FirePowerDisabled" );
-		this.flamesPresent = hlaClass.getAttribute( "FlamesPresent" );
-		this.immobilized = hlaClass.getAttribute( "Immobilized" );
-		this.isConcealed = hlaClass.getAttribute( "IsConcealed" );
-		this.smokePlumePresent = hlaClass.getAttribute( "SmokePlumePresent" );
-		this.tentDeployed = hlaClass.getAttribute( "TentDeployed" );
-		this.powerplantOn = hlaClass.getAttribute( "PowerPlantOn" );
+		this.engineSmokeOn = platformClass.getAttribute( "EngineSmokeOn" );
+		this.firePowerDisabled = platformClass.getAttribute( "FirePowerDisabled" );
+		this.flamesPresent = platformClass.getAttribute( "FlamesPresent" );
+		this.immobilized = platformClass.getAttribute( "Immobilized" );
+		this.isConcealed = platformClass.getAttribute( "IsConcealed" );
+		this.smokePlumePresent = platformClass.getAttribute( "SmokePlumePresent" );
+		this.tentDeployed = platformClass.getAttribute( "TentDeployed" );
+		this.powerplantOn = platformClass.getAttribute( "PowerPlantOn" );
 		
 		// Appearance >> Detailed
-		this.afterburnerOn = hlaClass.getAttribute( "AfterburnerOn" );
-		this.antiCollisionLightsOn = hlaClass.getAttribute( "AntiCollisionLightsOn" );
-		this.blackOutBrakeLightsOn = hlaClass.getAttribute( "BlackOutBrakeLightsOn" );
-		this.blackOutLightsOn = hlaClass.getAttribute( "BlackOutLightsOn" );
-		this.brakeLightsOn = hlaClass.getAttribute( "BrakeLightsOn" );
-		this.formationLightsOn = hlaClass.getAttribute( "FormationLightsOn" );
-		this.hatchState = hlaClass.getAttribute( "HatchState" );
-		this.headLightsOn = hlaClass.getAttribute( "HeadLightsOn" );
-		this.interiorLightsOn = hlaClass.getAttribute( "InteriorLightsOn" );
-		this.landingLightsOn = hlaClass.getAttribute( "LandingLightsOn" );
-		this.launcherRaised = hlaClass.getAttribute( "LauncherRaised" );
-		this.navigationLightsOn = hlaClass.getAttribute( "NavigationLightsOn" );
-		this.rampDeployed = hlaClass.getAttribute( "RampDeployed" );
+		this.afterburnerOn = platformClass.getAttribute( "AfterburnerOn" );
+		this.antiCollisionLightsOn = platformClass.getAttribute( "AntiCollisionLightsOn" );
+		this.blackOutBrakeLightsOn = platformClass.getAttribute( "BlackOutBrakeLightsOn" );
+		this.blackOutLightsOn = platformClass.getAttribute( "BlackOutLightsOn" );
+		this.brakeLightsOn = platformClass.getAttribute( "BrakeLightsOn" );
+		this.formationLightsOn = platformClass.getAttribute( "FormationLightsOn" );
+		this.hatchState = platformClass.getAttribute( "HatchState" );
+		this.headLightsOn = platformClass.getAttribute( "HeadLightsOn" );
+		this.interiorLightsOn = platformClass.getAttribute( "InteriorLightsOn" );
+		this.landingLightsOn = platformClass.getAttribute( "LandingLightsOn" );
+		this.launcherRaised = platformClass.getAttribute( "LauncherRaised" );
+		this.navigationLightsOn = platformClass.getAttribute( "NavigationLightsOn" );
+		this.rampDeployed = platformClass.getAttribute( "RampDeployed" );
 		//this.runningLightsOn = hlaClass.getAttribute( "RunningLightsOn" );
-		this.spotLightsOn = hlaClass.getAttribute( "SpotLightsOn" );
-		this.tailLightsOn = hlaClass.getAttribute( "TailLightsOn" );
+		this.spotLightsOn = platformClass.getAttribute( "SpotLightsOn" );
+		this.tailLightsOn = platformClass.getAttribute( "TailLightsOn" );
 
 		// Capabilities
-		this.hasAmmunitionSupplyCap = hlaClass.getAttribute( "HasAmmunitionSupplyCap" );
-		this.hasFuelSupplyCap = hlaClass.getAttribute( "HasFuelSupplyCap" );
-		this.hasRecoveryCap = hlaClass.getAttribute( "HasRecoveryCap" );
-		this.hasRepairCap = hlaClass.getAttribute( "HasRepairCap" );
+		this.hasAmmunitionSupplyCap = platformClass.getAttribute( "HasAmmunitionSupplyCap" );
+		this.hasFuelSupplyCap = platformClass.getAttribute( "HasFuelSupplyCap" );
+		this.hasRecoveryCap = platformClass.getAttribute( "HasRecoveryCap" );
+		this.hasRepairCap = platformClass.getAttribute( "HasRepairCap" );
 
 		// Other
 		//this.liveEntityMeasuredSpeed = hlaClass.getAttribute( "LiveEntityMeasuredSpeed" );
@@ -264,9 +313,29 @@ public class EntityStateMapper extends AbstractMapper
 		//this.acousticSignatureIndex = hlaClass.getAttribute( "AcousticSignatureIndex" );
 
 		// Arrays
-		this.articulatedParametersArray = hlaClass.getAttribute( "ArticulatedParametersArray" );
+		this.articulatedParametersArray = platformClass.getAttribute( "ArticulatedParametersArray" );
 		//this.propulsionSystemsData = hlaClass.getAttribute( "PropulsionSystemsData" );
 		//this.vectoringNozzleSystemData = hlaClass.getAttribute( "VectoringNozzleSystemData" );
+
+
+		//
+		// Set up our internal type <> HLA class maps
+		//
+		this.javaTypeToHlaClassMap.put( Aircraft.class, this.airClass );
+//		this.javaTypeToHlaClassMap.put( Amphib..., this.amphibClass );
+		this.javaTypeToHlaClassMap.put( GroundVehicle.class, this.groundClass );
+		this.javaTypeToHlaClassMap.put( MultiDomainPlatform.class, this.multiDomainClass );
+		this.javaTypeToHlaClassMap.put( SurfaceVessel.class, this.surfaceClass );
+		this.javaTypeToHlaClassMap.put( SubmersibleVessel.class, this.subsurfaceClass );
+		this.javaTypeToHlaClassMap.put( Spacecraft.class, this.spaceClass );
+		
+		this.hlaClassToJavaTypeMap.put( this.airClass, Aircraft::new );
+//		this.hlaClassToJavaTypeMap.put( this.amphibClass, Amphib...::new );
+		this.hlaClassToJavaTypeMap.put( this.groundClass, GroundVehicle::new );
+		this.hlaClassToJavaTypeMap.put( this.multiDomainClass, MultiDomainPlatform::new );
+		this.hlaClassToJavaTypeMap.put( this.surfaceClass, SurfaceVessel::new );
+		this.hlaClassToJavaTypeMap.put( this.subsurfaceClass, SubmersibleVessel::new );
+		this.hlaClassToJavaTypeMap.put( this.spaceClass, Spacecraft::new );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -275,6 +344,7 @@ public class EntityStateMapper extends AbstractMapper
 	@EventHandler
 	public void handlePdu( EntityStatePdu pdu )
 	{
+System.out.println( "ENTITY STATE: "+pdu.getMarking() );
 		// Do we already have an object cached for this entity?
 		PhysicalEntity hlaObject = objectStore.getLocalEntity( pdu.getEntityID() );
 
@@ -285,7 +355,7 @@ public class EntityStateMapper extends AbstractMapper
 			{
     			// No object registered yet, do it now
     			hlaObject = createObject( pdu.getEntityType() );
-    			hlaObject.setObjectClass( this.hlaClass );
+    			hlaObject.setObjectClass( this.javaTypeToHlaClassMap.get(hlaObject.getClass()) );
     			super.registerObjectInstance( hlaObject );
     			objectStore.addLocalEntity( pdu.getEntityID(), hlaObject );
 			}
@@ -321,7 +391,7 @@ public class EntityStateMapper extends AbstractMapper
 		// 8 = Expendable
 		// 9 = SensorEmitter
 		Kind kind = type.getKindEnum();
-		if( kind == Kind.Platform )
+		if( kind == Kind.Platform || kind == Kind.Munition )
 		{
 			// Domain
 			// 0 = Other
@@ -332,8 +402,11 @@ public class EntityStateMapper extends AbstractMapper
 			// 5 = Space
 			switch( type.getDomainEnum() )
 			{
-				case Land: return new GroundVehicle();
-				case Air: return new Aircraft();
+				case Land:       return new GroundVehicle();
+				case Air:        return new Aircraft();
+				case Surface:    return new SurfaceVessel();
+				case Subsurface: return new SubmersibleVessel();
+				case Space:      return new Spacecraft();
 				default: throw new UnsupportedException( "[RPR] Unsupported Platform Domain: "+type.getDomainEnum().name() );
 			}
 		}
@@ -414,6 +487,9 @@ public class EntityStateMapper extends AbstractMapper
 			{
 				case Land: toHlaGroundPlatformAppearance(object,map); break;
 				case Air:  toHlaAirPlatformAppearance(object,map); break;
+				case Surface: toHlaSurfacePlatformAppearance(object,map); break;
+				case Subsurface: toHlaSubsurfacePlatformAppearance(object,map); break;
+				case Space: toHlaSpacePlatformAppearance(object,map); break;
 				default:   break;
 			}
 		}
@@ -649,9 +725,24 @@ public class EntityStateMapper extends AbstractMapper
 		map.put( spotLightsOn.getHandle(), wrapper.array() );
 	}
 	
+	private void toHlaSurfacePlatformAppearance( PhysicalEntity entity, AttributeHandleValueMap map )
+	{
+		// Not yet implemented
+	}
+	
+	private void toHlaSubsurfacePlatformAppearance( PhysicalEntity entity, AttributeHandleValueMap map )
+	{
+		// Not yet implemented
+	}
+	
+	private void toHlaSpacePlatformAppearance( PhysicalEntity entity, AttributeHandleValueMap map )
+	{
+		// Not yet implemented
+	}
+	
 	private void toHlaLifeformAppearance( AttributeHandleValueMap map )
 	{
-		
+		// Not yet implemented
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -660,9 +751,13 @@ public class EntityStateMapper extends AbstractMapper
 	@EventHandler
 	public void handleDiscover( HlaDiscover event )
 	{
-		if( hlaClass == event.theClass )
+		if( event.theClass == this.lifeformClass )
 		{
-			Platform hlaObject = new Aircraft(); // TODO Fixme. Need to take action based on class
+			// Just skip it for now
+		}
+		else if( isValid(event.theClass) )
+		{
+			Platform hlaObject = createPlatformOf( event.theClass );
 			hlaObject.setObjectClass( event.theClass );
 			hlaObject.setObjectHandle( event.theObject );
 			hlaObject.setObjectName( event.objectName );
@@ -720,6 +815,17 @@ public class EntityStateMapper extends AbstractMapper
 		return rprEntity.getEntityType().isDecodeCalled() &&
 		       rprEntity.getEntityIdentifier().isDecodeCalled();
 	}
+	
+	private boolean isValid( ObjectClass type )
+	{
+		return hlaClassToJavaTypeMap.containsKey( type );
+	}
+	
+	private Platform createPlatformOf( ObjectClass type )
+	{
+		return hlaClassToJavaTypeMap.get(type).get();
+	}
+	
 	
 	private void deserializeFromHla( PhysicalEntity entity, AttributeHandleValueMap map )
 		throws DecoderException

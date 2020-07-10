@@ -27,7 +27,6 @@ import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.record.FixedDatum;
 import org.openlvc.disco.pdu.record.VariableDatum;
 import org.openlvc.disco.pdu.simman.DataPdu;
-import org.openlvc.disco.pdu.simman.SetDataPdu;
 
 public class Data extends InteractionInstance
 {
@@ -67,7 +66,7 @@ public class Data extends InteractionInstance
 	@Override
 	public void fromPdu( PDU incoming )
 	{
-		SetDataPdu pdu = incoming.as( SetDataPdu.class );
+		DataPdu pdu = incoming.as( DataPdu.class );
 
 		// OriginatingEntity
 		originatingEntity.setValue( pdu.getOriginatingEntity() );

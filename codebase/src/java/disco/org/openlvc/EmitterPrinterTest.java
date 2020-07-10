@@ -50,14 +50,15 @@ public class EmitterPrinterTest
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 
-	public static void main2( String[] args ) throws Exception
+	public static void main( String[] args ) throws Exception
 	{
 		Configuration configuration = new Configuration();
 		configuration.setHlaFederateName( "Disrespector" );
 		configuration.setHlaFederationName( "DCSS" );
 		configuration.setHlaRtiProvider( RtiProvider.Pitch );
-		configuration.setDisNic( "LOOPBACK" );
-		configuration.setDisAddress( "127.255.255.255" );
+		configuration.setDisNic( "SITE_LOCAL" );
+		configuration.setDisAddress( "BROADCAST" );
+configuration.setHlaLogLevel( "TRACE" );
 		
 		Disrespector disrespector = new Disrespector( configuration );
 		disrespector.start();
@@ -73,7 +74,7 @@ public class EmitterPrinterTest
 	{
 		DiscoConfiguration configuration = new DiscoConfiguration();
 		configuration.getRprConfiguration().setFederateName( "Test" );
-		configuration.getRprConfiguration().setFederationName( "DCSS2" );
+		configuration.getRprConfiguration().setFederationName( "DCSS" );
 		configuration.getRprConfiguration().setRtiProvider( RtiProvider.Pitch );
 		configuration.setConnection( "rpr" );
 		return configuration;
@@ -87,7 +88,7 @@ public class EmitterPrinterTest
 		return configuration;
 	}
 	
-	public static void main( String[] args ) throws Exception
+	public static void main2( String[] args ) throws Exception
 	{
 		DiscoConfiguration configuration = getRprConfiguration();
 		//configuration.getLoggingConfiguration().setLevel( "TRACE" );
@@ -115,6 +116,11 @@ public class EmitterPrinterTest
 			// Entities
 			//
 			//System.out.println( time+" [Entities]: "+app.getPduStore().getEntityStore().getAllMarkings().size() );
+			System.out.println( "Entity Marking List" );
+			for( String marking : app.getPduStore().getEntityStore().getAllMarkings() )
+				System.out.println( "  >> " +marking );
+			System.out.println( "===================" );
+			
 			
 			//
 			// Emitters
