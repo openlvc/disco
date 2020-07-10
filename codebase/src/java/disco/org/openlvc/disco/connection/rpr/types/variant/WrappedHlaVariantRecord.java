@@ -29,7 +29,7 @@ import hla.rti1516e.encoding.EncoderException;
 import hla.rti1516e.encoding.HLAvariantRecord;
 import hla.rti1516e.exceptions.RTIinternalError;
 
-public class DiscoHlaVariantRecord<T extends ExtendedDataElement<T>> implements HLAvariantRecord<T>
+public class WrappedHlaVariantRecord<T extends ExtendedDataElement<T>> implements HLAvariantRecord<T>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -44,7 +44,7 @@ public class DiscoHlaVariantRecord<T extends ExtendedDataElement<T>> implements 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public DiscoHlaVariantRecord( T discriminant )
+	public WrappedHlaVariantRecord( T discriminant )
 	{
 		this.decodeCalled = false;
 

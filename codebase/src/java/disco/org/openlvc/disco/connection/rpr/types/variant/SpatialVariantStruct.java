@@ -28,7 +28,7 @@ import org.openlvc.disco.connection.rpr.types.fixed.SpatialStaticStruct;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.DeadReckoningAlgorithm;
 
-public class SpatialVariantStruct extends DiscoHlaVariantRecord<DeadReckoningAlgorithmEnum8>
+public class SpatialVariantStruct extends WrappedHlaVariantRecord<DeadReckoningAlgorithmEnum8>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

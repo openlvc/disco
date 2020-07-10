@@ -23,7 +23,7 @@ import org.openlvc.disco.connection.rpr.types.array.MarkingArray11;
 import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.MarkingEncodingEnum8;
 
-public class MarkingStruct extends DiscoHlaFixedRecord
+public class MarkingStruct extends WrappedHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

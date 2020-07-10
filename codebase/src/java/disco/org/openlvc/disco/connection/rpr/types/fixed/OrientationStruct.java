@@ -20,7 +20,7 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
 import org.openlvc.disco.pdu.record.EulerAngles;
 
-public class OrientationStruct extends DiscoHlaFixedRecord
+public class OrientationStruct extends WrappedHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

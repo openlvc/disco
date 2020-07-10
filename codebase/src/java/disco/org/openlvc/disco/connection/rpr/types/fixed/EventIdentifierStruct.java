@@ -21,7 +21,7 @@ import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 import org.openlvc.disco.pdu.record.EventIdentifier;
 
-public class EventIdentifierStruct extends DiscoHlaFixedRecord
+public class EventIdentifierStruct extends WrappedHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

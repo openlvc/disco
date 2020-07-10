@@ -25,7 +25,7 @@ import org.openlvc.disco.pdu.entity.EntityStatePdu;
  * 
  *
  */
-public abstract class AbstractSpatialStruct extends DiscoHlaFixedRecord
+public abstract class AbstractSpatialStruct extends WrappedHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

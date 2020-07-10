@@ -21,7 +21,7 @@ import org.openlvc.disco.connection.rpr.types.enumerated.ConstituentPartNatureEn
 import org.openlvc.disco.connection.rpr.types.enumerated.ConstituentPartPositionEnum16;
 import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 
-public class ConstituentPartRelationshipStruct extends DiscoHlaFixedRecord
+public class ConstituentPartRelationshipStruct extends WrappedHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

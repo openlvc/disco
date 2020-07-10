@@ -23,7 +23,7 @@ import org.openlvc.disco.pdu.field.Domain;
 import org.openlvc.disco.pdu.field.Kind;
 import org.openlvc.disco.pdu.record.EntityType;
 
-public class EntityTypeStruct extends DiscoHlaFixedRecord
+public class EntityTypeStruct extends WrappedHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

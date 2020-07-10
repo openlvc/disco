@@ -20,7 +20,7 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 import org.openlvc.disco.connection.rpr.types.basic.HLAfloat64BE;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
 
-public class WorldLocationStruct extends DiscoHlaFixedRecord
+public class WorldLocationStruct extends WrappedHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

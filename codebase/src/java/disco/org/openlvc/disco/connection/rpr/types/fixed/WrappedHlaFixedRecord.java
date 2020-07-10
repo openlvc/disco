@@ -29,7 +29,7 @@ import hla.rti1516e.encoding.EncoderException;
 import hla.rti1516e.encoding.HLAfixedRecord;
 import hla.rti1516e.exceptions.RTIinternalError;
 
-public class DiscoHlaFixedRecord implements HLAfixedRecord
+public class WrappedHlaFixedRecord implements HLAfixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -44,7 +44,7 @@ public class DiscoHlaFixedRecord implements HLAfixedRecord
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public DiscoHlaFixedRecord()
+	public WrappedHlaFixedRecord()
 	{
 		this.decodeCalled = false;
 

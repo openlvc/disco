@@ -27,10 +27,10 @@ import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DataElementFactory;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
-import hla.rti1516e.encoding.HLAfixedArray;
+import hla.rti1516e.encoding.HLAvariableArray;
 import hla.rti1516e.exceptions.RTIinternalError;
 
-public class DiscoHlaFixedArray<T extends DataElement> implements HLAfixedArray<T>, Iterable<T>
+public class WrappedHlaVariableArray<T extends DataElement> implements HLAvariableArray<T>, Iterable<T>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -39,42 +39,26 @@ public class DiscoHlaFixedArray<T extends DataElement> implements HLAfixedArray<
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAfixedArray<T> internal;
+	private HLAvariableArray<T> internal;
 	private boolean decodeCalled;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	@SafeVarargs
-	public DiscoHlaFixedArray( T... values )
+	@SuppressWarnings("unchecked")
+	public WrappedHlaVariableArray( DataElementFactory<T> factory, T... values )
 	{
-		this.decodeCalled = false;
+		this.decodeCalled = true;
 
 		try
 		{
 			this.internal = RtiFactoryFactory.getRtiFactory()
 			                                 .getEncoderFactory()
-			                                 .createHLAfixedArray( values );
+			                                 .createHLAvariableArray( factory, values );
 		}
 		catch( RTIinternalError e )
 		{
-			throw new DiscoException( "Could not create HLAfixedArray: "+e.getMessage(), e );
-		}
-	}
-
-	public DiscoHlaFixedArray( DataElementFactory<T> factory, int size )
-	{
-		this.decodeCalled = false;
-
-		try
-		{
-			this.internal = RtiFactoryFactory.getRtiFactory()
-			                                 .getEncoderFactory()
-			                                 .createHLAfixedArray( factory, size );
-		}
-		catch( RTIinternalError e )
-		{
-			throw new DiscoException( "Could not create HLAfixedArray: "+e.getMessage(), e );
+			throw new DiscoException( "Could not create HLAvariableArray: "+e.getMessage(), e );
 		}
 	}
 
@@ -82,23 +66,35 @@ public class DiscoHlaFixedArray<T extends DataElement> implements HLAfixedArray<
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 	@Override
+	public void addElement( T dataElement )
+	{
+		this.internal.addElement( dataElement );
+	}
+	
+	@Override
 	public int size()
 	{
 		return internal.size();
 	}
-
+	
 	@Override
 	public T get( int index )
 	{
 		return internal.get( index );
 	}
-
+	
 	@Override
 	public Iterator<T> iterator()
 	{
 		return internal.iterator();
 	}
-
+	
+	@Override
+	public void resize( int newSize )
+	{
+		internal.resize( newSize );
+	}
+	
 	// DataElement
 	public int getOctetBoundary()			  { return internal.getOctetBoundary(); }
 	public int getEncodedLength()			  { return internal.getEncodedLength(); }

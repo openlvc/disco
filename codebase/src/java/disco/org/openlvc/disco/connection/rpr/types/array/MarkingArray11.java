@@ -21,7 +21,7 @@ import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 
 import hla.rti1516e.encoding.DataElementFactory;
 
-public class MarkingArray11 extends DiscoHlaFixedArray<HLAoctet>
+public class MarkingArray11 extends WrappedHlaFixedArray<HLAoctet>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

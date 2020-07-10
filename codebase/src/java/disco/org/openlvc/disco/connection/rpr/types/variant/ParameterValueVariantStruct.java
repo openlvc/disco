@@ -24,7 +24,7 @@ import org.openlvc.disco.connection.rpr.types.fixed.AttachedPartsStruct;
 import org.openlvc.disco.pdu.field.ParameterTypeDesignator;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
 
-public class ParameterValueVariantStruct extends DiscoHlaVariantRecord<ParameterTypeEnum32>
+public class ParameterValueVariantStruct extends WrappedHlaVariantRecord<ParameterTypeEnum32>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

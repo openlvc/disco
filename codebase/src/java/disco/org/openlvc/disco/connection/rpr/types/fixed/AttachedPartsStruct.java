@@ -21,7 +21,7 @@ import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.StationEnum32;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
 
-public class AttachedPartsStruct extends DiscoHlaFixedRecord
+public class AttachedPartsStruct extends WrappedHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

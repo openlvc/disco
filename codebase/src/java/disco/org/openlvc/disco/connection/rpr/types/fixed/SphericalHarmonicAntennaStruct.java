@@ -22,7 +22,7 @@ import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
 import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.ReferenceSystemEnum8;
 
-public class SphericalHarmonicAntennaStruct extends DiscoHlaFixedRecord
+public class SphericalHarmonicAntennaStruct extends WrappedHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

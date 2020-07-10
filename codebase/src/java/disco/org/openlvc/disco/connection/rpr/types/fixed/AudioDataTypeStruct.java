@@ -24,7 +24,7 @@ import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger64BE;
 import org.openlvc.disco.connection.rpr.types.enumerated.EncodingTypeEnum32;
 import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 
-public class AudioDataTypeStruct extends DiscoHlaFixedRecord
+public class AudioDataTypeStruct extends WrappedHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

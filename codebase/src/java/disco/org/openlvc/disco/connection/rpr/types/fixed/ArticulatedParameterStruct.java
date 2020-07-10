@@ -23,7 +23,7 @@ import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 import org.openlvc.disco.connection.rpr.types.variant.ParameterValueVariantStruct;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
 
-public class ArticulatedParameterStruct extends DiscoHlaFixedRecord
+public class ArticulatedParameterStruct extends WrappedHlaFixedRecord
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
