@@ -73,7 +73,7 @@ public class EmitterPrinterTest
 	{
 		DiscoConfiguration configuration = new DiscoConfiguration();
 		configuration.getRprConfiguration().setFederateName( "Test" );
-		configuration.getRprConfiguration().setFederationName( "DCSS" );
+		configuration.getRprConfiguration().setFederationName( "DCSS2" );
 		configuration.getRprConfiguration().setRtiProvider( RtiProvider.Pitch );
 		configuration.setConnection( "rpr" );
 		return configuration;
@@ -119,14 +119,14 @@ public class EmitterPrinterTest
 			//
 			// Emitters
 			//
-//			System.out.println( "Beam Count: "+app.getPduStore().getEmitterStore().getActiveBeams().size() );
-//			for( EmitterBeam beam : app.getPduStore().getEmitterStore().getActiveBeams() )
-//			{
-//				boolean noParams = beam.getParameterData() == null;
-//				long seconds = (System.currentTimeMillis()-beam.getEmitterSystem().getLastUpdatedTime()) / 1000;
-//				System.out.println( time+" [Beam] "+noParams+": "+beam.toString()+" (Age: "+seconds+"s)" );
-//			}
-//			System.out.println( " == End of Record ==" );
+			System.out.println( "Beam Count: "+app.getPduStore().getEmitterStore().getActiveBeams().size() );
+			for( EmitterBeam beam : app.getPduStore().getEmitterStore().getActiveBeams() )
+			{
+				boolean noParams = beam.getParameterData() == null;
+				long seconds = (System.currentTimeMillis()-beam.getEmitterSystem().getLastUpdatedTime()) / 1000;
+				System.out.println( time+" [Beam] "+noParams+": "+beam.toString()+" (Age: "+seconds+"s)" );
+			}
+			System.out.println( " == End of Record ==" );
 		}
 	}
 }

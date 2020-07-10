@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <objectModel xsi:schemaLocation="http://standards.ieee.org/IEEE1516-2010 http://standards.ieee.org/downloads/1516/1516.2-2010/IEEE1516-DIF-2010.xsd" xmlns="http://standards.ieee.org/IEEE1516-2010" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelIdentification>
-        <name>SISO-STD-001.1-DRAFT - Real-time Platform Reference Distributed Emission Regeneration FOM Module</name>
+        <name>SISO-STD-001.1-2015 - Real-time Platform Reference Distributed Emission Regeneration FOM Module</name>
         <type>FOM</type>
-        <version>2.0 draft21</version>
-        <modificationDate>2014-12-25</modificationDate>
+        <version>2.0</version>
+        <modificationDate>2015-08-10</modificationDate>
         <securityClassification>Unclassified</securityClassification>
         <purpose>The RPR FOM supports interoperability for real-time, platform oriented defense simulation.</purpose>
         <applicationDomain>All domains</applicationDomain>
@@ -24,8 +24,8 @@
         <reference>
             <type>Text Document</type>
             <identification>Standard for Guidance, Rationale, and Interoperability Modalities for the Real-time Platform Reference Federation Object Model (RPR FOM)
-SISO-STD-001-2014
-25 December 2014</identification>
+SISO-STD-001-2015
+10 August 2015</identification>
         </reference>
         <reference>
             <type>Text Document</type>
@@ -39,7 +39,7 @@ September 21, 1995</identification>
 IEEE Std 1278.1a-1998
 19 March 1998</identification>
         </reference>
-        <other>Copyright © 2014 by the Simulation Interoperability Standards Organization, Inc.
+        <other>Copyright © 2015 by the Simulation Interoperability Standards Organization, Inc.
 P.O. Box 781238
 Orlando, FL 32878-1238, USA
 All rights reserved.

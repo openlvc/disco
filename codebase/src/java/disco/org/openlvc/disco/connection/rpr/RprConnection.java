@@ -597,12 +597,14 @@ public class RprConnection implements IConnection
 		ClassLoader loader = getClass().getClassLoader();
 		ArrayList<URL> joinlist = new ArrayList<>();
 		joinlist.add( loader.getResource("hla/rpr2/HLAstandardMIM.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-Foundation_v2.0_draft21.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-Base_v2.0_draft21.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-Communication_v2.0_draft21.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-Physical_v2.0_draft21.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-DER_v2.0_draft21.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-SIMAN_v2.0_draft21.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-Foundation_v2.0.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-Base_v2.0.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-Communication_v2.0.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-DER_v2.0.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-Enumerations_v2.0.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-Physical_v2.0.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-SIMAN_v2.0.xml") );
+		joinlist.add( loader.getResource("hla/rpr2/RPR-Warfare_v2.0.xml") );
 		return joinlist.toArray( new URL[]{} );
 	}
 	
@@ -617,7 +619,7 @@ public class RprConnection implements IConnection
 		// Get the create-only modules
 		ClassLoader loader = getClass().getClassLoader();
 		URL[] createModules = new URL[] {
-		    loader.getResource( "hla/rpr2/RPR-DiscoDefaults.xml")
+		    loader.getResource( "hla/rpr2/RPR-Switches_v2.0.xml" )
 		};
 		
 		// Slam the arrays together and return
