@@ -34,6 +34,8 @@ import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.connection.Metrics;
+import org.openlvc.disco.connection.rpr.mappers.ActionRequestMapper;
+import org.openlvc.disco.connection.rpr.mappers.ActionResponseMapper;
 import org.openlvc.disco.connection.rpr.mappers.DataMapper;
 import org.openlvc.disco.connection.rpr.mappers.DataQueryMapper;
 import org.openlvc.disco.connection.rpr.mappers.EmitterBeamMapper;
@@ -156,7 +158,9 @@ public class RprConnection implements IConnection
 		                      PduType.Emission,
 		                      PduType.DataQuery,
 		                      PduType.Data,
-		                      PduType.SetData ); 
+		                      PduType.SetData,
+		                      PduType.ActionRequest,
+		                      PduType.ActionResponse );
 	}
 	
 	/**
@@ -224,27 +228,29 @@ public class RprConnection implements IConnection
 	private void registerMappers()
 	{
 		// Entity & Warfare
-		EntityStateMapper   esMapper  = new EntityStateMapper(this);
+		EntityStateMapper     esMapper   = new EntityStateMapper(this);
 		// Communications
-		TransmitterMapper   txMapper  = new TransmitterMapper(this);
-		SignalMapper        sgMapper  = new SignalMapper(this);
+		TransmitterMapper     txMapper   = new TransmitterMapper(this);
+		SignalMapper          sgMapper   = new SignalMapper(this);
 		// Emissions
-		EmitterSystemMapper emsMapper = new EmitterSystemMapper(this);
-		EmitterBeamMapper   embMapper = new EmitterBeamMapper(this);
+		EmitterSystemMapper   emsMapper  = new EmitterSystemMapper(this);
+		EmitterBeamMapper     embMapper  = new EmitterBeamMapper(this);
 		// Sim Mgmt
-		DataQueryMapper     dqMapper  = new DataQueryMapper(this);
-		DataMapper          daMapper  = new DataMapper(this);
-		SetDataMapper       sdMapper  = new SetDataMapper(this);
+		DataQueryMapper       dqMapper   = new DataQueryMapper(this);
+		DataMapper            daMapper   = new DataMapper(this);
+		SetDataMapper         sdMapper   = new SetDataMapper(this);
+		ActionRequestMapper   areqMapper = new ActionRequestMapper(this);
+		ActionResponseMapper  arspMapper = new ActionResponseMapper(this);
 		
 		// Subscribe to PDU Bus
 		pduBus.subscribe( esMapper, txMapper, sgMapper );
 		pduBus.subscribe( emsMapper, embMapper );
-		pduBus.subscribe( dqMapper, daMapper, sdMapper );
+		pduBus.subscribe( dqMapper, daMapper, sdMapper, areqMapper, arspMapper );
 		
 		// Subscribe to HLA Event Bus
 		hlaBus.subscribe( esMapper, txMapper, sgMapper );
 		hlaBus.subscribe( emsMapper, embMapper );
-		hlaBus.subscribe( dqMapper, daMapper, sdMapper );
+		hlaBus.subscribe( dqMapper, daMapper, sdMapper, areqMapper, arspMapper );
 	}
 	
 	/**
@@ -435,6 +441,8 @@ public class RprConnection implements IConnection
 		classes.add( "HLAinteractionRoot.Data" );
 		classes.add( "HLAinteractionRoot.DataQuery" );
 		classes.add( "HLAinteractionRoot.SetData" );
+		classes.add( "HLAinteractionRoot.ActionRequest" );
+		classes.add( "HLAinteractionRoot.ActionResponse" );
 		for( String qualifiedName : classes )
 		{
 			logger.debug( "PubSub for "+qualifiedName );

@@ -49,6 +49,12 @@ public class RawEnumValue8 implements DataElement//<RawEnumValue8>
 		this.decodeCalled = false;
 		this.value = new HLAoctet();
 	}
+	
+	public RawEnumValue8( byte initial )
+	{
+		this();
+		this.value.setValue( initial );
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS

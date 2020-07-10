@@ -49,6 +49,12 @@ public class RawEnumValue32 implements DataElement
 		this.value = new RPRunsignedInteger32BE();
 		this.decodeCalled = false;
 	}
+	
+	public RawEnumValue32( long initial )
+	{
+		this();
+		this.value.setValue( initial );
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS

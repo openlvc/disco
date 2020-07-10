@@ -49,6 +49,12 @@ public class RawEnumValue16 implements DataElement
 		this.value = new RPRunsignedInteger16BE();
 		this.decodeCalled = false;
 	}
+	
+	public RawEnumValue16( int initial )
+	{
+		this();
+		this.value.setValue( initial );
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
