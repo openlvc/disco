@@ -21,7 +21,7 @@ import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger64BE;
 
 import hla.rti1516e.encoding.DataElementFactory;
 
-public class UnsignedInteger64Array1Plus extends DiscoHlaVariableArray<RPRunsignedInteger64BE>
+public class UnsignedInteger64Array1Plus extends PermissiveHlaVariableArray<RPRunsignedInteger64BE>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

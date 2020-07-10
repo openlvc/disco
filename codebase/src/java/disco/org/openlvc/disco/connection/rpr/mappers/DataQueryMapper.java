@@ -86,13 +86,13 @@ public class DataQueryMapper extends AbstractMapper
 	public void handlePdu( DataQueryPdu pdu )
 	{
 		// Populate the Interaction
-		InteractionInstance interaction = serializeSetData( pdu );
+		InteractionInstance interaction = serializeDataQuery( pdu );
 
 		// Send the interaction
 		super.sendInteraction( interaction, interaction.getParameters() );
 	}
 	
-	private InteractionInstance serializeSetData( DataQueryPdu pdu )
+	private InteractionInstance serializeDataQuery( DataQueryPdu pdu )
 	{
 		// Create the interaction object
 		DataQuery dataQuery = new DataQuery(); 
@@ -148,18 +148,30 @@ public class DataQueryMapper extends AbstractMapper
 	{
 		if( hlaClass == event.theClass )
 		{
-			InteractionInstance interaction = null;
+			DataQuery interaction = null;
 			
 			// Deserialize the parameters into an interaction instance
 			try
 			{
-				interaction = deserializeSetData( event.parameters );
+				interaction = deserializeDataQuery( event.parameters );
 			}
 			catch( DecoderException de )
 			{
 				throw new DiscoException( de.getMessage(), de );
 			}
-			
+
+			// If the request ID is negative, discard it.
+			// This shoudn't happen, because the spec says the request ID is unsigned.
+			// However, VRF seems to be throwing these out for Data interactions, so putting
+			// some protections in place across Data/DataQuery/SetData.
+			if( interaction.getRequestIdentifier().getValue() < 0 )
+			{
+				if( logger.isTraceEnabled() )
+				    logger.trace( "hla >> dis (DataQuery) Interaction has invalid request id (%d), discarding",
+				                  interaction.getRequestIdentifier().getValue() );
+				return;
+			}
+
 			// Send the PDU off to the OpsCenter
 			// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 			//         on the other side. This is inefficient and distasteful. Fix me.
@@ -167,7 +179,7 @@ public class DataQueryMapper extends AbstractMapper
 		}
 	}
 
-	private InteractionInstance deserializeSetData( ParameterHandleValueMap map )
+	private DataQuery deserializeDataQuery( ParameterHandleValueMap map )
 		throws DecoderException
 	{
 		// Create an instance to decode in to

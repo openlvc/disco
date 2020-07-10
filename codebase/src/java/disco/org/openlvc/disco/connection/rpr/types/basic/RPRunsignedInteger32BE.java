@@ -105,7 +105,7 @@ public class RPRunsignedInteger32BE implements DataElement
 	{
 		byteWrapper.align(4);
 		if( byteWrapper.remaining() < 4 )
-			throw new EncoderException( "Insufficient space remaining in buffer to encode this value" );
+			throw new EncoderException( "Insufficient space remaining in buffer to encode this value. Remaining="+byteWrapper.remaining() );
 		
 		byte[] asBytes = toByteArray();
 		byteWrapper.put( asBytes );
@@ -139,7 +139,7 @@ public class RPRunsignedInteger32BE implements DataElement
 	{
 		byteWrapper.align(4);
 		if( byteWrapper.remaining() < 4 )
-			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
+			throw new DecoderException( "Insufficient space remaining in buffer to decode this value. Remaining="+byteWrapper.remaining() );
 			
 		byte[] buffer = new byte[4];
 		byteWrapper.get( buffer );

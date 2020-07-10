@@ -84,13 +84,13 @@ public class DataMapper extends AbstractMapper
 	public void handlePdu( DataPdu pdu )
 	{
 		// Populate the Interaction
-		InteractionInstance interaction = serializeSetData( pdu );
+		InteractionInstance interaction = serializeData( pdu );
 
 		// Send the interaction
 		super.sendInteraction( interaction, interaction.getParameters() );
 	}
 	
-	private InteractionInstance serializeSetData( DataPdu pdu )
+	private InteractionInstance serializeData( DataPdu pdu )
 	{
 		// Create the interaction object
 		Data data = new Data(); 
@@ -141,18 +141,29 @@ public class DataMapper extends AbstractMapper
 	{
 		if( hlaClass == event.theClass )
 		{
-			InteractionInstance interaction = null;
+			Data interaction = null;
 			
 			// Deserialize the parameters into an interaction instance
 			try
 			{
-				interaction = deserializeSetData( event.parameters );
+				interaction = deserializeData( event.parameters );
 			}
 			catch( DecoderException de )
 			{
 				throw new DiscoException( de.getMessage(), de );
 			}
-			
+
+			// If the request ID is negative, discard it.
+			// This shoudn't happen, because the spec says the request ID is unsigned.
+			// However, VRF seems to be throwing these out, so let's discard them.
+			if( interaction.getRequestIdentifier().getValue() < 0 )
+			{
+				if( logger.isTraceEnabled() )
+				    logger.fatal( "hla >> dis (Data) Interaction has invalid request id (%d), discarding",
+				                  interaction.getRequestIdentifier().getValue() );
+				return;
+			}
+
 			// Send the PDU off to the OpsCenter
 			// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 			//         on the other side. This is inefficient and distasteful. Fix me.
@@ -160,7 +171,7 @@ public class DataMapper extends AbstractMapper
 		}
 	}
 
-	private InteractionInstance deserializeSetData( ParameterHandleValueMap map )
+	private Data deserializeData( ParameterHandleValueMap map )
 		throws DecoderException
 	{
 		// Create an instance to decode in to

@@ -141,7 +141,7 @@ public class SetDataMapper extends AbstractMapper
 	{
 		if( hlaClass == event.theClass )
 		{
-			InteractionInstance interaction = null;
+			SetData interaction = null;
 			
 			// Deserialize the parameters into an interaction instance
 			try
@@ -152,6 +152,19 @@ public class SetDataMapper extends AbstractMapper
 			{
 				throw new DiscoException( de.getMessage(), de );
 			}
+
+			// If the request ID is negative, discard it.
+			// This shoudn't happen, because the spec says the request ID is unsigned.
+			// However, VRF seems to be throwing these out for Data interactions, so putting
+			// some protections in place across Data/DataQuery/SetData.
+			if( interaction.getRequestIdentifier().getValue() < 0 )
+			{
+				if( logger.isTraceEnabled() )
+				    logger.trace( "hla >> dis (SetData) Interaction has invalid request id (%d), discarding",
+				                  interaction.getRequestIdentifier().getValue() );
+				return;
+			}
+
 			
 			// Send the PDU off to the OpsCenter
 			// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
@@ -160,7 +173,7 @@ public class SetDataMapper extends AbstractMapper
 		}
 	}
 
-	private InteractionInstance deserializeSetData( ParameterHandleValueMap map )
+	private SetData deserializeSetData( ParameterHandleValueMap map )
 		throws DecoderException
 	{
 		// Create an instance to decode in to
