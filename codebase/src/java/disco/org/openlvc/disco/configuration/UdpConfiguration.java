@@ -247,6 +247,7 @@ public class UdpConfiguration
 	public void setNetworkInterface( String name )
 	{
 		this.networkInterface = NetworkUtils.getNetworkInterface( name );
+		parent.setProperty( PROP_INTERFACE, name );
 	}
 
 	public int getSendBufferSize()

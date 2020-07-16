@@ -77,6 +77,7 @@ public class DisConfiguration
 	public void setExerciseId( short exerciseId )
 	{
 		parent.setProperty( PROP_EXERCISE_ID, ""+exerciseId );
+		this.exerciseId = -1; // flag reset
 	}
 
 	/**
