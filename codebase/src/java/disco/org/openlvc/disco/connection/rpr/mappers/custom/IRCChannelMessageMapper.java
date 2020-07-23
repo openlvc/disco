@@ -15,25 +15,30 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.mappers;
+package org.openlvc.disco.connection.rpr.mappers.custom;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
+import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
+import org.openlvc.disco.connection.rpr.mappers.HlaInteraction;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ParameterClass;
-import org.openlvc.disco.connection.rpr.objects.EncodedAudioRadioSignal;
 import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
+import org.openlvc.disco.connection.rpr.objects.custom.IRCChannelMessage;
+import org.openlvc.disco.pdu.custom.IrcMessagePdu;
 import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.pdu.radio.SignalPdu;
 
 import hla.rti1516e.ParameterHandleValueMap;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
 
-public class SignalMapper extends AbstractMapper
+/**
+ * Mapper to/from IRC FOM channel message interactions.
+ */
+public class IRCChannelMessageMapper extends AbstractMapper
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -42,9 +47,12 @@ public class SignalMapper extends AbstractMapper
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	// Encoded Audio
 	private InteractionClass hlaClass;
-	private ParameterClass audioData;
+	private ParameterClass channelName;
+	private ParameterClass sender;
+	private ParameterClass message;
+	private ParameterClass timeReceived;
+	private ParameterClass origin;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -57,7 +65,7 @@ public class SignalMapper extends AbstractMapper
 	@Override
 	public Collection<PduType> getSupportedPdus()
 	{
-		return Arrays.asList( PduType.Signal );
+		return Arrays.asList( PduType.IRCMessage );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,61 +74,76 @@ public class SignalMapper extends AbstractMapper
 	@Override
 	protected void initialize() throws DiscoException
 	{
-		// EncodedAudio
-		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.RadioSignal.EncodedAudioRadioSignal" );
+		// Cache up the handles
+		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.Service.IRCChannelMessage" );
 		if( this.hlaClass == null )
-			throw new DiscoException( "Could not find class: HLAinteractionRoot.RadioSignal.EncodedAudioRadioSignal" );
+			throw new DiscoException( "Could not find class: HLAinteractionRoot.Service.IRCChannelMessage" );
 		
-		this.audioData = hlaClass.getParameter( "AudioData" );
+		this.channelName    = hlaClass.getParameter( "ChannelName" );
+		this.sender         = hlaClass.getParameter( "Sender" );
+		this.message        = hlaClass.getParameter( "Message" );
+		this.timeReceived   = hlaClass.getParameter( "TimeReceived" );
+		this.origin         = hlaClass.getParameter( "Origin" );
 		
-		// Publish and Subscribe
+		// Do publication and subscription
 		super.publishAndSubscribe( hlaClass );
 	}
+	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS -> HLA Methods   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	@EventHandler
-	public void handlePdu( SignalPdu pdu )
+	public void handlePdu( IrcMessagePdu pdu )
 	{
-		InteractionInstance interaction = null;
-		switch( pdu.getEncodingScheme().getEncodingClass() )
-		{
-			case EncodedVoice:
-				interaction = serializeAudioSignal( pdu );
-				break;
-			case RawBinaryData:
-			case ApplicationSpecificData:
-			case DatabaseIndex:
-			default:
-				break; // not supported
-		}
+		// Populate the Interaction
+		InteractionInstance interaction = serializeSetData( pdu );
 
 		// Send the interaction
 		super.sendInteraction( interaction, interaction.getParameters() );
 	}
-	
-	private InteractionInstance serializeAudioSignal( SignalPdu pdu )
+
+	private InteractionInstance serializeSetData( IrcMessagePdu pdu )
 	{
 		// Create the interaction object
-		EncodedAudioRadioSignal signal = new EncodedAudioRadioSignal();
-		signal.setInteractionClass( hlaClass );
+		IRCChannelMessage ircMessage = new IRCChannelMessage(); 
+		ircMessage.setInteractionClass( hlaClass );
 		
 		// Populate it from the PDU
-		signal.fromPdu( pdu );
+		ircMessage.fromPdu( pdu );
 		
 		// Serialize it to a set of Parameters
 		ParameterHandleValueMap map = super.createParameters( this.hlaClass );
-		signal.setParameters( map );
+		ircMessage.setParameters( map );
 		
-		// Populdate the Parameters
-		// AudioData
-		ByteWrapper wrapper = new ByteWrapper( signal.getAudioData().getEncodedLength() );
-		signal.getAudioData().encode( wrapper );
-		map.put( audioData.getHandle(), wrapper.array() );
+		// Populate the Parameters
+		// ChannelName
+		ByteWrapper wrapper = new ByteWrapper( ircMessage.getChannelName().getEncodedLength() );
+		ircMessage.getChannelName().encode( wrapper );
+		map.put( channelName.getHandle(), wrapper.array() );
+		
+		// Sender
+		wrapper = new ByteWrapper( ircMessage.getSender().getEncodedLength() );
+		ircMessage.getSender().encode( wrapper );
+		map.put( sender.getHandle(), wrapper.array() );
+		
+		// Message
+		wrapper = new ByteWrapper( ircMessage.getMessage().getEncodedLength() );
+		ircMessage.getMessage().encode( wrapper );
+		map.put( message.getHandle(), wrapper.array() );
+		
+		// TimeReceived
+		wrapper = new ByteWrapper( ircMessage.getTimeReceived().getEncodedLength() );
+		ircMessage.getTimeReceived().encode( wrapper );
+		map.put( timeReceived.getHandle(), wrapper.array() );
+		
+		// Origin
+		wrapper = new ByteWrapper( ircMessage.getOrigin().getEncodedLength() );
+		ircMessage.getOrigin().encode( wrapper );
+		map.put( origin.getHandle(), wrapper.array() );
 		
 		// Send it
-		return signal;
+		return ircMessage;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -131,21 +154,18 @@ public class SignalMapper extends AbstractMapper
 	{
 		if( hlaClass == event.theClass )
 		{
-			InteractionInstance interaction = null;
+			IRCChannelMessage interaction = null;
 			
-			// Deserialize the parameters into the right signal type
+			// Deserialize the parameters into an interaction instance
 			try
 			{
-	    		if( hlaClass.equals(this.hlaClass) )
-	    			interaction = deserializeAudioSignal( event.parameters );
-	    		else
-	    			; // Unsupported Type
+				interaction = deserializeIrcChannelMessage( event.parameters );
 			}
 			catch( DecoderException de )
 			{
 				throw new DiscoException( de.getMessage(), de );
 			}
-			
+
 			// Send the PDU off to the OpsCenter
 			// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 			//         on the other side. This is inefficient and distasteful. Fix me.
@@ -153,21 +173,45 @@ public class SignalMapper extends AbstractMapper
 		}
 	}
 
-	private InteractionInstance deserializeAudioSignal( ParameterHandleValueMap map )
+	private IRCChannelMessage deserializeIrcChannelMessage( ParameterHandleValueMap map )
 		throws DecoderException
 	{
 		// Create an instance to decode in to
-		EncodedAudioRadioSignal interaction = new EncodedAudioRadioSignal();
-		
-		if( map.containsKey(audioData.getHandle()) )
+		IRCChannelMessage interaction = new IRCChannelMessage();
+
+		if( map.containsKey(channelName.getHandle()) )
 		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(audioData.getHandle()) );
-			interaction.getAudioData().decode( wrapper );
+			ByteWrapper wrapper = new ByteWrapper( map.get(channelName.getHandle()) );
+			interaction.getChannelName().decode( wrapper );
 		}
 		
+		if( map.containsKey(sender.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(sender.getHandle()) );
+			interaction.getSender().decode( wrapper );
+		}
+		
+		if( map.containsKey(message.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(message.getHandle()) );
+			interaction.getMessage().decode( wrapper );
+		}
+		
+		if( map.containsKey(timeReceived.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(timeReceived.getHandle()) );
+			interaction.getTimeReceived().decode( wrapper );
+		}
+		
+		if( map.containsKey(origin.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(origin.getHandle()) );
+			interaction.getOrigin().decode( wrapper );
+		}
+
 		return interaction;
 	}
-	
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

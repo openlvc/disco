@@ -17,13 +17,16 @@
  */
 package org.openlvc.disco.connection.rpr.mappers;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
-import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ParameterClass;
 import org.openlvc.disco.connection.rpr.objects.DataQuery;
 import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.simman.DataQueryPdu;
 
 import hla.rti1516e.ParameterHandleValueMap;
@@ -51,22 +54,24 @@ public class DataQueryMapper extends AbstractMapper
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public DataQueryMapper( RprConnection connection )
-	{
-		super( connection );
-		initializeHandles();
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
+	public Collection<PduType> getSupportedPdus()
+	{
+		return Arrays.asList( PduType.DataQuery );
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA Initialization   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	private void initializeHandles() throws DiscoException
+	@Override
+	protected void initialize() throws DiscoException
 	{
-		// EncodedAudio
+		// DataQuery
 		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.DataQuery" );
 		if( this.hlaClass == null )
 			throw new DiscoException( "Could not find class: HLAinteractionRoot.SetData" );
@@ -77,6 +82,9 @@ public class DataQueryMapper extends AbstractMapper
 		this.timeInterval              = hlaClass.getParameter( "TimeInterval" );
 		this.fixedDatumIdentifiers     = hlaClass.getParameter( "FixedDatumIdentifiers" );
 		this.variableDatumIdentifiers  = hlaClass.getParameter( "VariableDatumIdentifiers" );
+		
+		// Publish and Subscribe
+		super.publishAndSubscribe( this.hlaClass );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

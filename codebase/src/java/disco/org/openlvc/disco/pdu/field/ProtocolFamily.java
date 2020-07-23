@@ -39,7 +39,9 @@ public enum ProtocolFamily
 	SimMgmt_R     ( (short)10 ),
 	LiveEntity    ( (short)11 ),
 	NonRealTime   ( (short)12 ),
-	InformationOps( (short)13 );
+	InformationOps( (short)13 ),
+	// Custom
+	DiscoCustom   ( (short)221 ); // 0xdd
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -74,19 +76,20 @@ public enum ProtocolFamily
 	{
 		switch( value )
 		{
-			 case  1: return Entity;
-			 case  2: return Warfare;
-			 case  3: return Logistics;
-			 case  4: return Radio;
-			 case  5: return SimMgmt;
-			 case  6: return Emission;
-			 case  7: return EntityMgmt;
-			 case  8: return Minefield;
-			 case  9: return SyntheticEnv;
-			 case 10: return SimMgmt_R;
-			 case 11: return LiveEntity;
-			 case 12: return NonRealTime;
-			 case 13: return InformationOps;
+			 case  1:  return Entity;
+			 case  2:  return Warfare;
+			 case  3:  return Logistics;
+			 case  4:  return Radio;
+			 case  5:  return SimMgmt;
+			 case  6:  return Emission;
+			 case  7:  return EntityMgmt;
+			 case  8:  return Minefield;
+			 case  9:  return SyntheticEnv;
+			 case 10:  return SimMgmt_R;
+			 case 11:  return LiveEntity;
+			 case 12:  return NonRealTime;
+			 case 13:  return InformationOps;
+			 case 221: return DiscoCustom;
 			default:  break;
 		}
 

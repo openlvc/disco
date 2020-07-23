@@ -73,22 +73,7 @@
         <interactionClass>
             <name>HLAinteractionRoot</name>
             <interactionClass>
-                <name>IRCMessage</name>
-                <sharing>PublishSubscribe</sharing>
-                <transportation>HLAbestEffort</transportation>
-                <order>Receive</order>
-                <semantics></semantics>
-                <parameter>
-                    <name>SimulationTime</name>
-                    <dataType>Integer64</dataType>
-                    <semantics>Milliseconds since start of exercise.</semantics>
-                </parameter>
-                <parameter>
-                    <name>WallclockTime</name>
-                    <dataType>Integer64</dataType>
-                    <semantics>Milliseconds since the epoch.</semantics>
-                </parameter>
-
+                <name>Service</name>
                 <!-- Class: IRCChannelMessage -->
                 <interactionClass>
                     <name>IRCChannelMessage</name>
@@ -97,20 +82,26 @@
                     <order>Receive</order>
                     <semantics>Represent a chat message to a channel or user</semantics>
                     <parameter>
-                        <name>To</name>
-                        <dataType>HLAASCIIString</dataType>
-                        <semantics>Name of channel or user this message is sent to</semantics>
+                        <name>ChannelName</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics>The name of the IRC message channel</semantics>
                     </parameter>
                     <parameter>
-                        <name>From</name>
-                        <dataType>HLAASCIIString</dataType>
-                        <semantics>Nick this message was sent by</semantics>
+                        <name>Sender</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics>The IRC nick of the sender</semantics>
                     </parameter>
                     <parameter>
-                        <name>Content</name>
-                        <dataType>HLAASCIIString</dataType>
-                        <semantics>Text content of the message</semantics>
+                        <name>Message</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics>The text content of the IRC message</semantics>
                     </parameter>
+                    <parameter>
+                        <name>TimeReceived</name>
+                        <dataType>Float64</dataType>
+                        <semantics>Epoch timestamp sent at message transimission</semantics>
+                    </parameter>
+                    <!-- Added by Tim -->
                     <parameter>
                         <name>Origin</name>
                         <dataType>HLAASCIIString</dataType>
@@ -120,35 +111,40 @@
 
                 <!-- Class: IRCRawMessage -->
                 <interactionClass>
-                    <name>IRCChannelMessage</name>
+                    <name>IRCRawMessage</name>
                     <sharing>PublishSubscribe</sharing>
                     <transportation>HLAbestEffort</transportation>
                     <order>Receive</order>
                     <semantics>Represent a control message/IRC command to be executed</semantics>
+
                     <parameter>
-                        <name>To</name>
-                        <dataType>HLAASCIIString</dataType>
-                        <semantics>Name of channel or user this message is sent to</semantics>
+                        <name>Prefix</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics></semantics>
                     </parameter>
                     <parameter>
-                        <name>From</name>
-                        <dataType>HLAASCIIString</dataType>
-                        <semantics>Nick this message was sent by</semantics>
+                        <name>Command</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics></semantics>
                     </parameter>
                     <parameter>
-                        <name>Content</name>
-                        <dataType>HLAASCIIString</dataType>
-                        <semantics>Text content of the message</semantics>
+                        <name>CommandParameters</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics></semantics>
                     </parameter>
+                    <parameter>
+                        <name>CommandReceivedTime</name>
+                        <dataType>HLAfloat64Time</dataType>
+                        <semantics></semantics>
+                    </parameter>
+                    <!-- Added by Tim -->
                     <parameter>
                         <name>Origin</name>
                         <dataType>HLAASCIIString</dataType>
                         <semantics>ServerId of the origin server</semantics>
                     </parameter>
                 </interactionClass>
-
             </interactionClass>
-
         </interactionClass>
     </interactions>
 

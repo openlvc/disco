@@ -30,9 +30,9 @@ public class HlaDiscover extends HlaEvent
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	protected ObjectInstanceHandle theObject;
-	protected ObjectClass theClass;
-	protected String objectName;
+	public ObjectInstanceHandle theObject;
+	public ObjectClass theClass;
+	public String objectName;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS

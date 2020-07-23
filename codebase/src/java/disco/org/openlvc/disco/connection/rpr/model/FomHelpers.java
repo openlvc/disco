@@ -497,10 +497,34 @@ public class FomHelpers
 	 * @param model   The model to cache information up for
 	 * @throws DiscoException If an RTI exception is thrown. It will be wrapped in a DiscoException
 	 */
-	public static void loadHandlesFromRti( RTIambassador rtiamb , ObjectModel model )
+	public static void loadHandlesFromRti( RTIambassador rtiamb, ObjectModel model )
 	{
 		new FomHelpers().loadHandles( rtiamb, model );
 	}
+
+//	/**
+//	 * Loop through the given class and all its parent classes loading up any handles that are
+//	 * not already loaded using the given RTIambassador.
+//	 * 
+//	 * @param rtiamb The RTIambassador to fetch the data from
+//	 * @param clazz  The class start loading handles from, going from here through all parents
+//	 */
+//	public static void loadHandlesFromRti( RTIambassador rtiamb, ObjectClass clazz )
+//	{
+//		new FomHelpers().loadHandles( rtiamb, clazz );
+//	}
+//	
+//	/**
+//	 * Loop through the given class and all its parent classes loading up any handles that are
+//	 * not already loaded using the given RTIambassador.
+//	 * 
+//	 * @param rtiamb The RTIambassador to fetch the data from
+//	 * @param clazz  The class start loading handles from, going from here through all parents
+//	 */
+//	public static void loadHandlesFromRti( RTIambassador rtiamb, InteractionClass clazz )
+//	{
+//		new FomHelpers().loadHandles( rtiamb, clazz );
+//	}
 
 
 	// ***************************************************************************************

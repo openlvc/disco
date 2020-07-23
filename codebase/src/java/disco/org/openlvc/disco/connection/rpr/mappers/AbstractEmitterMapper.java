@@ -20,7 +20,6 @@ package org.openlvc.disco.connection.rpr.mappers;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.objects.EmitterBeamRpr;
 import org.openlvc.disco.connection.rpr.objects.EmitterSystemRpr;
 import org.openlvc.disco.connection.rpr.objects.JammerBeam;
@@ -47,9 +46,8 @@ public abstract class AbstractEmitterMapper extends AbstractMapper
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public AbstractEmitterMapper( RprConnection connection )
+	public AbstractEmitterMapper()
 	{
-		super( connection );
 	}
 
 	//----------------------------------------------------------

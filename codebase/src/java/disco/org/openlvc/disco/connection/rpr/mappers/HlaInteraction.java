@@ -29,8 +29,8 @@ public class HlaInteraction extends HlaEvent
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	protected InteractionClass theClass;
-	protected ParameterHandleValueMap parameters;
+	public InteractionClass theClass;
+	public ParameterHandleValueMap parameters;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS

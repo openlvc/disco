@@ -17,11 +17,11 @@
  */
 package org.openlvc.disco.connection.rpr.mappers;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
-import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.objects.EmitterBeamRpr;
@@ -29,6 +29,7 @@ import org.openlvc.disco.connection.rpr.objects.EmitterSystemRpr;
 import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.emissions.EmitterSystem;
+import org.openlvc.disco.pdu.field.PduType;
 
 import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.encoding.ByteWrapper;
@@ -58,20 +59,22 @@ public class EmitterSystemMapper extends AbstractEmitterMapper
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public EmitterSystemMapper( RprConnection connection ) throws DiscoException
-	{
-		super( connection );
-		this.initializeHandles();
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
+	public Collection<PduType> getSupportedPdus()
+	{
+		return Arrays.asList( PduType.Emission );
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA Initialization   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	private void initializeHandles() throws DiscoException
+	@Override
+	protected void initialize() throws DiscoException
 	{
 		// Cache all the attributes we need
 		this.hlaClass = rprConnection.getFom().getObjectClass( "HLAobjectRoot.EmbeddedSystem.EmitterSystem" );
@@ -87,6 +90,9 @@ public class EmitterSystemMapper extends AbstractEmitterMapper
 		this.emitterType = hlaClass.getAttribute( "EmitterType" );
 		this.emitterIndex = hlaClass.getAttribute( "EmitterIndex" );
 		this.eventIdentifier = hlaClass.getAttribute( "EventIdentifier" );
+		
+		// Publish and Subscribe
+		super.publishAndSubscribe( hlaClass );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

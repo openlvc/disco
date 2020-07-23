@@ -22,8 +22,17 @@ import java.io.IOException;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.PduHeader;
 
+/**
+ * Parent class for all PDU types. This class represents the body of the PDU, separate from the
+ * header (which it passed in or created based on the type). Methods are provided to perform common
+ * operations such as length calculation and serialization.
+ * <p/>
+ * Abstract methods are declared to allow concrete types to capture and manage serialization events
+ * and to provide some additional hints that can be used to support filter (site/app ids).
+ */
 public abstract class PDU
 {
 	//----------------------------------------------------------
@@ -53,11 +62,88 @@ public abstract class PDU
 		this.header.setPduType( type );
 		this.header.setProtocolFamily( type.getProtocolFamily() );
 		this.localTimestamp = System.currentTimeMillis();
+		
+		// Add the special marker for custom PDUs
+		if( type.getProtocolFamily() == ProtocolFamily.DiscoCustom )
+		{
+			
+		}
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// IPduComponent Methods   ////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Reads new field values for the PDU Component from the provided DISInputStream replacing any 
+	 * existing field values before the method was called.
+	 * 
+	 * If the method fails due to an IOException being raised, the object will be left in an
+	 * undefined state.
+	 * 
+	 * @param dis The DISInputStream to read the new field values from
+	 * 
+	 * @throws IOException Thrown if there was an error reading from the provided DISInputStream
+	 */
+	public abstract void from( DisInputStream dis ) throws IOException;
+	
+	/**
+	 * Writes the PDU Component's current field values to the provided DISOutputStream.
+	 * 
+	 * If the method fails due to an IOException being raised, the provided DISOutputStream will be 
+	 * left in an undefined state.
+	 * 
+	 * @param dis The DISOutputStream to write field values to
+	 * 
+	 * @throws IOException Thrown if there was an error writing to the provided DISOutputStream
+	 */
+	public abstract void to( DisOutputStream dos ) throws IOException;
+
+	/**
+	 * Returns the length of this PDU's content section in bytes
+	 * 
+	 * @return An int value representing the length of this PDU's content section in bytes
+	 */
+	public abstract int getContentLength();
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Filtering Support Methods   ////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Return the Site ID for the system from which this PDU originates.
+	 * <p/>
+	 * This information isn't in the header, but some concept of it seems to be in each PDU
+	 * in some form or another. In an ESPDU, it is in the entity ID. For a designator, it is
+	 * in the originating entity. This source of this information will differ from PDU to PDU,
+	 * but the intent is that it will return the Site ID of the originating site.
+	 * the children.
+	 * 
+	 * @return Site ID from which which PDU came, or -1 if it can not be determined for the
+	 *         PDU type.
+	 */
+	public abstract int getSiteId();
+	
+	/**
+	 * Return the App ID for the system from which this PDU originates.
+	 * <p/>
+	 * This information isn't in the header, but some concept of it seems to be in each PDU
+	 * in some form or another. In an ESPDU, it is in the entity ID. For a designator, it is
+	 * in the originating entity. This source of this information will differ from PDU to PDU,
+	 * but the intent is that it will return the App ID of the originating site.
+	 * the children.
+	 * 
+	 * @return App ID from which which PDU came, or -1 if it can not be determined for the
+	 *         PDU type.
+	 */
+	public abstract int getAppId();
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Each PDU has a specific type, as enumerated in {@link PduType}. 
 	 */
@@ -124,38 +210,6 @@ public abstract class PDU
 	}
 	
 	/**
-	 * Reads new field values for the PDU Component from the provided DISInputStream replacing any 
-	 * existing field values before the method was called.
-	 * 
-	 * If the method fails due to an IOException being raised, the object will be left in an
-	 * undefined state.
-	 * 
-	 * @param dis The DISInputStream to read the new field values from
-	 * 
-	 * @throws IOException Thrown if there was an error reading from the provided DISInputStream
-	 */
-	public abstract void from( DisInputStream dis ) throws IOException;
-	
-	/**
-	 * Writes the PDU Component's current field values to the provided DISOutputStream.
-	 * 
-	 * If the method fails due to an IOException being raised, the provided DISOutputStream will be 
-	 * left in an undefined state.
-	 * 
-	 * @param dis The DISOutputStream to write field values to
-	 * 
-	 * @throws IOException Thrown if there was an error writing to the provided DISOutputStream
-	 */
-	public abstract void to( DisOutputStream dos ) throws IOException;
-
-	/**
-	 * Returns the length of this PDU's content section in bytes
-	 * 
-	 * @return An int value representing the length of this PDU's content section in bytes
-	 */
-	public abstract int getContentLength();
-
-	/**
 	 * Gets the full PDU length. Header + Content.
 	 */
 	public int getPduLength()
@@ -181,34 +235,6 @@ public abstract class PDU
 			throw new DiscoException( ioex.getMessage(), ioex );
 		}
 	}
-
-	/**
-	 * Return the Site ID for the system from which this PDU originates.
-	 * <p/>
-	 * This information isn't in the header, but some concept of it seems to be in each PDU
-	 * in some form or another. In an ESPDU, it is in the entity ID. For a designator, it is
-	 * in the originating entity. This source of this information will differ from PDU to PDU,
-	 * but the intent is that it will return the Site ID of the originating site.
-	 * the children.
-	 * 
-	 * @return Site ID from which which PDU came, or -1 if it can not be determined for the
-	 *         PDU type.
-	 */
-	public abstract int getSiteId();
-	
-	/**
-	 * Return the App ID for the system from which this PDU originates.
-	 * <p/>
-	 * This information isn't in the header, but some concept of it seems to be in each PDU
-	 * in some form or another. In an ESPDU, it is in the entity ID. For a designator, it is
-	 * in the originating entity. This source of this information will differ from PDU to PDU,
-	 * but the intent is that it will return the App ID of the originating site.
-	 * the children.
-	 * 
-	 * @return App ID from which which PDU came, or -1 if it can not be determined for the
-	 *         PDU type.
-	 */
-	public abstract int getAppId();
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

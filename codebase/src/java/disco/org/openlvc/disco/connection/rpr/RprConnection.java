@@ -18,10 +18,9 @@
 package org.openlvc.disco.connection.rpr;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.stream.Stream;
 
@@ -34,25 +33,15 @@ import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.connection.Metrics;
-import org.openlvc.disco.connection.rpr.mappers.ActionRequestMapper;
-import org.openlvc.disco.connection.rpr.mappers.ActionResponseMapper;
-import org.openlvc.disco.connection.rpr.mappers.DataMapper;
-import org.openlvc.disco.connection.rpr.mappers.DataQueryMapper;
-import org.openlvc.disco.connection.rpr.mappers.EmitterBeamMapper;
-import org.openlvc.disco.connection.rpr.mappers.EmitterSystemMapper;
-import org.openlvc.disco.connection.rpr.mappers.EntityStateMapper;
+import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
 import org.openlvc.disco.connection.rpr.mappers.HlaDiscover;
 import org.openlvc.disco.connection.rpr.mappers.HlaEvent;
 import org.openlvc.disco.connection.rpr.mappers.HlaInteraction;
 import org.openlvc.disco.connection.rpr.mappers.HlaReflect;
-import org.openlvc.disco.connection.rpr.mappers.SetDataMapper;
-import org.openlvc.disco.connection.rpr.mappers.SignalMapper;
-import org.openlvc.disco.connection.rpr.mappers.TransmitterMapper;
 import org.openlvc.disco.connection.rpr.model.FomHelpers;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.model.ObjectModel;
-import org.openlvc.disco.connection.rpr.model.PubSub;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
@@ -152,15 +141,11 @@ public class RprConnection implements IConnection
 	@Override
 	public Collection<PduType> getSupportedPduTypes()
 	{
-		return Arrays.asList( PduType.EntityState,
-		                      PduType.Transmitter,
-		                      PduType.Signal,
-		                      PduType.Emission,
-		                      PduType.DataQuery,
-		                      PduType.Data,
-		                      PduType.SetData,
-		                      PduType.ActionRequest,
-		                      PduType.ActionResponse );
+		Collection<PduType> collection = new LinkedHashSet<>();
+		for( AbstractMapper mapper : rprConfiguration.getRegisteredFomMappers() )
+			collection.addAll( mapper.getSupportedPdus() );
+
+		return collection;
 	}
 	
 	/**
@@ -196,63 +181,44 @@ public class RprConnection implements IConnection
 
 		this.metrics = new Metrics();
 
-		// Step 1. FOM Module Locate/Parse
+		// Step 1. Locate and parse all necessary FOM Modules
 		//
 		// Find and parse all the FOM modules we'll need, building up a structure we
 		// can query in the event handlers
-		URL[] modules = getRprJoinModules();
+		URL[] modules = rprConfiguration.getRegisteredFomModules();
 		if( modules.length == 0 )
 			throw new DiscoException( "Did not find the RPR FOM Modules" );
 		
 		logger.debug( "Parsing FOM modules "+Arrays.toString(modules) );
 		this.objectModel = FomHelpers.parse( modules );
 
-		// Step 2. Initialize Mappers
-		//
-		// Set up the mappers. Must come before initializeFederation() because we do
-		// pub/sub in there, which will cause us to start receiving HLA traffic
-		this.registerMappers();
-		
-		// Step 3. Initialize Federation
+		// Step 2. Initialize Federation
 		//
 		// Initalize and connect to the federation
 		this.initializeFederation();
+
+		// Step 3. Initialize Mappers
+		//
+		// Set up the mappers. Must come before initializeFederation() because we do
+		// pub/sub in there, which will cause us to start receiving HLA traffic
+		AbstractMapper[] mappers = rprConfiguration.getRegisteredFomMappers();
+		for( AbstractMapper mapper : mappers )
+		{
+			logger.trace( "Registering mapper: "+mapper.getClass().getCanonicalName() );
+
+			// initialize the mapper so that it can hook in
+			mapper.initialize( this );
+			// register the mapper with the appropriate DIS/HLA message busses
+			pduBus.subscribe( mapper );
+			hlaBus.subscribe( mapper );
+			
+			logger.debug( "Registered mapper: "+mapper.getClass().getCanonicalName() );
+		}
 		
 		// Step 4. Start Local Services
 		this.pduHeartbeater.start();
 	}
 
-	/**
-	 * Create the set of mappers we have to work with and register them with the DIS/HLA busses
-	 */
-	private void registerMappers()
-	{
-		// Entity & Warfare
-		EntityStateMapper     esMapper   = new EntityStateMapper(this);
-		// Communications
-		TransmitterMapper     txMapper   = new TransmitterMapper(this);
-		SignalMapper          sgMapper   = new SignalMapper(this);
-		// Emissions
-		EmitterSystemMapper   emsMapper  = new EmitterSystemMapper(this);
-		EmitterBeamMapper     embMapper  = new EmitterBeamMapper(this);
-		// Sim Mgmt
-		DataQueryMapper       dqMapper   = new DataQueryMapper(this);
-		DataMapper            daMapper   = new DataMapper(this);
-		SetDataMapper         sdMapper   = new SetDataMapper(this);
-		ActionRequestMapper   areqMapper = new ActionRequestMapper(this);
-		ActionResponseMapper  arspMapper = new ActionResponseMapper(this);
-		
-		// Subscribe to PDU Bus
-		pduBus.subscribe( esMapper, txMapper, sgMapper );
-		pduBus.subscribe( emsMapper, embMapper );
-		pduBus.subscribe( dqMapper, daMapper, sdMapper, areqMapper, arspMapper );
-		
-		// Subscribe to HLA Event Bus
-		hlaBus.subscribe( esMapper, txMapper, sgMapper );
-		hlaBus.subscribe( emsMapper, embMapper );
-		hlaBus.subscribe( dqMapper, daMapper, sdMapper, areqMapper, arspMapper );
-	}
-	
 	/**
 	 * Resign from the federation and disconnect from the RTI
 	 */
@@ -384,7 +350,7 @@ public class RprConnection implements IConnection
 				this.rtiamb.joinFederationExecution( federateName,
 				                                     federateType,
 				                                     federation,
-				                                     getRprJoinModules() );
+				                                     rprConfiguration.getRegisteredFomModules() );
 				
 				// everything good! let's bust out
 				break;
@@ -416,47 +382,8 @@ public class RprConnection implements IConnection
 		//
 		// Step 5. Publish and Subscribe -- this will start data flowing from the HLA
 		//
-		this.publishAndSubscribe();
-	}
-
-	private void publishAndSubscribe()
-	{
-		// PubSub Object Classes
-		List<String> classes = new ArrayList<>();
-		classes.add( "HLAobjectRoot.EmbeddedSystem.RadioTransmitter" );
-		classes.add( "HLAobjectRoot.EmbeddedSystem.EmitterSystem" );
-		classes.add( "HLAobjectRoot.EmitterBeam.RadarBeam" );
-		classes.add( "HLAobjectRoot.EmitterBeam.JammerBeam" );
-		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.Aircraft" );
-		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.AmphibiousVehicle" );
-		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.GroundVehicle" );
-		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.MultiDomainPlatform" );
-		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.SurfaceVessel" );
-		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.SubmersibleVessel" );
-		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.Spacecraft" );
-		classes.add( "HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform" );
-		
-		for( String qualifiedName : classes )
-		{
-			logger.debug( "PubSub for "+qualifiedName );
-			ObjectClass objectClass = objectModel.getObjectClass( qualifiedName );
-			FomHelpers.pubsub( rtiamb, PubSub.Both, objectClass );
-		}
-
-		// PubSub Interaction Classes
-		classes.clear();
-		classes.add( "HLAinteractionRoot.RadioSignal.EncodedAudioRadioSignal" );
-		classes.add( "HLAinteractionRoot.Data" );
-		classes.add( "HLAinteractionRoot.DataQuery" );
-		classes.add( "HLAinteractionRoot.SetData" );
-		classes.add( "HLAinteractionRoot.ActionRequest" );
-		classes.add( "HLAinteractionRoot.ActionResponse" );
-		for( String qualifiedName : classes )
-		{
-			logger.debug( "PubSub for "+qualifiedName );
-			InteractionClass interactionClass = objectModel.getInteractionClass( qualifiedName );
-			FomHelpers.pubsub( rtiamb, PubSub.Both, interactionClass );
-		}
+		// ===> This has now been moved to Mappers; be sure to check them <===
+		//this.publishAndSubscribe();
 	}
 
 	/**
@@ -607,30 +534,13 @@ public class RprConnection implements IConnection
 		return this.opscenter;
 	}
 
-	private URL[] getRprJoinModules()
-	{
-		// Get references to all the FOM modules we want to load
-		ClassLoader loader = getClass().getClassLoader();
-		ArrayList<URL> joinlist = new ArrayList<>();
-		joinlist.add( loader.getResource("hla/rpr2/HLAstandardMIM.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-Foundation_v2.0.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-Base_v2.0.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-Communication_v2.0.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-DER_v2.0.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-Enumerations_v2.0.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-Physical_v2.0.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-SIMAN_v2.0.xml") );
-		joinlist.add( loader.getResource("hla/rpr2/RPR-Warfare_v2.0.xml") );
-		return joinlist.toArray( new URL[]{} );
-	}
-	
 	private URL[] getRprCreateModules()
 	{
 		// When creating a federation we have to provide some switch values.
 		// Let's take the join modules array and add the switches to the front.
 		
 		// Get the join modules
-		URL[] joinModules = getRprJoinModules();
+		URL[] joinModules = rprConfiguration.getRegisteredFomModules();
 
 		// Get the create-only modules
 		ClassLoader loader = getClass().getClassLoader();

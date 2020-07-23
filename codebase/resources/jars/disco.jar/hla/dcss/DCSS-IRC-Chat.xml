@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<objectModel xsi:schemaLocation="http://standards.ieee.org/IEEE1516-2010 http://standards.ieee.org/downloads/1516/1516.2-2010/IEEE1516-DIF-2010.xsd" xmlns="http://standards.ieee.org/IEEE1516-2010" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelIdentification>
+        <name>New Module</name>
+        <type>FOM</type>
+        <version>1.0</version>
+        <securityClassification>unclassified</securityClassification>
+        <purpose></purpose>
+        <applicationDomain></applicationDomain>
+        <description>Description of New Module</description>
+        <useLimitation></useLimitation>
+        <poc>
+            <pocType>Primary author</pocType>
+            <pocName>Michael Jobson</pocName>
+            <pocOrg>Boeing Defence UK</pocOrg>
+            <pocEmail>michael.i.jobson@boeing.com</pocEmail>
+        </poc>
+        <poc>
+            <pocType></pocType>
+            <pocName></pocName>
+            <pocOrg></pocOrg>
+        </poc>
+        <other></other>
+    </modelIdentification>
+    <interactions>
+        <interactionClass>
+            <name>HLAinteractionRoot</name>
+            <interactionClass>
+                <name>Service</name>
+                <interactionClass>
+                    <name>IRCChannelMessage</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics></semantics>
+                    <parameter>
+                        <name>TimeReceived</name>
+                        <dataType>Float64</dataType>
+                        <semantics>Epoch timestamp sent at message transimission</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>ChannelName</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics>The name of the IRC message channel</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Sender</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics>The name of the IRC sender</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Message</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics>The IRC message</semantics>
+                    </parameter>
+                </interactionClass>
+                <interactionClass>
+                    <name>IRCRawMessage</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics></semantics>
+                    <parameter>
+                        <name>Prefix</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics></semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Command</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics></semantics>
+                    </parameter>
+                    <parameter>
+                        <name>CommandParameters</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics></semantics>
+                    </parameter>
+                    <parameter>
+                        <name>CommandReceivedTime</name>
+                        <dataType>HLAfloat64Time</dataType>
+                        <semantics></semantics>
+                    </parameter>
+                </interactionClass>
+            </interactionClass>
+        </interactionClass>
+    </interactions>
+    <dataTypes>
+        <simpleDataTypes/>
+        <enumeratedDataTypes/>
+        <arrayDataTypes/>
+        <fixedRecordDataTypes/>
+        <variantRecordDataTypes/>
+    </dataTypes>
+</objectModel>

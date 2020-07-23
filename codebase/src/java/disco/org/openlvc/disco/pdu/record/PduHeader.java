@@ -30,6 +30,8 @@ public class PduHeader
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static final byte[] PADDING_DEFAULT = new byte[] { 0,0 };
+	private static final byte[] PADDING_CUSTOM  = new byte[] { (byte)0xbe, (byte)0xef };
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -40,6 +42,9 @@ public class PduHeader
 	private ProtocolFamily family;
 	private long timestamp;
 	private int pduLength;
+	
+	// We use the padding bytes poorly for custom PDUs by putting a special marker in there
+	private byte[] paddingBytes;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -62,6 +67,11 @@ public class PduHeader
 		//             This does mean that prior to being serialized, the header will _NOT_
 		//             contain a valid PDU length.
 		this.pduLength = -1;
+		
+		// Padding bytes
+		// We abuse the padding bytes to put a special marker in there for Disco custom PDUs so 
+		// that they're easier to spot.
+		this.paddingBytes = PADDING_DEFAULT;
 	}
 	
 	//----------------------------------------------------------
@@ -99,7 +109,8 @@ public class PduHeader
 		dos.writeUI32( timestamp );
 
 		dos.writeUI16( totalLength );
-		dos.writePadding( 2 );
+		//dos.writePadding( 2 ); -- replaced with custom
+		dos.write( paddingBytes ); // can be custom
 	}
 
 	public final int getHeaderLength()
@@ -131,7 +142,12 @@ public class PduHeader
 	public void setExerciseId( short id ) { this.exerciseId = id; }
 	
 	public ProtocolFamily getProtocolFamily() { return this.family; }
-	public void setProtocolFamily( ProtocolFamily family ) { this.family = family; }
+	public void setProtocolFamily( ProtocolFamily family )
+	{
+		this.family = family;
+		if( this.family == ProtocolFamily.DiscoCustom )
+			this.paddingBytes = PADDING_CUSTOM;
+	}
 	
 	public long getTimestamp() { return this.timestamp; }
 	public void setTimestamp( long timestamp ) { this.timestamp = timestamp; }

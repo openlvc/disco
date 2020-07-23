@@ -111,7 +111,9 @@ public class PduFactory
 	 * @throws UnsupportedPDU  The PDU type identified in the header isn't supported by Disco yet
 	 * @throws DiscoException  There was a problem instanting a new instance of the desired PDU
 	 */
-	public static PDU create( byte[] pdubytes ) throws IOException, UnsupportedPDU, DiscoException
+	public static <T extends PDU> T create( byte[] pdubytes ) throws IOException,
+	                                                                 UnsupportedPDU,
+	                                                                 DiscoException
 	{
 		return create( pdubytes, 0, pdubytes.length );
 	}
@@ -133,9 +135,9 @@ public class PduFactory
 	 * @throws UnsupportedPDU  The PDU type identified in the header is not supported by Disco yet
 	 * @throws DiscoException  Problem instantiating a new instances of the desired PDU
 	 */
-	public static PDU create( byte[] buffer, int offset, int length ) throws IOException,
-	                                                                         UnsupportedPDU,
-	                                                                         DiscoException
+	@SuppressWarnings("unchecked")
+	public static <T extends PDU> T create( byte[] buffer, int offset, int length )
+		throws IOException, UnsupportedPDU, DiscoException
 	{
 		// wrap the buffer in a stream we can read from
 		DisInputStream instream = new DisInputStream( buffer, offset, length );
@@ -148,7 +150,7 @@ public class PduFactory
 		PDU pdu = create( header );
 		pdu.from( instream );
 		
-		return pdu;
+		return (T)pdu;
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////

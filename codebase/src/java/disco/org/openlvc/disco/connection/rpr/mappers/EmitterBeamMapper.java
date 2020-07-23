@@ -17,9 +17,11 @@
  */
 package org.openlvc.disco.connection.rpr.mappers;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
-import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.objects.EmitterBeamRpr;
@@ -30,6 +32,7 @@ import org.openlvc.disco.connection.rpr.objects.RadarBeam;
 import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.emissions.EmitterBeam;
 import org.openlvc.disco.pdu.emissions.EmitterSystem;
+import org.openlvc.disco.pdu.field.PduType;
 
 import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.encoding.ByteWrapper;
@@ -74,20 +77,22 @@ public class EmitterBeamMapper extends AbstractEmitterMapper
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public EmitterBeamMapper( RprConnection connection ) throws DiscoException
-	{
-		super( connection );
-		this.initializeHandles();
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
+	public Collection<PduType> getSupportedPdus()
+	{
+		return Arrays.asList( PduType.Emission );
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA Initialization   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	private void initializeHandles() throws DiscoException
+	@Override
+	protected void initialize() throws DiscoException
 	{
 		// Cache all the attributes we need
 		this.jammerClass = rprConnection.getFom().getObjectClass( "HLAobjectRoot.EmitterBeam.JammerBeam" );
@@ -121,6 +126,10 @@ public class EmitterBeamMapper extends AbstractEmitterMapper
 		// RadarBeam
 		this.highDensityTrack = radarClass.getAttribute( "HighDensityTrack" );
 		this.trackObjectIdentifiers = radarClass.getAttribute( "TrackObjectIdentifiers" );
+		
+		// Publish and Subscribe
+		super.publishAndSubscribe( this.jammerClass );
+		super.publishAndSubscribe( this.radarClass );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

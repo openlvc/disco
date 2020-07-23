@@ -17,13 +17,16 @@
  */
 package org.openlvc.disco.connection.rpr.mappers;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
-import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ParameterClass;
 import org.openlvc.disco.connection.rpr.objects.ActionRequest;
 import org.openlvc.disco.connection.rpr.objects.InteractionInstance;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.simman.ActionRequestPdu;
 
 import hla.rti1516e.ParameterHandleValueMap;
@@ -50,22 +53,24 @@ public class ActionRequestMapper extends AbstractMapper
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public ActionRequestMapper( RprConnection connection )
-	{
-		super( connection );
-		initializeHandles();
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
+	public Collection<PduType> getSupportedPdus()
+	{
+		return Arrays.asList( PduType.ActionRequest );
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA Initialization   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	private void initializeHandles() throws DiscoException
+	@Override
+	protected void initialize() throws DiscoException
 	{
-		// EncodedAudio
+		// ActionRequest
 		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.ActionRequest" );
 		if( this.hlaClass == null )
 			throw new DiscoException( "Could not find class: HLAinteractionRoot.ActionRequest" );
@@ -76,6 +81,9 @@ public class ActionRequestMapper extends AbstractMapper
 		this.actionRequestCode = hlaClass.getParameter( "ActionRequestCode" );
 		this.fixedDatums       = hlaClass.getParameter( "FixedDatums" );
 		this.variableDatumSet  = hlaClass.getParameter( "VariableDatumSet" );
+		
+		// Publish and Subscribe
+		super.publishAndSubscribe( this.hlaClass );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

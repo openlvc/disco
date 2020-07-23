@@ -41,6 +41,7 @@ import org.openlvc.disco.pdu.simman.DataPdu;
 import org.openlvc.disco.pdu.simman.SetDataPdu;
 import org.openlvc.disco.pdu.warfare.DetonationPdu;
 import org.openlvc.disco.pdu.warfare.FirePdu;
+import org.openlvc.disco.pdu.custom.IrcMessagePdu;
 
 public enum PduType
 {
@@ -130,7 +131,10 @@ public enum PduType
 
 	InfoOpsAction     ( (short)70,  ProtocolFamily.InformationOps ),
 	InfoOpsReport     ( (short)71,  ProtocolFamily.InformationOps ),
-	Attribute         ( (short)72,  ProtocolFamily.Entity );
+	Attribute         ( (short)72,  ProtocolFamily.Entity ),
+	
+	// Custom Extensions
+	IRCMessage        ( (short)160, ProtocolFamily.DiscoCustom,    IrcMessagePdu.class );
 	
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

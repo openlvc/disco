@@ -30,8 +30,8 @@ public class HlaReflect extends HlaEvent
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	protected ObjectInstance hlaObject;
-	protected AttributeHandleValueMap attributes;
+	public ObjectInstance hlaObject;
+	public AttributeHandleValueMap attributes;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS

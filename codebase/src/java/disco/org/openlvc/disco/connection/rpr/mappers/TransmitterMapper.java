@@ -17,12 +17,15 @@
  */
 package org.openlvc.disco.connection.rpr.mappers;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
-import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.objects.RadioTransmitter;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
 
 import hla.rti1516e.AttributeHandleValueMap;
@@ -91,20 +94,22 @@ public class TransmitterMapper extends AbstractMapper
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public TransmitterMapper( RprConnection connection ) throws DiscoException
-	{
-		super( connection );
-		this.initializeHandles();
-	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
+	public Collection<PduType> getSupportedPdus()
+	{
+		return Arrays.asList( PduType.Transmitter );
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA Initialization   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	private void initializeHandles() throws DiscoException
+	@Override
+	protected void initialize() throws DiscoException
 	{
 		// Cache up all the attributes we need
 		this.hlaClass = rprConnection.getFom().getObjectClass( "HLAobjectRoot.EmbeddedSystem.RadioTransmitter" );
@@ -132,6 +137,9 @@ public class TransmitterMapper extends AbstractMapper
 		this.transmittedPower = hlaClass.getAttribute( "TransmittedPower" );
 		this.transmitterOperationalStatus = hlaClass.getAttribute( "TransmitterOperationalStatus" );
 		this.worldLocation = hlaClass.getAttribute( "WorldLocation" );
+		
+		// Publish and Subscribe
+		super.publishAndSubscribe( this.hlaClass );
 	}
 
 	

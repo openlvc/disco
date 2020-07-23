@@ -20,7 +20,8 @@ package org.openlvc;
 import org.openlvc.disco.application.DisApplication;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
-import org.openlvc.disco.pdu.emissions.EmitterBeam;
+import org.openlvc.disco.connection.rpr.mappers.custom.IRCChannelMessageMapper;
+import org.openlvc.disco.pdu.custom.IrcMessagePdu;
 import org.openlvc.disrespector.Configuration;
 import org.openlvc.disrespector.Disrespector;
 
@@ -50,7 +51,7 @@ public class EmitterPrinterTest
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 
-	public static void main( String[] args ) throws Exception
+	public static void main2( String[] args ) throws Exception
 	{
 		Configuration configuration = new Configuration();
 		configuration.setHlaFederateName( "Disrespector" );
@@ -58,7 +59,7 @@ public class EmitterPrinterTest
 		configuration.setHlaRtiProvider( RtiProvider.Pitch );
 		configuration.setDisNic( "SITE_LOCAL" );
 		configuration.setDisAddress( "BROADCAST" );
-configuration.setHlaLogLevel( "TRACE" );
+		configuration.setHlaLogLevel( "TRACE" );
 		
 		Disrespector disrespector = new Disrespector( configuration );
 		disrespector.start();
@@ -73,12 +74,21 @@ configuration.setHlaLogLevel( "TRACE" );
 	public static DiscoConfiguration getRprConfiguration()
 	{
 		DiscoConfiguration configuration = new DiscoConfiguration();
-		configuration.getRprConfiguration().setFederateName( "Test" );
-		configuration.getRprConfiguration().setFederationName( "DCSS" );
-		configuration.getRprConfiguration().setRtiProvider( RtiProvider.Pitch );
+		
+		// RPR Connection Basics
 		configuration.setConnection( "rpr" );
+		configuration.getRprConfiguration().setFederateName( "Test" );
+		configuration.getRprConfiguration().setFederationName( "DCSS2" );
+		configuration.getRprConfiguration().setRtiProvider( RtiProvider.Pitch );
+		
+		// Extensions
+		configuration.getRprConfiguration().registerExtensionModules( "hla/dcss/DCSS-BaseService.xml" );
+		configuration.getRprConfiguration().registerExtensionModules( "hla/rpr2/CNR-TacticalChat.xml" );
+		configuration.getRprConfiguration().registerExtensionMappers( new IRCChannelMessageMapper() );
+		
 		return configuration;
 	}
+	
 	
 	public static DiscoConfiguration getDisConfiguration()
 	{
@@ -88,10 +98,10 @@ configuration.setHlaLogLevel( "TRACE" );
 		return configuration;
 	}
 	
-	public static void main2( String[] args ) throws Exception
+	public static void main( String[] args ) throws Exception
 	{
 		DiscoConfiguration configuration = getRprConfiguration();
-		//configuration.getLoggingConfiguration().setLevel( "TRACE" );
+		configuration.getLoggingConfiguration().setLevel( "TRACE" );
 		DisApplication app = new DisApplication( configuration );
 		app.start();
 		
@@ -99,40 +109,16 @@ configuration.setHlaLogLevel( "TRACE" );
 		{
 			Thread.sleep( 2000 );
 			
-			long time = System.currentTimeMillis();
+			long temp = System.currentTimeMillis();
+			IrcMessagePdu pdu = new IrcMessagePdu();
+			pdu.setChannelName( ""+temp );
+			pdu.setSender( ""+temp );
+			pdu.setMessage( ""+temp );
+			pdu.setTimeReceived( (float)temp );
+			pdu.setOrigin( ""+temp );
 			
-			//
-			// Transmitters
-			//
-//			Set<TransmitterPdu> transmitters = 
-//				app.getPduStore().getTransmitterStore().getTransmittersMatching( (tx) -> tx != null );
-//			System.out.println( "Transmitters ("+transmitters.size()+"):" );
-//			for( TransmitterPdu pdu : transmitters )
-//				System.out.println( time+" [Transmitter] "+pdu.getEntityId()+"-"+pdu.getRadioID() );
-//			
-//			System.out.println( "" );
-			
-			//
-			// Entities
-			//
-			//System.out.println( time+" [Entities]: "+app.getPduStore().getEntityStore().getAllMarkings().size() );
-			System.out.println( "Entity Marking List" );
-			for( String marking : app.getPduStore().getEntityStore().getAllMarkings() )
-				System.out.println( "  >> " +marking );
-			System.out.println( "===================" );
-			
-			
-			//
-			// Emitters
-			//
-			System.out.println( "Beam Count: "+app.getPduStore().getEmitterStore().getActiveBeams().size() );
-			for( EmitterBeam beam : app.getPduStore().getEmitterStore().getActiveBeams() )
-			{
-				boolean noParams = beam.getParameterData() == null;
-				long seconds = (System.currentTimeMillis()-beam.getEmitterSystem().getLastUpdatedTime()) / 1000;
-				System.out.println( time+" [Beam] "+noParams+": "+beam.toString()+" (Age: "+seconds+"s)" );
-			}
-			System.out.println( " == End of Record ==" );
+			System.out.println( "Pump out message" );
+			app.send( pdu );
 		}
 	}
 }

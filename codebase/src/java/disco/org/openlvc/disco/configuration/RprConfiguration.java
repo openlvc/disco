@@ -18,9 +18,27 @@
 package org.openlvc.disco.configuration;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
+import org.openlvc.disco.connection.rpr.mappers.ActionRequestMapper;
+import org.openlvc.disco.connection.rpr.mappers.ActionResponseMapper;
+import org.openlvc.disco.connection.rpr.mappers.DataMapper;
+import org.openlvc.disco.connection.rpr.mappers.DataQueryMapper;
+import org.openlvc.disco.connection.rpr.mappers.EmitterBeamMapper;
+import org.openlvc.disco.connection.rpr.mappers.EmitterSystemMapper;
+import org.openlvc.disco.connection.rpr.mappers.EntityStateMapper;
+import org.openlvc.disco.connection.rpr.mappers.SetDataMapper;
+import org.openlvc.disco.connection.rpr.mappers.SignalMapper;
+import org.openlvc.disco.connection.rpr.mappers.TransmitterMapper;
+
+/**
+ * Contains the core configuration data for the RPR connection type that will translate between
+ * native Disco DIS and HLA, currently based on RPR.
+ */
 public class RprConfiguration
 {
 	//----------------------------------------------------------
@@ -75,6 +93,10 @@ public class RprConfiguration
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private DiscoConfiguration parent;
+	
+	// FOM-specific values. Careful to manage with DIS properties so they don't ignore each other
+	private List<URL> fomModules;
+	private List<AbstractMapper> fomMappers;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -82,6 +104,9 @@ public class RprConfiguration
 	protected RprConfiguration( DiscoConfiguration parent )
 	{
 		this.parent = parent;
+		
+		this.fomModules = new ArrayList<>();
+		this.fomMappers = new ArrayList<>();
 	}
 
 	//----------------------------------------------------------
@@ -344,6 +369,162 @@ public class RprConfiguration
 		parent.setProperty( PROP_RPR_HEARTBEAT_TIME, ""+period );
 	}
 
+	
+	/////////////////////////////////////////////////////////////////////////////////////////
+	/// FOM/Mapper Extensions   /////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Get the list of all registered FOM modules. This is the union of the set of default
+	 * modules plus any added through {@link #registerExtensionModules(File...)}.
+	 * <p/>
+	 * If you have a custom FOM Mapper, remember to make sure any required FOM Module is also
+	 * getting loaded.
+	 * 
+	 * @return URL[] pointing to all FOM modules that should be loaded and provided when creating
+	 *         or joining a federation.
+	 */
+	public URL[] getRegisteredFomModules()
+	{
+		if( fomModules.isEmpty() )
+			loadDefaultModules();
+		
+		return this.fomModules.toArray( new URL[]{} );
+	}
+	
+	/**
+	 * Register the given paths as additional FOM modules that should be loaded in addition to
+	 * the default set. If you have custom FOM Mappers that want to deal with custom HLA types,
+	 * make sure you have already registered the FOM modules they need.
+	 * <p/>
+	 * This method will check each path to make sure it is valid before proceeding. We first look
+	 * for the path as a file, and if it exists then we turn it into an absolute path and use that
+	 * (if it isn't already). If the path cannot be resolved as a file, we try to resolve it as a
+	 * system resource on the classpath.
+	 * <p/>
+	 * If the path does not resolve under either option, an exception is thrown.
+	 * 
+	 * @param paths The list of paths to add as extension modules.
+	 * @throws DiscoException If the path does not point to a file or a system resource
+	 */
+	public void registerExtensionModules( String... paths )
+	{
+		if( fomModules.isEmpty() )
+			loadDefaultModules();
+		
+		ClassLoader loader = getClass().getClassLoader();
+		for( String path : paths )
+		{
+			File file = new File( path );
+			if( file.exists() )
+			{
+				try
+				{
+					fomModules.add( file.toURI().toURL() );
+				}
+				catch( Exception e )
+				{
+					throw new DiscoException( e.getMessage(), e );
+				}
+			}
+			else
+			{
+				URL temp = loader.getResource( path );
+				if( temp != null )
+					fomModules.add( temp );
+				else
+					// can't find it!
+					throw new DiscoException( "Cannot find extension module: "+path );
+			}
+		}
+	}
+
+	/**
+	 * Load the default set of FOM Modules that should always be present.
+	 */
+	private void loadDefaultModules()
+	{
+		// List of defaults
+		String[] defaultModules = new String[] {
+		    "hla/rpr2/HLAstandardMIM.xml",
+		    "hla/rpr2/RPR-Foundation_v2.0.xml",
+		    "hla/rpr2/RPR-Base_v2.0.xml",
+		    "hla/rpr2/RPR-Communication_v2.0.xml",
+		    "hla/rpr2/RPR-DER_v2.0.xml",
+		    "hla/rpr2/RPR-Enumerations_v2.0.xml",
+		    "hla/rpr2/RPR-Physical_v2.0.xml",
+		    "hla/rpr2/RPR-SIMAN_v2.0.xml",
+		    "hla/rpr2/RPR-Warfare_v2.0.xml"
+		};
+
+		// Make sure we can find each default
+		ClassLoader loader = getClass().getClassLoader();
+		for( String module : defaultModules )
+		{
+			URL url = loader.getResource( module );
+			if( url == null )
+				throw new DiscoException( "Could not find FOM module: "+url );
+			else
+				fomModules.add( url );
+		}
+	}
+	
+
+	////////////////////////////////////////
+	/// FOM Mappers   //////////////////////
+	////////////////////////////////////////
+	/**
+	 * This method will look up the list of configured mappers and INSTANTIATE each of them
+	 * in turn, returning an array of new mapper instances. The mapper must have a no-arg
+	 * @return
+	 */
+	public AbstractMapper[] getRegisteredFomMappers()
+	{
+		if( fomMappers.isEmpty() )
+			loadDefaultMappers();
+		
+		return this.fomMappers.toArray( new AbstractMapper[]{} );
+	}
+
+	/**
+	 * Register a custom mapper with the configuration. On connection initialization, all default
+	 * and extension mappers will be brought into service through an initialization call before
+	 * being passed messages.
+	 * 
+	 * @param mappers The set of customer mappers that should be added to the list of defaults
+	 */
+	public void registerExtensionMappers( AbstractMapper... mappers )
+	{
+		if( fomMappers.isEmpty() )
+			loadDefaultMappers();
+		
+		for( AbstractMapper mapper : mappers )
+			fomMappers.add( mapper );
+	}
+	
+	/**
+	 * Create the set of default mappers that should always be present for a RPR federation
+	 */
+	private final void loadDefaultMappers()
+	{
+		// Entity & Warfare
+		this.fomMappers.add( new EntityStateMapper() );
+		// Communications
+		this.fomMappers.add( new TransmitterMapper() );
+		this.fomMappers.add( new SignalMapper() );
+		// Emissions
+		this.fomMappers.add( new EmitterSystemMapper() );
+		this.fomMappers.add( new EmitterBeamMapper() );
+		// Sim Mgmt
+		this.fomMappers.add( new DataQueryMapper() );
+		this.fomMappers.add( new DataMapper() );
+		this.fomMappers.add( new SetDataMapper() );
+		this.fomMappers.add( new ActionRequestMapper() );
+		this.fomMappers.add( new ActionResponseMapper() );
+	}
+	
+	
+	
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

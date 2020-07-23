@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.connection.rpr.mappers;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -24,7 +26,6 @@ import java.util.function.Supplier;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.UnsupportedException;
 import org.openlvc.disco.bus.EventHandler;
-import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.objects.Aircraft;
@@ -39,6 +40,7 @@ import org.openlvc.disco.connection.rpr.objects.SubmersibleVessel;
 import org.openlvc.disco.connection.rpr.objects.SurfaceVessel;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.Kind;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.EntityType;
 
 import hla.rti1516e.AttributeHandleValueMap;
@@ -204,23 +206,27 @@ public class EntityStateMapper extends AbstractMapper
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public EntityStateMapper( RprConnection connection ) throws DiscoException
+	public EntityStateMapper() throws DiscoException
 	{
-		super( connection );
-		
 		this.javaTypeToHlaClassMap = new HashMap<>();
 		this.hlaClassToJavaTypeMap = new HashMap<>();
-		initializeHandles();
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@Override
+	public Collection<PduType> getSupportedPdus()
+	{
+		return Arrays.asList( PduType.EntityState );
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA Initialization   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	private void initializeHandles() throws DiscoException
+	@Override
+	protected void initialize() throws DiscoException
 	{
 		// Cache up all the attributes we need
 		this.platformClass = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform" );
@@ -336,6 +342,17 @@ public class EntityStateMapper extends AbstractMapper
 		this.hlaClassToJavaTypeMap.put( this.surfaceClass, SurfaceVessel::new );
 		this.hlaClassToJavaTypeMap.put( this.subsurfaceClass, SubmersibleVessel::new );
 		this.hlaClassToJavaTypeMap.put( this.spaceClass, Spacecraft::new );
+		
+		//
+		// Publication and Subscription
+		//
+		super.publishAndSubscribe( airClass );
+		super.publishAndSubscribe( groundClass );
+		super.publishAndSubscribe( multiDomainClass );
+		super.publishAndSubscribe( surfaceClass );
+		super.publishAndSubscribe( subsurfaceClass );
+		super.publishAndSubscribe( spaceClass );
+		super.publishAndSubscribe( lifeformClass );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
