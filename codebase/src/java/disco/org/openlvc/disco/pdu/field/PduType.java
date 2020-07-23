@@ -42,6 +42,7 @@ import org.openlvc.disco.pdu.simman.SetDataPdu;
 import org.openlvc.disco.pdu.warfare.DetonationPdu;
 import org.openlvc.disco.pdu.warfare.FirePdu;
 import org.openlvc.disco.pdu.custom.IrcMessagePdu;
+import org.openlvc.disco.pdu.custom.IrcRawMessagePdu;
 
 public enum PduType
 {
@@ -134,7 +135,8 @@ public enum PduType
 	Attribute         ( (short)72,  ProtocolFamily.Entity ),
 	
 	// Custom Extensions
-	IRCMessage        ( (short)160, ProtocolFamily.DiscoCustom,    IrcMessagePdu.class );
+	IRCMessage        ( (short)160, ProtocolFamily.DiscoCustom,    IrcMessagePdu.class ),
+	IRCRawMessage     ( (short)161, ProtocolFamily.DiscoCustom,    IrcRawMessagePdu.class );
 	
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

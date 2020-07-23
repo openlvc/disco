@@ -25,7 +25,7 @@ import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 
-public class IrcMessagePdu extends PDU
+public class IrcRawMessagePdu extends PDU
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -34,23 +34,25 @@ public class IrcMessagePdu extends PDU
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private String channelName;
-	private String sender;
-	private String message;
+	private String prefix;
+	private String command;
+	private String commandParameters;
 	private BigInteger timeReceived;
+	private String sender;
 	private String origin;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public IrcMessagePdu()
+	public IrcRawMessagePdu()
 	{
 		super( PduType.IRCMessage );
 		
-		this.channelName = "Unknown";
-		this.sender = "Unknown";
-		this.message = "";
+		this.prefix = "";
+		this.command = "";
+		this.commandParameters = "";
 		this.timeReceived = BigInteger.ZERO;
+		this.sender = "Unknown";
 		this.origin = "Unknown";
 	}
 
@@ -64,32 +66,35 @@ public class IrcMessagePdu extends PDU
 	@Override
 	public void from( DisInputStream dis ) throws IOException
 	{
-		this.channelName = dis.readUTF();
-		this.sender = dis.readUTF();
-		this.message = dis.readUTF();
+		this.prefix = dis.readUTF();
+		this.command = dis.readUTF();
+		this.commandParameters = dis.readUTF();
 		this.timeReceived = dis.readUI64();
+		this.sender = dis.readUTF();
 		this.origin = dis.readUTF();
 	}
 	
 	@Override
 	public void to( DisOutputStream dos ) throws IOException
 	{
-		dos.writeUTF( channelName );
-		dos.writeUTF( sender );
-		dos.writeUTF( message );
+		dos.writeUTF( prefix );
+		dos.writeUTF( command );
+		dos.writeUTF( commandParameters );
 		dos.writeUI64( timeReceived );
+		dos.writeUTF( sender );
 		dos.writeUTF( origin );
 	}
 	
 	@Override
 	public final int getContentLength()
 	{
-		return channelName.length() +
-		       sender.length() +
-		       message.length() +
+		return prefix.length() +
+		       command.length() +
+		       commandParameters.length() +
 		       // 8   -- timeReceived
+		       sender.length() +
 		       origin.length() +
-		       16;     // sum of extra 2 bytes on length of each UTF string + timeReceived
+		       18;     // sum of extra 2 bytes on length of each UTF string + timeReceived
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -108,37 +113,37 @@ public class IrcMessagePdu extends PDU
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public String getSender()
+	public String getPrefix()
 	{
-		return this.sender;
+		return this.prefix;
 	}
 	
-	public void setSender( String sender )
+	public void setPrefix( String prefix )
 	{
-		if( sender != null )
-			this.sender = sender;
+		if( prefix != null )
+			this.prefix = prefix;
 	}
 	
-	public String getChannelName()
+	public String getCommand()
 	{
-		return this.channelName;
+		return this.command;
 	}
 	
-	public void setChannelName( String channelName )
+	public void setCommand( String command )
 	{
-		if( channelName != null )
-			this.channelName = channelName;
+		if( command != null )
+			this.command = command;
 	}
 	
-	public String getMessage()
+	public String getCommandParameters()
 	{
-		return this.message;
+		return this.commandParameters;
 	}
 	
-	public void setMessage( String message )
+	public void setCommandParameters( String commandParameters )
 	{
-		if( message != null )
-			this.message = message;
+		if( commandParameters != null )
+			this.commandParameters = commandParameters;
 	}
 	
 	public BigInteger getTimeReceived()
@@ -161,6 +166,17 @@ public class IrcMessagePdu extends PDU
 		this.timeReceived = BigInteger.valueOf( timeReceived );
 	}
 	
+	public String getSender()
+	{
+		return this.sender;
+	}
+	
+	public void setSender( String sender )
+	{
+		if( sender != null )
+			this.sender = sender;
+	}
+
 	public String getOrigin()
 	{
 		return this.origin;

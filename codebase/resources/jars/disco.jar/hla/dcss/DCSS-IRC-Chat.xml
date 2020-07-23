@@ -22,22 +22,69 @@
         </poc>
         <other></other>
     </modelIdentification>
+    <!--  ======================================================================= -->
+    <!--                         Object Class Definitions                         -->
+    <!--  ======================================================================= -->
+    <objects>
+        <objectClass>
+            <name>HLAobjectRoot</name>
+            <objectClass>
+                <name>IRCServer</name>
+                <sharing>Subscribe</sharing>
+                <semantics>Represents core data held in an IRC Server.</semantics>
+                <attribute>
+                    <name>ServerId</name>
+                    <dataType>HLAASCIIString</dataType>
+                    <updateType>Static</updateType>
+                    <updateCondition>NA</updateCondition>
+                    <ownership>DivestAcquire</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>Unique ID for this IRC Server.</semantics>
+                </attribute>
+                <attribute>
+                    <name>Channels</name>
+                    <dataType>IRCChannelList</dataType>
+                    <updateType>On change</updateType>
+                    <updateCondition>NA</updateCondition>
+                    <ownership>DivestAcquire</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>List of channels that are active in the server.</semantics>
+                </attribute>
+                <attribute>
+                    <name>ConnectedNicks</name>
+                    <dataType>IRCNickList</dataType>
+                    <updateType>On change</updateType>
+                    <updateCondition>NA</updateCondition>
+                    <ownership>DivestAcquire</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>List of channels that are active in the server.</semantics>
+                </attribute>
+            </objectClass>
+        </objectClass>
+    </objects>
+
+
+    <!--  ======================================================================= -->
+    <!--                       Interaction Class Definitions                      -->
+    <!--  ======================================================================= -->    
     <interactions>
         <interactionClass>
             <name>HLAinteractionRoot</name>
             <interactionClass>
                 <name>Service</name>
+                <!-- Class: IRCChannelMessage -->
                 <interactionClass>
                     <name>IRCChannelMessage</name>
                     <sharing>PublishSubscribe</sharing>
                     <transportation>HLAreliable</transportation>
                     <order>Receive</order>
                     <semantics></semantics>
-                    <parameter>
-                        <name>TimeReceived</name>
-                        <dataType>Float64</dataType>
-                        <semantics>Epoch timestamp sent at message transimission</semantics>
-                    </parameter>
                     <parameter>
                         <name>ChannelName</name>
                         <dataType>HLAASCIIstring</dataType>
@@ -53,7 +100,20 @@
                         <dataType>HLAASCIIstring</dataType>
                         <semantics>The IRC message</semantics>
                     </parameter>
+                    <parameter>
+                        <name>TimeReceived</name>
+                        <dataType>UnsignedInteger64</dataType> <!-- Changed by Tim -->
+                        <semantics>Epoch timestamp sent at message transimission</semantics>
+                    </parameter>
+                    <!-- Added by Tim -->
+                    <parameter>
+                        <name>Origin</name>
+                        <dataType>HLAASCIIString</dataType>
+                        <semantics>ServerId of the origin server</semantics>
+                    </parameter>
                 </interactionClass>
+
+                <!-- Class: IRCRawMessage -->
                 <interactionClass>
                     <name>IRCRawMessage</name>
                     <sharing>PublishSubscribe</sharing>
@@ -76,19 +136,79 @@
                         <semantics></semantics>
                     </parameter>
                     <parameter>
-                        <name>CommandReceivedTime</name>
-                        <dataType>HLAfloat64Time</dataType>
-                        <semantics></semantics>
+                        <name>TimeReceived</name>
+                        <dataType>UnsignedInteger64</dataType> <!-- Changed by Tim -->
+                        <semantics>Epoch timestamp sent at message transimission</semantics> <!-- Changed by Tim -->
                     </parameter>
+                    <!-- Added by Tim -->
+                    <parameter>
+                        <name>Sender</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics>The IRC nick of the sender</semantics>
+                    </parameter>
+                    <!-- Added by Tim -->
+                    <parameter>
+                        <name>Origin</name>
+                        <dataType>HLAASCIIString</dataType>
+                        <semantics>ServerId of the origin server</semantics>
+                    </parameter>
+
                 </interactionClass>
             </interactionClass>
         </interactionClass>
     </interactions>
+    <!--  ======================================================================= -->
+    <!--                           Data Type Definitions                          -->
+    <!--  ======================================================================= -->
     <dataTypes>
         <simpleDataTypes/>
         <enumeratedDataTypes/>
+        <variantRecordDataTypes/>
+
+        <!-- ==================== -->
+        <!--    Array Datatypes   -->
+        <!-- ==================== -->
+        <arrayDataTypes>
+            <arrayData>
+                <name>IRCChannelList</name>
+                <dataType>IRCChannelStruct</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>List of channels that are available in an IRC Server.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>IRCNickList</name>
+                <dataType>HLAASCIIString</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>List of channels that are available in an IRC Server.</semantics>
+            </arrayData>
+        </arrayDataTypes>
+
+        <!-- ==================== -->
+        <!--     Fixed Records    -->
+        <!-- ==================== -->
+        <fixedRecordDataTypes>
+            <fixedRecordData>
+                <name>IRCChannelStruct</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data about an IRC channel contained in an IRC Server.</semantics>
+                <field>
+                    <name>Name</name>
+                    <dataType>HLAASCIIString</dataType>
+                    <semantics>Name of the channel.</semantics>
+                </field>
+                <field>
+                    <name>Members</name>
+                    <dataType>IRCNickList</dataType>
+                    <semantics>List of Nick's in a channel.</semantics>
+                </field>
+            </fixedRecordData>
+        </fixedRecordDataTypes>
+
+    </dataTypes>
+    <dataTypes>
         <arrayDataTypes/>
         <fixedRecordDataTypes/>
-        <variantRecordDataTypes/>
     </dataTypes>
 </objectModel>

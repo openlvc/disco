@@ -21,6 +21,7 @@ import org.openlvc.disco.application.DisApplication;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.connection.rpr.mappers.custom.IRCChannelMessageMapper;
+import org.openlvc.disco.connection.rpr.mappers.custom.IRCRawMessageMapper;
 import org.openlvc.disco.pdu.custom.IrcMessagePdu;
 import org.openlvc.disrespector.Configuration;
 import org.openlvc.disrespector.Disrespector;
@@ -83,8 +84,9 @@ public class EmitterPrinterTest
 		
 		// Extensions
 		configuration.getRprConfiguration().registerExtensionModules( "hla/dcss/DCSS-BaseService.xml" );
-		configuration.getRprConfiguration().registerExtensionModules( "hla/rpr2/CNR-TacticalChat.xml" );
+		configuration.getRprConfiguration().registerExtensionModules( "hla/dcss/DCSS-IRC-Chat.xml" );
 		configuration.getRprConfiguration().registerExtensionMappers( new IRCChannelMessageMapper() );
+		configuration.getRprConfiguration().registerExtensionMappers( new IRCRawMessageMapper() );
 		
 		return configuration;
 	}
@@ -114,7 +116,7 @@ public class EmitterPrinterTest
 			pdu.setChannelName( ""+temp );
 			pdu.setSender( ""+temp );
 			pdu.setMessage( ""+temp );
-			pdu.setTimeReceived( (float)temp );
+			pdu.setTimeReceived( temp );
 			pdu.setOrigin( ""+temp );
 			
 			System.out.println( "Pump out message" );
