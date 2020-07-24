@@ -109,7 +109,7 @@ public class EntityStatePdu extends PDU
 		orientation.from( dis );
 		appearance = dis.readInt();
 		deadReckoningParams.from( dis );
-		marking = dis.readString( 11 ).trim(); // Should we do the trim?? Not sure
+		marking = dis.readFixedString( 11 ).trim(); // Should we do the trim?? Not sure
 		capabilities.from( dis );
 
 		articulationParameters.clear();
@@ -142,7 +142,7 @@ public class EntityStatePdu extends PDU
 		orientation.to( dos );
 		dos.writeInt( appearance );
 		deadReckoningParams.to( dos );
-		dos.writeString( marking, 11 );
+		dos.writeFixedString( marking, 11 );
 		capabilities.to( dos );
 
 		for( ArticulationParameter parameter : articulationParameters )

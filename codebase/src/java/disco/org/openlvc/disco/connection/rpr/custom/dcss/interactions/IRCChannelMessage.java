@@ -20,6 +20,7 @@ package org.openlvc.disco.connection.rpr.custom.dcss.interactions;
 import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.types.EncoderFactory;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger64BE;
+import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.custom.IrcMessagePdu;
 
@@ -38,11 +39,11 @@ public class IRCChannelMessage extends InteractionInstance
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAASCIIstring channelName;
-	private HLAASCIIstring sender;
+	private HLAASCIIstring roomName;
+	private EntityIdentifierStruct senderId;
+	private HLAASCIIstring senderNick;
 	private HLAASCIIstring message;
 	private RPRunsignedInteger64BE timeReceived;
-	private HLAASCIIstring origin;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -51,11 +52,11 @@ public class IRCChannelMessage extends InteractionInstance
 	{
 		super();
 		
-		this.channelName  = EncoderFactory.createHLAASCIIstring();
-		this.sender       = EncoderFactory.createHLAASCIIstring();
+		this.roomName     = EncoderFactory.createHLAASCIIstring();
+		this.senderId     = new EntityIdentifierStruct();
+		this.senderNick   = EncoderFactory.createHLAASCIIstring();
 		this.message      = EncoderFactory.createHLAASCIIstring();
 		this.timeReceived = new RPRunsignedInteger64BE();
-		this.origin       = EncoderFactory.createHLAASCIIstring();
 	}
 
 	//----------------------------------------------------------
@@ -70,20 +71,20 @@ public class IRCChannelMessage extends InteractionInstance
 	{
 		IrcMessagePdu pdu = incoming.as( IrcMessagePdu.class );
 
-		// ChannelName
-		channelName.setValue( pdu.getChannelName() );
+		// RoomName
+		roomName.setValue( pdu.getRoomName() );
 		
-		// Sender
-		sender.setValue( pdu.getSender() );
+		// SenderId
+		senderId.setValue( pdu.getSenderId() );
+		
+		// SenderNick
+		senderNick.setValue( pdu.getSenderNick() );
 		
 		// Message
 		message.setValue( pdu.getMessage() );
 		
 		// TimeReceived
-		timeReceived.setValue( pdu.getTimeReceived() );
-		
-		// Origin
-		origin.setValue( pdu.getOrigin() );
+		//timeReceived.setValue( pdu.getTimeReceived() );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,20 +95,20 @@ public class IRCChannelMessage extends InteractionInstance
 	{
 		IrcMessagePdu pdu = new IrcMessagePdu();
 		
-		// ChannelName
-		pdu.setChannelName( channelName.getValue() );
+		// RoomName
+		pdu.setRoomName( roomName.getValue() );
 		
-		// Sender
-		pdu.setSender( sender.getValue() );
+		// SenderId
+		pdu.setSenderId( senderId.getDisValue() );
+		
+		// SenderNick
+		pdu.setSenderNick( senderNick.getValue() );
 		
 		// Message
 		pdu.setMessage( message.getValue() );
 		
 		// TimeReceived
-		pdu.setTimeReceived( timeReceived.getValue() );
-		
-		// Origin
-		pdu.setOrigin( origin.getValue() );
+		//pdu.setTimeReceived( timeReceived.getValue() );
 		
 		return pdu;
 	}
@@ -115,14 +116,19 @@ public class IRCChannelMessage extends InteractionInstance
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public HLAASCIIstring getChannelName()
+	public HLAASCIIstring getRoomName()
 	{
-		return channelName;
+		return roomName;
 	}
 
-	public HLAASCIIstring getSender()
+	public EntityIdentifierStruct getSenderId()
 	{
-		return sender;
+		return senderId;
+	}
+
+	public HLAASCIIstring getSenderNick()
+	{
+		return senderNick;
 	}
 
 	public HLAASCIIstring getMessage()
@@ -134,12 +140,6 @@ public class IRCChannelMessage extends InteractionInstance
 	{
 		return timeReceived;
 	}
-
-	public HLAASCIIstring getOrigin()
-	{
-		return origin;
-	}
-	
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

@@ -18,6 +18,8 @@
 package org.openlvc.disco.pdu.custom;
 
 import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -27,7 +29,7 @@ import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.utils.StringUtils;
 
-public class IrcMessagePdu extends PDU
+public class IrcUserPdu extends PDU
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -38,23 +40,33 @@ public class IrcMessagePdu extends PDU
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EntityId senderId;
-	private String   senderNick;
-	private String   roomName;
-	private String   message;
-	// TODO Add Timestamp
+	private EntityId userId;
+	private String userNick;
+	private String server;
+	private Set<String> rooms;
+	// TODO Add Rooms
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public IrcMessagePdu()
+	public IrcUserPdu()
 	{
-		super( PduType.IRCMessage );
+		super( PduType.IRCUser );
 		
-		this.senderId = new EntityId();
-		this.senderNick = "Unknown";
-		this.roomName   = "Unknown";
-		this.message    = "Unknown";
+		this.userId = new EntityId();
+		this.userNick = "Unknown";
+		this.server = "Unknown";
+		this.rooms = new LinkedHashSet<>();
+	}
+	
+	public IrcUserPdu( EntityId id, String userNick, String server, String... rooms )
+	{
+		this();
+		this.userId = id;
+		this.userNick = userNick;
+		this.server = server;
+		for( String room : rooms )
+			this.rooms.add( room );
 	}
 
 	//----------------------------------------------------------
@@ -67,28 +79,31 @@ public class IrcMessagePdu extends PDU
 	@Override
 	public void from( DisInputStream dis ) throws IOException
 	{
-		this.senderId.from( dis );
-		this.senderNick = dis.readVariableString256();
-		this.roomName = dis.readVariableString256();
-		this.message = dis.readVariableString65K(); // trimmed on the serialization side
+		this.userId.from( dis );
+		this.userNick = dis.readVariableString256();
+		this.server = dis.readVariableString256();
+		byte roomCount = dis.readByte();
+		for( int i = 0; i < roomCount; i++ )
+			this.rooms.add( dis.readVariableString256() );
 	}
 	
 	@Override
 	public void to( DisOutputStream dos ) throws IOException
 	{
-		this.senderId.to( dos );
-		dos.writeVariableStringMax256( senderNick ); // truncated to 32 on set
-		dos.writeVariableStringMax256( roomName );   // truncated to 32 on set
-		dos.writeVariableStringMax65K( message );    // truncated to MAX_MESSAGE_LENGTH on set
+		this.userId.to( dos );
+		dos.writeVariableStringMax256( userNick ); // truncated to 32 on set
+		dos.writeVariableStringMax256( server );   // truncated to 32 on set
+		dos.writeByte( rooms.size() );
+		for( String room : this.rooms )
+			dos.writeVariableStringMax256( room );
 	}
 	
 	@Override
 	public final int getContentLength()
 	{
-		return senderId.getByteLength() +
-		       senderNick.length() + 1 +
-		       roomName.length() + 1 +
-		       message.length() + 2;
+		return userId.getByteLength() +
+		       userNick.length() + 1 +
+		       server.length() + 1;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -96,63 +111,70 @@ public class IrcMessagePdu extends PDU
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public int getSiteId()
 	{
-		return senderId.getSiteId();
+		return userId.getSiteId();
 	}
 	
 	public int getAppId()
 	{
-		return senderId.getAppId();
+		return userId.getAppId();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public EntityId getSenderId()
+	public EntityId getId()
 	{
-		return senderId;
+		return userId;
 	}
 
-	public void setSenderId( EntityId senderId )
+	public void setId( EntityId userId )
 	{
-		if( senderId != null )
-			this.senderId = senderId;
+		if( userId != null )
+			this.userId = userId;
 	}
 
-	public String getSenderNick()
+	public String getNick()
 	{
-		return senderNick;
+		return userNick;
 	}
 
-	public void setSenderNick( String senderNick )
+	public void setNick( String userNick )
 	{
-		if( senderNick != null )
-			this.senderNick = StringUtils.truncate( senderNick, 32 );
+		if( userNick != null )
+			this.userNick = StringUtils.truncate( userNick, 32 );
 	}
 
-	public String getRoomName()
+	public String getServer()
 	{
-		return roomName;
+		return server;
 	}
 
-	public void setRoomName( String roomName )
+	public void setServer( String server )
 	{
-		if( roomName != null )
-			this.roomName = StringUtils.truncate( roomName, 32 );
-	}
-
-	public String getMessage()
-	{
-		return message;
-	}
-
-	public void setMessage( String message )
-	{
-		if( message == null )
-			this.message = "";
-		else
-			this.message = StringUtils.truncate( message, MAX_MESSAGE_LENGTH );
+		if( server != null )
+			this.server = StringUtils.truncate( server, 32 );
 	}
 	
+	public Set<String> getRooms()
+	{
+		return this.rooms;
+	}
+	
+	public void joinRoom( String room )
+	{
+		this.rooms.add( room );
+	}
+	
+	public void leaveRoom( String room )
+	{
+		this.rooms.remove( room );
+	}
+	
+	public boolean isInRoom( String room )
+	{
+		return this.rooms.contains( room );
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

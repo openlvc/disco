@@ -59,6 +59,7 @@ public class DisApplication
 	private MessageBus<PDU> pduBus;
 	
 	// Heartbeats and Delete Timeouts
+	private Heartbeater heartbeater;
 	private DeleteReaper deleteReaper;
 	
 
@@ -71,6 +72,7 @@ public class DisApplication
 		this.opscenter = null; // set in start()
 		
 		// Heartbeats and Delete Timeouts
+		this.heartbeater = new Heartbeater( this );
 		this.deleteReaper = new DeleteReaper( this );
 
 		// PDU Storage and Management
@@ -108,12 +110,14 @@ public class DisApplication
 		this.opscenter.open();
 		
 		// start the recurring tasks
+		this.heartbeater.start();
 		this.deleteReaper.start();
 	}
 	
 	public void stop()
 	{
 		// close off the recurring tasks
+		this.heartbeater.stop();
 		this.deleteReaper.stop();
 		
 		// close off the stream of data
@@ -182,38 +186,14 @@ public class DisApplication
 		return this.pduStore;
 	}
 
-	///////////////////////////////////
-	/// Delete Reaper Methods   ///////
-	///////////////////////////////////
-	protected DeleteReaper getDeleteReaper()
+	public Heartbeater getHeartbeater()
 	{
-		return this.deleteReaper;
-	}
-	
-	/**
-	 * Specify the application delete timeout.
-	 * <p/>
-	 * 
-	 * Periodically (typically 1/5th of the given value) a thread will loop over all the data
-	 * we have collected and remove any that has not been updated within the last x milliseconds
-	 * (as given in the argument).
-	 * 
-	 * @param millis How long it can be between updates before data is considered stale and removed.
-	 *               Time in milliseconds.
-	 */
-	public void setDeleteTimeout( long millis )
-	{
-		this.deleteReaper.setDeleteTimeout( millis );
+		return this.heartbeater;
 	}
 
-	/**
-	 * @return The max period of time between updates that associated data will be considered
-	 *         valid for. If the last time we received a PDU was beyond this many milliseconds
-	 *         ago, that data will be removed.
-	 */
-	public long getDeleteTimeout()
+	public DeleteReaper getDeleteReaper()
 	{
-		return this.deleteReaper.getDeleteTimeout();
+		return this.deleteReaper;
 	}
 	
 	//----------------------------------------------------------

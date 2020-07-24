@@ -80,6 +80,7 @@ public class IRCServer extends ObjectInstance
 		
 		// Channels
 		
+		
 		// ConnectedNicks
 	}
 

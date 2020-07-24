@@ -19,6 +19,7 @@ package org.openlvc.disco.pdu.custom;
 
 import org.openlvc.disco.AbstractTest;
 import org.openlvc.disco.pdu.PduFactory;
+import org.openlvc.disco.pdu.record.EntityId;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -76,21 +77,21 @@ public class IRCChannelMessagePduTest extends AbstractTest
 	{
 		// turn the PDU into a byte[]
 		IrcMessagePdu before = new IrcMessagePdu();
-		before.setChannelName( "test-channel" );
-		before.setSender( "test-sender" );
+		before.setRoomName( "test-room" );
+		before.setSenderId( new EntityId(1,1,1) );
+		before.setSenderNick( "test-sender" );
 		before.setMessage( "test-message" );
-		before.setOrigin( "test-origin" );
 		byte[] beforeArray = before.toByteArray();
 		
 		// convert it back
 		IrcMessagePdu after = PduFactory.create( beforeArray );
 		
 		// compare the pair!
-		Assert.assertEquals( after.getChannelName(),  before.getChannelName() );
-		Assert.assertEquals( after.getSender(),       before.getSender() );
+		Assert.assertEquals( after.getRoomName(),     before.getRoomName() );
+		Assert.assertEquals( after.getSenderId(),     before.getSenderId() );
+		Assert.assertEquals( after.getSenderNick(),   before.getSenderNick() );
 		Assert.assertEquals( after.getMessage(),      before.getMessage() );
-		Assert.assertEquals( after.getTimeReceived(), before.getTimeReceived() );
-		Assert.assertEquals( after.getOrigin(),       before.getOrigin() );
+		//Assert.assertEquals( after.getTimeReceived(), before.getTimeReceived() );
 	}
 
 	//----------------------------------------------------------

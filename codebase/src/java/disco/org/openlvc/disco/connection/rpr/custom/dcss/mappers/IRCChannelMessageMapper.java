@@ -48,11 +48,11 @@ public class IRCChannelMessageMapper extends AbstractMapper
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private InteractionClass hlaClass;
-	private ParameterClass channelName;
-	private ParameterClass sender;
+	private ParameterClass roomName;
+	private ParameterClass senderId;
+	private ParameterClass senderNick;
 	private ParameterClass message;
 	private ParameterClass timeReceived;
-	private ParameterClass origin;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -79,11 +79,11 @@ public class IRCChannelMessageMapper extends AbstractMapper
 		if( this.hlaClass == null )
 			throw new DiscoException( "Could not find class: HLAinteractionRoot.Service.IRCChannelMessage" );
 		
-		this.channelName    = hlaClass.getParameter( "ChannelName" );
-		this.sender         = hlaClass.getParameter( "Sender" );
-		this.message        = hlaClass.getParameter( "Message" );
-		this.timeReceived   = hlaClass.getParameter( "TimeReceived" );
-		this.origin         = hlaClass.getParameter( "Origin" );
+		this.roomName      = hlaClass.getParameter( "RoomName" );
+		this.senderId      = hlaClass.getParameter( "SenderId" );
+		this.senderNick    = hlaClass.getParameter( "SenderNick" );
+		this.message       = hlaClass.getParameter( "Message" );
+		this.timeReceived  = hlaClass.getParameter( "TimeReceived" );
 		
 		// Do publication and subscription
 		super.publishAndSubscribe( hlaClass );
@@ -117,15 +117,20 @@ public class IRCChannelMessageMapper extends AbstractMapper
 		ircMessage.setParameters( map );
 		
 		// Populate the Parameters
-		// ChannelName
-		ByteWrapper wrapper = new ByteWrapper( ircMessage.getChannelName().getEncodedLength() );
-		ircMessage.getChannelName().encode( wrapper );
-		map.put( channelName.getHandle(), wrapper.array() );
+		// RoomName
+		ByteWrapper wrapper = new ByteWrapper( ircMessage.getRoomName().getEncodedLength() );
+		ircMessage.getRoomName().encode( wrapper );
+		map.put( roomName.getHandle(), wrapper.array() );
 		
-		// Sender
-		wrapper = new ByteWrapper( ircMessage.getSender().getEncodedLength() );
-		ircMessage.getSender().encode( wrapper );
-		map.put( sender.getHandle(), wrapper.array() );
+		// SenderId
+		wrapper = new ByteWrapper( ircMessage.getSenderId().getEncodedLength() );
+		ircMessage.getSenderId().encode( wrapper );
+		map.put( senderId.getHandle(), wrapper.array() );
+		
+		// SenderNick
+		wrapper = new ByteWrapper( ircMessage.getSenderNick().getEncodedLength() );
+		ircMessage.getSenderNick().encode( wrapper );
+		map.put( senderNick.getHandle(), wrapper.array() );
 		
 		// Message
 		wrapper = new ByteWrapper( ircMessage.getMessage().getEncodedLength() );
@@ -136,11 +141,6 @@ public class IRCChannelMessageMapper extends AbstractMapper
 		wrapper = new ByteWrapper( ircMessage.getTimeReceived().getEncodedLength() );
 		ircMessage.getTimeReceived().encode( wrapper );
 		map.put( timeReceived.getHandle(), wrapper.array() );
-		
-		// Origin
-		wrapper = new ByteWrapper( ircMessage.getOrigin().getEncodedLength() );
-		ircMessage.getOrigin().encode( wrapper );
-		map.put( origin.getHandle(), wrapper.array() );
 		
 		// Send it
 		return ircMessage;
@@ -179,18 +179,24 @@ public class IRCChannelMessageMapper extends AbstractMapper
 		// Create an instance to decode in to
 		IRCChannelMessage interaction = new IRCChannelMessage();
 
-		if( map.containsKey(channelName.getHandle()) )
+		if( map.containsKey(roomName.getHandle()) )
 		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(channelName.getHandle()) );
-			interaction.getChannelName().decode( wrapper );
+			ByteWrapper wrapper = new ByteWrapper( map.get(roomName.getHandle()) );
+			interaction.getRoomName().decode( wrapper );
 		}
 		
-		if( map.containsKey(sender.getHandle()) )
+		if( map.containsKey(senderId.getHandle()) )
 		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(sender.getHandle()) );
-			interaction.getSender().decode( wrapper );
+			ByteWrapper wrapper = new ByteWrapper( map.get(senderId.getHandle()) );
+			interaction.getSenderId().decode( wrapper );
 		}
 		
+		if( map.containsKey(senderNick.getHandle()) )
+		{
+			ByteWrapper wrapper = new ByteWrapper( map.get(senderNick.getHandle()) );
+			interaction.getSenderNick().decode( wrapper );
+		}
+
 		if( map.containsKey(message.getHandle()) )
 		{
 			ByteWrapper wrapper = new ByteWrapper( map.get(message.getHandle()) );
@@ -203,12 +209,6 @@ public class IRCChannelMessageMapper extends AbstractMapper
 			interaction.getTimeReceived().decode( wrapper );
 		}
 		
-		if( map.containsKey(origin.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(origin.getHandle()) );
-			interaction.getOrigin().decode( wrapper );
-		}
-
 		return interaction;
 	}
 

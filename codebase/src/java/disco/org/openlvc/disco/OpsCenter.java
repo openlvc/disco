@@ -189,6 +189,7 @@ public class OpsCenter
 			throw new DiscoException( "OpsCenter is not open yet" );
 
 		pdu.setExerciseId( this.exerciseId );
+		pdu.setLocalTimestamp( System.currentTimeMillis() );
 		this.pduSender.send( pdu );
 	}
 

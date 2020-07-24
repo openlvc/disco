@@ -21,6 +21,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This class is responsible for writing types specified in the DIS 
@@ -31,7 +32,7 @@ public class DisOutputStream extends DataOutputStream
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-		
+
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -195,28 +196,104 @@ public class DisOutputStream extends DataOutputStream
 	}
 
 	/**
-	 * Write the given string to the stream, limited to the given number of characters.
+	 * Write the given string to the stream in an array of the given number of characters.
+	 * Shorter values will be tailed with '0's up to the size. Longer strings will be trimmed.
+	 * Will write the values as ASCII encoded.
+	 * 
+	 * @param string The string to write
+	 * @param size The number of bytes to write. If the string is shorter, we still get this many
+	 *             bytes. If the string is longer, it gets trimmed.
 	 */
-	public void writeString( String string, int limit ) throws IOException
+	public void writeFixedString( String string, int size ) throws IOException
 	{	
-		byte[] bytes = new byte[limit+1];
-		bytes[0] = 1;
-		int length = string.length();
-		if( length > limit )
-		{
-			string = string.substring( 0, limit );
-			for( int i = 0; i < limit; i++ )
-				bytes[i+1] = (byte)string.charAt(i);
-		}
-		else
-		{
-			for( int i = 0; i < length; i++ )
-				bytes[i+1] = (byte)string.charAt(i);
-		}
+		byte[] bytes = new byte[size+1];
+		bytes[0] = 1; // DIS Indicator of character set. Just defaulting to ASCII
 		
+		// trim the string down to size
+		if( string.length() > size )
+			string = string.substring( 0, size );
+
+		// convert the string to ascii bytes and copy into array
+		byte[] stringBytes = string.getBytes( StandardCharsets.US_ASCII );
+		int max = Math.min( stringBytes.length, size );
+		System.arraycopy( stringBytes, 0, bytes, 1, max );
+
 		super.write( bytes );
 	}
 
+	/**
+	 * Write the given string to the stream, up to a max of the given length. 
+	 * The length CANNOT be longer than 255 (length is encoded as a byte) or an exception
+	 * will be thrown.
+	 * 
+	 * @param string The string to write
+	 * @param max The max length to write (no larger than 255)
+	 * @throws IOException If the max length is too long or there is a problem during write
+	 */
+	public void writeVariableString( String string, int max ) throws IOException
+	{
+		if( max > 255 )
+			throw new IOException( "Max length can not be longer than 255. Found "+max );
+		
+		// determine the max string length (smaller of length or max)
+		int cap = Math.min( string.length(), max );
+		
+		// write the length as a byte
+		super.writeByte( cap );
+		
+		// write the content
+		byte[] ascii = string.getBytes( StandardCharsets.US_ASCII );
+		super.write( ascii, 0, cap );
+	}
+	
+	/**
+	 * WARNING: This is not a standard DIS representation of a string. It is something we
+	 *          have created to write string values to into custom PDUs.
+	 * <p/>
+	 * This will write the string to the stream with a length of up to 255 characters.
+	 * The first byte is used to write the size of the string. The remainder is used for the
+	 * content. Any content over the size is discarded.
+	 * 
+	 * @param string The string to write.
+	 * @throws IOException If there is a problem writing to the stream
+	 */
+	public void writeVariableStringMax256( String string ) throws IOException
+	{
+		// determine the length we need
+		int cap = Math.min( 255, string.length() );
+		assert cap <= 255;
+		
+		// write the length
+		super.writeByte( cap );
+		
+		// write the content
+		byte[] ascii = string.getBytes( StandardCharsets.US_ASCII );
+		super.write( ascii, 0, cap );
+	}
+	
+	
+	/**
+	 * Writes the given string to the stream. Total space taken will be the length of the string
+	 * plus 2-bytes, which will be used to encode the length. Max size is 65,533 characters (the
+	 * other two are taken up by the size).
+	 * 
+	 * @param string The string to write, truncated after 65K
+	 * @throws IOException If there is a problem writing to the stream
+	 */
+	public void writeVariableStringMax65K( String string ) throws IOException
+	{
+		// determine the length we need
+		int cap = Math.min( 65533, string.length() );
+		assert cap <= 65533;
+		
+		// write the length
+		super.writeShort( cap );
+		
+		// write the content
+		byte[] ascii = string.getBytes( StandardCharsets.US_ASCII );
+		super.write( ascii, 0, cap );
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

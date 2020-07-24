@@ -17,12 +17,16 @@
  */
 package org.openlvc;
 
+import java.sql.Timestamp;
+
 import org.openlvc.disco.application.DisApplication;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.connection.rpr.custom.dcss.mappers.IRCChannelMessageMapper;
 import org.openlvc.disco.connection.rpr.custom.dcss.mappers.IRCRawMessageMapper;
 import org.openlvc.disco.pdu.custom.IrcMessagePdu;
+import org.openlvc.disco.pdu.custom.IrcUserPdu;
+import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disrespector.Configuration;
 import org.openlvc.disrespector.Disrespector;
 
@@ -102,22 +106,35 @@ public class EmitterPrinterTest
 	
 	public static void main( String[] args ) throws Exception
 	{
-		DiscoConfiguration configuration = getRprConfiguration();
+		DiscoConfiguration configuration = getDisConfiguration();
 		configuration.getLoggingConfiguration().setLevel( "TRACE" );
 		DisApplication app = new DisApplication( configuration );
 		app.start();
 		
+		// Put an IrcUser out there
+		EntityId oneId = new EntityId(1,1,1);
+		IrcUserPdu one = new IrcUserPdu( oneId, "UserOne", "Local", "#excon" );
+		EntityId twoId = new EntityId(2,2,2);
+		IrcUserPdu two = new IrcUserPdu( twoId, "UserTwo", "Local", "#excon" );
+
+		// Send the PDUs for the user
+		app.send( one );
+		app.send( two );
+		
+		// Register them for subsequent heartbeating
+		app.getHeartbeater().registerPdu( one );
+		app.getHeartbeater().registerPdu( two );
+		
+		// Every second, send a message, alternating sender between the two
 		while( true )
 		{
-			Thread.sleep( 2000 );
+			Thread.sleep( 1000 );
 			
-			long temp = System.currentTimeMillis();
 			IrcMessagePdu pdu = new IrcMessagePdu();
-			pdu.setChannelName( ""+temp );
-			pdu.setSender( ""+temp );
-			pdu.setMessage( ""+temp );
-			pdu.setTimeReceived( temp );
-			pdu.setOrigin( ""+temp );
+			pdu.setRoomName( "#excon" );
+			pdu.setSenderId( oneId );
+			pdu.setSenderNick( "UserOne" );
+			pdu.setMessage( "Message sent at "+new Timestamp(System.currentTimeMillis()).toString() );
 			
 			System.out.println( "Pump out message" );
 			app.send( pdu );

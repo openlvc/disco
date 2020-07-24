@@ -20,6 +20,7 @@ package org.openlvc.disco.connection.rpr.custom.dcss.interactions;
 import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.types.EncoderFactory;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger64BE;
+import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.custom.IrcRawMessagePdu;
 
@@ -41,8 +42,8 @@ public class IRCRawMessage extends InteractionInstance
 	private HLAASCIIstring command;
 	private HLAASCIIstring commandParameters;
 	private RPRunsignedInteger64BE timeReceived;
-	private HLAASCIIstring sender;
-	private HLAASCIIstring origin;
+	private EntityIdentifierStruct senderId;
+	private HLAASCIIstring senderNick;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -55,8 +56,8 @@ public class IRCRawMessage extends InteractionInstance
 		this.command      = EncoderFactory.createHLAASCIIstring();
 		this.commandParameters = EncoderFactory.createHLAASCIIstring();
 		this.timeReceived = new RPRunsignedInteger64BE();
-		this.sender       = EncoderFactory.createHLAASCIIstring();
-		this.origin       = EncoderFactory.createHLAASCIIstring();
+		this.senderId     = new EntityIdentifierStruct();
+		this.senderNick   = EncoderFactory.createHLAASCIIstring();
 	}
 
 	//----------------------------------------------------------
@@ -83,11 +84,11 @@ public class IRCRawMessage extends InteractionInstance
 		// TimeReceived
 		timeReceived.setValue( pdu.getTimeReceived() );
 
-		// Sender
-		sender.setValue( pdu.getSender() );
+		// SenderId
+		senderId.setValue( pdu.getSenderId() );
 
-		// Origin
-		origin.setValue( pdu.getOrigin() );
+		// SenderNick
+		senderNick.setValue( pdu.getSenderNick() );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,12 +111,12 @@ public class IRCRawMessage extends InteractionInstance
 		// TimeReceived
 		pdu.setTimeReceived( timeReceived.getValue() );
 		
-		// Sender
-		pdu.setSender( sender.toString() );
-
-		// Origin
-		pdu.setOrigin( origin.getValue() );
+		// SenderID
+		pdu.setSenderId( senderId.getDisValue() );
 		
+		// SenderNick
+		pdu.setSenderNick( senderNick.toString() );
+
 		return pdu;
 	}
 
@@ -144,12 +145,12 @@ public class IRCRawMessage extends InteractionInstance
 
 	public HLAASCIIstring getSender()
 	{
-		return sender;
+		return senderNick;
 	}
 
-	public HLAASCIIstring getOrigin()
+	public EntityIdentifierStruct getSenderId()
 	{
-		return origin;
+		return senderId;
 	}	
 
 	//----------------------------------------------------------

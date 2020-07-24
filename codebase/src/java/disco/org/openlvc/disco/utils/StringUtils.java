@@ -309,4 +309,21 @@ public class StringUtils
 		String formatString = "%"+paddingLeft+"s%s%"+paddingRight+"s";
 		return String.format(formatString," ",text," ");
 	}
+	
+	/**
+	 * Returns the string, truncated to a max length of the given value. If the length is less than
+	 * that value, the string passed in is returned.
+	 * 
+	 * @param text The text to truncate
+	 * @param max  The length to truncate the text to
+	 * @return     Truncated version of the text
+	 */
+	public static final String truncate( String text, int max )
+	{
+		if( text.length() <= max )
+			return text;
+		else
+			return text.substring( 0, max );
+	}
+	
 }

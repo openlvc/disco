@@ -22,6 +22,7 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This class is responsible for reading types specified in the DIS specification from the
@@ -136,7 +137,7 @@ public class DisInputStream extends DataInputStream
 	 * @return A String representing the bytes read in String form
 	 * @throws IOException thrown if the value could not be read from the stream
 	 */
-	public String readString( int len ) throws IOException
+	public String readFixedString( int len ) throws IOException
 	{
 		// read in the character set -- ignore for now
 		readUI8();
@@ -148,6 +149,48 @@ public class DisInputStream extends DataInputStream
 		return new String( buffer );
 	}
 
+	/**
+	 * Read a string from the stream. The first byte is read as the size. The length of the
+	 * string is then determined by that value. Max size is 254 characters (with one byte for
+	 * the size).
+	 * 
+	 * @return The string that was read
+	 * @throws IOException If there is a problem reading the full data from the stream
+	 */
+	public String readVariableString256() throws IOException
+	{
+		// read in the size
+		int size = readUI8();
+		
+		// read the contents
+		byte[] ascii = new byte[size];
+		readFully( ascii );
+		
+		// return as a string
+		return new String( ascii, StandardCharsets.US_ASCII );
+	}
+	
+	/**
+	 * Read a string from the stream. The first two bytes are read as the size. The length of the
+	 * string is then determined by that value. Max size is 65,533 characters (with two bytes for
+	 * the size).
+	 * 
+	 * @return The string that was read
+	 * @throws IOException If there is a problem reading the full data from the stream
+	 */
+	public String readVariableString65K() throws IOException
+	{
+		// read in the size
+		int size = readUI16();
+		
+		// read the contents
+		byte[] ascii = new byte[size];
+		readFully( ascii );
+		
+		// return as a string
+		return new String( ascii, StandardCharsets.US_ASCII );
+	}
+	
 	/**
 	 * Skips the next specified number og bytes in the stream.
 	 * 

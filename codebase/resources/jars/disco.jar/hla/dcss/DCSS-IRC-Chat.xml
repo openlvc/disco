@@ -86,14 +86,19 @@
                     <order>Receive</order>
                     <semantics></semantics>
                     <parameter>
-                        <name>ChannelName</name>
+                        <name>RoomName</name>
                         <dataType>HLAASCIIstring</dataType>
-                        <semantics>The name of the IRC message channel</semantics>
+                        <semantics>The name of the IRC room the message was sent in</semantics>
                     </parameter>
                     <parameter>
-                        <name>Sender</name>
+                        <name>SenderId</name>
+                        <dataType>EntityIdentifierStruct</dataType>
+                        <semantics>The unique id of the message sender</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>SenderNick</name>
                         <dataType>HLAASCIIstring</dataType>
-                        <semantics>The name of the IRC sender</semantics>
+                        <semantics>The IRC nick of the message sender</semantics>
                     </parameter>
                     <parameter>
                         <name>Message</name>
@@ -101,15 +106,9 @@
                         <semantics>The IRC message</semantics>
                     </parameter>
                     <parameter>
-                        <name>TimeReceived</name>
+                        <name>TimeSent</name>                  <!-- Name changed by Tim -->
                         <dataType>UnsignedInteger64</dataType> <!-- Changed by Tim -->
                         <semantics>Epoch timestamp sent at message transimission</semantics>
-                    </parameter>
-                    <!-- Added by Tim -->
-                    <parameter>
-                        <name>Origin</name>
-                        <dataType>HLAASCIIString</dataType>
-                        <semantics>ServerId of the origin server</semantics>
                     </parameter>
                 </interactionClass>
 
@@ -142,15 +141,15 @@
                     </parameter>
                     <!-- Added by Tim -->
                     <parameter>
-                        <name>Sender</name>
-                        <dataType>HLAASCIIstring</dataType>
-                        <semantics>The IRC nick of the sender</semantics>
+                        <name>SenderId</name>
+                        <dataType>EntityIdentifierStruct</dataType>
+                        <semantics>ServerId unique id for the sender</semantics>
                     </parameter>
                     <!-- Added by Tim -->
                     <parameter>
-                        <name>Origin</name>
-                        <dataType>HLAASCIIString</dataType>
-                        <semantics>ServerId of the origin server</semantics>
+                        <name>SenderNick</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics>The IRC nick of the sender</semantics>
                     </parameter>
 
                 </interactionClass>

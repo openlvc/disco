@@ -24,6 +24,7 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.record.EntityId;
 
 public class IrcRawMessagePdu extends PDU
 {
@@ -38,8 +39,8 @@ public class IrcRawMessagePdu extends PDU
 	private String command;
 	private String commandParameters;
 	private BigInteger timeReceived;
-	private String sender;
-	private String origin;
+	private EntityId senderId;
+	private String senderNick;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -52,8 +53,8 @@ public class IrcRawMessagePdu extends PDU
 		this.command = "";
 		this.commandParameters = "";
 		this.timeReceived = BigInteger.ZERO;
-		this.sender = "Unknown";
-		this.origin = "Unknown";
+		this.senderId = new EntityId();
+		this.senderNick = "Unknown";
 	}
 
 	//----------------------------------------------------------
@@ -70,19 +71,19 @@ public class IrcRawMessagePdu extends PDU
 		this.command = dis.readUTF();
 		this.commandParameters = dis.readUTF();
 		this.timeReceived = dis.readUI64();
-		this.sender = dis.readUTF();
-		this.origin = dis.readUTF();
+		this.senderId.from( dis );
+		this.senderNick = dis.readUTF();
 	}
 	
 	@Override
 	public void to( DisOutputStream dos ) throws IOException
 	{
-		dos.writeUTF( prefix );
-		dos.writeUTF( command );
-		dos.writeUTF( commandParameters );
+		dos.writeVariableStringMax256( prefix );
+		dos.writeVariableStringMax256( command );
+		dos.writeVariableStringMax256( commandParameters );
 		dos.writeUI64( timeReceived );
-		dos.writeUTF( sender );
-		dos.writeUTF( origin );
+		this.senderId.to( dos );
+		dos.writeVariableStringMax256( senderNick );
 	}
 	
 	@Override
@@ -92,9 +93,9 @@ public class IrcRawMessagePdu extends PDU
 		       command.length() +
 		       commandParameters.length() +
 		       // 8   -- timeReceived
-		       sender.length() +
-		       origin.length() +
-		       18;     // sum of extra 2 bytes on length of each UTF string + timeReceived
+		       senderId.getByteLength() +
+		       senderNick.length() +
+		       4;     // sum of extra 1 byte on each string field
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,12 +103,12 @@ public class IrcRawMessagePdu extends PDU
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public int getSiteId()
 	{
-		return 0;
+		return senderId.getSiteId();
 	}
 	
 	public int getAppId()
 	{
-		return 0;
+		return senderId.getAppId();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,28 +167,28 @@ public class IrcRawMessagePdu extends PDU
 		this.timeReceived = BigInteger.valueOf( timeReceived );
 	}
 	
-	public String getSender()
+	public EntityId getSenderId()
 	{
-		return this.sender;
+		return this.senderId;
+	}
+
+	public void setSenderId( EntityId id )
+	{
+		if( id != null )
+			this.senderId = id;
 	}
 	
-	public void setSender( String sender )
+	public String getSenderNick()
+	{
+		return this.senderNick;
+	}
+	
+	public void setSenderNick( String sender )
 	{
 		if( sender != null )
-			this.sender = sender;
+			this.senderNick = sender;
 	}
 
-	public String getOrigin()
-	{
-		return this.origin;
-	}
-
-	public void setOrigin( String origin )
-	{
-		if( origin != null )
-			this.origin = origin;
-	}
-	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
