@@ -12,10 +12,11 @@ load testing, bridging, filtering and more. Everything you need to stage your DI
 
 The project itself can be broken down into the following pieces:
 
-  - **Disco**: The core java-based DIS library
+  - **Disco**: The core java-based DIS library with HLA/RPR connectivity support
   - **Disruptor**: Traffic generator for load testing
   - **Distributor**: DIS network bridging, site-to-site connections and filtering
   - **Duplicator**: Record and reply DIS network traffic
+  - **Disrespector**: Bridge between DIS and HLA/RPR networks  
 
 
 Getting Started
@@ -47,7 +48,8 @@ disco-1.x.x/
 ├── bin/
 │   ├── disruptor.sh / bat        << launch the disruptor load testing tool
 │   ├── distributor.sh / bat      << launch the distributor bridging tool
-│   └── duplicator.sh / bat       << launch the duplicator logging tool
+│   ├── duplicator.sh / bat       << launch the duplicator logging tool
+│   └── disrespector.sh / bat     << launch the disrespector DIS/HLA bridging tool
 │
 ├── etc/
 │   ├── disco.config              << sample disco config (all can be set in code)
