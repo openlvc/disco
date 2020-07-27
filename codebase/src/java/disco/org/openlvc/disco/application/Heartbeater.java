@@ -131,14 +131,12 @@ public class Heartbeater implements Runnable
 	
 	private void heartbeat()
 	{
-		System.out.println( "HERE "+registeredPdus.size() );
 		long oldestAllowable = System.currentTimeMillis()-heartbeatPeriod;
 		logger.trace( "Heartbeating PDUs not updated since %1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS", oldestAllowable );
 
 		int heartbeats = 0;
 		for( PDU pdu : registeredPdus )
 		{
-			System.out.println( "oldest="+oldestAllowable+", current="+pdu.getLocalTimestamp() );
 			if( oldestAllowable >= pdu.getLocalTimestamp() )
 			{
 				app.send( pdu );
