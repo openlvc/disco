@@ -17,13 +17,18 @@
  */
 package org.openlvc.disco.application;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.logging.log4j.Logger;
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.bus.ErrorHandler;
 import org.openlvc.disco.bus.MessageBus;
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.record.EntityId;
 
 /**
  * For applications that don't want to work directly with the complete stream of PDUs, or want
@@ -58,9 +63,10 @@ public class DisApplication
 	private PduStore pduStore;
 	private MessageBus<PDU> pduBus;
 	
-	// Heartbeats and Delete Timeouts
+	// State Management Services and Helpers
 	private Heartbeater heartbeater;
 	private DeleteReaper deleteReaper;
+	private AtomicInteger entityCounter;
 	
 
 	//----------------------------------------------------------
@@ -71,9 +77,10 @@ public class DisApplication
 		this.configuration = new DiscoConfiguration();
 		this.opscenter = null; // set in start()
 		
-		// Heartbeats and Delete Timeouts
+		// State Management Services and Helpers
 		this.heartbeater = new Heartbeater( this );
 		this.deleteReaper = new DeleteReaper( this );
+		this.entityCounter = new AtomicInteger(0);
 
 		// PDU Storage and Management
 		this.pduStore = new PduStore( this );
@@ -112,6 +119,7 @@ public class DisApplication
 		// start the recurring tasks
 		this.heartbeater.start();
 		this.deleteReaper.start();
+		this.entityCounter.set(0);
 	}
 	
 	public void stop()
@@ -195,7 +203,47 @@ public class DisApplication
 	{
 		return this.deleteReaper;
 	}
-	
+
+	/**
+	 * The {@link DisApplication} maintains a counter for locally created/managed objects.
+	 * You can combine this with the site/app ids to generate a unique identifier on the network.
+	 * This method will instantiate and return the next available entity number.
+	 * <p/>
+	 * The entity id is defined as a Uint16 in the spec, so the maximum range you have to work with
+	 * is 1-65535. If you exceed the upper bound, an exception will be thrown.
+	 * 
+	 * @return The next available entity number for the simulation application
+	 * @throws DiscoException If you exceed the upper bound that an entity ID can be in DIS
+	 */
+	public int getNextEntityNumber() throws DiscoException
+	{
+		int next = this.entityCounter.incrementAndGet();
+		if( next > DisSizes.UI16_MAX_VALUE )
+			throw new DiscoException( "You have exhausted all available ids [max: 65535]" );
+		else
+			return next;
+	}
+
+	/**
+	 * The {@link DisApplication} maintains an entity counter you can use to generate new entity
+	 * ids on the network. This method will generate a new {@link EntityId} that combines the site
+	 * and app ids from the DIS configuration with the next available entity number.
+	 * <p/>
+	 * Entity numbers are just sequentially incremented. The spec defines them as a uint16, so you
+	 * only have 65535 to work with - be careful! If you exceed this threshold, an exception will
+	 * be thrown when you try to generate a new ID
+	 * 
+	 * @return A new {@link EntityId} whose application number is the next avaialable
+	 * @throws DiscoException If you exceed the threshold for the max number of entities that can
+	 *                        be uniquely identified within the DIS spec.
+	 */
+	public EntityId getNextEntityId() throws DiscoException
+	{
+		return new EntityId( configuration.getDisConfiguration().getSiteId(),
+		                     configuration.getDisConfiguration().getAppId(),
+		                     getNextEntityNumber() );
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
