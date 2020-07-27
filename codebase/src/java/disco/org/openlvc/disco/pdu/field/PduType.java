@@ -140,7 +140,7 @@ public enum PduType
 	IRCUser           ( (short)160, ProtocolFamily.DiscoCustom,    IrcUserPdu.class ),
 	IRCMessage        ( (short)161, ProtocolFamily.DiscoCustom,    IrcMessagePdu.class ),
 	IRCRawMessage     ( (short)162, ProtocolFamily.DiscoCustom,    IrcRawMessagePdu.class ),
-  DcssWallclockTime ( (short)170, ProtocolFamily.DiscoCustom,    DcssWallclockTimePdu.class );
+	DcssWallclockTime ( (short)170, ProtocolFamily.DiscoCustom,    DcssWallclockTimePdu.class );
 	
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
