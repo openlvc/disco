@@ -126,17 +126,4 @@ public class DcssWallclockTimePduTest extends AbstractTest
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static void main( String[] args )
-	{
-		DcssWallclockTimePduTest test = new DcssWallclockTimePduTest();
-		
-		try
-		{
-			test.testDcssWallclockTimePduPduSerialize();
-		}
-		catch( Exception e )
-		{
-			e.printStackTrace();
-		}
-	}
 }
