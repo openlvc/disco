@@ -136,9 +136,9 @@ public enum PduType
 	Attribute         ( (short)72,  ProtocolFamily.Entity ),
 	
 	// Custom Extensions
-	IRCMessage        ( (short)160, ProtocolFamily.DiscoCustom,    IrcMessagePdu.class ),
-	IRCRawMessage     ( (short)161, ProtocolFamily.DiscoCustom,    IrcRawMessagePdu.class ),
-	IRCUser           ( (short)162, ProtocolFamily.DiscoCustom,    IrcUserPdu.class );
+	IRCUser           ( (short)160, ProtocolFamily.DiscoCustom,    IrcUserPdu.class ),
+	IRCMessage        ( (short)161, ProtocolFamily.DiscoCustom,    IrcMessagePdu.class ),
+	IRCRawMessage     ( (short)162, ProtocolFamily.DiscoCustom,    IrcRawMessagePdu.class );
 	
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES

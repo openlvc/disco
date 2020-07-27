@@ -57,6 +57,15 @@ public class IrcMessagePdu extends PDU
 		this.message    = "Unknown";
 	}
 
+	public IrcMessagePdu( EntityId senderId, String senderNick, String room, String message )
+	{
+		this();
+		this.senderId = senderId;
+		this.senderNick = senderNick;
+		this.roomName = room;
+		this.message = message;
+	}
+	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
