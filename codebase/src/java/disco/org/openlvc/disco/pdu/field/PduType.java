@@ -41,6 +41,7 @@ import org.openlvc.disco.pdu.simman.DataPdu;
 import org.openlvc.disco.pdu.simman.SetDataPdu;
 import org.openlvc.disco.pdu.warfare.DetonationPdu;
 import org.openlvc.disco.pdu.warfare.FirePdu;
+import org.openlvc.disco.pdu.custom.DcssWallclockTimePdu;
 import org.openlvc.disco.pdu.custom.IrcMessagePdu;
 import org.openlvc.disco.pdu.custom.IrcRawMessagePdu;
 import org.openlvc.disco.pdu.custom.IrcUserPdu;
@@ -138,7 +139,8 @@ public enum PduType
 	// Custom Extensions
 	IRCUser           ( (short)160, ProtocolFamily.DiscoCustom,    IrcUserPdu.class ),
 	IRCMessage        ( (short)161, ProtocolFamily.DiscoCustom,    IrcMessagePdu.class ),
-	IRCRawMessage     ( (short)162, ProtocolFamily.DiscoCustom,    IrcRawMessagePdu.class );
+	IRCRawMessage     ( (short)162, ProtocolFamily.DiscoCustom,    IrcRawMessagePdu.class ),
+	DcssWallclockTime ( (short)170, ProtocolFamily.DiscoCustom,    DcssWallclockTimePdu.class );
 	
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
