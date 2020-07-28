@@ -144,7 +144,7 @@ public class Heartbeater implements Runnable
 			}
 		}
 		
-		logger.debug( "Sent [%d] heartbeats", heartbeats );
+		logger.trace( "Sent [%d] heartbeats", heartbeats );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

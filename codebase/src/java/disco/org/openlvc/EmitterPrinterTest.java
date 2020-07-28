@@ -99,7 +99,8 @@ public class EmitterPrinterTest
 	public static DiscoConfiguration getDisConfiguration()
 	{
 		DiscoConfiguration configuration = new DiscoConfiguration();
-		configuration.getUdpConfiguration().setAddress( "BROADCAST" );
+//		configuration.getUdpConfiguration().setAddress( "BROADCAST" );
+		configuration.getUdpConfiguration().setAddress( "239.4.9.19" );
 		configuration.getUdpConfiguration().setNetworkInterface( "SITE_LOCAL" );
 		return configuration;
 	}
@@ -112,32 +113,30 @@ public class EmitterPrinterTest
 		app.start();
 		
 		// Put an IrcUser out there
-		EntityId oneId = new EntityId(1,1,1);
-		IrcUserPdu one = new IrcUserPdu( oneId, "UserOne", "Local", "#excon" );
-		EntityId twoId = new EntityId(2,2,2);
-		IrcUserPdu two = new IrcUserPdu( twoId, "UserTwo", "Local", "#excon" );
+		IrcUserPdu ircuser = new IrcUserPdu( new EntityId(1,1,1), "UserOne", "Local", "#excon" );
 
 		// Send the PDUs for the user
-		app.send( one );
-		app.send( two );
+		app.send( ircuser );
 		
 		// Register them for subsequent heartbeating
-		app.getHeartbeater().registerPdu( one );
-		app.getHeartbeater().registerPdu( two );
+		app.getHeartbeater().registerPdu( ircuser );
 		
-		// Every second, send a message, alternating sender between the two
+		// Every two seconds, send a message to all connected channels
 		while( true )
 		{
-			Thread.sleep( 1000 );
+			Thread.sleep( 2000 );
 			
-			IrcMessagePdu pdu = new IrcMessagePdu();
-			pdu.setRoomName( "#excon" );
-			pdu.setSenderId( oneId );
-			pdu.setSenderNick( "UserOne" );
-			pdu.setMessage( "Message sent at "+new Timestamp(System.currentTimeMillis()).toString() );
+			for( String room : ircuser.getRooms() )
+			{
+				IrcMessagePdu pdu = new IrcMessagePdu();
+				pdu.setRoomName( room );
+				pdu.setSenderId( ircuser.getId() );
+				pdu.setSenderNick( ircuser.getNick() );
+				pdu.setMessage( "Message sent at "+new Timestamp(System.currentTimeMillis()).toString() );
+//				app.send( pdu );
+			}
 			
-			System.out.println( "Pump out message" );
-			app.send( pdu );
+//			System.out.println( "Messages sent" );
 		}
 	}
 }
