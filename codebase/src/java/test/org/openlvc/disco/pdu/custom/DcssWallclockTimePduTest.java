@@ -122,6 +122,17 @@ public class DcssWallclockTimePduTest extends AbstractTest
 		Assert.assertEquals( after.getSimulationStartTime(),   before.getSimulationStartTime() );
 		Assert.assertEquals( after.getClockState(),            before.getClockState() );
 	}
+	
+	@Test
+	public void testToFromJavaTime()
+	{
+		Calendar calendar = Calendar.getInstance( TimeZone.getTimeZone("UTC") );
+		calendar.set( 1980, Month.AUGUST.getValue()-1, 13, 14, 15, 16 );
+		long epochMillis = calendar.getTimeInMillis();
+		
+		ClockTime clockTime = ClockTime.fromJavaTime( epochMillis );
+		Assert.assertEquals( ClockTime.toJavaTime(clockTime), epochMillis );
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
