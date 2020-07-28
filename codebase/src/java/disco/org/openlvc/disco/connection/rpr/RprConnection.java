@@ -353,6 +353,7 @@ public class RprConnection implements IConnection
 				                                     rprConfiguration.getRegisteredFomModules() );
 				
 				// everything good! let's bust out
+				rprConfiguration.setFederateName( federateName );
 				break;
 			}
 			catch( FederateAlreadyExecutionMember | FederateNameAlreadyInUse e )
@@ -509,6 +510,11 @@ public class RprConnection implements IConnection
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public RprConfiguration getRprConfiguration()
+	{
+		return this.rprConfiguration;
+	}
+
 	public Logger getLogger()
 	{
 		return this.logger;
