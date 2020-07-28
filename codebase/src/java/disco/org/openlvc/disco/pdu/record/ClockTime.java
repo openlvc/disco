@@ -18,9 +18,6 @@
 package org.openlvc.disco.pdu.record;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.Calendar;
-import java.util.TimeZone;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -31,6 +28,8 @@ public class ClockTime implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private final static long MSPERHOUR = 60L*60L*1000L;
+	private final static long TIMEPASTHOUR_RANGE = 2147483647L; // 2^31 - 1
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -125,17 +124,23 @@ public class ClockTime implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static long toJavaTime( ClockTime time )
+	{
+		double percentPastTheHour = (double)time.getTimePastTheHour() / TIMEPASTHOUR_RANGE;
+		long hourMillis = time.getHours() * MSPERHOUR;
+		long pastHourMillis = Math.round( MSPERHOUR*percentPastTheHour );
+		
+		return hourMillis + pastHourMillis;
+	}
+	
 	public static ClockTime fromJavaTime( long time )
 	{
-		final long RANGE = 0xFFFFFFFFL;
-		Calendar cal = Calendar.getInstance( TimeZone.getTimeZone("UTC") );
-		cal.setTimeInMillis( time );
-		Instant instant = cal.toInstant();
-		long epochSeconds = instant.getEpochSecond();
-		double epochHours = epochSeconds / 60.0;
+		double epochHours = time / MSPERHOUR;
 		int epochHourIntegral = (int)Math.floor( epochHours );
-		double timePastHourFraction = epochHours - epochHourIntegral;
-		long timePastHour = Math.round( RANGE * timePastHourFraction );
+		
+		long millisPastHour = time - (epochHourIntegral * MSPERHOUR);
+		double timePastHourFraction = (double)millisPastHour / MSPERHOUR;
+		long timePastHour = Math.round( TIMEPASTHOUR_RANGE * timePastHourFraction );
 		
 		return new ClockTime( epochHourIntegral, timePastHour );
 	}
