@@ -209,6 +209,7 @@
 				<include name="json-simple/**/*"/>
 				<include name="marineapi/**/*"/>
 				<exclude name="marineapi/**/example*/**"/>
+				<include name="hla/ifspec/**/*"/>
 			</fileset>
 		</copy>
 
