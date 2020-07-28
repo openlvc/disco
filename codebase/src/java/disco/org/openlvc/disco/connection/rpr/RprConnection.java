@@ -206,11 +206,23 @@ public class RprConnection implements IConnection
 		{
 			logger.trace( "Registering mapper: "+mapper.getClass().getCanonicalName() );
 
-			// initialize the mapper so that it can hook in
-			mapper.initialize( this );
-			// register the mapper with the appropriate DIS/HLA message busses
-			pduBus.subscribe( mapper );
+			// 1. Subscribe to the HLA bus
+			//    The mapper should do HLA pubsub inside initialize(). As soon as the mapper
+			//    does this the the fedamb will get discovery callbacks. If we're not on the
+			//    HLA event bus at that time we'll miss them, so we need to be ready.
+			//       -BUT-
+			//    We can't be on the DIS PDU bus until AFTER we do HLA publish, so hold off on that
 			hlaBus.subscribe( mapper );
+			
+			// 2. Initialize the mapper
+			//    This will cause it to cache handles and do HLA publication and subscription.
+			//    We should be ready to catch and start dealing with HLA-side data.
+			mapper.initialize( this );
+			
+			// 3. Subscribe for incoming PDUs
+			//    Now that the mapper should have done HLA publication, we can connect to the PDU
+			//    bus without fear that we'll start trying to push HLA info before publication
+			pduBus.subscribe( mapper );
 			
 			logger.debug( "Registered mapper: "+mapper.getClass().getCanonicalName() );
 		}

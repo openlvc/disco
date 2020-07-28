@@ -537,7 +537,11 @@ public class FomHelpers
 		{
 			new FomHelpers().pubsubObject( rtiamb, request, clazz, attributes );
 		}
-		catch( RTIexception e )
+		catch( DiscoException de )
+		{
+			throw de;
+		}
+		catch( Exception e )
 		{
 			throw new DiscoException( "Error during pubsub for object class [%s]: "+ e.getMessage(), e );
 		}
@@ -550,7 +554,11 @@ public class FomHelpers
 		{
 			new FomHelpers().pubsubInteraction( rtiamb, request, clazz );
 		}
-		catch( RTIexception e )
+		catch( DiscoException de )
+		{
+			throw de;
+		}
+		catch( Exception e )
 		{
 			throw new DiscoException( "Error during pubsub for interaction class [%s]: "+ e.getMessage(), e );
 		}		

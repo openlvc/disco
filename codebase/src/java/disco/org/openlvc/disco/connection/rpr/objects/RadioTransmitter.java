@@ -207,8 +207,11 @@ public class RadioTransmitter extends EmbeddedSystem
 		super.toPdu( pdu );
 		
 		// AntennaPatternData - FIXME
-		AntennaPatternVariantStruct as = getAntennaPatternDataArray().get(0);
-		pdu.setAntennaPattern( as.getDisDiscriminant(), as.getDisValue() );
+		if( getAntennaPatternDataArray().size() > 0 )
+		{
+			AntennaPatternVariantStruct as = getAntennaPatternDataArray().get(0);
+			pdu.setAntennaPattern( as.getDisDiscriminant(), as.getDisValue() );
+		}
 		
 		// CryptographicMode
 		pdu.setCryptoKey( (int)cryptographicMode.getEnum().getValue() );
