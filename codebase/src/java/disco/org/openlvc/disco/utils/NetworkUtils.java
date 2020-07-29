@@ -151,6 +151,12 @@ public class NetworkUtils
 	/**
 	 * Calls {@link #createMulticast(InetAddress, int, NetworkInterface, SocketOptions)} with
 	 * <code>null</code> for socket options.
+	 * 
+	 * @param address The multicast address to listen on
+	 * @param port    The port to send/receive on
+	 * @param nic     The network interface to communicate through
+	 * @return A MulticastSocket representing the multicast socket connected to the desired address
+	 * @throws DiscoException If there was an error connecting the socket
 	 */
 	public static DatagramSocket createMulticast( InetAddress address, int port, NetworkInterface nic )
 		throws DiscoException
@@ -160,13 +166,17 @@ public class NetworkUtils
 
 	/**
 	 * Creates and connects to a multicast socket on the given address/port before returning it.
+	 * Before using this for sending you should note the description on the method 
+	 * {@link #createMulticastPair(InetAddress, int, NetworkInterface, SocketOptions)} in regards
+	 * to how multicast sockets need to deal with their own traffic being looped back to them.
 	 * 
-	 * @param hostAddress The multicast address to listen on
-	 * @param iface The network interface to communicate through
-	 * 
-	 * @return A DatagramSocket representing the multicast socket connected to the desired address
-	 * 
-	 * @throws IOException thrown if there was an error connecting the socket
+	 * @param address The multicast address to listen on
+	 * @param port    The port to send/receive on
+	 * @param nic     The network interface to communicate through
+	 * @param options Options such as buffer sizes for the socket. If null, the defaults
+	 *                {@link SocketOptions} will be used.
+	 * @return A MulticastSocket representing the multicast socket connected to the desired address
+	 * @throws DiscoException If there was an error connecting the socket
 	 */
 	public static DatagramSocket createMulticast( InetAddress address,
 	                                              int port,
@@ -174,13 +184,16 @@ public class NetworkUtils
 	                                              SocketOptions options )
 			throws DiscoException
 	{
+		if( options == null )
+			options = new SocketOptions();
+		
 		try
 		{
     		MulticastSocket socket = new MulticastSocket( port );
-    		socket.setTimeToLive( options.timeToLive );
     		//asMulticast.setTrafficClass( multicastTrafficClass );
     		if( options != null )
     		{
+        		socket.setTimeToLive( options.timeToLive );
     			socket.setSendBufferSize( options.sendBufferSize );
     			socket.setReceiveBufferSize( options.getRecvBufferSize() );
     		}
@@ -195,12 +208,144 @@ public class NetworkUtils
 		}
 	}
 
+	/**
+	 * Create and return a pair of sockets that can be used for multicast networking. The first
+	 * socket in the returned array is the socket to use for sending. This is a regular datagram
+	 * socket with the options that have been passed in. The second socket is for receiving. This
+	 * is a multicast socket joined to the group you have identified in the address/port parameters
+	 * and on the provided NIC (with the options set as well).
+	 * <p/>
+	 * <b>Why do I need this?</b><p/>
+	 * Having a separate sender socket which uses an ephemeral port for its sending (rather than
+	 * a port that is the same as the receive port) lets you identify when the packets you are
+	 * receiving are copies that are reflected back to you.
+	 * <p/>
+	 * Multicast sockets have a setLoopback() method that can prevent message loop back, but its
+	 * impact varies across platforms. On Windows, disabling loopback will stop all messages from
+	 * the local computer looping back, regardless of whether they are in the same execution or not.
+	 * This means that you can't run two instances of an application with the same network settings
+	 * on the same computer and have them exchange data.
+	 * <p/>
+	 * To combat this, we leave local loopback enabled, and on reception <b>YOU</b> need to check
+	 * the sender address and port, and if they match that of the sender socket, you know they came
+	 * from your application. Because the sender-side source port is ephemeral, it (likely) won't
+	 * match the receiving port. For a second application the same applies - the sender ports for
+	 * both applications will differ, even though the destination ports are the same. If the ports
+	 * (and addresses) match, it's your traffic and you can toss it.
+	 * <p/>
+	 * 
+	 * <b>Example:</b><p/>
+	 * <ol>
+	 *     <li>App A starts up. Sender port is randomly assigned as 50443. Destination port (the
+	 *         one that the multicast socket is listening on) is 3000.</li>
+	 *     <li>App B starts up. Sender port is randomly assigned as 35449. Destination port is
+	 *         the same; 3000.</li>
+	 *     <li>App A sends a message.</li>
+	 *     <li>App A receives its own message. It checks the sender port and finds 50443. It 
+	 *         compares this to its sender port and finds they're the same. Dicard packet.</li>
+	 *     <li>App B receives the message. It checks the sender port (50443) against its sender
+	 *         port (35449) and finds they're not the same. Let it pass.</li>
+	 * </ol>
+	 * <b>YOU HAVE TO DO THESE CHECKS</b>. Also remember to check the address if the ports match,
+	 * because a different source IP is fine even if the ports match.
+	 * 
+	 * @param address The multicast group address that the receiver socket will join
+	 * @param port    The multicast port that the receiver socket will use when joining the group
+	 * @param nic     The NIC that the multicast socket will listen on
+	 * @param options The options for the socket (sender/recevier buffers, TTL, ...)
+	 * @return        A pair of sockets that meet the above description. The first is for sending,
+	 *                and is datagram socket with an ephemeral port as the source. The second is
+	 *                the multicast socket to use for receiving data, joined to the multicast group
+	 *                defined by the address/port passed in on the nic that is passed in
+	 * @throws DiscoException
+	 */
+	public static DatagramSocket[] createMulticastPair( InetAddress address,
+	                                                    int port,
+	                                                    NetworkInterface nic,
+	                                                    SocketOptions options )
+		throws DiscoException
+	{
+		try
+		{
+			// Create the send socket -- won't be joined to the group and will use ephemeral port,
+			//                           but will be bound to the first IP on the given NIC, 
+			//                           otherwise the address is 0.0.0.0 when a packet is looped
+			//                           back from the local app on Windows (didn't test others),
+			//                           and our address check against the send socket address will
+			//                           differ (valid address != 0.0.0.0 so it thinks they're from
+			//                           different PCs
+			DatagramSocket sendSocket = new DatagramSocket( 0, getFirstIPv4Address(nic) ); // ephemeral
+			if( options != null )
+			{
+				sendSocket.setSendBufferSize( options.getSendBufferSize() );
+				sendSocket.setTrafficClass( options.getTrafficClass() );
+			}
+			
+			// Create the receiver socket
+			MulticastSocket recvSocket = new MulticastSocket( port );
+			if( options != null )
+			{
+				recvSocket.setTimeToLive( options.timeToLive );
+				//recvSocket.setLoopbackMode( true ); LEAVE LOCAL LOOPBACK ALONE.
+				recvSocket.setReceiveBufferSize( options.getRecvBufferSize() );
+			}
+
+			// Join the multicast group for the receiver socket
+			InetSocketAddress multicastAddress = new InetSocketAddress( address, port );
+    		recvSocket.joinGroup( multicastAddress, nic );
+    		
+    		return new DatagramSocket[] { sendSocket, recvSocket };
+		}
+		catch( IOException ioex )
+		{
+			throw new DiscoException( ioex );
+		}
+	}
+	
+	
+	/**
+	 * Create a broadcast socket on the given address/port and return it. This just calls
+	 * {@link #createBroadcast(InetAddress, int, SocketOptions)} passing <code>null</code>
+	 * for the socket options.
+	 * <p/>
+	 * Please make sure you read the comments around local loopback of messages on the method
+	 * {@link #createBroadcastPair(InetAddress, int, SocketOptions)} for information on how to
+	 * manage/mitigate this.
+	 * <p/>
+	 * Broadcast sockets have their "broadcast" option set to <code>true</code> and have the
+	 * <code>setReuseAddress</code> set to true as well to allow multiple applications on the
+	 * same machine to listen on the same address/port pair.
+	 * 
+	 * @param address The address to send/receive on
+	 * @param port    The port to send/receive on
+	 * @return        A broadcast socket on the address/port.
+	 * @throws DiscoException If there is a problem during socket creation
+	 */
 	public static DatagramSocket createBroadcast( InetAddress address, int port )
 		throws DiscoException
 	{
 		return createBroadcast( address, port, null );
 	}
 
+	/**
+	 * Create a broadcast socket on the given address/port and return it. This just calls
+	 * {@link #createBroadcast(InetAddress, int, SocketOptions)} passing <code>null</code>
+	 * for the socket options.
+	 * <p/>
+	 * Please make sure you read the comments around local loopback of messages on the method
+	 * {@link #createBroadcastPair(InetAddress, int, SocketOptions)} for information on how to
+	 * manage/mitigate this.
+	 * <p/>
+	 * Broadcast sockets have their "broadcast" option set to <code>true</code> and have the
+	 * <code>setReuseAddress</code> set to true as well to allow multiple applications on the
+	 * same machine to listen on the same address/port pair.
+	 * 
+	 * @param address The address to send/receive on
+	 * @param port    The port to send/receive on
+	 * @param options Socket options (buffer sizes, etc...) to use for the socket
+	 * @return        A broadcast socket on the address/port.
+	 * @throws DiscoException If there is a problem during socket creation
+	 */
 	public static DatagramSocket createBroadcast( InetAddress address, int port, SocketOptions options )
 		throws DiscoException
 	{
@@ -217,17 +362,8 @@ public class NetworkUtils
 				socket.setReceiveBufferSize( options.getRecvBufferSize() );
 			}
 
-			// Bind the socket. Because we're broadcast, bind it to the wildcard
-			// address, which we can do by creating the socket address with port only
+			// Bind the socket and return
 			socket.bind( new InetSocketAddress(address,port) );
-
-			// Write Once, Cry Everywhere
-			// First (port) works on both
-			// Second (addr/port) works on Windows, not on the mac
-			// Third (bcast/port) works on the Mac, not on Windows
-			//socket.bind( new InetSocketAddress(port) );
-			//socket.bind( new InetSocketAddress(address,port) );
-			//socket.bind( new InetSocketAddress(getInterfaceAddress(address).getBroadcast(),port) );
 			return socket;
 		}
 		catch( Exception e )
@@ -237,25 +373,35 @@ public class NetworkUtils
 	}
 
 	/**
-	 * Creates a send/receive socket pair and returns. This is used when you want a setup that supports
-	 * multiple applications on the same host sending/receiving using broadcast. To avoid loopback we
-	 * need to filter out our own traffic. The only way we can distinguish this is by the send port of
-	 * a packet (send IP not enough, as there could be many apps on that IP).
+	 * Creates a pair of datagram sockets (one for sending, one for listening/receiving) configured
+	 * to use broadcast and returns them. The sender socket will be bound to an ephemeral port as
+	 * its source. The receiver socket will listen on the provided port. This is done to allow
+	 * accurate filtering of messages that were received by the application that sent them.  
+	 * </p>
+	 * To avoid loopback you will still need to filter your own traffic. Compare the source port
+	 * of the received packet against the port of the sender socket. If they match AND the source
+	 * address is the same as the sender socket address, then they are local messages that have
+	 * been looped back. If they don't match, they're from somewhere else.
+	 * <p/>
 	 * 
-	 * To do this we need a socket that sends from a port we're not listening on. If send/receive port
-	 * matched, we couldn't tell any local machine traffic apart.
+	 * To enable this we need a socket that sends from a port we're not listening on, which is why
+	 * the sender socket sends from an ephemeral port. If send/receive port matched, we couldn't.
+	 * <p/>
 	 *  
-	 * So, this method creates two sockets:
-	 *   1. Send Socket: Bound to wildcard address with ephemeral port. Target address/port defined on packet when you send.
-	 *   2. Recv Socket: Bound to specified address and port.
+	 * We return two sockets in the array:
+	 * <ol>
+	 *   <li>Send Socket: Bound to wildcard address with ephemeral port. Target address/port defined on packet when you send.</li>
+	 *   <li>Recv Socket: Bound to specified address and port.</li>
+	 * </ol>
 	 * 
-	 * In the receiver we can then compare the send port to our own send socket port. If they match, the
-	 * packet was sent from our application.
+	 * Also see {@link #createMulticastPair(InetAddress, int, NetworkInterface, SocketOptions)} for
+	 * a more detailed description of handling local loopback (both methods use the same approach
+	 * for dealing with this issue).
 	 * 
 	 * @param address Address to bind the receive socket to
 	 * @param port    Port to bind the receive socket to
 	 * @param options Send/Receive socket configuration options
-	 * @return
+	 * @return A socket pair that can be used with the above steps to mitigate local loopback.
 	 */
 	public static DatagramSocket[] createBroadcastPair( InetAddress address,
 	                                                    int port,

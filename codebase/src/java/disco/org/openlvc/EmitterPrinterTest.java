@@ -20,10 +20,12 @@ package org.openlvc;
 import java.sql.Timestamp;
 
 import org.openlvc.disco.application.DisApplication;
+import org.openlvc.disco.bus.EventHandler;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.connection.rpr.custom.dcss.mappers.IRCChannelMessageMapper;
 import org.openlvc.disco.connection.rpr.custom.dcss.mappers.IRCRawMessageMapper;
+import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.custom.IrcMessagePdu;
 import org.openlvc.disco.pdu.custom.IrcUserPdu;
 import org.openlvc.disco.pdu.record.EntityId;
@@ -48,6 +50,12 @@ public class EmitterPrinterTest
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
+	@EventHandler
+	public void receive( PDU pdu )
+	{
+		System.out.println( "RECEIVED: "+pdu.getType() );
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +79,6 @@ public class EmitterPrinterTest
 		
 		System.out.println( "Disrespector has been called" );
 	}
-	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,6 +117,7 @@ public class EmitterPrinterTest
 		DiscoConfiguration configuration = getDisConfiguration();
 		configuration.getLoggingConfiguration().setLevel( "TRACE" );
 		DisApplication app = new DisApplication( configuration );
+		app.addSubscriber( new EmitterPrinterTest() );
 		app.start();
 		
 		// Put an IrcUser out there
@@ -133,10 +141,10 @@ public class EmitterPrinterTest
 				pdu.setSenderId( ircuser.getId() );
 				pdu.setSenderNick( ircuser.getNick() );
 				pdu.setMessage( "Message sent at "+new Timestamp(System.currentTimeMillis()).toString() );
-//				app.send( pdu );
+				app.send( pdu );
 			}
 			
-//			System.out.println( "Messages sent" );
+			System.out.println( "Messages sent" );
 		}
 	}
 }

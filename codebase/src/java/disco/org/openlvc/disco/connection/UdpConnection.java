@@ -56,7 +56,6 @@ public class UdpConnection implements IConnection
 	private UdpConfiguration configuration;
 	private DatagramSocket sendSocket;
 	private DatagramSocket recvSocket;
-	private boolean broadcast; // are we using broadcast?
 	private Thread receiverThread;
 
 	// cache of details to assist with sending
@@ -76,7 +75,6 @@ public class UdpConnection implements IConnection
 		this.logger = null;          // set in configure()
 		this.opscenter = null;       // set in configure()
 		this.configuration = null;   // set in configure()
-		this.broadcast = false;      // set in open()
 		this.receiverThread = null;  // set in open()
 		
 		this.sendSocket = null;      // set in open()
@@ -136,13 +134,16 @@ public class UdpConnection implements IConnection
 		if( address.isMulticastAddress() )
 		{
 			logger.info( "Connecting to multicast group - "+address+":"+port+" (interface: "+networkInterface+")" );
-			this.broadcast = false;
 			
 			//
 			// Create a MULTICAST socket
 			//
-			this.recvSocket = NetworkUtils.createMulticast( address, port, networkInterface, options );
-			this.sendSocket = this.recvSocket; // same for multicast - it has built-in loopback exclusion
+			DatagramSocket[] pair = NetworkUtils.createMulticastPair( address, port, networkInterface, options );
+			this.sendSocket = pair[0];
+			this.recvSocket = pair[1];
+
+//			this.recvSocket = NetworkUtils.createMulticast( address, port, networkInterface, options );
+//			this.sendSocket = this.recvSocket; // same for multicast - no good way to do loopback exclusion
 		}
 		else
 		{
@@ -159,7 +160,6 @@ public class UdpConnection implements IConnection
 				address = networkInterface.getInterfaceAddresses().get(0).getBroadcast();
 
 			logger.info( "Connecting broadcast socket - %s:%d (interface: %s)", address, port, networkInterface );
-			this.broadcast = true;
 			
 			// Create the socket pair
 			DatagramSocket[] pair = NetworkUtils.createBroadcastPair( address, port, options );
@@ -240,7 +240,6 @@ public class UdpConnection implements IConnection
 	{
 		try
 		{
-			//socket.send( new DatagramPacket(payload,0,payload.length,targetAddress) );
 			sendSocket.send( new DatagramPacket(payload,0,payload.length,targetAddress) );
 			metrics.pduSent( payload.length );
 		}
@@ -284,6 +283,7 @@ public class UdpConnection implements IConnection
 
 			// cache this for efficient lookup below
 			final int ourSendPort = sendSocket.getLocalPort();
+			final InetAddress ourSendAddress = sendSocket.getLocalAddress();
 
 			while( Thread.interrupted() == false )
 			{
@@ -295,8 +295,11 @@ public class UdpConnection implements IConnection
 					recvSocket.receive( packet );
 				
 					// 2. Discard if loopback packet (only relevant to broadcast for us)
-					if( broadcast && (packet.getPort() == ourSendPort) )
+					if( packet.getPort() == ourSendPort &&
+						packet.getAddress().equals(ourSendAddress) )
+					{
 						continue;
+					}
 					
 					// 3. Discard if outside our exercise (0=accept any exercise)
 					if( exerciseId == 0 || buffer[1] == exerciseId )
