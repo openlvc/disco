@@ -216,7 +216,7 @@ public class ObjectStore
 	public void removeDiscoveredHlaObject( ObjectInstanceHandle hlaId )
 	{
 		ObjectInstance hlaObject = this.hlaObjects.remove( hlaId );		
-		if( hlaObject != null )
+		if( hlaObject != null && hlaObject.getRtiObjectId() != null )
 			this.rprObjects.remove( hlaObject.getRtiObjectId() );
 	}
 
@@ -319,7 +319,10 @@ public class ObjectStore
 	 */
 	public ObjectInstance getDiscoveredHlaObjectByRtiId( RTIobjectId id )
 	{
-		return this.rprObjects.get( id );
+		if( id == null )
+			return null;
+		else
+			return this.rprObjects.get( id );
 	}
 
 	/**
