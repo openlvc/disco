@@ -83,11 +83,17 @@ public class VariableDatumStruct extends WrappedHlaFixedRecord
 		record.setDatumId( datumId.getValue() );
 		
 		// Turn value into a byte[] and set it on the record, which will in turn compute its length
-		ByteBuffer buffer = ByteBuffer.allocate( (int)(datumLength.getValue()*8) ); // value is in bits
+		ByteBuffer buffer = ByteBuffer.allocate( (int)(datumValue.size() * Long.BYTES) );
 		for( RPRunsignedInteger64BE temp : datumValue )
 			buffer.putLong( temp.getValue().longValue() );
 		
-		record.setDatumValue( buffer.array() );
+		// Get a byte[] of the buffered value minus any padding.
+		int unpaddedLength = (int)(getDatumLengthInBits() / 8);
+		byte[] temp = new byte[unpaddedLength];
+		ByteBuffer tempBuffer = ByteBuffer.wrap( buffer.array() );
+		tempBuffer.get( temp, 0, unpaddedLength );
+		
+		record.setDatumValue( temp );
 		
 		return record;
 	}
