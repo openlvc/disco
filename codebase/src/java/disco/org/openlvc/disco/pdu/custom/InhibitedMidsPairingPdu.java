@@ -92,10 +92,10 @@ public class InhibitedMidsPairingPdu extends PDU
 	@Override
 	public final int getContentLength()
 	{
-		return 4 + 1 + // integer
-			   sourceEntityId.getByteLength() + 1 +
-			   destinationEntityId.getByteLength() + 1 +
-		       1 + 1; // boolean
+		return 4 + // integer is 4 bytes
+			   sourceEntityId.getByteLength() +
+			   destinationEntityId.getByteLength() +
+		       1; // boolean is 1 byte
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

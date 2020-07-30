@@ -22,7 +22,7 @@ import java.util.Collection;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
-import org.openlvc.disco.connection.rpr.custom.dcss.objects.InhibitedMidsPairing;
+import org.openlvc.disco.connection.rpr.custom.dcss.interactions.InhibitedMidsPairing;
 import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
 import org.openlvc.disco.connection.rpr.mappers.HlaInteraction;

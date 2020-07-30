@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.custom.dcss.objects;
+package org.openlvc.disco.connection.rpr.custom.dcss.interactions;
 
 import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
