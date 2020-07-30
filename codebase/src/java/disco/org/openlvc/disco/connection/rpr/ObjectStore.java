@@ -58,7 +58,7 @@ public class ObjectStore
 
 	// HLA Object Storage
 	private Map<ObjectInstanceHandle,ObjectInstance> hlaObjects;
-	private Map<RTIobjectId,ObjectInstance> rtiObjects; // HLA Objects, but indexed by "RTI id"
+	private Map<RTIobjectId,ObjectInstance> rprObjects; // HLA Objects, but indexed by "RTI id"
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -73,7 +73,7 @@ public class ObjectStore
 		
 		// HLA Object Storage
 		this.hlaObjects = new ConcurrentHashMap<>();
-		this.rtiObjects = new ConcurrentHashMap<>();
+		this.rprObjects = new ConcurrentHashMap<>();
 	}
 
 	//----------------------------------------------------------
@@ -86,7 +86,7 @@ public class ObjectStore
 	public void addLocalTransmitter( EntityId disId, RadioTransmitter hlaObject )
 	{
 		this.disTransmitters.put( disId, hlaObject );
-		this.rtiObjects.put( hlaObject.getRtiObjectId(), hlaObject );
+		this.rprObjects.put( hlaObject.getRtiObjectId(), hlaObject );
 		hlaObject.addToStore( this );
 	}
 	
@@ -98,7 +98,7 @@ public class ObjectStore
 	public void addLocalEntity( EntityId disId, PhysicalEntity hlaObject )
 	{
 		this.disEntities.put( disId, hlaObject );
-		this.rtiObjects.put( hlaObject.getRtiObjectId(), hlaObject );
+		this.rprObjects.put( hlaObject.getRtiObjectId(), hlaObject );
 		hlaObject.addToStore( this );
 	}
 
@@ -110,7 +110,7 @@ public class ObjectStore
 	public void addLocalEmitter( EmitterSystemId disId, EmitterSystemRpr hlaObject )
 	{
 		this.disEmitters.put( disId, hlaObject );
-		this.rtiObjects.put( hlaObject.getRtiObjectId(), hlaObject );
+		this.rprObjects.put( hlaObject.getRtiObjectId(), hlaObject );
 		hlaObject.addToStore( this );
 	}
 	
@@ -129,7 +129,7 @@ public class ObjectStore
 		}
 		
 		beams.put( beamId, hlaObject );
-		this.rtiObjects.put( hlaObject.getRtiObjectId(), hlaObject );
+		this.rprObjects.put( hlaObject.getRtiObjectId(), hlaObject );
 		hlaObject.addToStore( this );
 	}
 	
@@ -160,18 +160,26 @@ public class ObjectStore
 		// Check to make sure we have the required values
 		if( hlaObject.getObjectHandle() == null )
 			throw new DiscoException( "Cannot add HLA Object with a null ObjectInstanceHandle" );
+		
+		// We used to require that the object had an RTIobjectId (as all RPR objects do), however for
+		// DCSS we also want to be able track WallclockTime which isn't part of the RPR object hierarchy 
+		/*
 		if( hlaObject.getRtiObjectId() == null )
 			throw new DiscoException( "Cannot add HLA Object with a null RTIobjectId" );
-		
+		*/
 		
 		// Store the object by its ObjectInstanceHandle
 		this.hlaObjects.put( hlaObject.getObjectHandle(), hlaObject );
 		
-		// Store the object via its RTIobjectId as well. Although this is a RPR construct,
-		// it is based on the object name, which is provided in the RTI callback. As such,
-		// unlike any attribute values, it is the one thing that will be there from the start
-		// and we can used it to index from discovery.
-		this.rtiObjects.put( hlaObject.getRtiObjectId(), hlaObject );
+		RTIobjectId rprId = hlaObject.getRtiObjectId();
+		if( rprId != null )
+		{
+			// Store the object via its RTIobjectId as well. Although this is a RPR construct,
+			// it is based on the object name, which is provided in the RTI callback. As such,
+			// unlike any attribute values, it is the one thing that will be there from the start
+			// and we can used it to index from discovery.
+			this.rprObjects.put( rprId, hlaObject );
+		}
 		
 		// Tell the object who is storing it
 		hlaObject.addToStore( this );
@@ -185,9 +193,9 @@ public class ObjectStore
 	 */
 	public void removeDiscoveredHlaObject( ObjectInstanceHandle hlaId )
 	{
-		ObjectInstance hlaObject = this.hlaObjects.remove( hlaId );
+		ObjectInstance hlaObject = this.hlaObjects.remove( hlaId );		
 		if( hlaObject != null )
-			this.rtiObjects.remove( hlaObject.getRtiObjectId() );
+			this.rprObjects.remove( hlaObject.getRtiObjectId() );
 	}
 
 	/**
@@ -289,7 +297,7 @@ public class ObjectStore
 	 */
 	public ObjectInstance getDiscoveredHlaObjectByRtiId( RTIobjectId id )
 	{
-		return this.rtiObjects.get( id );
+		return this.rprObjects.get( id );
 	}
 
 	/**
