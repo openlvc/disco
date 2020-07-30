@@ -128,6 +128,9 @@ public class RprHeartbeater implements Runnable
 		int updateCount = 0;
 		for( ObjectInstance hlaObject : oldies )
 		{
+			if( hlaObject.isReady() == false )
+				continue;
+			
 			// Generate a fake reflection event so that we can stimulate a PDU
 			connection.receiveHlaReflection( hlaObject.getObjectHandle(), empty );
 			++updateCount;

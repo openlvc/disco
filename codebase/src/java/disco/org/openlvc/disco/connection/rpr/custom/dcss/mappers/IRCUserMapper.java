@@ -17,8 +17,8 @@
  */
 package org.openlvc.disco.connection.rpr.custom.dcss.mappers;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
@@ -61,7 +61,7 @@ public class IRCUserMapper extends AbstractMapper
 	@Override
 	public Collection<PduType> getSupportedPdus()
 	{
-		return Collections.emptySet();
+		return Arrays.asList( PduType.IRCUser );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -131,7 +131,6 @@ public class IRCUserMapper extends AbstractMapper
 		wrapper = new ByteWrapper( object.getRooms().getEncodedLength() );
 		object.getRooms().encode(wrapper);
 		map.put( rooms.getHandle(), wrapper.array() );
-
 		return map;
 	}
 
@@ -182,28 +181,28 @@ public class IRCUserMapper extends AbstractMapper
 		opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
 	}
 	
-	private void deserializeFromHla( IRCUser server, AttributeHandleValueMap map )
+	private void deserializeFromHla( IRCUser user, AttributeHandleValueMap map )
 		throws DecoderException
 	{
 		// UserId
 		if( map.containsKey(userId.getHandle()) )
 		{
    		    ByteWrapper wrapper = new ByteWrapper( map.get(userId.getHandle()) );
-			server.getUserId().decode( wrapper );
+			user.getUserId().decode( wrapper );
 		}
 		
 		// UserNick
 		if( map.containsKey(userNick.getHandle()) )
 		{
    		    ByteWrapper wrapper = new ByteWrapper( map.get(userNick.getHandle()) );
-			server.getUserNick().decode( wrapper );
+			user.getUserNick().decode( wrapper );
 		}
 		
 		// Rooms
 		if( map.containsKey(rooms.getHandle()) )
 		{
    		    ByteWrapper wrapper = new ByteWrapper( map.get(rooms.getHandle()) );
-			server.getRooms().decode( wrapper );
+			user.getRooms().decode( wrapper );
 		}
 	}
 	

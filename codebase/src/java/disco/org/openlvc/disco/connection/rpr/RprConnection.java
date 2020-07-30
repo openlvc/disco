@@ -406,12 +406,12 @@ public class RprConnection implements IConnection
 	{
 		try
 		{
-    		// Resign from the federation
+			// Resign from the federation
     		this.rtiamb.resignFederationExecution( ResignAction.DELETE_OBJECTS_THEN_DIVEST );
 		}
 		catch( RTIexception rtie )
 		{
-			throw new DiscoException( "Error resigning from HLA federation: "+rtie.getMessage(), rtie );
+			logger.warn( "Error while resigning from HLA federatoin: "+rtie.getMessage() );
 		}
 		
 		// Delete the federation, to be a good citizen. Will get told off if people are

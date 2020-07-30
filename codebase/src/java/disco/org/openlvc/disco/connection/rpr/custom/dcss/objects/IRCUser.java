@@ -57,7 +57,8 @@ public class IRCUser extends ObjectInstance
 	@Override
 	protected boolean checkReady()
 	{
-		return !this.userId.isDefaults();
+		return this.userId.isDecodeCalled();
+		//return !this.userId.isDefaults();
 	}
 	
 	@Override
