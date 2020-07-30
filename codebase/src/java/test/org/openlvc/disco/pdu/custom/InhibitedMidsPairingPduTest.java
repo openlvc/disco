@@ -73,7 +73,7 @@ public class InhibitedMidsPairingPduTest extends AbstractTest
 	/// PDU Testing Methods   /////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
 	@Test
-	public void testIrcChannelMessagePduSerialize() throws Exception
+	public void testInhibitedMidsPairingPduSerialize() throws Exception
 	{
 		// turn the PDU into a byte[]
 		InhibitedMidsPairingPdu before = new InhibitedMidsPairingPdu();
@@ -85,6 +85,23 @@ public class InhibitedMidsPairingPduTest extends AbstractTest
 
 		// convert it back
 		InhibitedMidsPairingPdu after = PduFactory.create( beforeArray );
+
+		// compare the pair!
+		Assert.assertEquals( after.getTdlType(),             before.getTdlType() );
+		Assert.assertEquals( after.getSourceEntityId(),      before.getSourceEntityId() );
+		Assert.assertEquals( after.getDestinationEntityId(), before.getDestinationEntityId() );
+		Assert.assertEquals( after.isMidsTerminalEnabled(),  before.isMidsTerminalEnabled() );
+
+		// turn the PDU into a byte[]
+		before = new InhibitedMidsPairingPdu();
+		before.setTdlType( 321 );
+		before.setSourceEntityId( new EntityId(3,2,1) );
+		before.setDestinationEntityId( new EntityId(6,5,4) );
+		before.setMidsTerminalEnabled( false );
+		beforeArray = before.toByteArray();
+
+		// convert it back
+		after = PduFactory.create( beforeArray );
 
 		// compare the pair!
 		Assert.assertEquals( after.getTdlType(),             before.getTdlType() );
