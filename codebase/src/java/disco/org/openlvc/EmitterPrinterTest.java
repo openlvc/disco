@@ -114,14 +114,14 @@ public class EmitterPrinterTest
 	
 	public static void main( String[] args ) throws Exception
 	{
-		DiscoConfiguration configuration = getDisConfiguration();
+		DiscoConfiguration configuration = getRprConfiguration();
 		configuration.getLoggingConfiguration().setLevel( "TRACE" );
 		DisApplication app = new DisApplication( configuration );
 		app.addSubscriber( new EmitterPrinterTest() );
 		app.start();
 		
 		// Put an IrcUser out there
-		IrcUserPdu ircuser = new IrcUserPdu( new EntityId(1,1,1), "UserOne", "Local", "#excon" );
+		IrcUserPdu ircuser = new IrcUserPdu( new EntityId(1,1,1), "bob", "Local", "#excon" );
 
 		// Send the PDUs for the user
 		app.send( ircuser );

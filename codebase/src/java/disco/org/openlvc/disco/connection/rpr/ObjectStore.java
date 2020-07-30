@@ -51,6 +51,7 @@ public class ObjectStore
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	// DIS Object Storage
+	private Map<EntityId,ObjectInstance> disGeneral;
 	private Map<EntityId,RadioTransmitter> disTransmitters;
 	private Map<EntityId,PhysicalEntity> disEntities;
 	private Map<EmitterSystemId,EmitterSystemRpr> disEmitters;
@@ -66,6 +67,7 @@ public class ObjectStore
 	public ObjectStore()
 	{
 		// DIS Object Storage
+		this.disGeneral = new ConcurrentHashMap<>();
 		this.disTransmitters = new ConcurrentHashMap<>();
 		this.disEntities = new ConcurrentHashMap<>();
 		this.disEmitters = new ConcurrentHashMap<>();
@@ -83,6 +85,26 @@ public class ObjectStore
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Local HLA Objects - Indexed by DIS ID   ////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Add the given generic ObjectInstance to the store, indexed on the given DIS id.
+	 * While there are type-specific methods for many common DIS types, this store is
+	 * a catch-all for any others (including unspecified types).
+	 * 
+	 * @param disId      The DIS id we can use to identify the object
+	 * @param hlaObject  The HLA ObjectInstance that is associated with it
+	 */
+	public void addLocalObject( EntityId disId, ObjectInstance hlaObject )
+	{
+		this.disGeneral.put( disId, hlaObject );
+		hlaObject.addToStore( this );
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends ObjectInstance> T getLocalObject( EntityId disId )
+	{
+		return (T)this.disGeneral.get( disId );
+	}
+	
 	public void addLocalTransmitter( EntityId disId, RadioTransmitter hlaObject )
 	{
 		this.disTransmitters.put( disId, hlaObject );

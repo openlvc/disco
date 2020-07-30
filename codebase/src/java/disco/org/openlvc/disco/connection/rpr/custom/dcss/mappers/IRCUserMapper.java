@@ -22,20 +22,20 @@ import java.util.Collections;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
-import org.openlvc.disco.connection.rpr.custom.dcss.objects.IRCServer;
+import org.openlvc.disco.connection.rpr.custom.dcss.objects.IRCUser;
 import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
 import org.openlvc.disco.connection.rpr.mappers.HlaDiscover;
 import org.openlvc.disco.connection.rpr.mappers.HlaReflect;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
+import org.openlvc.disco.pdu.custom.IrcUserPdu;
 import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.pdu.simman.DataPdu;
 
 import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
 
-public class IRCServerMapper extends AbstractMapper
+public class IRCUserMapper extends AbstractMapper
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -46,9 +46,9 @@ public class IRCServerMapper extends AbstractMapper
 	//----------------------------------------------------------
 	// IRCServer
 	private ObjectClass hlaClass;
-	private AttributeClass serverId;
-	private AttributeClass channels;
-	private AttributeClass connectedNicks;
+	private AttributeClass userId;
+	private AttributeClass userNick;
+	private AttributeClass rooms;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -71,13 +71,13 @@ public class IRCServerMapper extends AbstractMapper
 	protected void initialize() throws DiscoException
 	{
 		// IRCServer
-		this.hlaClass = rprConnection.getFom().getObjectClass( "HLAobjectRoot.IRCServer" );
+		this.hlaClass = rprConnection.getFom().getObjectClass( "HLAobjectRoot.IRCUser" );
 		if( this.hlaClass == null )
-			throw new DiscoException( "Could not find class: HLAobjectRoot.IRCServer" );
+			throw new DiscoException( "Could not find class: HLAobjectRoot.IRCUser" );
 		
-		this.serverId        = hlaClass.getAttribute( "ServerId" );
-		this.channels        = hlaClass.getAttribute( "Channels" );
-		this.connectedNicks  = hlaClass.getAttribute( "ConnectedNicks" );
+		this.userId   = hlaClass.getAttribute( "UserId" );
+		this.userNick = hlaClass.getAttribute( "UserNick" );
+		this.rooms    = hlaClass.getAttribute( "Rooms" );
 		
 		// Publish and Subscribe
 		super.publishAndSubscribe( hlaClass );
@@ -87,21 +87,19 @@ public class IRCServerMapper extends AbstractMapper
 	/// DIS -> HLA Methods   ///////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	@EventHandler
-	public void handlePdu( DataPdu pdu )
+	public void handlePdu( IrcUserPdu pdu )
 	{
-		// Check if we're interested in this PDU
-		
 		// Do we already have an object cached for this?
-		IRCServer hlaObject = null; //objectStore.get...
+		IRCUser hlaObject = objectStore.getLocalObject( pdu.getId() );
 		
 		// If there is no HLA object yet, we have to register one
 		if( hlaObject == null )
 		{
 			// No object registered, do it now
-			hlaObject = new IRCServer();
+			hlaObject = new IRCUser();
 			hlaObject.setObjectClass( this.hlaClass );
 			super.registerObjectInstance( hlaObject );
-			//objectStore.addLocal...
+			objectStore.addLocalObject( pdu.getId(), hlaObject );
 		}
 		
 		// Suck the values out of the PDU and put into the object
@@ -110,29 +108,29 @@ public class IRCServerMapper extends AbstractMapper
 		// Send an update for the object
 		super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject) );
 		
-//		if( logger.isTraceEnabled() )
-//			logger.trace( "dis >> hla (PhysicalEntity) Updated attributes for entity: id=%s, handle=%s",
-//			              pdu.getEntityID(), hlaObject.getObjectHandle() );
+		if( logger.isTraceEnabled() )
+			logger.trace( "dis >> hla (IRCUser) Updated attributes for IRC user: id=%s, handle=%s",
+			              pdu.getId(), hlaObject.getObjectHandle() );
 	}
 
-	private AttributeHandleValueMap serializeToHla( IRCServer object )
+	private AttributeHandleValueMap serializeToHla( IRCUser object )
 	{
 		AttributeHandleValueMap map = object.getObjectAttributes();
 		
-		// ServerId
-		ByteWrapper wrapper = new ByteWrapper( object.getServerId().getEncodedLength() );
-		object.getServerId().encode( wrapper );
-		map.put( serverId.getHandle(), wrapper.array() );
+		// UserId
+		ByteWrapper wrapper = new ByteWrapper( object.getUserId().getEncodedLength() );
+		object.getUserId().encode( wrapper );
+		map.put( userId.getHandle(), wrapper.array() );
 		
-		// Channels
-		wrapper = new ByteWrapper( object.getChannels().getEncodedLength() );
-		object.getChannels().encode(wrapper);
-		map.put( channels.getHandle(), wrapper.array() );
+		// UserNick
+		wrapper = new ByteWrapper( object.getUserNick().getEncodedLength() );
+		object.getUserNick().encode(wrapper);
+		map.put( userNick.getHandle(), wrapper.array() );
 
-		// ConnectedNicks
-		wrapper = new ByteWrapper( object.getConnectedNicks().getEncodedLength() );
-		object.getConnectedNicks().encode(wrapper);
-		map.put( connectedNicks.getHandle(), wrapper.array() );
+		// Rooms
+		wrapper = new ByteWrapper( object.getRooms().getEncodedLength() );
+		object.getRooms().encode(wrapper);
+		map.put( rooms.getHandle(), wrapper.array() );
 
 		return map;
 	}
@@ -145,33 +143,33 @@ public class IRCServerMapper extends AbstractMapper
 	{
 		if( hlaClass == event.theClass )
 		{
-//			IRCServer hlaObject = new IRCServer();
-//			hlaObject.setObjectClass( event.theClass );
-//			hlaObject.setObjectHandle( event.theObject );
-//			objectStore.addDiscoveredHlaObject( event.theObject, hlaObject );
-//
-//			if( logger.isDebugEnabled() )
-//			{
-//    			logger.debug( "hla >> dis (Discover) Created [%s] for discovery of object handle [%s]",
-//    			              event.theClass.getLocalName(),
-//    			              event.theObject );
-//			}
-//			
-//			// Request an attribute update for the object so that we can get everything we need
-//			super.requestAttributeUpdate( hlaObject );
+			IRCUser hlaObject = new IRCUser();
+			hlaObject.setObjectClass( event.theClass );
+			hlaObject.setObjectHandle( event.theObject );
+			objectStore.addDiscoveredHlaObject( hlaObject );
+
+			if( logger.isDebugEnabled() )
+			{
+    			logger.debug( "hla >> dis (Discover) Created [%s] for discovery of object handle [%s]",
+    			              event.theClass.getLocalName(),
+    			              event.theObject );
+			}
+			
+			// Request an attribute update for the object so that we can get everything we need
+			super.requestAttributeUpdate( hlaObject );
 		}
 	}
 
 	@EventHandler
 	public void handleReflect( HlaReflect event )
 	{
-		if( (event.hlaObject instanceof IRCServer) == false )
+		if( (event.hlaObject instanceof IRCUser) == false )
 			return;
 		
 		try
 		{
 			// Update the local object representation from the received attributes
-			deserializeFromHla( (IRCServer)event.hlaObject, event.attributes );
+			deserializeFromHla( (IRCUser)event.hlaObject, event.attributes );
 		}
 		catch( DecoderException de )
 		{
@@ -184,28 +182,28 @@ public class IRCServerMapper extends AbstractMapper
 		opscenter.getPduReceiver().receive( event.hlaObject.toPdu().toByteArray() );
 	}
 	
-	private void deserializeFromHla( IRCServer server, AttributeHandleValueMap map )
+	private void deserializeFromHla( IRCUser server, AttributeHandleValueMap map )
 		throws DecoderException
 	{
-		// ServerId
-		if( map.containsKey(serverId.getHandle()) )
+		// UserId
+		if( map.containsKey(userId.getHandle()) )
 		{
-   		    ByteWrapper wrapper = new ByteWrapper( map.get(serverId.getHandle()) );
-			server.getServerId().decode( wrapper );
+   		    ByteWrapper wrapper = new ByteWrapper( map.get(userId.getHandle()) );
+			server.getUserId().decode( wrapper );
 		}
 		
-		// Channels
-		if( map.containsKey(channels.getHandle()) )
+		// UserNick
+		if( map.containsKey(userNick.getHandle()) )
 		{
-   		    ByteWrapper wrapper = new ByteWrapper( map.get(channels.getHandle()) );
-			server.getChannels().decode( wrapper );
+   		    ByteWrapper wrapper = new ByteWrapper( map.get(userNick.getHandle()) );
+			server.getUserNick().decode( wrapper );
 		}
 		
-		// ConnectedNicks
-		if( map.containsKey(connectedNicks.getHandle()) )
+		// Rooms
+		if( map.containsKey(rooms.getHandle()) )
 		{
-   		    ByteWrapper wrapper = new ByteWrapper( map.get(connectedNicks.getHandle()) );
-			server.getConnectedNicks().decode( wrapper );
+   		    ByteWrapper wrapper = new ByteWrapper( map.get(rooms.getHandle()) );
+			server.getRooms().decode( wrapper );
 		}
 	}
 	

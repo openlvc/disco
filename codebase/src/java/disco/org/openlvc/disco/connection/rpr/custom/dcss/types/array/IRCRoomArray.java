@@ -23,7 +23,7 @@ import org.openlvc.disco.connection.rpr.types.array.WrappedHlaVariableArray;
 import hla.rti1516e.encoding.DataElementFactory;
 import hla.rti1516e.encoding.HLAASCIIstring;
 
-public class IRCNickArray extends WrappedHlaVariableArray<HLAASCIIstring>
+public class IRCRoomArray extends WrappedHlaVariableArray<HLAASCIIstring>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -36,9 +36,9 @@ public class IRCNickArray extends WrappedHlaVariableArray<HLAASCIIstring>
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public IRCNickArray()
+	public IRCRoomArray()
 	{
-		super( new IRCNickArray.Factory() );
+		super( new IRCRoomArray.Factory() );
 	}
 
 	//----------------------------------------------------------
@@ -52,7 +52,7 @@ public class IRCNickArray extends WrappedHlaVariableArray<HLAASCIIstring>
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DataElement Factory Methods   //////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

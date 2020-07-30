@@ -17,17 +17,17 @@
  */
 package org.openlvc.disco.connection.rpr.custom.dcss.objects;
 
-import org.openlvc.disco.connection.rpr.custom.dcss.types.array.IRCChannelArray;
-import org.openlvc.disco.connection.rpr.custom.dcss.types.array.IRCNickArray;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.array.IRCRoomArray;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.connection.rpr.types.EncoderFactory;
+import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.custom.IrcUserPdu;
 import org.openlvc.disco.pdu.record.EntityId;
-import org.openlvc.disco.pdu.simman.DataPdu;
 
 import hla.rti1516e.encoding.HLAASCIIstring;
 
-public class IRCServer extends ObjectInstance
+public class IRCUser extends ObjectInstance
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -36,19 +36,18 @@ public class IRCServer extends ObjectInstance
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAASCIIstring serverId;
-	private IRCChannelArray channels;
-	private IRCNickArray connectedNicks;
+	private EntityIdentifierStruct userId;
+	private HLAASCIIstring userNick;
+	private IRCRoomArray rooms;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public IRCServer()
+	public IRCUser()
 	{
-		this.serverId = EncoderFactory.createHLAASCIIstring();
-		//this.serverId = new HLAASCIIstring( "IRC-"+StringUtils.generateRandomString(6) );
-		this.channels = new IRCChannelArray();
-		this.connectedNicks = new IRCNickArray();
+		this.userId = new EntityIdentifierStruct();
+		this.userNick = EncoderFactory.createHLAASCIIstring();
+		this.rooms = new IRCRoomArray();
 	}
 
 	//----------------------------------------------------------
@@ -58,13 +57,13 @@ public class IRCServer extends ObjectInstance
 	@Override
 	protected boolean checkReady()
 	{
-		return !this.serverId.getValue().equals("");
+		return !this.userId.isDefaults();
 	}
 	
 	@Override
 	public EntityId getDisId()
 	{
-		return null;
+		return this.userId.getDisValue();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,15 +72,18 @@ public class IRCServer extends ObjectInstance
 	@Override
 	public void fromPdu( PDU incoming )
 	{
-		DataPdu pdu = incoming.as( DataPdu.class );
+		IrcUserPdu pdu = incoming.as( IrcUserPdu.class );
 
-		// ServerId
-		this.serverId.setValue( pdu.toString() );
+		// UserId
+		this.userId.setValue( pdu.getId() );
 		
-		// Channels
+		// UserNick
+		this.userNick.setValue( pdu.getNick() );
 		
-		
-		// ConnectedNicks
+		// Rooms
+		this.rooms = new IRCRoomArray();
+		for( String room : pdu.getRooms() )
+			this.rooms.addElement( EncoderFactory.createHLAASCIIstring(room) );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,13 +92,17 @@ public class IRCServer extends ObjectInstance
 	@Override
 	public PDU toPdu()
 	{
-		DataPdu pdu = new DataPdu();
+		IrcUserPdu pdu = new IrcUserPdu();
 
-		// ServerId
+		// UserId
+		pdu.setId( userId.getDisValue() );
 		
-		// Channels
+		// UserNick
+		pdu.setNick( userNick.getValue() );
 		
-		// Connected Nicks
+		// Rooms
+		for( HLAASCIIstring room : this.rooms )
+			pdu.getRooms().add( room.getValue() );
 		
 		return pdu;
 	}
@@ -104,19 +110,19 @@ public class IRCServer extends ObjectInstance
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public HLAASCIIstring getServerId()
+	public EntityIdentifierStruct getUserId()
 	{
-		return this.serverId;
+		return this.userId;
 	}
 	
-	public IRCChannelArray getChannels()
+	public HLAASCIIstring getUserNick()
 	{
-		return this.channels;
+		return this.userNick;
 	}
 	
-	public IRCNickArray getConnectedNicks()
+	public IRCRoomArray getRooms()
 	{
-		return this.connectedNicks;
+		return this.rooms;
 	}
 
 	//----------------------------------------------------------

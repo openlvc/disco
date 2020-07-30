@@ -29,41 +29,41 @@
         <objectClass>
             <name>HLAobjectRoot</name>
             <objectClass>
-                <name>IRCServer</name>
+                <name>IRCUser</name>
                 <sharing>Subscribe</sharing>
                 <semantics>Represents core data held in an IRC Server.</semantics>
                 <attribute>
-                    <name>ServerId</name>
-                    <dataType>HLAASCIIString</dataType>
+                    <name>UserId</name>
+                    <dataType>EntityIdentifierStruct</dataType>
                     <updateType>Static</updateType>
                     <updateCondition>NA</updateCondition>
                     <ownership>DivestAcquire</ownership>
                     <sharing>PublishSubscribe</sharing>
                     <transportation>HLAbestEffort</transportation>
                     <order>Receive</order>
-                    <semantics>Unique ID for this IRC Server.</semantics>
+                    <semantics>Unique ID for this IRC User.</semantics>
                 </attribute>
                 <attribute>
-                    <name>Channels</name>
-                    <dataType>IRCChannelArray</dataType>
+                    <name>UserNick</name>
+                    <dataType>HLAASCIIstring</dataType>
                     <updateType>On change</updateType>
                     <updateCondition>NA</updateCondition>
                     <ownership>DivestAcquire</ownership>
                     <sharing>PublishSubscribe</sharing>
                     <transportation>HLAbestEffort</transportation>
                     <order>Receive</order>
-                    <semantics>List of channels that are active in the server.</semantics>
+                    <semantics>IRC Nickname for the user.</semantics>
                 </attribute>
                 <attribute>
-                    <name>ConnectedNicks</name>
-                    <dataType>IRCNickArray</dataType>
+                    <name>Rooms</name>
+                    <dataType>IRCRoomArray</dataType>
                     <updateType>On change</updateType>
                     <updateCondition>NA</updateCondition>
                     <ownership>DivestAcquire</ownership>
                     <sharing>PublishSubscribe</sharing>
                     <transportation>HLAbestEffort</transportation>
                     <order>Receive</order>
-                    <semantics>List of channels that are active in the server.</semantics>
+                    <semantics>List of room that are active in the server.</semantics>
                 </attribute>
             </objectClass>
         </objectClass>
@@ -169,41 +169,13 @@
         <!-- ==================== -->
         <arrayDataTypes>
             <arrayData>
-                <name>IRCChannelArray</name>
-                <dataType>IRCChannelStruct</dataType>
-                <cardinality>Dynamic</cardinality>
-                <encoding>HLAvariableArray</encoding>
-                <semantics>List of channels that are available in an IRC Server.</semantics>
-            </arrayData>
-            <arrayData>
-                <name>IRCNickArray</name>
+                <name>IRCRoomArray</name>
                 <dataType>HLAASCIIString</dataType>
                 <cardinality>Dynamic</cardinality>
                 <encoding>HLAvariableArray</encoding>
-                <semantics>List of channels that are available in an IRC Server.</semantics>
+                <semantics>List of rooms names on an IRC network.</semantics>
             </arrayData>
         </arrayDataTypes>
-
-        <!-- ==================== -->
-        <!--     Fixed Records    -->
-        <!-- ==================== -->
-        <fixedRecordDataTypes>
-            <fixedRecordData>
-                <name>IRCChannelStruct</name>
-                <encoding>HLAfixedRecord</encoding>
-                <semantics>Data about an IRC channel contained in an IRC Server.</semantics>
-                <field>
-                    <name>Name</name>
-                    <dataType>HLAASCIIString</dataType>
-                    <semantics>Name of the channel.</semantics>
-                </field>
-                <field>
-                    <name>Members</name>
-                    <dataType>IRCNickArray</dataType>
-                    <semantics>List of Nick's in a channel.</semantics>
-                </field>
-            </fixedRecordData>
-        </fixedRecordDataTypes>
 
     </dataTypes>
     <dataTypes>
