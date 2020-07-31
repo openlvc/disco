@@ -52,7 +52,7 @@ public class IRCChannelMessageMapper extends AbstractMapper
 	private ParameterClass senderId;
 	private ParameterClass senderNick;
 	private ParameterClass message;
-	private ParameterClass timeReceived;
+	//private ParameterClass timeReceived;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -83,7 +83,7 @@ public class IRCChannelMessageMapper extends AbstractMapper
 		this.senderId      = hlaClass.getParameter( "SenderId" );
 		this.senderNick    = hlaClass.getParameter( "SenderNick" );
 		this.message       = hlaClass.getParameter( "Message" );
-		this.timeReceived  = hlaClass.getParameter( "TimeReceived" );
+		//this.timeReceived  = hlaClass.getParameter( "TimeReceived" );
 		
 		// Do publication and subscription
 		super.publishAndSubscribe( hlaClass );
@@ -138,9 +138,9 @@ public class IRCChannelMessageMapper extends AbstractMapper
 		map.put( message.getHandle(), wrapper.array() );
 		
 		// TimeReceived
-		wrapper = new ByteWrapper( ircMessage.getTimeReceived().getEncodedLength() );
-		ircMessage.getTimeReceived().encode( wrapper );
-		map.put( timeReceived.getHandle(), wrapper.array() );
+		//wrapper = new ByteWrapper( ircMessage.getTimeReceived().getEncodedLength() );
+		//ircMessage.getTimeReceived().encode( wrapper );
+		//map.put( timeReceived.getHandle(), wrapper.array() );
 		
 		// Send it
 		return ircMessage;
@@ -203,11 +203,11 @@ public class IRCChannelMessageMapper extends AbstractMapper
 			interaction.getMessage().decode( wrapper );
 		}
 		
-		if( map.containsKey(timeReceived.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(timeReceived.getHandle()) );
-			interaction.getTimeReceived().decode( wrapper );
-		}
+		//if( map.containsKey(timeReceived.getHandle()) )
+		//{
+		//	ByteWrapper wrapper = new ByteWrapper( map.get(timeReceived.getHandle()) );
+		//	interaction.getTimeReceived().decode( wrapper );
+		//}
 		
 		return interaction;
 	}

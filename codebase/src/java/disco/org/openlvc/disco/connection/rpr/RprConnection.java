@@ -267,11 +267,12 @@ public class RprConnection implements IConnection
 		}
 		catch( DiscoException de )
 		{
-			logger.trace( "(RprConnection) "+de.getMessage(), de );
+			logger.warn( "(RprConnection) Exception converting/sending PDU to HLA: "+de.getMessage(), de );
 			metrics.pduDiscarded();
 		}
 		catch( Exception e )
 		{
+			logger.warn( "(RprConnection) Exception converting/sending PDU to HLA: "+e.getMessage(), e );
 			metrics.pduDiscarded();
 		}
 	}
