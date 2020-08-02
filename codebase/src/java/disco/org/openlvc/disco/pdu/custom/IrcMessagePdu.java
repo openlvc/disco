@@ -40,7 +40,7 @@ public class IrcMessagePdu extends PDU
 	//----------------------------------------------------------
 	private EntityId senderId;
 	private String   senderNick;
-	private String   roomName;
+	private String   channelName;
 	private String   message;
 	// TODO Add Timestamp
 
@@ -52,17 +52,17 @@ public class IrcMessagePdu extends PDU
 		super( PduType.IRCMessage );
 		
 		this.senderId = new EntityId();
-		this.senderNick = "Unknown";
-		this.roomName   = "Unknown";
-		this.message    = "Unknown";
+		this.senderNick  = "Unknown";
+		this.channelName = "Unknown";
+		this.message     = "Unknown";
 	}
 
-	public IrcMessagePdu( EntityId senderId, String senderNick, String room, String message )
+	public IrcMessagePdu( EntityId senderId, String senderNick, String channel, String message )
 	{
 		this();
 		this.senderId = senderId;
 		this.senderNick = senderNick;
-		this.roomName = room;
+		this.channelName = channel;
 		this.message = message;
 	}
 	
@@ -78,7 +78,7 @@ public class IrcMessagePdu extends PDU
 	{
 		this.senderId.from( dis );
 		this.senderNick = dis.readVariableString256();
-		this.roomName = dis.readVariableString256();
+		this.channelName = dis.readVariableString256();
 		this.message = dis.readVariableString65K(); // trimmed on the serialization side
 	}
 	
@@ -87,7 +87,7 @@ public class IrcMessagePdu extends PDU
 	{
 		this.senderId.to( dos );
 		dos.writeVariableStringMax256( senderNick ); // truncated to 32 on set
-		dos.writeVariableStringMax256( roomName );   // truncated to 32 on set
+		dos.writeVariableStringMax256( channelName );   // truncated to 32 on set
 		dos.writeVariableStringMax65K( message );    // truncated to MAX_MESSAGE_LENGTH on set
 	}
 	
@@ -96,7 +96,7 @@ public class IrcMessagePdu extends PDU
 	{
 		return senderId.getByteLength() +
 		       senderNick.length() + 1 +
-		       roomName.length() + 1 +
+		       channelName.length() + 1 +
 		       message.length() + 2;
 	}
 
@@ -138,15 +138,15 @@ public class IrcMessagePdu extends PDU
 			this.senderNick = StringUtils.truncate( senderNick, 32 );
 	}
 
-	public String getRoomName()
+	public String getChannelName()
 	{
-		return roomName;
+		return channelName;
 	}
 
-	public void setRoomName( String roomName )
+	public void setChannelName( String channelName )
 	{
-		if( roomName != null )
-			this.roomName = StringUtils.truncate( roomName, 32 );
+		if( channelName != null )
+			this.channelName = StringUtils.truncate( channelName, 32 );
 	}
 
 	public String getMessage()

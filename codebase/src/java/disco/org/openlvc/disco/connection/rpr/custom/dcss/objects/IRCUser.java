@@ -83,7 +83,7 @@ public class IRCUser extends ObjectInstance
 		
 		// Rooms
 		this.rooms = new IRCRoomArray();
-		for( String room : pdu.getRooms() )
+		for( String room : pdu.getChannels() )
 			this.rooms.addElement( EncoderFactory.createHLAASCIIstring(room) );
 	}
 
@@ -103,7 +103,7 @@ public class IRCUser extends ObjectInstance
 		
 		// Rooms
 		for( HLAASCIIstring room : this.rooms )
-			pdu.getRooms().add( room.getValue() );
+			pdu.getChannels().add( room.getValue() );
 		
 		return pdu;
 	}

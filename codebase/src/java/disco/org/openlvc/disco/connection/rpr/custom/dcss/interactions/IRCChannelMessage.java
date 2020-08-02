@@ -39,7 +39,7 @@ public class IRCChannelMessage extends InteractionInstance
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAASCIIstring roomName;
+	private HLAASCIIstring channelName;
 	private EntityIdentifierStruct senderId;
 	private HLAASCIIstring senderNick;
 	private HLAASCIIstring message;
@@ -52,7 +52,7 @@ public class IRCChannelMessage extends InteractionInstance
 	{
 		super();
 		
-		this.roomName     = EncoderFactory.createHLAASCIIstring();
+		this.channelName  = EncoderFactory.createHLAASCIIstring();
 		this.senderId     = new EntityIdentifierStruct();
 		this.senderNick   = EncoderFactory.createHLAASCIIstring();
 		this.message      = EncoderFactory.createHLAASCIIstring();
@@ -71,8 +71,8 @@ public class IRCChannelMessage extends InteractionInstance
 	{
 		IrcMessagePdu pdu = incoming.as( IrcMessagePdu.class );
 
-		// RoomName
-		roomName.setValue( pdu.getRoomName() );
+		// ChannelName
+		channelName.setValue( pdu.getChannelName() );
 		
 		// SenderId
 		senderId.setValue( pdu.getSenderId() );
@@ -96,7 +96,7 @@ public class IRCChannelMessage extends InteractionInstance
 		IrcMessagePdu pdu = new IrcMessagePdu();
 		
 		// RoomName
-		pdu.setRoomName( roomName.getValue() );
+		pdu.setChannelName( channelName.getValue() );
 		
 		// SenderId
 		pdu.setSenderId( senderId.getDisValue() );
@@ -116,9 +116,9 @@ public class IRCChannelMessage extends InteractionInstance
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public HLAASCIIstring getRoomName()
+	public HLAASCIIstring getChannelName()
 	{
-		return roomName;
+		return channelName;
 	}
 
 	public EntityIdentifierStruct getSenderId()

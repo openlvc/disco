@@ -134,10 +134,10 @@ public class EmitterPrinterTest
 		{
 			Thread.sleep( 2000 );
 			
-			for( String room : ircuser.getRooms() )
+			for( String room : ircuser.getChannels() )
 			{
 				IrcMessagePdu pdu = new IrcMessagePdu();
-				pdu.setRoomName( room );
+				pdu.setChannelName( room );
 				pdu.setSenderId( ircuser.getId() );
 				pdu.setSenderNick( ircuser.getNick() );
 				pdu.setMessage( "Message sent at "+new Timestamp(System.currentTimeMillis()).toString() );

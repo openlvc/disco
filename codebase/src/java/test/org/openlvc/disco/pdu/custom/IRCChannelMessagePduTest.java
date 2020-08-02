@@ -77,7 +77,7 @@ public class IRCChannelMessagePduTest extends AbstractTest
 	{
 		// turn the PDU into a byte[]
 		IrcMessagePdu before = new IrcMessagePdu();
-		before.setRoomName( "test-room" );
+		before.setChannelName( "test-room" );
 		before.setSenderId( new EntityId(1,1,1) );
 		before.setSenderNick( "test-sender" );
 		before.setMessage( "test-message" );
@@ -87,7 +87,7 @@ public class IRCChannelMessagePduTest extends AbstractTest
 		IrcMessagePdu after = PduFactory.create( beforeArray );
 		
 		// compare the pair!
-		Assert.assertEquals( after.getRoomName(),     before.getRoomName() );
+		Assert.assertEquals( after.getChannelName(),     before.getChannelName() );
 		Assert.assertEquals( after.getSenderId(),     before.getSenderId() );
 		Assert.assertEquals( after.getSenderNick(),   before.getSenderNick() );
 		Assert.assertEquals( after.getMessage(),      before.getMessage() );

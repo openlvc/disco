@@ -43,8 +43,7 @@ public class IrcUserPdu extends PDU
 	private EntityId userId;
 	private String userNick;
 	private String server;
-	private Set<String> rooms;
-	// TODO Add Rooms
+	private Set<String> channels;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -56,17 +55,17 @@ public class IrcUserPdu extends PDU
 		this.userId = new EntityId();
 		this.userNick = "Unknown";
 		this.server = "Unknown";
-		this.rooms = new LinkedHashSet<>();
+		this.channels = new LinkedHashSet<>();
 	}
 	
-	public IrcUserPdu( EntityId id, String userNick, String server, String... rooms )
+	public IrcUserPdu( EntityId id, String userNick, String server, String... channels )
 	{
 		this();
 		this.userId = id;
 		this.userNick = userNick;
 		this.server = server;
-		for( String room : rooms )
-			this.rooms.add( room );
+		for( String name : channels )
+			this.channels.add( name );
 	}
 
 	//----------------------------------------------------------
@@ -82,9 +81,9 @@ public class IrcUserPdu extends PDU
 		this.userId.from( dis );
 		this.userNick = dis.readVariableString256();
 		this.server = dis.readVariableString256();
-		byte roomCount = dis.readByte();
-		for( int i = 0; i < roomCount; i++ )
-			this.rooms.add( dis.readVariableString256() );
+		byte channelCount = dis.readByte();
+		for( int i = 0; i < channelCount; i++ )
+			this.channels.add( dis.readVariableString256() );
 	}
 	
 	@Override
@@ -93,9 +92,9 @@ public class IrcUserPdu extends PDU
 		this.userId.to( dos );
 		dos.writeVariableStringMax256( userNick ); // truncated to 32 on set
 		dos.writeVariableStringMax256( server );   // truncated to 32 on set
-		dos.writeByte( rooms.size() );
-		for( String room : this.rooms )
-			dos.writeVariableStringMax256( room );
+		dos.writeByte( channels.size() );
+		for( String channel : this.channels )
+			dos.writeVariableStringMax256( channel );
 	}
 	
 	@Override
@@ -155,24 +154,24 @@ public class IrcUserPdu extends PDU
 			this.server = StringUtils.truncate( server, 32 );
 	}
 	
-	public Set<String> getRooms()
+	public Set<String> getChannels()
 	{
-		return this.rooms;
+		return this.channels;
 	}
 	
-	public void joinRoom( String room )
+	public void joinChannel( String channel )
 	{
-		this.rooms.add( room );
+		this.channels.add( channel );
 	}
 	
-	public void leaveRoom( String room )
+	public void leaveChannel( String channel )
 	{
-		this.rooms.remove( room );
+		this.channels.remove( channel );
 	}
 	
-	public boolean isInRoom( String room )
+	public boolean isInChannel( String channel )
 	{
-		return this.rooms.contains( room );
+		return this.channels.contains( channel );
 	}
 
 	//----------------------------------------------------------

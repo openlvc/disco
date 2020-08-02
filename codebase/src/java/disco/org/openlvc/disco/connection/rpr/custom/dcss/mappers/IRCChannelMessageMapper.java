@@ -48,7 +48,7 @@ public class IRCChannelMessageMapper extends AbstractMapper
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private InteractionClass hlaClass;
-	private ParameterClass roomName;
+	private ParameterClass channelName;
 	private ParameterClass senderId;
 	private ParameterClass senderNick;
 	private ParameterClass message;
@@ -79,7 +79,7 @@ public class IRCChannelMessageMapper extends AbstractMapper
 		if( this.hlaClass == null )
 			throw new DiscoException( "Could not find class: HLAinteractionRoot.Service.IRCChannelMessage" );
 		
-		this.roomName      = hlaClass.getParameter( "RoomName" );
+		this.channelName   = hlaClass.getParameter( "ChannelName" );
 		this.senderId      = hlaClass.getParameter( "SenderId" );
 		this.senderNick    = hlaClass.getParameter( "SenderNick" );
 		this.message       = hlaClass.getParameter( "Message" );
@@ -117,10 +117,10 @@ public class IRCChannelMessageMapper extends AbstractMapper
 		ircMessage.setParameters( map );
 		
 		// Populate the Parameters
-		// RoomName
-		ByteWrapper wrapper = new ByteWrapper( ircMessage.getRoomName().getEncodedLength() );
-		ircMessage.getRoomName().encode( wrapper );
-		map.put( roomName.getHandle(), wrapper.array() );
+		// ChannelName
+		ByteWrapper wrapper = new ByteWrapper( ircMessage.getChannelName().getEncodedLength() );
+		ircMessage.getChannelName().encode( wrapper );
+		map.put( channelName.getHandle(), wrapper.array() );
 		
 		// SenderId
 		wrapper = new ByteWrapper( ircMessage.getSenderId().getEncodedLength() );
@@ -179,10 +179,10 @@ public class IRCChannelMessageMapper extends AbstractMapper
 		// Create an instance to decode in to
 		IRCChannelMessage interaction = new IRCChannelMessage();
 
-		if( map.containsKey(roomName.getHandle()) )
+		if( map.containsKey(channelName.getHandle()) )
 		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(roomName.getHandle()) );
-			interaction.getRoomName().decode( wrapper );
+			ByteWrapper wrapper = new ByteWrapper( map.get(channelName.getHandle()) );
+			interaction.getChannelName().decode( wrapper );
 		}
 		
 		if( map.containsKey(senderId.getHandle()) )
