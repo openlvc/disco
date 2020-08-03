@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.application;
 
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -135,6 +136,16 @@ public class TransmitterStore implements IDeleteReaperManaged
 	{
 		Set<TransmitterPdu> results = Collections.synchronizedSet( new HashSet<>() );
 		byId.values().parallelStream().forEach( tset -> tset.collectRadiosUpdatedSince(time,results) );
+		return results;
+	}
+	
+	public Set<TransmitterPdu> getTransmittersOnFrequency( BigInteger frequency )
+	{
+		Set<TransmitterPdu> results = Collections.synchronizedSet( new HashSet<>() );
+		byId.values()
+		    .parallelStream()
+		    .forEach( tset -> tset.collectRadiosMeetingPredicate(p -> p.getTransmissionFrequency().equals(frequency), 
+		                                                         results) );
 		return results;
 	}
 

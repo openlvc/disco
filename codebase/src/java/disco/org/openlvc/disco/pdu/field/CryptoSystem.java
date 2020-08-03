@@ -47,6 +47,7 @@ public enum CryptoSystem
 	KG40AP      ( 10 ),
 	KG40AS      ( 11 ),
 	KG40AR      ( 12 ),
+	KGV_135A    ( 13 ),
 	Invalid     ( Short.MAX_VALUE );
 
 	//----------------------------------------------------------
