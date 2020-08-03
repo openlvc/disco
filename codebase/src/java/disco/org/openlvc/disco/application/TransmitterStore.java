@@ -211,6 +211,7 @@ public class TransmitterStore implements IDeleteReaperManaged
 		
 		byId.keySet().removeIf( entityId -> byId.get(entityId).radios.isEmpty() );
 		
+		System.out.println( "REMOVED "+removed );
 		return removed.size();
 	}
 
@@ -300,7 +301,7 @@ public class TransmitterStore implements IDeleteReaperManaged
 		private void collectRadiosUpdatedSince( long timestamp, Set<TransmitterPdu> target )
 		{
 			for( TransmitterPdu pdu : radios.values() )
-				if( pdu.getLocalTimestamp() > timestamp )
+				if( pdu.getLocalTimestamp() >= timestamp )
 					target.add( pdu );
 		}
 

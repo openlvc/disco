@@ -61,7 +61,7 @@ public abstract class PDU
 		this.header = new PduHeader();
 		this.header.setPduType( type );
 		this.header.setProtocolFamily( type.getProtocolFamily() );
-		this.localTimestamp = 0; // Will be set by the OpsCenter when the PDU is sent
+		this.localTimestamp = System.currentTimeMillis();
 		
 		// Add the special marker for custom PDUs
 		if( type.getProtocolFamily() == ProtocolFamily.DiscoCustom )

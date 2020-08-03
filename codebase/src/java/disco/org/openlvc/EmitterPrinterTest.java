@@ -18,6 +18,7 @@
 package org.openlvc;
 
 import java.sql.Timestamp;
+import java.util.Set;
 
 import org.openlvc.disco.application.DisApplication;
 import org.openlvc.disco.bus.EventHandler;
@@ -28,6 +29,7 @@ import org.openlvc.disco.connection.rpr.custom.dcss.mappers.IRCRawMessageMapper;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.custom.IrcMessagePdu;
 import org.openlvc.disco.pdu.custom.IrcUserPdu;
+import org.openlvc.disco.pdu.radio.TransmitterPdu;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disrespector.Configuration;
 import org.openlvc.disrespector.Disrespector;
@@ -114,37 +116,24 @@ public class EmitterPrinterTest
 	
 	public static void main( String[] args ) throws Exception
 	{
-		DiscoConfiguration configuration = getRprConfiguration();
-		configuration.getLoggingConfiguration().setLevel( "TRACE" );
+		DiscoConfiguration configuration = getDisConfiguration();
+		configuration.getLoggingConfiguration().setLevel( "INFO" );
 		DisApplication app = new DisApplication( configuration );
 		app.addSubscriber( new EmitterPrinterTest() );
 		app.start();
-		
-		// Put an IrcUser out there
-		IrcUserPdu ircuser = new IrcUserPdu( new EntityId(1,1,1), "bob", "Local", "#excon" );
-
-		// Send the PDUs for the user
-		app.send( ircuser );
-		
-		// Register them for subsequent heartbeating
-		app.getHeartbeater().registerPdu( ircuser );
 		
 		// Every two seconds, send a message to all connected channels
 		while( true )
 		{
 			Thread.sleep( 2000 );
 			
-			for( String room : ircuser.getChannels() )
+			Set<TransmitterPdu> set = app.getPduStore().getTransmitterStore().getTransmittersUpdatedSince( 0L );
+			System.out.println( "Found: "+set.size() );
+			for( TransmitterPdu pdu : set )
 			{
-				IrcMessagePdu pdu = new IrcMessagePdu();
-				pdu.setChannelName( room );
-				pdu.setSenderId( ircuser.getId() );
-				pdu.setSenderNick( ircuser.getNick() );
-				pdu.setMessage( "Message sent at "+new Timestamp(System.currentTimeMillis()).toString() );
-				app.send( pdu );
+				System.out.println( "Transmitter: "+pdu.getEntityId() );
 			}
 			
-			System.out.println( "Messages sent" );
 		}
 	}
 }
