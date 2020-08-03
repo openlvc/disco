@@ -221,8 +221,6 @@ public class TransmitterStore implements IDeleteReaperManaged
 		             .forEach( tset -> tset.removeStaleData(timestamp,removed) );
 		
 		byId.keySet().removeIf( entityId -> byId.get(entityId).radios.isEmpty() );
-		
-		System.out.println( "REMOVED "+removed );
 		return removed.size();
 	}
 
