@@ -162,7 +162,7 @@ public class UdpConnection implements IConnection
 			logger.info( "Connecting broadcast socket - %s:%d (interface: %s)", address, port, networkInterface );
 			
 			// Create the socket pair
-			DatagramSocket[] pair = NetworkUtils.createBroadcastPair( address, port, options );
+			DatagramSocket[] pair = NetworkUtils.createBroadcastPair( address, port, networkInterface, options );
 			this.sendSocket = pair[0];
 			this.recvSocket = pair[1];
 		}

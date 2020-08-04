@@ -405,12 +405,14 @@ public class NetworkUtils
 	 */
 	public static DatagramSocket[] createBroadcastPair( InetAddress address,
 	                                                    int port,
+	                                                    NetworkInterface nic,
 	                                                    SocketOptions options )
 	{
 		try
 		{
 			// Create the send socket
-			DatagramSocket sendSocket = new DatagramSocket(null);
+			// Bind to ephemeral port (packets will have a trgt port) and ip-address of given nic
+			DatagramSocket sendSocket = new DatagramSocket( 0, getFirstIPv4Address(nic) );
 			sendSocket.setReuseAddress( true );
 			sendSocket.setBroadcast( true );
 			if( options != null )
@@ -420,15 +422,14 @@ public class NetworkUtils
 			}
 			
 			// Create the receive socket
-			DatagramSocket recvSocket = new DatagramSocket(null);
+			// Bind to receive DIS port and IP address of given nic
+			DatagramSocket recvSocket = new DatagramSocket( 0, getFirstIPv4Address(nic) );
 			recvSocket.setReuseAddress( true );
 			recvSocket.setBroadcast( true );
 			if( options != null )
 				recvSocket.setReceiveBufferSize( options.getRecvBufferSize() );
 			
 			// bind the two sockets
-			sendSocket.bind( new InetSocketAddress(0) ); // ephermal port
-			recvSocket.bind( new InetSocketAddress(address,port) );
 			return new DatagramSocket[] { sendSocket, recvSocket };
 		}
 		catch( Exception e )

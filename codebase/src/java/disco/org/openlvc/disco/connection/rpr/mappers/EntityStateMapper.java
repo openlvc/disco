@@ -361,7 +361,6 @@ public class EntityStateMapper extends AbstractMapper
 	@EventHandler
 	public void handlePdu( EntityStatePdu pdu )
 	{
-System.out.println( "ENTITY STATE: "+pdu.getMarking() );
 		// Do we already have an object cached for this entity?
 		PhysicalEntity hlaObject = objectStore.getLocalEntity( pdu.getEntityID() );
 
@@ -789,12 +788,6 @@ System.out.println( "ENTITY STATE: "+pdu.getMarking() );
 			
 			// Request an attribute update for the object so that we can get everything we need
 			super.requestAttributeUpdate( hlaObject );
-			if( logger.isTraceEnabled() )
-			{
-				logger.trace( "hla >> dis (Discover) Requested attribute update for [%d] attributes of [%s]",
-				              hlaObject.getObjectAttributes().size(),
-				              hlaObject.getObjectHandle().toString() );
-			}
 		}
 	}
 
