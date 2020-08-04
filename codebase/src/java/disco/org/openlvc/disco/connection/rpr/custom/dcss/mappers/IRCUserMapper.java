@@ -48,7 +48,7 @@ public class IRCUserMapper extends AbstractMapper
 	private ObjectClass hlaClass;
 	private AttributeClass userId;
 	private AttributeClass userNick;
-	private AttributeClass rooms;
+	private AttributeClass channels;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -77,7 +77,7 @@ public class IRCUserMapper extends AbstractMapper
 		
 		this.userId   = hlaClass.getAttribute( "UserId" );
 		this.userNick = hlaClass.getAttribute( "UserNick" );
-		this.rooms    = hlaClass.getAttribute( "Rooms" );
+		this.channels = hlaClass.getAttribute( "Channels" );
 		
 		// Publish and Subscribe
 		super.publishAndSubscribe( hlaClass );
@@ -130,7 +130,7 @@ public class IRCUserMapper extends AbstractMapper
 		// Rooms
 		wrapper = new ByteWrapper( object.getRooms().getEncodedLength() );
 		object.getRooms().encode(wrapper);
-		map.put( rooms.getHandle(), wrapper.array() );
+		map.put( channels.getHandle(), wrapper.array() );
 		return map;
 	}
 
@@ -199,9 +199,9 @@ public class IRCUserMapper extends AbstractMapper
 		}
 		
 		// Rooms
-		if( map.containsKey(rooms.getHandle()) )
+		if( map.containsKey(channels.getHandle()) )
 		{
-   		    ByteWrapper wrapper = new ByteWrapper( map.get(rooms.getHandle()) );
+   		    ByteWrapper wrapper = new ByteWrapper( map.get(channels.getHandle()) );
 			user.getRooms().decode( wrapper );
 		}
 	}
