@@ -28,13 +28,20 @@ public enum RFmodulationSystemTypeEnum16 implements ExtendedDataElement<RFmodula
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	Other( new RPRunsignedInteger16BE(0) ),
-	Generic( new RPRunsignedInteger16BE(1) ),
-	HQ( new RPRunsignedInteger16BE(2) ),
-	HQII( new RPRunsignedInteger16BE(3) ),
-	HQIIA( new RPRunsignedInteger16BE(4) ),
-	SINCGARS( new RPRunsignedInteger16BE(5) ),
-	CCTT_SINCGARS( new RPRunsignedInteger16BE(5) );
+	Other(new RPRunsignedInteger16BE( 0 )),
+	Generic(new RPRunsignedInteger16BE( 1 )),
+	HQ(new RPRunsignedInteger16BE( 2 )),
+	HQII(new RPRunsignedInteger16BE( 3 )),
+	HQIIA(new RPRunsignedInteger16BE( 4 )),
+	SINCGARS(new RPRunsignedInteger16BE( 5 )),
+	CCTT_SINCGARS(new RPRunsignedInteger16BE( 6 )),
+	EPLRS(new RPRunsignedInteger16BE( 7 )),
+	JtidsMids(new RPRunsignedInteger16BE( 8 )),
+	Link11(new RPRunsignedInteger16BE( 9 )),
+	Link11b(new RPRunsignedInteger16BE( 10 )),
+	LbandSatcom(new RPRunsignedInteger16BE( 11 )),
+	EnhancedSincgars73(new RPRunsignedInteger16BE( 12 )),
+	NavigationAid(new RPRunsignedInteger16BE( 13 ));
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -48,7 +55,7 @@ public enum RFmodulationSystemTypeEnum16 implements ExtendedDataElement<RFmodula
 	{
 		this.value = value;
 	}
-	
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -112,7 +119,7 @@ public enum RFmodulationSystemTypeEnum16 implements ExtendedDataElement<RFmodula
 		for( RFmodulationSystemTypeEnum16 temp : RFmodulationSystemTypeEnum16.values() )
 			if( temp.value.getValue() == value )
 				return temp;
-		
+
 		// Don't be so strict
 		// throw new UnsupportedException( "Unknown enumerator value: "+value+" (RFmodulationSystemTypeEnum16)" );
 		return Other;
