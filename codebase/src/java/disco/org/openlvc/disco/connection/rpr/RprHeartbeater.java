@@ -52,7 +52,7 @@ public class RprHeartbeater implements Runnable
 	{
 		this.connection = connection;
 		this.logger = null; // set in run()
-		this.heartbeatPeriod = 5000;
+		this.heartbeatPeriod = 10000;
 		this.thread = null; // set in start()
 	}
 

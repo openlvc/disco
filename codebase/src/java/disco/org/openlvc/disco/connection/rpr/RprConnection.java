@@ -480,6 +480,7 @@ public class RprConnection implements IConnection
 		}
 		
 		// Publish a reflection event to the bus
+		hlaObject.setLastUpdatedTimeToNow();
 		hlaBus.publish( new HlaReflect(hlaObject,attributes) );
 
 		// Track metrics

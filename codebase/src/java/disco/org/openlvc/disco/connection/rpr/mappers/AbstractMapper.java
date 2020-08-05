@@ -171,6 +171,8 @@ public abstract class AbstractMapper
 			getRtiAmb().updateAttributeValues( object.getObjectHandle(),
 			                                   attributes,
 			                                   null );
+			
+			object.setLastUpdatedTimeToNow();
 		}
 		catch( RTIexception rtie )
 		{
