@@ -364,7 +364,7 @@ public class MessageBus<T>
 			{
 				CallablePair other = (MessageBus.CallablePair)object;
 				return this.target == other.target &&
-				       this.method == other.method;
+				       this.method.equals(other.method);
 			}
 			
 			return false;
