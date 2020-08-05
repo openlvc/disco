@@ -72,9 +72,9 @@ public class InhibitedMidsPairingMapper extends AbstractMapper
 	protected void initialize() throws DiscoException
 	{
 		// IRCServer
-		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAobjectRoot.UpdateInhibitedMidsPairing" );
+		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.UpdateInhibitedMidsPairing" );
 		if( this.hlaClass == null )
-			throw new DiscoException( "Could not find interaction: HLAobjectRoot.UpdateInhibitedMidsPairing" );
+			throw new DiscoException( "Could not find interaction: HLAinteractionRoot.UpdateInhibitedMidsPairing" );
 
 		this.tdlType               = hlaClass.getParameter( "TDLType" );
 		this.sourceEntityId        = hlaClass.getParameter( "SourceEntityID" );
