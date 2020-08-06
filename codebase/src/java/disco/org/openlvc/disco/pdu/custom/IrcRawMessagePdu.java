@@ -56,6 +56,14 @@ public class IrcRawMessagePdu extends PDU
 		this.senderId = new EntityId();
 		this.senderNick = "Unknown";
 	}
+	
+	public IrcRawMessagePdu( String prefix, String command, String parameters )
+	{
+		this();
+		this.prefix = prefix;
+		this.command = command;
+		this.commandParameters = parameters;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
