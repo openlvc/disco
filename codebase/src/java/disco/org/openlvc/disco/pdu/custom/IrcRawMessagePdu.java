@@ -19,6 +19,9 @@ package org.openlvc.disco.pdu.custom;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -47,7 +50,7 @@ public class IrcRawMessagePdu extends PDU
 	//----------------------------------------------------------
 	public IrcRawMessagePdu()
 	{
-		super( PduType.IRCMessage );
+		super( PduType.IRCRawMessage );
 		
 		this.prefix = "";
 		this.command = "";
@@ -75,12 +78,12 @@ public class IrcRawMessagePdu extends PDU
 	@Override
 	public void from( DisInputStream dis ) throws IOException
 	{
-		this.prefix = dis.readUTF();
-		this.command = dis.readUTF();
-		this.commandParameters = dis.readUTF();
+		this.prefix = dis.readVariableString256();
+		this.command = dis.readVariableString256();
+		this.commandParameters = dis.readVariableString256();
 		this.timeReceived = dis.readUI64();
 		this.senderId.from( dis );
-		this.senderNick = dis.readUTF();
+		this.senderNick = dis.readVariableString256();
 	}
 	
 	@Override
@@ -143,10 +146,45 @@ public class IrcRawMessagePdu extends PDU
 		if( command != null )
 			this.command = command;
 	}
-	
+
+	/**
+	 * @return The parameters to the command as a raw IRC string
+	 */
 	public String getCommandParameters()
 	{
 		return this.commandParameters;
+	}
+
+	/**
+	 * @return The set of command parameters as a list. This will split the parameters into a list
+	 *         based on the IRC convention of anything appearing after a ":" character being
+	 *         considered part of a single parameter.
+	 */
+	public List<String> getCommandParameterList()
+	{
+		StringTokenizer tokens = new StringTokenizer( this.commandParameters, " " );
+		ArrayList<String> list = new ArrayList<>();
+		while( tokens.hasMoreTokens() )
+		{
+			String temp = tokens.nextToken();
+			if( temp.startsWith(":") )
+			{
+				// : character means everything after this is part of the one parameter
+				StringBuilder builder = new StringBuilder( temp.substring(1) );
+				while( tokens.hasMoreTokens() )
+					builder.append(" ").append( tokens.nextToken() );
+				list.add( builder.toString() );
+				continue;
+			}
+			else
+			{
+				// regular param, store and move on
+				list.add( temp );
+				continue;
+			}
+		}
+		
+		return list;
 	}
 	
 	public void setCommandParameters( String commandParameters )
@@ -200,4 +238,5 @@ public class IrcRawMessagePdu extends PDU
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+
 }
