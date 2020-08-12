@@ -91,6 +91,16 @@ public class TransmitterStore implements IDeleteReaperManaged
 	}
 
 	/**
+	 * Get a set of all the known transmitters within the Transmitter store.
+	 * 
+	 * @return A set of all known transmitters in the store
+	 */
+	public Set<TransmitterPdu> getAllTransmitters()
+	{
+		return getTransmittersUpdatedSince(0);
+	}
+	
+	/**
 	 * Get the set of transmitters associated with the given EntityId, indexed by their RadioID
 	 * 
 	 * @param id The EntityID to look up the radios for
