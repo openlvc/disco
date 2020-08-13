@@ -118,8 +118,49 @@ public class EntityId implements IPduComponent, Cloneable
 		int appId = this.appId % 256;
 		return (siteId << 24) + (appId << 16) + (entityId & 65535);
 	}
-	
-	
+
+	/**
+	 * This method checks the current {@link EntityId} against the given one to see if they are
+	 * a "match", taking into account the potential that some of the site/app/entity ids could be
+	 * the "All Sites", "All Applications" or "All Entities" wildcards.
+	 * <p/>
+	 * 
+	 * Each of the site, application and entity IDs are checked in order. If they are an exact
+	 * match, true if returned. For each check, if either of the values equals the appropriate
+	 * "All x" wildcard values, then that check is passed.
+	 * <p/>
+	 * 
+	 * Thus, given a local value of 1-2-3 (site/app/entity) and an other value of (1/ALL/3), true
+	 * will be returned. While the two values are not <b>equals</b>, they are a <b>match</b> when
+	 * we are considering DIS functions that require matching.
+	 * 
+	 * @param other The other entity id to check for a match against
+	 * @return True if the id's are a match according to the documented rules, false otherwise.
+	 */
+	public boolean matches( EntityId other )
+	{
+		// Check the Site ID
+		if( this.siteId != other.siteId &&
+		    this.siteId != EntityId.ALL_SITES &&
+		    other.siteId != EntityId.ALL_SITES )
+			return false;
+		
+		// Check the App ID
+		if( this.appId != other.appId &&
+		    this.appId != EntityId.ALL_APPS &&
+		    other.appId != EntityId.ALL_APPS )
+			return false;
+		
+		// Check the Entity ID
+		if( this.entityId != other.entityId &&
+		    this.entityId != EntityId.ALL_APPS &&
+		    other.entityId != EntityId.ALL_APPS )
+			return false;
+		
+		// All checks passed!
+		return true;
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// IPduComponent Methods   ////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

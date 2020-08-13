@@ -247,6 +247,40 @@ public class ActionRequestPdu extends PDU
 	{
 		return Collections.unmodifiableList( this.variableRecords );
 	}
+
+	/**
+	 * Get the contained {@link FixedDatum} record that has the given Datum ID and return it.
+	 * If there is one, it will be returned. If there isn't one, <code>null</code> will be
+	 * returned.
+	 * 
+	 * @param datumId The ID of the datum to return
+	 * @return The FixedDatum with the given ID, or null if there is none
+	 */
+	public FixedDatum getFixedDatum( long datumId )
+	{
+		for( FixedDatum datum : this.fixedRecords )
+			if( datum.getDatumId() == datumId )
+				return datum;
+
+		return null;
+	}
+	
+	/**
+	 * Get the contained {@link VariableDatum} record that has the given Datum ID and return it.
+	 * If there is one, it will be returned. If there isn't one, <code>null</code> will be
+	 * returned.
+	 * 
+	 * @param datumId The ID of the datum to return
+	 * @return The VariableDatum with the given ID, or null if there is none
+	 */
+	public VariableDatum getVariableDatum( long datumId )
+	{
+		for( VariableDatum datum : this.variableRecords )
+			if( datum.getDatumId() == datumId )
+				return datum;
+
+		return null;
+	}
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
