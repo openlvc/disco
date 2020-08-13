@@ -76,9 +76,9 @@ public class IRCRawMessageMapper extends AbstractMapper
 	protected void initialize() throws DiscoException
 	{
 		// Cache up the handles
-		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.Service.IRCRawMessage" );
+		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.IRCRawMessage" );
 		if( this.hlaClass == null )
-			throw new DiscoException( "Could not find class: HLAinteractionRoot.Service.IRCRawMessage" );
+			throw new DiscoException( "Could not find class: HLAinteractionRoot.IRCRawMessage" );
 		
 		this.prefix             = hlaClass.getParameter( "Prefix" );
 		this.command            = hlaClass.getParameter( "Command" );

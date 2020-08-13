@@ -10,10 +10,10 @@
         <description>Description of New Module</description>
         <useLimitation></useLimitation>
         <poc>
-            <pocType>Primary author</pocType>
-            <pocName>Michael Jobson</pocName>
-            <pocOrg>Boeing Defence UK</pocOrg>
-            <pocEmail>michael.i.jobson@boeing.com</pocEmail>
+            <pocType>Maintainer</pocType>
+            <pocName>CNR Engineering Team</pocName>
+            <pocOrg>Calytrix Technologies</pocOrg>
+            <pocEmail>support@calytrix.com</pocEmail>
         </poc>
         <poc>
             <pocType></pocType>
@@ -76,83 +76,77 @@
     <interactions>
         <interactionClass>
             <name>HLAinteractionRoot</name>
+            <!-- Class: IRCChannelMessage -->
             <interactionClass>
-                <name>Service</name>
-                <!-- Class: IRCChannelMessage -->
-                <interactionClass>
-                    <name>IRCChannelMessage</name>
-                    <sharing>PublishSubscribe</sharing>
-                    <transportation>HLAreliable</transportation>
-                    <order>Receive</order>
-                    <semantics></semantics>
-                    <parameter>
-                        <name>ChannelName</name>
-                        <dataType>HLAASCIIstring</dataType>
-                        <semantics>The name of the IRC channel the message was sent in</semantics>
-                    </parameter>
-                    <parameter>
-                        <name>SenderId</name>
-                        <dataType>EntityIdentifierStruct</dataType>
-                        <semantics>The unique id of the message sender</semantics>
-                    </parameter>
-                    <parameter>
-                        <name>SenderNick</name>
-                        <dataType>HLAASCIIstring</dataType>
-                        <semantics>The IRC nick of the message sender</semantics>
-                    </parameter>
-                    <parameter>
-                        <name>Message</name>
-                        <dataType>HLAASCIIstring</dataType>
-                        <semantics>The IRC message</semantics>
-                    </parameter>
-                    <parameter>
-                        <name>TimeSent</name>                  <!-- Name changed by Tim -->
-                        <dataType>UnsignedInteger64</dataType> <!-- Changed by Tim -->
-                        <semantics>Epoch timestamp sent at message transimission</semantics>
-                    </parameter>
-                </interactionClass>
+                <name>IRCChannelMessage</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>Receive</order>
+                <semantics></semantics>
+                <parameter>
+                    <name>ChannelName</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics>The name of the IRC channel the message was sent in</semantics>
+                </parameter>
+                <parameter>
+                    <name>SenderId</name>
+                    <dataType>EntityIdentifierStruct</dataType>
+                    <semantics>The unique id of the message sender</semantics>
+                </parameter>
+                <parameter>
+                    <name>SenderNick</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics>The IRC nick of the message sender</semantics>
+                </parameter>
+                <parameter>
+                    <name>Message</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics>The IRC message</semantics>
+                </parameter>
+                <parameter>
+                    <name>TimeSent</name>
+                    <dataType>UnsignedInteger64</dataType>
+                    <semantics>Epoch timestamp sent at message transimission</semantics>
+                </parameter>
+            </interactionClass>
 
-                <!-- Class: IRCRawMessage -->
-                <interactionClass>
-                    <name>IRCRawMessage</name>
-                    <sharing>PublishSubscribe</sharing>
-                    <transportation>HLAreliable</transportation>
-                    <order>Receive</order>
+            <!-- Class: IRCRawMessage -->
+            <interactionClass>
+                <name>IRCRawMessage</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>Receive</order>
+                <semantics></semantics>
+                <parameter>
+                    <name>Prefix</name>
+                    <dataType>HLAASCIIstring</dataType>
                     <semantics></semantics>
-                    <parameter>
-                        <name>Prefix</name>
-                        <dataType>HLAASCIIstring</dataType>
-                        <semantics></semantics>
-                    </parameter>
-                    <parameter>
-                        <name>Command</name>
-                        <dataType>HLAASCIIstring</dataType>
-                        <semantics></semantics>
-                    </parameter>
-                    <parameter>
-                        <name>CommandParameters</name>
-                        <dataType>HLAASCIIstring</dataType>
-                        <semantics></semantics>
-                    </parameter>
-                    <parameter>
-                        <name>TimeReceived</name>
-                        <dataType>UnsignedInteger64</dataType> <!-- Changed by Tim -->
-                        <semantics>Epoch timestamp sent at message transimission</semantics> <!-- Changed by Tim -->
-                    </parameter>
-                    <!-- Added by Tim -->
-                    <parameter>
-                        <name>SenderId</name>
-                        <dataType>EntityIdentifierStruct</dataType>
-                        <semantics>ServerId unique id for the sender</semantics>
-                    </parameter>
-                    <!-- Added by Tim -->
-                    <parameter>
-                        <name>SenderNick</name>
-                        <dataType>HLAASCIIstring</dataType>
-                        <semantics>The IRC nick of the sender</semantics>
-                    </parameter>
-
-                </interactionClass>
+                </parameter>
+                <parameter>
+                    <name>Command</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics></semantics>
+                </parameter>
+                <parameter>
+                    <name>CommandParameters</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics></semantics>
+                </parameter>
+                <parameter>
+                    <name>TimeReceived</name>
+                    <dataType>UnsignedInteger64</dataType>
+                    <semantics>Epoch timestamp sent at message transimission</semantics>
+                </parameter>
+                <parameter>
+                    <name>SenderId</name>
+                    <dataType>EntityIdentifierStruct</dataType>
+                    <semantics>ServerId unique id for the sender</semantics>
+                </parameter>
+                <parameter>
+                    <name>SenderNick</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics>The IRC nick of the sender</semantics>
+                </parameter>
             </interactionClass>
         </interactionClass>
     </interactions>

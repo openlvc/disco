@@ -75,9 +75,9 @@ public class IRCChannelMessageMapper extends AbstractMapper
 	protected void initialize() throws DiscoException
 	{
 		// Cache up the handles
-		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.Service.IRCChannelMessage" );
+		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.IRCChannelMessage" );
 		if( this.hlaClass == null )
-			throw new DiscoException( "Could not find class: HLAinteractionRoot.Service.IRCChannelMessage" );
+			throw new DiscoException( "Could not find class: HLAinteractionRoot.IRCChannelMessage" );
 		
 		this.channelName   = hlaClass.getParameter( "ChannelName" );
 		this.senderId      = hlaClass.getParameter( "SenderId" );
