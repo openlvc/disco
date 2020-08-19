@@ -28,6 +28,7 @@ import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.model.FomHelpers;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
+import org.openlvc.disco.connection.rpr.model.ParameterClass;
 import org.openlvc.disco.connection.rpr.model.PubSub;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.pdu.field.PduType;
@@ -37,6 +38,9 @@ import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.ObjectInstanceHandle;
 import hla.rti1516e.ParameterHandleValueMap;
 import hla.rti1516e.RTIambassador;
+import hla.rti1516e.encoding.ByteWrapper;
+import hla.rti1516e.encoding.DataElement;
+import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.exceptions.RTIexception;
 
 /**
@@ -232,4 +236,25 @@ public abstract class AbstractMapper
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	protected static void serializeInto( DataElement source,
+	                                 ParameterClass pc,
+	                                 ParameterHandleValueMap target )
+	{
+		ByteWrapper wrapper = new ByteWrapper( source.getEncodedLength() );
+		source.encode( wrapper );
+		target.put( pc.getHandle(), wrapper.array() );
+	}
+	
+	protected static void deserializeInto( ParameterHandleValueMap source,
+	                                       ParameterClass pc, 
+	                                       DataElement target ) 
+		throws DecoderException
+	{
+		byte[] raw = source.get( pc.getHandle() );
+		if( raw != null )
+		{
+			ByteWrapper wrapper = new ByteWrapper( raw );
+			target.decode( wrapper );
+		}
+	}
 }

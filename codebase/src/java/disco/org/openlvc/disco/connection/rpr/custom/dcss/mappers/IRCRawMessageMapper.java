@@ -32,7 +32,6 @@ import org.openlvc.disco.pdu.custom.IrcRawMessagePdu;
 import org.openlvc.disco.pdu.field.PduType;
 
 import hla.rti1516e.ParameterHandleValueMap;
-import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
 
 /**
@@ -99,13 +98,13 @@ public class IRCRawMessageMapper extends AbstractMapper
 	public void handlePdu( IrcRawMessagePdu pdu )
 	{
 		// Populate the Interaction
-		InteractionInstance interaction = serializeSetData( pdu );
+		InteractionInstance interaction = serializeIrcRawMessage( pdu );
 
 		// Send the interaction
 		super.sendInteraction( interaction, interaction.getParameters() );
 	}
 
-	private InteractionInstance serializeSetData( IrcRawMessagePdu pdu )
+	private InteractionInstance serializeIrcRawMessage( IrcRawMessagePdu pdu )
 	{
 		// Create the interaction object
 		IRCRawMessage ircMessage = new IRCRawMessage();
@@ -118,36 +117,12 @@ public class IRCRawMessageMapper extends AbstractMapper
 		ParameterHandleValueMap map = super.createParameters( this.hlaClass );
 		ircMessage.setParameters( map );
 		
-		// Populate the Parameters
-		// Prefix
-		ByteWrapper wrapper = new ByteWrapper( ircMessage.getPrefix().getEncodedLength() );
-		ircMessage.getPrefix().encode( wrapper );
-		map.put( prefix.getHandle(), wrapper.array() );
-		
-		// Command
-		wrapper = new ByteWrapper( ircMessage.getCommand().getEncodedLength() );
-		ircMessage.getCommand().encode( wrapper );
-		map.put( command.getHandle(), wrapper.array() );
-		
-		// CommandParameters
-		wrapper = new ByteWrapper( ircMessage.getCommandParameters().getEncodedLength() );
-		ircMessage.getCommandParameters().encode( wrapper );
-		map.put( commandParameters.getHandle(), wrapper.array() );
-		
-		// TimeReceived
-		wrapper = new ByteWrapper( ircMessage.getTimeReceived().getEncodedLength() );
-		ircMessage.getTimeReceived().encode( wrapper );
-		map.put( timeReceived.getHandle(), wrapper.array() );
-		
-		// SenderId
-		wrapper = new ByteWrapper( ircMessage.getSenderId().getEncodedLength() );
-		ircMessage.getSenderId().encode( wrapper );
-		map.put( senderId.getHandle(), wrapper.array() );
-		
-		// SenderNick
-		wrapper = new ByteWrapper( ircMessage.getSender().getEncodedLength() );
-		ircMessage.getSender().encode( wrapper );
-		map.put( senderNick.getHandle(), wrapper.array() );
+		serializeInto( ircMessage.getPrefix(), prefix, map );
+		serializeInto( ircMessage.getCommand(), command, map );
+		serializeInto( ircMessage.getCommandParameters(), commandParameters, map );
+		serializeInto( ircMessage.getTimeReceived(), timeReceived, map );
+		serializeInto( ircMessage.getSenderId(), senderId, map );
+		serializeInto( ircMessage.getSender(), senderNick, map );
 		
 		// Send it
 		return ircMessage;
@@ -166,7 +141,7 @@ public class IRCRawMessageMapper extends AbstractMapper
 			// Deserialize the parameters into an interaction instance
 			try
 			{
-				interaction = deserializeIrcChannelMessage( event.parameters );
+				interaction = deserializeIrcRawMessage( event.parameters );
 			}
 			catch( DecoderException de )
 			{
@@ -180,47 +155,18 @@ public class IRCRawMessageMapper extends AbstractMapper
 		}
 	}
 
-	private IRCRawMessage deserializeIrcChannelMessage( ParameterHandleValueMap map )
+	private IRCRawMessage deserializeIrcRawMessage( ParameterHandleValueMap map )
 		throws DecoderException
 	{
 		// Create an instance to decode in to
 		IRCRawMessage interaction = new IRCRawMessage();
 
-		if( map.containsKey(prefix.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(prefix.getHandle()) );
-			interaction.getPrefix().decode( wrapper );
-		}
-		
-		if( map.containsKey(command.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(command.getHandle()) );
-			interaction.getCommand().decode( wrapper );
-		}
-		
-		if( map.containsKey(commandParameters.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(commandParameters.getHandle()) );
-			interaction.getCommandParameters().decode( wrapper );
-		}
-		
-		if( map.containsKey(timeReceived.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(timeReceived.getHandle()) );
-			interaction.getTimeReceived().decode( wrapper );
-		}
-		
-		if( map.containsKey(senderId.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(senderId.getHandle()) );
-			interaction.getSenderId().decode( wrapper );
-		}
-
-		if( map.containsKey(senderNick.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(senderNick.getHandle()) );
-			interaction.getSender().decode( wrapper );
-		}
+		deserializeInto( map, prefix, interaction.getPrefix() );
+		deserializeInto( map, command, interaction.getCommand() );
+		deserializeInto( map, commandParameters, interaction.getCommandParameters() );
+		deserializeInto( map, timeReceived, interaction.getTimeReceived() );
+		deserializeInto( map, senderId, interaction.getSenderId() );
+		deserializeInto( map, senderNick, interaction.getSender() );
 		
 		return interaction;
 	}

@@ -68,6 +68,12 @@ public class WrappedHlaFixedRecord implements HLAfixedRecord
 	{
 		internal.add( dataElement );
 	}
+	
+	public void add( DataElement... dataElements )
+	{
+		for( DataElement element : dataElements )
+			internal.add( element );
+	}
 
 	public int size()
 	{

@@ -32,7 +32,6 @@ import org.openlvc.disco.pdu.custom.InhibitedMidsPairingPdu;
 import org.openlvc.disco.pdu.field.PduType;
 
 import hla.rti1516e.ParameterHandleValueMap;
-import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
 
 public class InhibitedMidsPairingMapper extends AbstractMapper
@@ -92,13 +91,13 @@ public class InhibitedMidsPairingMapper extends AbstractMapper
 	public void handlePdu( InhibitedMidsPairingPdu pdu )
 	{
 		// Populate the Interaction
-		InteractionInstance interaction = serializeSetData( pdu );
+		InteractionInstance interaction = serializeInhibitedMids( pdu );
 
 		// Send the interaction
 		super.sendInteraction( interaction, interaction.getParameters() );
 	}
 
-	private InteractionInstance serializeSetData( InhibitedMidsPairingPdu pdu )
+	private InteractionInstance serializeInhibitedMids( InhibitedMidsPairingPdu pdu )
 	{
 		// Create the interaction object
 		InhibitedMidsPairing interaction = new InhibitedMidsPairing();
@@ -108,27 +107,11 @@ public class InhibitedMidsPairingMapper extends AbstractMapper
 		interaction.fromPdu( pdu );
 
 		ParameterHandleValueMap map = super.createParameters( this.hlaClass );
-
-		// TDL type
-		ByteWrapper wrapper = new ByteWrapper( interaction.getTdlType().getEncodedLength() );
-		interaction.getTdlType().encode( wrapper );
-		map.put( tdlType.getHandle(), wrapper.array() );
-
-		// source entity ID
-		wrapper = new ByteWrapper( interaction.getSourceEntityId().getEncodedLength() );
-		interaction.getSourceEntityId().encode(wrapper);
-		map.put( sourceEntityId.getHandle(), wrapper.array() );
-
-		// destination entity ID
-		wrapper = new ByteWrapper( interaction.getDestinationEntityId().getEncodedLength() );
-		interaction.getDestinationEntityId().encode(wrapper);
-		map.put( destinationEntityId.getHandle(), wrapper.array() );
-
-		// ConnectedNicks
-		wrapper = new ByteWrapper( interaction.isMidsTerminalEnabled().getEncodedLength() );
-		interaction.isMidsTerminalEnabled().encode(wrapper);
-		map.put( isMidsTerminalEnabled.getHandle(), wrapper.array() );
-
+		serializeInto( interaction.getTdlType(), tdlType, map );
+		serializeInto( interaction.getSourceEntityId(), sourceEntityId, map );
+		serializeInto( interaction.getDestinationEntityId(), destinationEntityId, map );
+		serializeInto( interaction.isMidsTerminalEnabled(), isMidsTerminalEnabled, map );
+		
 		return interaction;
 	}
 
@@ -164,33 +147,10 @@ public class InhibitedMidsPairingMapper extends AbstractMapper
 	{
 		InhibitedMidsPairing interaction = new InhibitedMidsPairing();
 
-		// TDL type
-		if( map.containsKey(tdlType.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(tdlType.getHandle()) );
-			interaction.getTdlType().decode( wrapper );
-		}
-
-		// source entity ID
-		if( map.containsKey(sourceEntityId.getHandle()) )
-		{
-   		    ByteWrapper wrapper = new ByteWrapper( map.get(sourceEntityId.getHandle()) );
-			interaction.getSourceEntityId().decode( wrapper );
-		}
-
-		// destination entity ID
-		if( map.containsKey(destinationEntityId.getHandle()) )
-		{
-   		    ByteWrapper wrapper = new ByteWrapper( map.get(destinationEntityId.getHandle()) );
-			interaction.getDestinationEntityId().decode( wrapper );
-		}
-
-		// is MIDS terminal enabled
-		if( map.containsKey(isMidsTerminalEnabled.getHandle()) )
-		{
-   		    ByteWrapper wrapper = new ByteWrapper( map.get(isMidsTerminalEnabled.getHandle()) );
-			interaction.isMidsTerminalEnabled().decode( wrapper );
-		}
+		deserializeInto( map, tdlType, interaction.getTdlType() );
+		deserializeInto( map, sourceEntityId, interaction.getSourceEntityId() );
+		deserializeInto( map, destinationEntityId, interaction.getDestinationEntityId() );
+		deserializeInto( map, isMidsTerminalEnabled, interaction.isMidsTerminalEnabled() );
 
 		return interaction;
 	}
