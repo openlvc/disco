@@ -80,7 +80,6 @@ public class DcssWallclockTimePduTest extends AbstractTest
 	@Test
 	public void testDcssWallclockTimePduPduSerialize() throws Exception
 	{
-
 		DcssWallclockTimePdu before = new DcssWallclockTimePdu();
 		Calendar calendar = Calendar.getInstance( TimeZone.getTimeZone("UTC") );
 		

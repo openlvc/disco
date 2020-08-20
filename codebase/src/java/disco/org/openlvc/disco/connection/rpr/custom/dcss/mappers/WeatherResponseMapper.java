@@ -108,7 +108,7 @@ public class WeatherResponseMapper extends AbstractMapper
 	@Override
 	public Collection<PduType> getSupportedPdus()
 	{
-		return Arrays.asList( PduType.DcssWeatherRequest );
+		return Arrays.asList( PduType.DcssWeatherResponse );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

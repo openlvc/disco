@@ -106,7 +106,7 @@ public class GeoPoint3D extends WrappedHlaFixedRecord
 		
 		dos.writeDouble( point[0] ); // lat
 		dos.writeDouble( point[1] ); // lon
-		dos.writeDouble( point[3] ); // alt
+		dos.writeDouble( point[2] ); // alt
 	}
 	
 	public static void toDcssGeopoint3D( double[] src, GeoPoint3D dst )
