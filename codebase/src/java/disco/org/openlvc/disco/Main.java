@@ -41,23 +41,6 @@ public class Main
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private void run()
-	{
-		////////////////////////////////////////////////////////////
-		// initialize the logging and tell it what args we loaded //
-		////////////////////////////////////////////////////////////
-		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
-		logConfiguration.activateConfiguration();
-		Logger logger = LogManager.getFormatterLogger( "disco" );
-		logger.info( "      Welcome to Open LVC Disco" );
-		logger.info( "        .___.__                     " );
-		logger.info( "      __| _/|__| ______ ____  ____  " );
-		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
-		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
-		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
-		logger.info( "         \\/         \\/     \\/       " );
-		logger.info( "Version: "+DiscoConfiguration.getVersion() );
-	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
@@ -99,9 +82,32 @@ public class Main
 				org.openlvc.disrespector.Main.main( remainingArgs );
 				return;
 			}
+			else if( firstArg.equalsIgnoreCase("--app:distender") )
+			{
+				org.openlvc.distender.Main.main( remainingArgs );
+				return;
+			}
 		}
 
-		// print out some information about us
-		new Main().run();
+		// Didn't recognize an application to run. Print out a warning and asome information
+		
+		////////////////////////////////////////////////////////////
+		// initialize the logging and tell it what args we loaded //
+		////////////////////////////////////////////////////////////
+		String appArg = args.length == 0 ? "none" : args[0];
+		
+		Log4jConfiguration logConfiguration = new Log4jConfiguration( "disco" );
+		logConfiguration.activateConfiguration();
+		Logger logger = LogManager.getFormatterLogger( "disco" );
+		logger.info( "      Welcome to Open LVC Disco" );
+		logger.info( "        .___.__                     " );
+		logger.info( "      __| _/|__| ______ ____  ____  " );
+		logger.info( "     / __ | |  |/  ___// ___\\/  _ \\ " );
+		logger.info( "    / /_/ | |  |\\___ \\\\  \\__(  ( ) )" );
+		logger.info( "    \\____ | |__/____  >\\___  >____/ " );
+		logger.info( "         \\/         \\/     \\/       " );
+		logger.info( "Version: "+DiscoConfiguration.getVersion() );
+		logger.info( "" );
+		logger.warn( "Unknown application. Found: "+appArg );
 	}
 }
