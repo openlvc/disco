@@ -164,16 +164,11 @@
         <arrayDataTypes>
             <arrayData>
                 <name>IRCChannelArray</name>
-                <dataType>HLAASCIIString</dataType>
+                <dataType>HLAASCIIstring</dataType>
                 <cardinality>Dynamic</cardinality>
                 <encoding>HLAvariableArray</encoding>
                 <semantics>List of channel names on an IRC network.</semantics>
             </arrayData>
         </arrayDataTypes>
-
-    </dataTypes>
-    <dataTypes>
-        <arrayDataTypes/>
-        <fixedRecordDataTypes/>
     </dataTypes>
 </objectModel>
