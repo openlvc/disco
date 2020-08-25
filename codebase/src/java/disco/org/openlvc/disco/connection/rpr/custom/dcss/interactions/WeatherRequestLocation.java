@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.connection.rpr.custom.dcss.interactions;
 
+import org.openlvc.disco.connection.rpr.custom.dcss.types.array.Callsign;
 import org.openlvc.disco.connection.rpr.custom.dcss.types.array.UuidArrayOfHLAbyte16;
 import org.openlvc.disco.connection.rpr.custom.dcss.types.enumerated.WeatherType;
 import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.DateTimeStruct;
@@ -42,6 +43,7 @@ public class WeatherRequestLocation extends InteractionInstance
 	private WeatherType weatherReqType;
 	private UuidArrayOfHLAbyte16 uuid;
 	private EntityIdentifierStruct entityId;
+	private Callsign callsign;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -55,6 +57,7 @@ public class WeatherRequestLocation extends InteractionInstance
 		this.weatherReqType = WeatherType.Atmospheric;
 		this.uuid = new UuidArrayOfHLAbyte16();
 		this.entityId = new EntityIdentifierStruct();
+		this.callsign = new Callsign();
 	}
 
 	//----------------------------------------------------------
@@ -128,6 +131,11 @@ public class WeatherRequestLocation extends InteractionInstance
 	public EntityIdentifierStruct getEntityId()
 	{
 		return this.entityId;
+	}
+	
+	public Callsign getCallsign()
+	{
+		return this.callsign;
 	}
 	
 	//----------------------------------------------------------

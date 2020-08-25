@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.connection.rpr.custom.dcss.interactions;
 
+import org.openlvc.disco.connection.rpr.custom.dcss.types.array.Callsign;
 import org.openlvc.disco.connection.rpr.custom.dcss.types.array.UuidArrayOfHLAbyte16;
 import org.openlvc.disco.connection.rpr.custom.dcss.types.enumerated.WeatherType;
 import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.DateTimeStruct;
@@ -24,6 +25,7 @@ import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.GeoPoint3D;
 import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.types.basic.HLAfloat64BE;
 import org.openlvc.disco.connection.rpr.types.basic.HLAinteger64BE;
+import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.custom.DcssWeatherResponsePdu;
@@ -41,9 +43,10 @@ public abstract class WeatherResponse extends InteractionInstance
 	private DateTimeStruct dateTime;
 	private HLAfloat64BE timeOffset;
 	private GeoPoint3D location;
-	private WeatherType weatherResponseType;
+	private EnumHolder<WeatherType> weatherResponseType;
 	private UuidArrayOfHLAbyte16 uuid;
 	private EntityIdentifierStruct entityId;
+	private Callsign callsign;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -55,9 +58,10 @@ public abstract class WeatherResponse extends InteractionInstance
 		this.dateTime = new DateTimeStruct();
 		this.timeOffset = new HLAfloat64BE();
 		this.location = new GeoPoint3D();
-		this.weatherResponseType = WeatherType.Ground;
+		this.weatherResponseType = new EnumHolder<>( WeatherType.Ground );
 		this.uuid = new UuidArrayOfHLAbyte16();
 		this.entityId = new EntityIdentifierStruct();
+		this.callsign = new Callsign();
 	}
 
 	//----------------------------------------------------------
@@ -77,7 +81,7 @@ public abstract class WeatherResponse extends InteractionInstance
 		this.location.setLatitude( pdu.getLatitude() );
 		this.location.setLongitude( pdu.getLongitude() );
 		this.location.setAltitude( pdu.getAltitude() );
-		this.weatherResponseType = WeatherType.valueOf( pdu.getWeatherResponseType() );
+		this.weatherResponseType.setEnum( WeatherType.valueOf(pdu.getWeatherResponseType()) );
 		UuidArrayOfHLAbyte16.toDcssUuid( pdu.getUuid(), this.uuid );
 		this.entityId.setValue( pdu.getEntityId() );
 	}
@@ -97,7 +101,7 @@ public abstract class WeatherResponse extends InteractionInstance
 		pdu.setLongitude( this.location.getLongitude() );
 		pdu.setTimeOffset( this.timeOffset.getValue() );
 		pdu.setUuid( this.uuid.getDisValue() );
-		pdu.setWeatherResponseType( this.weatherResponseType.getValue() );
+		pdu.setWeatherResponseType( this.weatherResponseType.getEnum().getValue() );
 
 		return pdu;
 	}
@@ -125,7 +129,7 @@ public abstract class WeatherResponse extends InteractionInstance
 		return this.location;
 	}
 	
-	public WeatherType getWeatherResponseType()
+	public EnumHolder<WeatherType> getWeatherResponseType()
 	{
 		return this.weatherResponseType;
 	}
@@ -138,6 +142,11 @@ public abstract class WeatherResponse extends InteractionInstance
 	public EntityIdentifierStruct getEntityId()
 	{
 		return this.entityId;
+	}
+	
+	public Callsign getCallsign()
+	{
+		return this.callsign;
 	}
 	
 	//----------------------------------------------------------

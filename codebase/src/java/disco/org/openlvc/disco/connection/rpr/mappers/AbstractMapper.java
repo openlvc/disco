@@ -237,8 +237,8 @@ public abstract class AbstractMapper
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	protected static void serializeInto( DataElement source,
-	                                 ParameterClass pc,
-	                                 ParameterHandleValueMap target )
+	                                     ParameterClass pc,
+	                                     ParameterHandleValueMap target )
 	{
 		ByteWrapper wrapper = new ByteWrapper( source.getEncodedLength() );
 		source.encode( wrapper );

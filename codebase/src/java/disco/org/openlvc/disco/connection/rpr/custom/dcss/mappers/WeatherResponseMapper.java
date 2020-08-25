@@ -30,6 +30,7 @@ import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
 import org.openlvc.disco.connection.rpr.mappers.HlaInteraction;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ParameterClass;
+import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 
 import hla.rti1516e.ParameterHandleValueMap;
@@ -48,7 +49,7 @@ public class WeatherResponseMapper extends AbstractMapper
 	private InteractionClass groundResponseClass;
 	private InteractionClass cloudLayerResponseClass;
 	private ParameterClass instanceId;
-	private ParameterClass dateTime;
+	private ParameterClass time;
 	private ParameterClass timeOffset;
 	private ParameterClass location;
 	private ParameterClass weatherResponseType;
@@ -84,8 +85,10 @@ public class WeatherResponseMapper extends AbstractMapper
 		this.groundResponseClass = tryGetInteractionClass( "HLAinteractionRoot.Service.WeatherResponse.GroundResponse" );
 		this.cloudLayerResponseClass = tryGetInteractionClass( "HLAinteractionRoot.Service.WeatherResponse.CloudLayerResponse" );
 		
-		this.instanceId          = weatherResponseClass.getParameter( "InstanceID" );
-		this.dateTime            = weatherResponseClass.getParameter( "DateTime" );
+		// Named InstanceID in the request, InstanceId in the response :(
+		this.instanceId          = weatherResponseClass.getParameter( "InstanceId" ); 
+		// Named DateTime in the request, Time in the response :(
+		this.time            = weatherResponseClass.getParameter( "Time" );
 		this.timeOffset          = weatherResponseClass.getParameter( "TimeOffset" );
 		this.location            = weatherResponseClass.getParameter( "Location" );
 		this.weatherResponseType = weatherResponseClass.getParameter( "WeatherResponseType" );
@@ -136,7 +139,8 @@ public class WeatherResponseMapper extends AbstractMapper
 			// Send the PDU off to the OpsCenter
 			// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 			//         on the other side. This is inefficient and distasteful. Fix me.
-			opscenter.getPduReceiver().receive( interaction.toPdu().toByteArray() );
+			PDU pdu = interaction.toPdu();
+			opscenter.getPduReceiver().receive( pdu.toByteArray() );
 		}
 	}
 	
@@ -144,7 +148,7 @@ public class WeatherResponseMapper extends AbstractMapper
 		throws DecoderException
 	{
 		deserializeInto( map, instanceId, interaction.getInstanceId() );
-		deserializeInto( map, dateTime, interaction.getDateTime() );
+		deserializeInto( map, time, interaction.getDateTime() );
 		deserializeInto( map, timeOffset, interaction.getTimeOffset() );
 		deserializeInto( map, location, interaction.getLocation() );
 		deserializeInto( map, weatherResponseType, interaction.getWeatherResponseType() );

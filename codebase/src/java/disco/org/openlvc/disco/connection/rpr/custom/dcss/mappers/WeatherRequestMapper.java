@@ -23,6 +23,7 @@ import java.util.Collection;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
 import org.openlvc.disco.connection.rpr.custom.dcss.interactions.WeatherRequestLocation;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.array.Callsign;
 import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ParameterClass;
@@ -47,6 +48,7 @@ public class WeatherRequestMapper extends AbstractMapper
 	private ParameterClass weatherReqType;
 	private ParameterClass uuid;
 	private ParameterClass entityId;
+	private ParameterClass callsign;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -68,6 +70,7 @@ public class WeatherRequestMapper extends AbstractMapper
 		this.weatherReqType = hlaClass.getParameter( "WeatherReqType" );
 		this.uuid           = hlaClass.getParameter( "UUID" );
 		this.entityId       = hlaClass.getParameter( "EntityIdentifier" );
+		this.callsign       = hlaClass.getParameter( "Callsign" );
 
 		// Publish and Subscribe
 		// Note: We really only publish this
@@ -100,6 +103,7 @@ public class WeatherRequestMapper extends AbstractMapper
 		serializeInto( interaction.getWeatherReqType(), weatherReqType, map );
 		serializeInto( interaction.getUuid(), uuid, map );
 		serializeInto( interaction.getEntityId(), entityId, map );
+		serializeInto( new Callsign(), callsign, map );
 		
 		// Send the interaction
 		super.sendInteraction( interaction, interaction.getParameters() );
