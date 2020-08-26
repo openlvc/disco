@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
+import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
 import org.openlvc.disco.utils.CommandList;
 
 public class Configuration
@@ -59,6 +60,8 @@ public class Configuration
 	//----------------------------------------------------------
 	private Properties properties;
 	private String configFile = "etc/disrespector.config";
+	private String[] extensionModules;
+	private AbstractMapper[] extensionMappers;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -76,6 +79,8 @@ public class Configuration
 		// place we store all the base properties
 		this.properties = new Properties();
 		this.configFile = "etc/disrespector.config";
+		this.extensionModules = new String[0];
+		this.extensionMappers = new AbstractMapper[0];
 
 		// see if the user specified a config file on the command line before we process it
 		this.checkArgsForConfigFile( args );
@@ -324,6 +329,16 @@ public class Configuration
 			this.properties.setProperty( KEY_HLA_LOGFILE, path.getAbsolutePath() );
 	}
 	
+	public void setHlaExtensionModules( String... paths )
+	{
+		this.extensionModules = paths;
+	}
+	
+	public void setHlaExtensionMappers( AbstractMapper... mappers )
+	{
+		this.extensionMappers = mappers;
+	}
+	
 	protected DiscoConfiguration getHlaConfiguration()
 	{
 		DiscoConfiguration hla = new DiscoConfiguration();
@@ -336,6 +351,8 @@ public class Configuration
 		hla.getRprConfiguration().setFederateName( getHlaFederateName() );
 		hla.getRprConfiguration().setCreateFederation( isHlaCreateFederation() );
 		hla.getRprConfiguration().setRandomizeFedName( isHlaRandomizeFederateName() );
+		hla.getRprConfiguration().registerExtensionModules( this.extensionModules );
+		hla.getRprConfiguration().registerExtensionMappers( this.extensionMappers );
 
 		hla.getLoggingConfiguration().setAppName( "rpr" );
 		hla.getLoggingConfiguration().setLevel( getHlaLogLevel() );
