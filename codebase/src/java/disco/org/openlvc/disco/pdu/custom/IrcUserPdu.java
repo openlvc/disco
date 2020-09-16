@@ -100,9 +100,14 @@ public class IrcUserPdu extends PDU
 	@Override
 	public final int getContentLength()
 	{
-		return userId.getByteLength() +
-		       userNick.length() + 1 +
-		       server.length() + 1;
+		int size = userId.getByteLength();
+		size += userNick.length()+1;
+		size += server.length()+1;
+		size += 1; // Channel name array length
+		for( String channel : this.channels )
+			size += Math.min( channel.length(), 256 )+1;
+		
+		return size;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

@@ -21,6 +21,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -49,7 +50,7 @@ public class SessionWriter
 	// Session File Properties
 	private File sessionFile;
 	private FileOutputStream fos;
-	private BufferedOutputStream bos;
+	private OutputStream bos;
 	private WriterThread writerThread;
 	
 	// PDU Management
@@ -136,10 +137,13 @@ public class SessionWriter
 		// Stop the writer thread
 		this.writerThread.interrupt();
 		ThreadUtils.exceptionlessThreadJoin( this.writerThread );
-
+		
 		// Close out the stream
 		try
 		{
+			this.bos.flush();
+			this.fos.flush();
+			this.bos.close();
 			this.fos.close();
 		}
 		catch( IOException ioex )
@@ -244,6 +248,8 @@ public class SessionWriter
 						throw new DiscoException( "Failed to write PDU to session file: "+ioex.getMessage(), ioex );
 					}
 				}
+				
+				// TODO: Periodically flush?
 			}
 		}
 	}

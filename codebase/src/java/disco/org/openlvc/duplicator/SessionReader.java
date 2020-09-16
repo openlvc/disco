@@ -17,7 +17,6 @@
  */
 package org.openlvc.duplicator;
 
-import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -106,7 +105,16 @@ public class SessionReader implements Iterable<Track>, Iterator<Track>
 		try
 		{
 			this.fileIn = new FileInputStream( sessionFile );
-			this.dataIn = new DataInputStream( new BufferedInputStream(this.fileIn) );
+			
+			// This used to be chained to a BufferedInputStream, however it would only pick up the
+			// first record in very small files. I think it may have been due to the call to 
+			// InputStream.available() in refillBuffer() returning a false negative when a buffered
+			// stream was in use.
+			//
+			// Given that the class is performing its own buffering through the {@link #queue} member, 
+			// there should not be much performance difference in reading straight from the 
+			// DataInputStream itself
+			this.dataIn = new DataInputStream( this.fileIn );
 		}
 		catch( IOException ioex )
 		{
