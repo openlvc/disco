@@ -18,15 +18,18 @@
 package org.openlvc.disco.pdu.custom;
 
 import java.io.IOException;
-import java.util.Date;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.openlvc.disco.connection.rpr.custom.dcss.types.array.UuidArrayOfHLAbyte16;
-import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.DateTimeStruct;
 import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.GeoPoint3D;
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.custom.field.DcssWeatherDomain;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.EntityId;
 
@@ -40,9 +43,9 @@ public class DcssWeatherRequestPdu extends PDU
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private long instanceId;
-	private Date dateTime;
+	private double timeOffset;
 	private double[] lla;
-	private byte weatherReqType;
+	private Set<DcssWeatherDomain> domains;
 	private UUID uuid;
 	private EntityId entityId;
 
@@ -53,9 +56,9 @@ public class DcssWeatherRequestPdu extends PDU
 	{
 		super( PduType.DcssWeatherRequest );
 		this.instanceId = 0L;
-		this.dateTime = new Date( 0L );
+		this.timeOffset = 0.0;
 		this.lla = new double[3];
-		this.weatherReqType = 0;
+		this.domains = new HashSet<>();
 		this.uuid = new UUID( 0L, 0L );
 		this.entityId = new EntityId();
 	}
@@ -68,10 +71,11 @@ public class DcssWeatherRequestPdu extends PDU
 	public void from( DisInputStream dis ) throws IOException
 	{
 		this.entityId.from( dis );
-		this.weatherReqType = dis.readByte();
+		byte domainBitField = dis.readByte();
+		this.setDomains( DcssWeatherDomain.fromBitField(domainBitField) );
 		dis.skipBytes( 1 );
 		this.instanceId = dis.readLong();
-		this.dateTime = DateTimeStruct.readDisDateTime( dis );
+		this.timeOffset = dis.readDouble();
 		GeoPoint3D.readDisGeopoint3D( dis, this.lla );
 		this.uuid = UuidArrayOfHLAbyte16.readDisUuid( dis );
 	}
@@ -80,10 +84,10 @@ public class DcssWeatherRequestPdu extends PDU
 	public void to( DisOutputStream dos ) throws IOException
 	{
 		this.entityId.to( dos );
-		dos.writeByte( this.weatherReqType );
+		dos.writeByte( DcssWeatherDomain.toBitField(this.domains) );
 		dos.writePadding( 1 );
 		dos.writeLong( this.instanceId );
-		DateTimeStruct.writeDisDateTime( this.dateTime, dos );
+		dos.writeDouble( this.timeOffset );
 		GeoPoint3D.writeDisGeopoint3D( this.lla, dos );
 		UuidArrayOfHLAbyte16.writeDisUuid( this.uuid, dos );
 	}
@@ -91,18 +95,18 @@ public class DcssWeatherRequestPdu extends PDU
 	@Override
 	public int getContentLength()
 	{
-		// EntityId:       6 bytes +
-		// WeatherReqType: 1 byte +
-		// (Padding):      1 byte +
-		// InstanceId:     8 bytes +
-		// DateTime:       8 bytes +
-		// Latitude:       8 bytes +
-		// Longitude:      8 bytes +
-		// Altitude:       8 bytes +
-		// UuidHi:         8 bytes +
-		// UuidLo:         8 bytes +
-		// --------------------------
-		//                64 bytes
+		// EntityId:            6 bytes +
+		// Domains (bit field): 1 byte +
+		// (Padding):           1 byte +
+		// InstanceId:          8 bytes +
+		// TimeOffset:          8 bytes +
+		// Latitude:            8 bytes +
+		// Longitude:           8 bytes +
+		// Altitude:            8 bytes +
+		// UuidHi:              8 bytes +
+		// UuidLo:              8 bytes +
+		// -------------------------------
+		//                     64 bytes
 		
 		return 64;
 	}
@@ -132,14 +136,14 @@ public class DcssWeatherRequestPdu extends PDU
 		this.instanceId = id;
 	}
 	
-	public Date getDateTime()
+	public double getTimeOffset()
 	{
-		return this.dateTime;
+		return this.timeOffset;
 	}
 	
-	public void setDateTime( Date dateTime )
+	public void setTimeOffset( double timeOffset )
 	{
-		this.dateTime = dateTime;
+		this.timeOffset = timeOffset;
 	}
 	
 	public double getLatitude()
@@ -172,14 +176,22 @@ public class DcssWeatherRequestPdu extends PDU
 		this.lla[2] = alt;
 	}
 	
-	public byte getWeatherReqType()
+	public Set<DcssWeatherDomain> getDomains()
 	{
-		return this.weatherReqType;
+		return EnumSet.copyOf( this.domains );
 	}
 	
-	public void setWeatherReqType( byte type )
+	public void setDomains( Collection<? extends DcssWeatherDomain> domains )
 	{
-		this.weatherReqType = type;
+		this.domains.clear();
+		this.domains.addAll( domains );
+	}
+	
+	public void setDomains( DcssWeatherDomain... domains )
+	{
+		this.domains.clear();
+		for( DcssWeatherDomain domain : domains )
+			this.domains.add( domain );
 	}
 	
 	public UUID getUuid()

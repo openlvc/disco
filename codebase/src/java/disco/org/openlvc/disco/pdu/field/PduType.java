@@ -45,6 +45,7 @@ import org.openlvc.disco.pdu.custom.IrcMessagePdu;
 import org.openlvc.disco.pdu.custom.IrcRawMessagePdu;
 import org.openlvc.disco.pdu.custom.IrcUserPdu;
 import org.openlvc.disco.pdu.custom.DcssWallclockTimePdu;
+import org.openlvc.disco.pdu.custom.DcssWeatherInstancePdu;
 import org.openlvc.disco.pdu.custom.DcssWeatherRequestPdu;
 import org.openlvc.disco.pdu.custom.DcssWeatherResponsePdu;
 import org.openlvc.disco.pdu.custom.InhibitedMidsPairingPdu;
@@ -147,6 +148,7 @@ public enum PduType
 	DcssWallclockTime         ( (short)170, ProtocolFamily.DiscoCustom, DcssWallclockTimePdu.class ),
 	DcssWeatherRequest        ( (short)171, ProtocolFamily.DiscoCustom, DcssWeatherRequestPdu.class ),
 	DcssWeatherResponse       ( (short)172, ProtocolFamily.DiscoCustom, DcssWeatherResponsePdu.class ),
+	DcssWeatherInstance       ( (short)173, ProtocolFamily.DiscoCustom, DcssWeatherInstancePdu.class ),
 	
 	InhibitedMidsPairing ( (short)180, ProtocolFamily.DiscoCustom, InhibitedMidsPairingPdu.class );
 	

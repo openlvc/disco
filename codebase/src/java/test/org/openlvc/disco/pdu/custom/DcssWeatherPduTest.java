@@ -21,12 +21,14 @@ import static org.testng.Assert.assertEquals;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
 
 import org.openlvc.disco.AbstractTest;
-import org.openlvc.disco.connection.rpr.custom.dcss.types.enumerated.WeatherType;
 import org.openlvc.disco.pdu.PduFactory;
+import org.openlvc.disco.pdu.custom.field.DcssWeatherDomain;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -86,29 +88,21 @@ public class DcssWeatherPduTest extends AbstractTest
 		double lat = -37.5622;
 		double lon = 143.8503;
 		double alt = 435.0;
+		double timeOffset = 1234.56;
+		Set<DcssWeatherDomain> domains = EnumSet.of( DcssWeatherDomain.Ground, DcssWeatherDomain.Cloud );
 		
-		byte requestType = WeatherType.Ground.getValue();
 		UUID uuid = UUID.randomUUID();
 		EntityId selfId = new EntityId( 1, 2, 3 );
-		Calendar calendar = Calendar.getInstance( TimeZone.getTimeZone("UTC") );
-		calendar.clear();
-		calendar.set( Calendar.YEAR, 2020 );
-		calendar.set( Calendar.MONTH, Calendar.AUGUST );
-		calendar.set( Calendar.DAY_OF_MONTH, 13 );
-		calendar.set( Calendar.HOUR, 16 );
-		calendar.set( Calendar.MINUTE, 30 );
-		calendar.set( Calendar.SECOND, 15 );
-		Date time = calendar.getTime();
 		
 		DcssWeatherRequestPdu before = new DcssWeatherRequestPdu();
 		before.setAltitude( alt );
-		before.setDateTime( time );
+		before.setTimeOffset( timeOffset );
 		before.setEntityId( selfId );
 		before.setInstanceId( instanceId );
 		before.setLatitude( lat );
 		before.setLongitude( lon );
 		before.setUuid( uuid );
-		before.setWeatherReqType( requestType );
+		before.setDomains( DcssWeatherDomain.Ground, DcssWeatherDomain.Cloud );
 		
 		// turn the PDU into a byte[]
 		byte[] beforeArray = before.toByteArray();
@@ -117,13 +111,13 @@ public class DcssWeatherPduTest extends AbstractTest
 		DcssWeatherRequestPdu after = PduFactory.create( beforeArray );
 		
 		assertEquals( after.getAltitude(), alt );
-		assertEquals( after.getDateTime(), time );
+		assertEquals( after.getTimeOffset(), timeOffset );
 		assertEquals( after.getEntityId(), selfId );
 		assertEquals( after.getInstanceId(), instanceId );
 		assertEquals( after.getLatitude(), lat );
 		assertEquals( after.getLongitude(), lon );
 		assertEquals( after.getUuid(), uuid );
-		assertEquals( after.getWeatherReqType(), requestType );
+		assertEquals( after.getDomains(), domains );
 	}
 
 	@Test
@@ -140,7 +134,7 @@ public class DcssWeatherPduTest extends AbstractTest
 		float pressure = 1013f;
 		float totalCloudCover = 0.3f;
 		
-		byte responseType = WeatherType.Ground.getValue();
+		Set<DcssWeatherDomain> domains = EnumSet.of( DcssWeatherDomain.Ground, DcssWeatherDomain.Cloud );
 		UUID uuid = UUID.randomUUID();
 		EntityId selfId = new EntityId( 1, 2, 3 );
 		Calendar calendar = Calendar.getInstance( TimeZone.getTimeZone("UTC") );
@@ -156,6 +150,7 @@ public class DcssWeatherPduTest extends AbstractTest
 		DcssWeatherResponsePdu before = new DcssWeatherResponsePdu();
 		before.setAltitude( alt );
 		before.setDateTime( time );
+		before.setDomains( domains );
 		before.setEntityId( selfId );
 		before.setHumidity( humidity );
 		before.setInstanceId( instanceId );
@@ -167,7 +162,6 @@ public class DcssWeatherPduTest extends AbstractTest
 		before.setTimeOffset( offset );
 		before.setTotalCloudCover( totalCloudCover );
 		before.setUuid( uuid );
-		before.setWeatherResponseType( responseType );
 		
 		// turn the PDU into a byte[]
 		byte[] beforeArray = before.toByteArray();
@@ -177,6 +171,7 @@ public class DcssWeatherPduTest extends AbstractTest
 		
 		assertEquals( after.getAltitude(), alt );
 		assertEquals( after.getDateTime(), time );
+		assertEquals( after.getDomains(), domains );
 		assertEquals( after.getEntityId(), selfId );
 		assertEquals( after.getHumidity(), humidity );
 		assertEquals( after.getInstanceId(), instanceId );
@@ -187,7 +182,6 @@ public class DcssWeatherPduTest extends AbstractTest
 		assertEquals( after.getTemperature(), temperature );
 		assertEquals( after.getTotalCloudCover(), totalCloudCover );
 		assertEquals( after.getUuid(), uuid );
-		assertEquals( after.getWeatherResponseType(), responseType );
 	}
 	
 	//----------------------------------------------------------

@@ -22,8 +22,6 @@ import java.util.Collection;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
-import org.openlvc.disco.connection.rpr.custom.dcss.interactions.CloudLayerResponse;
-import org.openlvc.disco.connection.rpr.custom.dcss.interactions.GroundResponse;
 import org.openlvc.disco.connection.rpr.custom.dcss.interactions.WeatherResponse;
 import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
@@ -46,22 +44,8 @@ public class WeatherResponseMapper extends AbstractMapper
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private InteractionClass weatherResponseClass;
-	private InteractionClass groundResponseClass;
-	private InteractionClass cloudLayerResponseClass;
-	private ParameterClass instanceId;
-	private ParameterClass time;
-	private ParameterClass timeOffset;
-	private ParameterClass location;
-	private ParameterClass weatherResponseType;
-	private ParameterClass uuid;
-	private ParameterClass entityId;
+	private ParameterClass responseData;
 	
-	private ParameterClass precipitationRate;
-	private ParameterClass temperature;
-	private ParameterClass humidity;
-	private ParameterClass pressure;
-	private ParameterClass totalCloudCover;
-
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -81,31 +65,14 @@ public class WeatherResponseMapper extends AbstractMapper
 	@Override
 	protected void initialize() throws DiscoException
 	{
-		this.weatherResponseClass = tryGetInteractionClass( "HLAinteractionRoot.Service.WeatherResponse" );
-		this.groundResponseClass = tryGetInteractionClass( "HLAinteractionRoot.Service.WeatherResponse.GroundResponse" );
-		this.cloudLayerResponseClass = tryGetInteractionClass( "HLAinteractionRoot.Service.WeatherResponse.CloudLayerResponse" );
+		this.weatherResponseClass = tryGetInteractionClass( "HLAinteractionRoot.Service.WeatherBase.WeatherResponse" );
 		
 		// Named InstanceID in the request, InstanceId in the response :(
-		this.instanceId          = weatherResponseClass.getParameter( "InstanceId" ); 
-		// Named DateTime in the request, Time in the response :(
-		this.time            = weatherResponseClass.getParameter( "Time" );
-		this.timeOffset          = weatherResponseClass.getParameter( "TimeOffset" );
-		this.location            = weatherResponseClass.getParameter( "Location" );
-		this.weatherResponseType = weatherResponseClass.getParameter( "WeatherResponseType" );
-		this.uuid                = weatherResponseClass.getParameter( "UUID" );
-		this.entityId            = weatherResponseClass.getParameter( "EntityIdentifier" );
-		
-		this.precipitationRate   = groundResponseClass.getParameter( "PrecipitationRate" );
-		this.temperature         = groundResponseClass.getParameter( "Temperature" );
-		this.humidity            = groundResponseClass.getParameter( "Humidity" );
-		this.pressure            = groundResponseClass.getParameter( "Pressure" );
-
-		this.totalCloudCover     = cloudLayerResponseClass.getParameter( "TotalCloudCover" );
+		this.responseData          = weatherResponseClass.getParameter( "ResponseData" ); 
 		
 		// Publish and Subscribe
 		// NOTE: We really only subscribe to this
-		this.publishAndSubscribe( this.groundResponseClass );
-		this.publishAndSubscribe( this.cloudLayerResponseClass );
+		this.publishAndSubscribe( this.weatherResponseClass );
 	}
 
 	@Override
@@ -124,10 +91,8 @@ public class WeatherResponseMapper extends AbstractMapper
 		
 		try
 		{
-			if( event.theClass == this.groundResponseClass )
-				interaction = deserializeGroundResponseFromHla( event.parameters );
-			else if( event.theClass == this.cloudLayerResponseClass )
-				interaction = deserializeCloudLayerResponseFromHla( event.parameters );
+			if( event.theClass == this.weatherResponseClass )
+				interaction = this.deserializeWeatherResponseFromHla( event.parameters );
 		}
 		catch( DecoderException de )
 		{
@@ -144,39 +109,11 @@ public class WeatherResponseMapper extends AbstractMapper
 		}
 	}
 	
-	private void deserializeCommon( ParameterHandleValueMap map, WeatherResponse interaction )
+	private WeatherResponse deserializeWeatherResponseFromHla( ParameterHandleValueMap map )
 		throws DecoderException
 	{
-		deserializeInto( map, instanceId, interaction.getInstanceId() );
-		deserializeInto( map, time, interaction.getDateTime() );
-		deserializeInto( map, timeOffset, interaction.getTimeOffset() );
-		deserializeInto( map, location, interaction.getLocation() );
-		deserializeInto( map, weatherResponseType, interaction.getWeatherResponseType() );
-		deserializeInto( map, uuid, interaction.getUuid() );
-		deserializeInto( map, entityId, interaction.getEntityId() );
-	}
-	
-	private GroundResponse deserializeGroundResponseFromHla( ParameterHandleValueMap map ) 
-		throws DecoderException
-	{
-		GroundResponse interaction = new GroundResponse();
-		deserializeCommon( map, interaction );
-
-		deserializeInto( map, precipitationRate, interaction.getPrecipitationRate() );
-		deserializeInto( map, temperature, interaction.getTemperate() );
-		deserializeInto( map, humidity, interaction.getHumidity() );
-		deserializeInto( map, pressure, interaction.getPressure() );
-		
-		return interaction;
-	}
-	
-	private CloudLayerResponse deserializeCloudLayerResponseFromHla( ParameterHandleValueMap map ) 
-		throws DecoderException
-	{
-		CloudLayerResponse interaction = new CloudLayerResponse();
-		deserializeCommon( map, interaction );
-
-		deserializeInto( map, totalCloudCover, interaction.getTotalCloudCover() );
+		WeatherResponse interaction = new WeatherResponse();
+		deserializeInto( map, responseData, interaction.getResponseData() );
 		
 		return interaction;
 	}

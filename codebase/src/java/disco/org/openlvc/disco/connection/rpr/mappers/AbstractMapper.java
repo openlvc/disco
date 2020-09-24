@@ -25,6 +25,7 @@ import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.connection.rpr.ObjectStore;
 import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
+import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.FomHelpers;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
@@ -243,6 +244,19 @@ public abstract class AbstractMapper
 		ByteWrapper wrapper = new ByteWrapper( source.getEncodedLength() );
 		source.encode( wrapper );
 		target.put( pc.getHandle(), wrapper.array() );
+	}
+	
+	protected static void deserializeInto( AttributeHandleValueMap source,
+	                                       AttributeClass ac, 
+	                                       DataElement target ) 
+		throws DecoderException
+	{
+		byte[] raw = source.get( ac.getHandle() );
+		if( raw != null )
+		{
+			ByteWrapper wrapper = new ByteWrapper( raw );
+			target.decode( wrapper );
+		}
 	}
 	
 	protected static void deserializeInto( ParameterHandleValueMap source,

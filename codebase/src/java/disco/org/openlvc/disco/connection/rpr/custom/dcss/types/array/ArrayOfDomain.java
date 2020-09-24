@@ -15,13 +15,15 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.custom.dcss.interactions;
+package org.openlvc.disco.connection.rpr.custom.dcss.types.array;
 
-import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.custom.DcssWeatherResponsePdu;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.enumerated.Domain;
+import org.openlvc.disco.connection.rpr.types.array.WrappedHlaVariableArray;
+import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 
-public class CloudLayerResponse extends WeatherResponse
+import hla.rti1516e.encoding.DataElementFactory;
+
+public class ArrayOfDomain extends WrappedHlaVariableArray<EnumHolder<Domain>>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -30,54 +32,33 @@ public class CloudLayerResponse extends WeatherResponse
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAfloat32BE totalCloudCover;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public CloudLayerResponse()
+	@SuppressWarnings("unchecked")
+	public ArrayOfDomain()
 	{
-		super();
-		this.totalCloudCover = new HLAfloat32BE();
+		super( new Factory() );
 	}
-
+	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// DIS Decoding Methods   /////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void fromPdu( PDU incoming )
-	{
-		super.fromPdu( incoming );
-		DcssWeatherResponsePdu pdu = incoming.as( DcssWeatherResponsePdu.class );
-		
-		this.totalCloudCover.setValue( pdu.getTotalCloudCover() );
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// DIS Encoding Methods   /////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public DcssWeatherResponsePdu toPdu()
-	{
-		DcssWeatherResponsePdu pdu = super.toPdu();
-		pdu.setTotalCloudCover( this.totalCloudCover.getValue() );
-		
-		return pdu;
-	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public HLAfloat32BE getTotalCloudCover()
-	{
-		return this.totalCloudCover;
-	}
-	
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	private static class Factory implements DataElementFactory<EnumHolder<Domain>>
+	{
+		@Override
+		public EnumHolder<Domain> createElement( int index )
+		{
+			return new EnumHolder<Domain>( Domain.InvalidDomain );
+		}
+	}
 }

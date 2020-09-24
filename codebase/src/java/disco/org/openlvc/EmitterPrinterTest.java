@@ -92,8 +92,7 @@ public class EmitterPrinterTest
 		configuration.getRprConfiguration().setRtiProvider( RtiProvider.Pitch );
 		
 		// Extensions
-		configuration.getRprConfiguration().registerExtensionModules( "hla/dcss/DCSS-BaseService.xml" );
-		configuration.getRprConfiguration().registerExtensionModules( "hla/dcss/DCSS-IRC-Chat.xml" );
+		configuration.getRprConfiguration().registerExtensionModules( "hla/dcss/DCSS-FOM.xml" );
 		configuration.getRprConfiguration().registerExtensionMappers( new IRCChannelMessageMapper() );
 		configuration.getRprConfiguration().registerExtensionMappers( new IRCRawMessageMapper() );
 		
