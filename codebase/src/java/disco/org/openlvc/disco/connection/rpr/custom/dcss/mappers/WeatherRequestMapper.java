@@ -23,7 +23,6 @@ import java.util.Collection;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.bus.EventHandler;
 import org.openlvc.disco.connection.rpr.custom.dcss.interactions.WeatherRequestLocation;
-import org.openlvc.disco.connection.rpr.custom.dcss.types.array.Callsign;
 import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.connection.rpr.model.ParameterClass;
@@ -43,12 +42,7 @@ public class WeatherRequestMapper extends AbstractMapper
 	//----------------------------------------------------------
 	private InteractionClass hlaClass;
 	private ParameterClass instanceId;
-	private ParameterClass dateTime;
-	private ParameterClass location;
-	private ParameterClass weatherReqType;
-	private ParameterClass uuid;
-	private ParameterClass entityId;
-	private ParameterClass callsign;
+	private ParameterClass weatherData;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -60,18 +54,13 @@ public class WeatherRequestMapper extends AbstractMapper
 	@Override
 	protected void initialize() throws DiscoException
 	{
-		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.Service.WeatherRequestLocation" );
+		this.hlaClass = rprConnection.getFom().getInteractionClass( "HLAinteractionRoot.Service.WeatherBase.WeatherRequestLocation" );
 		if( this.hlaClass == null )
-			throw new DiscoException( "Could not find interaction: HLAinteractionRoot.Service.WeatherRequestLocation" );
+			throw new DiscoException( "Could not find interaction: HLAinteractionRoot.Service.WeatherBase.WeatherRequestLocation" );
 
 		this.instanceId     = hlaClass.getParameter( "InstanceID" );
-		this.dateTime       = hlaClass.getParameter( "DateTime" );
-		this.location       = hlaClass.getParameter( "Location" );
-		this.weatherReqType = hlaClass.getParameter( "WeatherReqType" );
-		this.uuid           = hlaClass.getParameter( "UUID" );
-		this.entityId       = hlaClass.getParameter( "EntityIdentifier" );
-		this.callsign       = hlaClass.getParameter( "Callsign" );
-
+		this.weatherData    = hlaClass.getParameter( "WeatherData" );
+		
 		// Publish and Subscribe
 		// Note: We really only publish this
 		super.publishAndSubscribe( hlaClass );
@@ -98,12 +87,7 @@ public class WeatherRequestMapper extends AbstractMapper
 		interaction.setParameters( map );
 		
 		serializeInto( interaction.getInstanceId(), instanceId, map );
-		serializeInto( interaction.getDateTime(), dateTime, map );
-		serializeInto( interaction.getLocation(), location, map );
-		serializeInto( interaction.getWeatherReqType(), weatherReqType, map );
-		serializeInto( interaction.getUuid(), uuid, map );
-		serializeInto( interaction.getEntityId(), entityId, map );
-		serializeInto( new Callsign(), callsign, map );
+		serializeInto( interaction.getWeatherData(), weatherData, map );
 		
 		// Send the interaction
 		super.sendInteraction( interaction, interaction.getParameters() );

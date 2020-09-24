@@ -17,16 +17,20 @@
  */
 package org.openlvc.disco.connection.rpr.custom.dcss.interactions;
 
-import org.openlvc.disco.connection.rpr.custom.dcss.types.array.Callsign;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.openlvc.disco.connection.rpr.custom.dcss.types.array.UuidArrayOfHLAbyte16;
-import org.openlvc.disco.connection.rpr.custom.dcss.types.enumerated.WeatherType;
-import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.DateTimeStruct;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.enumerated.Domain;
 import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.GeoPoint3D;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.RequestIdentifier;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.WeatherRequestData;
 import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
 import org.openlvc.disco.connection.rpr.types.basic.HLAinteger64BE;
-import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
+import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.custom.DcssWeatherRequestPdu;
+import org.openlvc.disco.pdu.custom.field.DcssWeatherDomain;
 
 public class WeatherRequestLocation extends InteractionInstance
 {
@@ -38,12 +42,7 @@ public class WeatherRequestLocation extends InteractionInstance
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private HLAinteger64BE instanceId;
-	private DateTimeStruct dateTime;
-	private GeoPoint3D location;
-	private WeatherType weatherReqType;
-	private UuidArrayOfHLAbyte16 uuid;
-	private EntityIdentifierStruct entityId;
-	private Callsign callsign;
+	private WeatherRequestData weatherData;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -52,12 +51,7 @@ public class WeatherRequestLocation extends InteractionInstance
 	{
 		super();
 		this.instanceId = new HLAinteger64BE();
-		this.dateTime = new DateTimeStruct();
-		this.location = new GeoPoint3D();
-		this.weatherReqType = WeatherType.Atmospheric;
-		this.uuid = new UuidArrayOfHLAbyte16();
-		this.entityId = new EntityIdentifierStruct();
-		this.callsign = new Callsign();
+		this.weatherData = new WeatherRequestData();
 	}
 
 	//----------------------------------------------------------
@@ -71,14 +65,37 @@ public class WeatherRequestLocation extends InteractionInstance
 	public void fromPdu( PDU incoming )
 	{
 		DcssWeatherRequestPdu pdu = incoming.as( DcssWeatherRequestPdu.class );
+		
+		//
+		// Instance ID
+		//
 		this.instanceId.setValue( pdu.getInstanceId() );
-		DateTimeStruct.toDcssDateTime( pdu.getDateTime(), this.dateTime );
-		this.location.setLatitude( pdu.getLatitude() );
-		this.location.setLongitude( pdu.getLongitude() );
-		this.location.setAltitude( pdu.getAltitude() );
-		this.weatherReqType = WeatherType.valueOf( pdu.getWeatherReqType() );
-		UuidArrayOfHLAbyte16.toDcssUuid( pdu.getUuid(), this.uuid );
-		this.entityId.setValue( pdu.getEntityId() );
+		
+		//
+		// Weather Data
+		//
+		// ID
+		RequestIdentifier requestId = this.weatherData.getId();
+		requestId.getEntityIdentifier().setValue( pdu.getEntityId() );
+		UuidArrayOfHLAbyte16.toDcssUuid( pdu.getUuid(), requestId.getUuid() );
+		
+		// Time Offset
+		this.weatherData.getTimeOffset().setValue( pdu.getTimeOffset() );
+		
+		// Location
+		this.weatherData.getLocation().setAltitude( pdu.getAltitude() );
+		this.weatherData.getLocation().setLatitude( pdu.getLatitude() );
+		this.weatherData.getLocation().setLongitude( pdu.getLongitude() );
+		
+		// Domains
+		Set<Domain> hlaDomains = new HashSet<Domain>();
+		for( DcssWeatherDomain disDomain : pdu.getDomains() )
+		{
+			byte code = disDomain.getValue();
+			Domain hlaDomain = Domain.valueOf( code );
+			hlaDomains.add( hlaDomain );
+		}
+		this.weatherData.setDomains( hlaDomains );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,14 +105,39 @@ public class WeatherRequestLocation extends InteractionInstance
 	public PDU toPdu()
 	{
 		DcssWeatherRequestPdu pdu = new DcssWeatherRequestPdu();
-		pdu.setAltitude( this.location.getAltitude() );
-		pdu.setDateTime( this.dateTime.getDisValue() );
-		pdu.setEntityId( this.entityId.getDisValue() );
+		
+		//
+		// Instance ID
+		//
 		pdu.setInstanceId( this.instanceId.getValue() );
-		pdu.setLatitude( this.location.getLatitude() );
-		pdu.setLongitude( this.location.getLongitude() );
-		pdu.setUuid( this.uuid.getDisValue() );
-		pdu.setWeatherReqType( this.weatherReqType.getValue() );
+		
+		//
+		// Weather Data
+		//
+		// ID
+		RequestIdentifier requestId = this.weatherData.getId();
+		pdu.setUuid( requestId.getUuid().getDisValue() );
+		pdu.setEntityId( requestId.getEntityIdentifier().getDisValue() );
+		
+		// Time Offset
+		pdu.setTimeOffset( this.weatherData.getTimeOffset().getValue() );
+		
+		// Location
+		GeoPoint3D location = this.weatherData.getLocation();
+		pdu.setLatitude( location.getLatitude() );
+		pdu.setLongitude( location.getLongitude() );
+		pdu.setAltitude( location.getAltitude() );
+		
+		// Domains
+		Set<DcssWeatherDomain> disDomains = new HashSet<>();
+		for( EnumHolder<Domain> hlaDomain : this.weatherData.getDomains() )
+		{
+			byte code = hlaDomain.getEnum().getValue();
+			DcssWeatherDomain disDomain = DcssWeatherDomain.valueOf( code );
+			disDomains.add( disDomain );
+		}
+		
+		pdu.setDomains( disDomains );
 
 		return pdu;
 	}
@@ -108,34 +150,9 @@ public class WeatherRequestLocation extends InteractionInstance
 		return this.instanceId;
 	}
 	
-	public DateTimeStruct getDateTime()
+	public WeatherRequestData getWeatherData()
 	{
-		return this.dateTime;
-	}
-	
-	public GeoPoint3D getLocation()
-	{
-		return this.location;
-	}
-	
-	public WeatherType getWeatherReqType()
-	{
-		return this.weatherReqType;
-	}
-	
-	public UuidArrayOfHLAbyte16 getUuid()
-	{
-		return this.uuid;
-	}
-	
-	public EntityIdentifierStruct getEntityId()
-	{
-		return this.entityId;
-	}
-	
-	public Callsign getCallsign()
-	{
-		return this.callsign;
+		return this.weatherData;
 	}
 	
 	//----------------------------------------------------------

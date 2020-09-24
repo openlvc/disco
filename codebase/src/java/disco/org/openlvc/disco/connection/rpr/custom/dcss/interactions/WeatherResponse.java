@@ -17,20 +17,17 @@
  */
 package org.openlvc.disco.connection.rpr.custom.dcss.interactions;
 
-import org.openlvc.disco.connection.rpr.custom.dcss.types.array.Callsign;
-import org.openlvc.disco.connection.rpr.custom.dcss.types.array.UuidArrayOfHLAbyte16;
-import org.openlvc.disco.connection.rpr.custom.dcss.types.enumerated.WeatherType;
-import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.DateTimeStruct;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.enumerated.Domain;
 import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.GeoPoint3D;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.GroundResponseData;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.RequestIdentifier;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.WeatherResponseData;
 import org.openlvc.disco.connection.rpr.interactions.InteractionInstance;
-import org.openlvc.disco.connection.rpr.types.basic.HLAfloat64BE;
-import org.openlvc.disco.connection.rpr.types.basic.HLAinteger64BE;
-import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
-import org.openlvc.disco.connection.rpr.types.fixed.EntityIdentifierStruct;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.custom.DcssWeatherResponsePdu;
+import org.openlvc.disco.pdu.custom.field.DcssWeatherDomain;
 
-public abstract class WeatherResponse extends InteractionInstance
+public class WeatherResponse extends InteractionInstance
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -39,14 +36,7 @@ public abstract class WeatherResponse extends InteractionInstance
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private HLAinteger64BE instanceId;
-	private DateTimeStruct dateTime;
-	private HLAfloat64BE timeOffset;
-	private GeoPoint3D location;
-	private EnumHolder<WeatherType> weatherResponseType;
-	private UuidArrayOfHLAbyte16 uuid;
-	private EntityIdentifierStruct entityId;
-	private Callsign callsign;
+	private WeatherResponseData responseData;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -54,14 +44,7 @@ public abstract class WeatherResponse extends InteractionInstance
 	public WeatherResponse()
 	{
 		super();
-		this.instanceId = new HLAinteger64BE();
-		this.dateTime = new DateTimeStruct();
-		this.timeOffset = new HLAfloat64BE();
-		this.location = new GeoPoint3D();
-		this.weatherResponseType = new EnumHolder<>( WeatherType.Ground );
-		this.uuid = new UuidArrayOfHLAbyte16();
-		this.entityId = new EntityIdentifierStruct();
-		this.callsign = new Callsign();
+		this.responseData = new WeatherResponseData();
 	}
 
 	//----------------------------------------------------------
@@ -74,16 +57,7 @@ public abstract class WeatherResponse extends InteractionInstance
 	@Override
 	public void fromPdu( PDU incoming )
 	{
-		DcssWeatherResponsePdu pdu = incoming.as( DcssWeatherResponsePdu.class );
-		this.instanceId.setValue( pdu.getInstanceId() );
-		DateTimeStruct.toDcssDateTime( pdu.getDateTime(), this.dateTime );
-		this.timeOffset.setValue( pdu.getTimeOffset() );
-		this.location.setLatitude( pdu.getLatitude() );
-		this.location.setLongitude( pdu.getLongitude() );
-		this.location.setAltitude( pdu.getAltitude() );
-		this.weatherResponseType.setEnum( WeatherType.valueOf(pdu.getWeatherResponseType()) );
-		UuidArrayOfHLAbyte16.toDcssUuid( pdu.getUuid(), this.uuid );
-		this.entityId.setValue( pdu.getEntityId() );
+		throw new UnsupportedOperationException( "DcssWeatherResponsePdu -> HLA Interaction not supported" );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,15 +67,51 @@ public abstract class WeatherResponse extends InteractionInstance
 	public DcssWeatherResponsePdu toPdu()
 	{
 		DcssWeatherResponsePdu pdu = new DcssWeatherResponsePdu();
-		pdu.setAltitude( this.location.getAltitude() );
-		pdu.setDateTime( this.dateTime.getDisValue() );
-		pdu.setEntityId( this.entityId.getDisValue() );
-		pdu.setInstanceId( this.instanceId.getValue() );
-		pdu.setLatitude( this.location.getLatitude() );
-		pdu.setLongitude( this.location.getLongitude() );
-		pdu.setTimeOffset( this.timeOffset.getValue() );
-		pdu.setUuid( this.uuid.getDisValue() );
-		pdu.setWeatherResponseType( this.weatherResponseType.getEnum().getValue() );
+		
+		//
+		// ID
+		//
+		RequestIdentifier id = responseData.getId();
+		pdu.setUuid( id.getUuid().getDisValue() );
+		pdu.setEntityId( id.getEntityIdentifier().getDisValue() );
+		
+		//
+		// Time
+		//
+		pdu.setDateTime( responseData.getTime().getDisValue() );
+		
+		//
+		// Time Offset
+		// 
+		pdu.setTimeOffset( responseData.getTimeOffset().getValue() );
+		
+		//
+		// Location
+		//
+		GeoPoint3D location = responseData.getLocation();
+		pdu.setLatitude( location.getLatitude() );
+		pdu.setLongitude( location.getLongitude() );
+		pdu.setAltitude( location.getAltitude() );
+		
+		//
+		// Response Data Variant
+		//
+		responseData.getResponseDataVariant().forEach( (v) -> {
+			
+			// The ground layer gives us all we need for the moment, but if you need data from the other
+			// layers, then handle it here...
+			if( v.getDiscriminant() == Domain.Ground )
+			{
+				pdu.addDomain( DcssWeatherDomain.Ground );
+				GroundResponseData data = (GroundResponseData)v.getValue();
+				pdu.setHumidity( data.getHumidity().getValue() );
+				pdu.setPrecipitationRate( data.getConvecPrecipitationRate().getValue() );
+				pdu.setPressure( data.getPressure().getValue() );
+				pdu.setTemperature( data.getTemperature().getValue() );
+				pdu.setTotalCloudCover( data.getTotalCloudCover().getValue() );
+			}
+		});
+		
 
 		return pdu;
 	}
@@ -109,44 +119,9 @@ public abstract class WeatherResponse extends InteractionInstance
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public HLAinteger64BE getInstanceId()
+	public WeatherResponseData getResponseData()
 	{
-		return this.instanceId;
-	}
-	
-	public DateTimeStruct getDateTime()
-	{
-		return this.dateTime;
-	}
-	
-	public HLAfloat64BE getTimeOffset()
-	{
-		return this.timeOffset;
-	}
-	
-	public GeoPoint3D getLocation()
-	{
-		return this.location;
-	}
-	
-	public EnumHolder<WeatherType> getWeatherResponseType()
-	{
-		return this.weatherResponseType;
-	}
-	
-	public UuidArrayOfHLAbyte16 getUuid()
-	{
-		return this.uuid;
-	}
-	
-	public EntityIdentifierStruct getEntityId()
-	{
-		return this.entityId;
-	}
-	
-	public Callsign getCallsign()
-	{
-		return this.callsign;
+		return this.responseData;
 	}
 	
 	//----------------------------------------------------------

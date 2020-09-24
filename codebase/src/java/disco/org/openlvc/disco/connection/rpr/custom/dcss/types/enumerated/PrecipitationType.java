@@ -24,16 +24,16 @@ import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
 import hla.rti1516e.encoding.EncoderException;
 
-public enum WeatherType implements ExtendedDataElement<WeatherType>
+public enum PrecipitationType implements ExtendedDataElement<PrecipitationType>
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	Atmospheric( new HLAoctet(1) ),
-	Ground( new HLAoctet(2) ),
-	CloudLayer( new HLAoctet(3) ),
-	OceanSurface( new HLAoctet(4) ),
-	OceanSubSurface( new HLAoctet(5) );
+	InvalidPrecipitationType( new HLAoctet(0) ),
+	Rain( new HLAoctet(1) ),
+	FreezingRain( new HLAoctet(2) ),
+	Snow( new HLAoctet(3) ),
+	Ice( new HLAoctet(4) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -43,7 +43,7 @@ public enum WeatherType implements ExtendedDataElement<WeatherType>
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private WeatherType( HLAoctet value )
+	private PrecipitationType( HLAoctet value )
 	{
 		this.value = value;
 	}
@@ -87,7 +87,7 @@ public enum WeatherType implements ExtendedDataElement<WeatherType>
 
 
 	@Override
-	public WeatherType valueOf( ByteWrapper value ) throws DecoderException
+	public PrecipitationType valueOf( ByteWrapper value ) throws DecoderException
 	{
 		HLAoctet temp = new HLAoctet();
 		temp.decode( value );
@@ -95,7 +95,7 @@ public enum WeatherType implements ExtendedDataElement<WeatherType>
 	}
 
 	@Override
-	public WeatherType valueOf( byte[] value ) throws DecoderException
+	public PrecipitationType valueOf( byte[] value ) throws DecoderException
 	{
 		HLAoctet temp = new HLAoctet();
 		temp.decode( value );
@@ -105,12 +105,12 @@ public enum WeatherType implements ExtendedDataElement<WeatherType>
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static WeatherType valueOf( byte value )
+	public static PrecipitationType valueOf( byte value )
 	{
-		for( WeatherType temp : WeatherType.values() )
+		for( PrecipitationType temp : PrecipitationType.values() )
 			if( temp.value.getValue() == value )
 				return temp;
 		
-		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (WeatherType)" );
+		throw new IllegalArgumentException( "Unknown enumerator value: "+value+" (PrecipitationType)" );
 	}
 }

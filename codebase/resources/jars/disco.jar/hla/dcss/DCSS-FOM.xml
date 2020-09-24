@@ -1,0 +1,2872 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<objectModel xsi:schemaLocation="http://standards.ieee.org/IEEE1516-2010 http://standards.ieee.org/downloads/1516/1516.2-2010/IEEE1516-DIF-2010.xsd" xmlns="http://standards.ieee.org/IEEE1516-2010" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelIdentification>
+        <name></name>
+        <type>FOM</type>
+        <version>1.1</version>
+        <securityClassification>Unclassified</securityClassification>
+        <purpose/>
+        <applicationDomain/>
+        <description></description>
+        <useLimitation/>
+        <reference>
+            <type>Composed from</type>
+            <identification>DCS&amp;S Base Service</identification>
+        </reference>
+        <reference>
+            <type>Composed from</type>
+            <identification>DDCA FOM Extension</identification>
+        </reference>
+        <reference>
+            <type>Composed from</type>
+            <identification>DCSS-CDS</identification>
+        </reference>
+        <reference>
+            <type>Composed from</type>
+            <identification>New Module</identification>
+        </reference>
+        <reference>
+            <type>Composed from</type>
+            <identification>Weather</identification>
+        </reference>
+        <reference>
+            <type>Composed from</type>
+            <identification>DCSS-Time</identification>
+        </reference>
+        <other/>
+    </modelIdentification>
+    <objects>
+        <objectClass>
+            <name>HLAobjectRoot</name>
+            <objectClass>
+                <name>DCSSBaseObject</name>
+                <sharing>Neither</sharing>
+                <semantics>Base object for all derived DCSS object classes</semantics>
+                <objectClass>
+                    <name>WeatherInstance</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <semantics>Provides information about a weather instance</semantics>
+                    <attribute>
+                        <name>Id</name>
+                        <dataType>Integer64</dataType>
+                        <updateType>Static</updateType>
+                        <updateCondition>NA</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Weather instance unique identifier</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Name</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <updateType>Static</updateType>
+                        <updateCondition>NA</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The name of the weather instance</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Description</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>An optional description of the weather instance</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>InstanceType</name>
+                        <dataType>WeatherInstanceType</dataType>
+                        <updateType>Static</updateType>
+                        <updateCondition>NA</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Describes the weather instance type.  Real instances are created from historical weather data.  Live instances are created from current and forecast weather data and are automatically updated as weather data is published.  Standard weather instances are based on a standard atmosphere model and contain user-specified basic weather conditions</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>GeoArea</name>
+                        <dataType>GeoArea</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Rectangular geographic area defined by lower left and upper right coordinates.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>GeoAreaType</name>
+                        <dataType>GeoAreaType</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Describes the type of a GeoArea.  Currently only the Polygon type is supported</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>StartTime</name>
+                        <dataType>DateTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The earliest time at which the instance can be queried</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>EndTime</name>
+                        <dataType>DateTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The latest time at which the instance can be queried</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Domains</name>
+                        <dataType>ArrayOfDomain</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>List of weather Domains</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Active</name>
+                        <dataType>HLAboolean</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Flag to show if this is the active weather instance, i.e. weather requests will be queried against this instance/</semantics>
+                    </attribute>
+                </objectClass>
+                <objectClass>
+                    <name>WeatherObserver</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <semantics>Encapsulates an object that is viewing the weather from a given location.</semantics>
+                    <attribute>
+                        <name>ObserverID</name>
+                        <dataType>Integer64</dataType>
+                        <updateType>Static</updateType>
+                        <updateCondition>NA</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Unique, fixed ID identifying this WeatherObserver,</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>InstanceID</name>
+                        <dataType>Integer64</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The weather instance associated with this observer.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Area</name>
+                        <dataType>GeoArea</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The area of interest for weather data points.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Altitude</name>
+                        <dataType>Float32</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Altitude AMSL for the data grid, m.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>TimeOffset</name>
+                        <dataType>Float64</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Time to query since the start of the instance, s.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>NumSamplesX</name>
+                        <dataType>Integer16</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Number of grid samples in the x (latitude) direction. Must be greater than one.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>NumSamplesY</name>
+                        <dataType>Integer16</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Number of grid samples in the y (longitude) direction. Must be greater than one.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Elements</name>
+                        <dataType>ArrayOfWeatherDataElement</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Array of the weather data elements that should be updated by the corresponding WeatherGriddedData object.</semantics>
+                    </attribute>
+                </objectClass>
+                <objectClass>
+                    <name>WeatherGriddedData</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <semantics>Represents an area of weather data, subdivided into a number of grid cells.</semantics>
+                    <attribute>
+                        <name>ObserverID</name>
+                        <dataType>Integer64</dataType>
+                        <updateType>Static</updateType>
+                        <updateCondition>NA</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The ID of the associated WeatherObserver</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>InstanceID</name>
+                        <dataType>Integer64</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The weather instance that contains the data for this object.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Area</name>
+                        <dataType>GeoArea</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Area covered by data.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Altitude</name>
+                        <dataType>Float32</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Altitude AMSL for the data grid, m.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>TimeOffset</name>
+                        <dataType>Float64</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Time of query in from start of the instance, seconds.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>NumSamplesX</name>
+                        <dataType>Integer16</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Number of grid samples in the x (latitude) direction. Must be greater than one.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>NumSamplesY</name>
+                        <dataType>Integer16</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Number of grid samples in the y (longitude) direction. Must be greater than one.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>DateTime</name>
+                        <dataType>DateTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Date time of gridded weather data.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>Resolution</name>
+                        <dataType>Float64</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Resolution of gridded data, degrees.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>DataElements</name>
+                        <dataType>ArrayofGriddedDataElement</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>On change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>An array of GriddedDataElements containing all the gridded data, one GriddedDataElement per type of data.</semantics>
+                    </attribute>
+                </objectClass>
+                <objectClass>
+                    <name>WallclockTime</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <semantics>Represents the wallclock and simulation times.</semantics>
+                    <attribute>
+                        <name>ZuluTime</name>
+                        <dataType>ClockTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Zulu wallclock time</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>SimulationTime</name>
+                        <dataType>ClockTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Simulation time of day.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>SimulationElapsedTime</name>
+                        <dataType>TimeMillisecondUnsignedInteger32</dataType>
+                        <updateType>Periodic</updateType>
+                        <updateCondition>1Hz</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Time in milliseconds since the start of the simulation.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>ScalingFactor</name>
+                        <dataType>Float32</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Multiplier for clock time, e.g. 2x speed, 0.5x speed.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>SimulationStartTime</name>
+                        <dataType>ClockTimeStruct</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Clock time when the simulation started.</semantics>
+                    </attribute>
+                    <attribute>
+                        <name>ClockState</name>
+                        <dataType>ClockStateEnum</dataType>
+                        <updateType>Conditional</updateType>
+                        <updateCondition>on change</updateCondition>
+                        <ownership>DivestAcquire</ownership>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>State of clock - started, paused or in an error state.</semantics>
+                    </attribute>
+                </objectClass>
+            </objectClass>
+            <objectClass>
+                <name>DdcaClient</name>
+                <sharing>PublishSubscribe</sharing>
+                <semantics>Represents a DDCA client application.</semantics>
+                <attribute>
+                    <name>Uuid</name>
+                    <dataType>UuidArrayOfHLAbyte16</dataType>
+                    <updateType>Static</updateType>
+                    <updateCondition>NA</updateCondition>
+                    <ownership>NoTransfer</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>DDCA Client/Master UUID</semantics>
+                </attribute>
+                <attribute>
+                    <name>Name</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <updateType>Static</updateType>
+                    <updateCondition>NA</updateCondition>
+                    <ownership>NoTransfer</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>User friendly name.</semantics>
+                </attribute>
+                <attribute>
+                    <name>State</name>
+                    <dataType>DdcaClientStateEnum</dataType>
+                    <updateType>Conditional</updateType>
+                    <updateCondition>On change</updateCondition>
+                    <ownership>NoTransfer</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>Current DDCA state</semantics>
+                </attribute>
+                <attribute>
+                    <name>DdcaCompatibilityLevel</name>
+                    <dataType>DdcaCompatibilityLevelEnum</dataType>
+                    <updateType>Conditional</updateType>
+                    <updateCondition>On change</updateCondition>
+                    <ownership>NoTransfer</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>Client applications compatibility level for DDCA interoperability</semantics>
+                </attribute>
+            </objectClass>
+            <objectClass>
+                <name>BaseEntity</name>
+                <objectClass>
+                    <name>PhysicalEntity</name>
+                    <objectClass>
+                        <name>Munition</name>
+                        <objectClass>
+                            <name>NETN_Munition</name>
+                            <objectClass>
+                                <name>DCSS_Munition</name>
+                                <sharing>PublishSubscribe</sharing>
+                                <semantics>A munition entity with added identification information.</semantics>
+                                <attribute>
+                                    <name>Callsign</name>
+                                    <dataType>Callsign</dataType>
+                                    <updateType>Static</updateType>
+                                    <updateCondition>NA</updateCondition>
+                                    <ownership>DivestAcquire</ownership>
+                                    <sharing>PublishSubscribe</sharing>
+                                    <transportation>HLAbestEffort</transportation>
+                                    <order>Receive</order>
+                                    <semantics>The name of the object.</semantics>
+                                </attribute>
+                                <attribute>
+                                    <name>Status</name>
+                                    <dataType>ActiveStatusEnum8</dataType>
+                                    <updateType>Conditional</updateType>
+                                    <updateCondition>On change</updateCondition>
+                                    <ownership>DivestAcquire</ownership>
+                                    <sharing>PublishSubscribe</sharing>
+                                    <transportation>HLAbestEffort</transportation>
+                                    <order>Receive</order>
+                                    <semantics>If an instance shall be taken into account by federates.</semantics>
+                                </attribute>
+                                <attribute>
+                                    <name>Activity</name>
+                                    <dataType>AggregateMissionEnum16</dataType>
+                                    <updateType>Conditional</updateType>
+                                    <updateCondition>On change</updateCondition>
+                                    <ownership>DivestAcquire</ownership>
+                                    <sharing>PublishSubscribe</sharing>
+                                    <transportation>HLAbestEffort</transportation>
+                                    <order>Receive</order>
+                                    <semantics>The activity of the munition.</semantics>
+                                </attribute>
+                            </objectClass>
+                        </objectClass>
+                    </objectClass>
+                    <objectClass>
+                        <name>Expendables</name>
+                        <objectClass>
+                            <name>DCSS_Expendables</name>
+                            <sharing>PublishSubscribe</sharing>
+                            <semantics>An expendable (chaff or flare) entity with added identification information.</semantics>
+                            <attribute>
+                                <name>Callsign</name>
+                                <dataType>Callsign</dataType>
+                                <updateType>Static</updateType>
+                                <updateCondition>NA</updateCondition>
+                                <ownership>DivestAcquire</ownership>
+                                <sharing>PublishSubscribe</sharing>
+                                <transportation>HLAbestEffort</transportation>
+                                <order>Receive</order>
+                                <semantics>The name of the object.</semantics>
+                            </attribute>
+                            <attribute>
+                                <name>Status</name>
+                                <dataType>ActiveStatusEnum8</dataType>
+                                <updateType>Conditional</updateType>
+                                <updateCondition>On change</updateCondition>
+                                <ownership>DivestAcquire</ownership>
+                                <sharing>PublishSubscribe</sharing>
+                                <transportation>HLAbestEffort</transportation>
+                                <order>Receive</order>
+                                <semantics>The status of the object.</semantics>
+                            </attribute>
+                            <attribute>
+                                <name>Activity</name>
+                                <dataType>AggregateMissionEnum16</dataType>
+                                <updateType>Conditional</updateType>
+                                <updateCondition>On change</updateCondition>
+                                <ownership>DivestAcquire</ownership>
+                                <sharing>PublishSubscribe</sharing>
+                                <transportation>HLAbestEffort</transportation>
+                                <order>Receive</order>
+                                <semantics>The activity of the object.</semantics>
+                            </attribute>
+                            <attribute>
+                                <name>UniqueID</name>
+                                <dataType>UuidArrayOfHLAbyte16</dataType>
+                                <updateType>Static</updateType>
+                                <updateCondition>NA</updateCondition>
+                                <ownership>NoTransfer</ownership>
+                                <sharing>PublishSubscribe</sharing>
+                                <transportation>HLAbestEffort</transportation>
+                                <order>Receive</order>
+                                <semantics>The unique ID for this object.</semantics>
+                            </attribute>
+                        </objectClass>
+                    </objectClass>
+                </objectClass>
+            </objectClass>
+            <objectClass>
+                <name>IRCUser</name>
+                <sharing>Subscribe</sharing>
+                <semantics>Represents core data held in an IRC Server.</semantics>
+                <attribute>
+                    <name>UserId</name>
+                    <dataType>EntityIdentifierStruct</dataType>
+                    <updateType>Static</updateType>
+                    <updateCondition>NA</updateCondition>
+                    <ownership>DivestAcquire</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>Unique ID for this IRC User.</semantics>
+                </attribute>
+                <attribute>
+                    <name>UserNick</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <updateType>NA</updateType>
+                    <updateCondition>NA</updateCondition>
+                    <ownership>DivestAcquire</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>IRC Nickname for the user.</semantics>
+                </attribute>
+                <attribute>
+                    <name>Channels</name>
+                    <dataType>IRCChannelArray</dataType>
+                    <updateType>NA</updateType>
+                    <updateCondition>NA</updateCondition>
+                    <ownership>DivestAcquire</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>List of channels that are active in the server.</semantics>
+                </attribute>
+            </objectClass>
+        </objectClass>
+    </objects>
+    <interactions>
+        <interactionClass>
+            <name>HLAinteractionRoot</name>
+            <interactionClass>
+                <name>Service</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>Receive</order>
+                <semantics>Scaffolding class to denote a service interaction</semantics>
+                <interactionClass>
+                    <name>Message</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>General purpose message interaction with a free text attribute and a variable datum set array</semantics>
+                    <parameter>
+                        <name>Id</name>
+                        <dataType>UuidArrayOfHLAbyte16</dataType>
+                        <semantics>Unique id for this error</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>FederateName</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics>Name of federate that generated the error.</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Text</name>
+                        <dataType>HLAASCIIstring</dataType>
+                        <semantics>The message text.</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Timestamp</name>
+                        <dataType>DateTimeStruct</dataType>
+                        <semantics>Time of the error</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Level</name>
+                        <dataType>LevelType</dataType>
+                        <semantics>The level of the message</semantics>
+                    </parameter>
+                </interactionClass>
+                <interactionClass>
+                    <name>WeatherBase</name>
+                    <sharing>Neither</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>Base class for all requests and responses.</semantics>
+                    <parameter>
+                        <name>InstanceID</name>
+                        <dataType>Integer64</dataType>
+                        <semantics>The ID of weather instance of interest.</semantics>
+                    </parameter>
+                    <interactionClass>
+                        <name>WeatherRequestLocation</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Request to get the weather at a particular instant at a particular location. Results in a WeatherResponse interaction.</semantics>
+                        <parameter>
+                            <name>WeatherData</name>
+                            <dataType>WeatherRequestData</dataType>
+                            <semantics>The time, location and domain information necessary to make the weather request.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>WeatherRequestLocationList</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Request for multiple, independent weather requests. Results in a WeatherResponseList</semantics>
+                        <parameter>
+                            <name>WeatherRequestDataList</name>
+                            <dataType>ArrayOfWeatherRequestData</dataType>
+                            <semantics>Array of the weather data.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>WeatherRequestLOSBase</name>
+                        <sharing>Neither</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Base class line of sight requests.</semantics>
+                        <parameter>
+                            <name>Sensitivity</name>
+                            <dataType>Float32</dataType>
+                            <semantics>A number between 0.0 and 1.0 that specifies the sensitivity of the change detection algorithm. Low sensitivities will respond only to large changes in weather conditions and produce a smaller number of segments, with 0.0 creating segments with a minimum length of 10km. High sensitivities produce a larger number of segments, with 1.0 creating segments with a minimum length of 100m. The default sensitivity is 0.5, which corresponds to a minimum segment length of 1km.</semantics>
+                        </parameter>
+                        <interactionClass>
+                            <name>WeatherRequestLOSIDBase</name>
+                            <sharing>Neither</sharing>
+                            <transportation>HLAreliable</transportation>
+                            <order>Receive</order>
+                            <semantics>Base class for LOS weather requests.</semantics>
+                            <parameter>
+                                <name>ID</name>
+                                <dataType>RequestIdentifier</dataType>
+                                <semantics>The ID record for the interaction.</semantics>
+                            </parameter>
+                            <parameter>
+                                <name>TimeOffset</name>
+                                <dataType>Float64</dataType>
+                                <semantics>Time offset since the start of the instance, seconds.</semantics>
+                            </parameter>
+                            <parameter>
+                                <name>LOSElements</name>
+                                <dataType>ArrayOfLineOfSightElement</dataType>
+                                <semantics>The data types of interest.</semantics>
+                            </parameter>
+                            <parameter>
+                                <name>StartLocation</name>
+                                <dataType>GeoPoint3D</dataType>
+                                <semantics>The start of the line of sight vector.</semantics>
+                            </parameter>
+                            <interactionClass>
+                                <name>WeatherRequestBetweenLocations</name>
+                                <sharing>PublishSubscribe</sharing>
+                                <transportation>HLAreliable</transportation>
+                                <order>Receive</order>
+                                <semantics>Query the weather conditions between two points. Results in a WeatherSegmentResponse.</semantics>
+                                <parameter>
+                                    <name>EndLocation</name>
+                                    <dataType>GeoPoint3D</dataType>
+                                    <semantics>The end of the line of sight vector.</semantics>
+                                </parameter>
+                            </interactionClass>
+                            <interactionClass>
+                                <name>WeatherRequestAlongPath</name>
+                                <sharing>PublishSubscribe</sharing>
+                                <transportation>HLAreliable</transportation>
+                                <order>Receive</order>
+                                <semantics>Weather request along a vector with the given direction and path length. Results in a WeatherSegmentResponse.</semantics>
+                                <parameter>
+                                    <name>Direction</name>
+                                    <dataType>Orientation</dataType>
+                                    <semantics>The azimuth from location as a compass angle in degrees, with 0 as north, 90 as east, etc.
+The elevation from location as an angle in degrees in the range -90 .. 90 with positive up</semantics>
+                                </parameter>
+                                <parameter>
+                                    <name>Length</name>
+                                    <dataType>MeterFloat32</dataType>
+                                    <semantics>The length of the path, m.</semantics>
+                                </parameter>
+                            </interactionClass>
+                        </interactionClass>
+                        <interactionClass>
+                            <name>WeatherRequestLOSIDListBase</name>
+                            <sharing>Neither</sharing>
+                            <transportation>HLAreliable</transportation>
+                            <order>Receive</order>
+                            <semantics>Base class for LOS list interactions.</semantics>
+                            <parameter>
+                                <name>IDs</name>
+                                <dataType>ArrayOfRequestIdentifier</dataType>
+                                <semantics>List ID records.</semantics>
+                            </parameter>
+                            <parameter>
+                                <name>TimeOffsets</name>
+                                <dataType>ArrayOfFloat64</dataType>
+                                <semantics>Array of TimeOffsets.</semantics>
+                            </parameter>
+                            <parameter>
+                                <name>LOSElements</name>
+                                <dataType>ArrayOfArrayOfLineOfSightElement</dataType>
+                                <semantics>List of LOSElements of interest.</semantics>
+                            </parameter>
+                            <parameter>
+                                <name>StartLocations</name>
+                                <dataType>ArrayofGeoPoint3D</dataType>
+                                <semantics>Array of the start locations for the LOS requests.</semantics>
+                            </parameter>
+                            <interactionClass>
+                                <name>WeatherRequestBetweenLocationsList</name>
+                                <sharing>PublishSubscribe</sharing>
+                                <transportation>HLAreliable</transportation>
+                                <order>Receive</order>
+                                <semantics>Multiple, independent LOS requests between two points. Results in a WeatherSegmentResponseList.</semantics>
+                                <parameter>
+                                    <name>EndLocations</name>
+                                    <dataType>ArrayofGeoPoint3D</dataType>
+                                    <semantics>Array of the end locations for the LOS requests.</semantics>
+                                </parameter>
+                            </interactionClass>
+                            <interactionClass>
+                                <name>WeatherRequestAlongPathList</name>
+                                <sharing>PublishSubscribe</sharing>
+                                <transportation>HLAreliable</transportation>
+                                <order>Receive</order>
+                                <semantics>Multiple, independent path requests. Results in a WeatherSegmentResponse.</semantics>
+                                <parameter>
+                                    <name>Directions</name>
+                                    <dataType>ArrayOfOrientation</dataType>
+                                    <semantics>Array of direction vectors.</semantics>
+                                </parameter>
+                                <parameter>
+                                    <name>Lengths</name>
+                                    <dataType>ArrayOfMeterFloat32</dataType>
+                                    <semantics>Array of path lengths.</semantics>
+                                </parameter>
+                            </interactionClass>
+                        </interactionClass>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>WeatherResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Weather responses for single requests.</semantics>
+                        <parameter>
+                            <name>ResponseData</name>
+                            <dataType>WeatherResponseData</dataType>
+                            <semantics>The data for the response.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>SetActiveWeatherInstance</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Set the active weather instance for querying.</semantics>
+                        <parameter>
+                            <name>Active</name>
+                            <dataType>HLAboolean</dataType>
+                            <semantics>Set true if the supplied ID is that of the active weather instance, false otherwise</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>WeatherResponseList</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>A list of weather responses. Sent after a WeatherRequestLocationList is received.</semantics>
+                        <parameter>
+                            <name>WeatherResponseDataList</name>
+                            <dataType>ArrayOfWeatherResponseData</dataType>
+                            <semantics>An array of all the responses.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>WeatherSegmentResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Response to a path request.</semantics>
+                        <parameter>
+                            <name>SegmentData</name>
+                            <dataType>WeatherSegmentData</dataType>
+                            <semantics>The data for the LOS request.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>WeatherSegmentResponseList</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>List variant for multiple LOS responses.</semantics>
+                        <parameter>
+                            <name>SegmentData</name>
+                            <dataType>ArrayOfWeatherSegmentData</dataType>
+                            <semantics>Array of the LOS responses.</semantics>
+                        </parameter>
+                    </interactionClass>
+                </interactionClass>
+            </interactionClass>
+            <interactionClass>
+                <name>MessageHeader</name>
+                <sharing>Neither</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>Receive</order>
+                <semantics>A common message header with the following information, used by all DDCA messages.</semantics>
+                <parameter>
+                    <name>SessionID</name>
+                    <dataType>UuidArrayOfHLAbyte16</dataType>
+                    <semantics>UUID of the DDCA Session ID</semantics>
+                </parameter>
+                <parameter>
+                    <name>SenderID</name>
+                    <dataType>UuidArrayOfHLAbyte16</dataType>
+                    <semantics>UUID of the sending application</semantics>
+                </parameter>
+                <parameter>
+                    <name>ReceiverID</name>
+                    <dataType>UuidArrayOfHLAbyte16</dataType>
+                    <semantics>UUID of the receiving application</semantics>
+                </parameter>
+                <parameter>
+                    <name>MessageType</name>
+                    <dataType>UnsignedInteger8</dataType>
+                    <semantics>Enumeration of message types (some protocols/interfaces may require this in order to process)</semantics>
+                </parameter>
+                <parameter>
+                    <name>MessageSize</name>
+                    <dataType>UnsignedInteger16</dataType>
+                    <semantics>Length of the message (some protocols/interfaces may require this in order to process), in bytes. This value represents the length of the message, including the message header</semantics>
+                </parameter>
+                <parameter>
+                    <name>MessageID</name>
+                    <dataType>UnsignedInteger32</dataType>
+                    <semantics>Unique (by sender) message id. The sender of the message shall maintain a unique message ID value, and shall increment this value by 1 for each message it sends.</semantics>
+                </parameter>
+                <parameter>
+                    <name>DebriefTime</name>
+                    <dataType>UnsignedInteger64</dataType>
+                    <semantics>Wall clock Zulu time of the DDCA message creation, in milliseconds since January 01, 1970. May be used by Client applications to determine message ordering or to compute network latency</semantics>
+                </parameter>
+                <interactionClass>
+                    <name>DdcaMasterInteraction</name>
+                    <sharing>Neither</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>Represents a DDCA master message.</semantics>
+                    <interactionClass>
+                        <name>Load</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The Load Control message is used to load recordings for playback. Recordings are identified by Session ID. The Load Control message can only be processed from a Client application’s READY state and enables the Client application’s entry into the STOP state.</semantics>
+                        <parameter>
+                            <name>StartDataTime</name>
+                            <dataType>UnsignedInteger64</dataType>
+                            <semantics>DataTime corresponding to the beginning of the playback window. DataTime field represents the date/time at which the data was created (in milliseconds since January 01, 1970)</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>EndDataTime</name>
+                            <dataType>UnsignedInteger64</dataType>
+                            <semantics>DataTime corresponding to the end of the playback window. DataTime field represents the date/time at which the data was created (in milliseconds since January 01, 1970)</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>Close</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The Close Control message instructs Client application(s) to free or release any resources such as files, videos, etc. in use as a result of a previous Load control message. Upon receipt of the Close Control message, a Client application shall cease any operations currently in progress, and shall unload any file(s) that are currently loaded and transition into the READY state.</semantics>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>Sync</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Instructs Client application(s) to perform Play, Stop, Pause, and Seek operations. Sync will be sent out at periodic intervals.</semantics>
+                        <parameter>
+                            <name>Purpose</name>
+                            <dataType>DdcaSyncPurposeEnum</dataType>
+                            <semantics>Purpose of the sync operation: Play, Stop, Pause, or Seek</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>CurrentTime</name>
+                            <dataType>UnsignedInteger64</dataType>
+                            <semantics>DataTime corresponding to a specific data time within the playback window. DataTime represents the date/time at which the data was created (in milliseconds since January 01, 1970)</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Speed</name>
+                            <dataType>Float32</dataType>
+                            <semantics>The requested playback speed</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>TimeType</name>
+                            <dataType>SyncTimeTypeEnum</dataType>
+                            <semantics>Whether the time is a time of day or an offset from the current time.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>Join</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The Join Control message enables the Master application to instruct a Client application to join a DDCA event by referencing its ClientID. A Client application that accepts a Join Control message transitions from the UNJOINED state to the READY state.</semantics>
+                        <parameter>
+                            <name>ClientID</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the Client application</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>Leave</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Instructs that a particular Client or Client application(s) leave a DDCA event</semantics>
+                        <parameter>
+                            <name>ClientID</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the Client application</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>List</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Instructs Client application(s) to list all available recordings. The List Control message can occur from the READY state and keeps the Client in the READY state.</semantics>
+                        <parameter>
+                            <name>StartDataTime</name>
+                            <dataType>UnsignedInteger64</dataType>
+                            <semantics>DataTime corresponding to the beginning of the search window. DataTime field represents the date/time at which the data was created (in milliseconds since January 01, 1970)</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>EndDataTime</name>
+                            <dataType>UnsignedInteger64</dataType>
+                            <semantics>DataTime corresponding to the end of the search window. DataTime field represents the date/time at which the data was created (in milliseconds since January 01, 1970)</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>SearchType</name>
+                            <dataType>DdcaSearchTypeEnum</dataType>
+                            <semantics>Specifies the search type</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>RequestStatus</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The Request Status Request message enables the Master application to request the status of Client application(s). The Request Status Request message may occur in any state, and enables no state transitions. Client applications that receive a Request Status message should respond to the message sender with their current status.</semantics>
+                        <parameter>
+                            <name>MasterID</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the master application</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>DDCACompatibility</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The DDCACompatibility Request message is issued by the Master application to request a Client application to report its compatibility level for DDCA interoperability. This field exists to support growth and expansion of the DDCA standard.</semantics>
+                        <parameter>
+                            <name>Compatibility</name>
+                            <dataType>DdcaCompatibilityLevelEnum</dataType>
+                            <semantics>Enumerated value representing DDCA compatibility level</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>LeaveResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Process a Client application’s request to leave a DDCA event.</semantics>
+                        <parameter>
+                            <name>MasterID</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the Master application</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Response</name>
+                            <dataType>DdcaJoinLeaveResponseEnum</dataType>
+                            <semantics>Enumerated leave status response</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>ClientID</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the participant</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>JoinResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Process a Client application’s request to join a DDCA event.</semantics>
+                        <parameter>
+                            <name>MasterID</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the Master application</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Response</name>
+                            <dataType>DdcaJoinLeaveResponseEnum</dataType>
+                            <semantics>Enumerated join status response</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>ClientID</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the participant</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>AddBookmark</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Add a bookmark to the log.</semantics>
+                        <parameter>
+                            <name>Name</name>
+                            <dataType>HLAASCIIstring</dataType>
+                            <semantics>name of the bookmark</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Time</name>
+                            <dataType>UnsignedInteger64</dataType>
+                            <semantics>recorder time, in ns, of the bookmark. Use -1 to indicate to client to use its current elapsed log time.</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Description</name>
+                            <dataType>HLAASCIIstring</dataType>
+                            <semantics>description of the bookmark</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>CustomData</name>
+                            <dataType>ArrayOfHLAASCIIstring</dataType>
+                            <semantics>Array of custom string data</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>RemoveBookmark</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Used to remove a bookmark from a recording.</semantics>
+                        <parameter>
+                            <name>Name</name>
+                            <dataType>HLAASCIIstring</dataType>
+                            <semantics>Remove bookmark with the specified name.</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>ListBookmarks</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Control message to instruct clients to return a ListBookmarksResponse</semantics>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>GotoBookmark</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Seek to the time of the named bookmark.</semantics>
+                        <parameter>
+                            <name>Name</name>
+                            <dataType>HLAASCIIstring</dataType>
+                            <semantics>The name of the bookmark</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>ExportChannel</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics></semantics>
+                        <parameter>
+                            <name>Name</name>
+                            <dataType>HLAASCIIstring</dataType>
+                            <semantics>The name of the channel to export</semantics>
+                        </parameter>
+                    </interactionClass>
+                </interactionClass>
+                <interactionClass>
+                    <name>DdcaClientInteraction</name>
+                    <sharing>Neither</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>Represents a DDCA client message.</semantics>
+                    <interactionClass>
+                        <name>Error</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The Error message is sent anytime a Client application experiences an error condition. Information in this message includes error code, error level, and a description of the error.</semantics>
+                        <parameter>
+                            <name>ErrorCode</name>
+                            <dataType>UnsignedInteger32</dataType>
+                            <semantics>Client-defined error code</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>ErrorLevel</name>
+                            <dataType>DdcaErrorLevelEnum</dataType>
+                            <semantics>Level of error</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>DataLength</name>
+                            <dataType>UnsignedInteger16</dataType>
+                            <semantics>Length of error data</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>ErrorData</name>
+                            <dataType>HLAASCIIstring</dataType>
+                            <semantics>Description of the error condition</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>JoinRequest</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>This message is sent when a Client application is requesting to join a DDCA event. If accepted, the Client application shall transition from the UNJOINED state to the READY state.</semantics>
+                        <parameter>
+                            <name>ClientID</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the Client application</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>NameLength</name>
+                            <dataType>UnsignedInteger16</dataType>
+                            <semantics>Indicates the length of the Name field</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Name</name>
+                            <dataType>HLAASCIIstring</dataType>
+                            <semantics>Name of the Client application</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>LeaveRequest</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>This message is sent when a Client application is requesting to leave a DDCA event. Upon acknowledgement, the Client application shall transition into the UNJOINED state and is free to join other DDCA events</semantics>
+                        <parameter>
+                            <name>ClientID</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the Client application</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>Acknowledge</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Many of the messages sent by the Master application are acknowledged by the Client application. Examples include: Sync, Join, Leave, Close, and Load. The components of an Acknowledge message sent by the Client application include the message ID being responded to (message ID), the Acknowledge State (Ack State), and the Client application’s current state (CurrentState)</semantics>
+                        <parameter>
+                            <name>MasterMessageID</name>
+                            <dataType>UnsignedInteger32</dataType>
+                            <semantics>Unique identifier of the message sent from the DDCA master application</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>AckState</name>
+                            <dataType>DdcaAcknowledgeStateEnum</dataType>
+                            <semantics>Status of Acknowledge</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>CurrentState</name>
+                            <dataType>DdcaClientStateEnum</dataType>
+                            <semantics>Current state</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>ListResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>This message is sent when a Client application has received the List Control message from the DDCA Master application. Upon receipt of this message, the Client application shall immediately send an Acknowledge message with the Acknowledge State field set to “WaitingToComplete” and the CurrentState set to READY. When the Client application has retrieved its list, it shall send its list of all available sessions to the Master application via the ListResponse message</semantics>
+                        <parameter>
+                            <name>NumSessions</name>
+                            <dataType>UnsignedInteger32</dataType>
+                            <semantics>Number of Session Data records contained in the ListResponse message</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>ClientID</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the Client application</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>SessionData</name>
+                            <dataType>SessionArray</dataType>
+                            <semantics>Array of SessionData</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>LoadResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Upon receipt of the Load Control message, the Client application shall immediately send an Acknowledge message with the Acknowledge State field set to WaitingToComplete and the CurrentState set to READY. Client application(s) shall then load any recording(s) that match the DataTime window specified in the Load Control message</semantics>
+                        <parameter>
+                            <name>NumSessions</name>
+                            <dataType>UnsignedInteger16</dataType>
+                            <semantics>Number of Session Data records loaded by the Client application</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>ClientID</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the Client application</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>StatusResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>This message is sent when a Client application is reporting its status to the DDCA Master application. If in the UNJOINED state, the Client application shall respond to any Status Request Control message received. If in any other state, the Client application shall respond only to Status Request Control messages from the Master application it is joined to. A StatusResponse message may be issued in any state, and results in no state transitions.</semantics>
+                        <parameter>
+                            <name>ClientId</name>
+                            <dataType>UuidArrayOfHLAbyte16</dataType>
+                            <semantics>Unique identifier of the Client application</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>CurrentState</name>
+                            <dataType>DdcaClientStateEnum</dataType>
+                            <semantics>Current state</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>NameLength</name>
+                            <dataType>UnsignedInteger16</dataType>
+                            <semantics>Indicates the length of the Name field</semantics>
+                        </parameter>
+                        <parameter>
+                            <name>Name</name>
+                            <dataType>HLAASCIIstring</dataType>
+                            <semantics>Name of the Client application</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>DdcaCompatibilityResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>The DDCACompatibilityResponse message is sent when the Client application is reporting its compatibility level for DDCA interoperability to the Master application.
+
+N.B. SISO-STD-015-2016 does not list the CompatibilityLevel field - seems to be an oversight.</semantics>
+                        <parameter>
+                            <name>CompatibilityLevel</name>
+                            <dataType>DdcaCompatibilityLevelEnum</dataType>
+                            <semantics>Enumerated value representing DDCA compatibility level</semantics>
+                        </parameter>
+                    </interactionClass>
+                    <interactionClass>
+                        <name>ListBookmarksResponse</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <transportation>HLAreliable</transportation>
+                        <order>Receive</order>
+                        <semantics>Send in response to a ListBookmarks interaction.</semantics>
+                        <parameter>
+                            <name>BookmarkList</name>
+                            <dataType>BookmarkArray</dataType>
+                            <semantics>list of all bookmarks</semantics>
+                        </parameter>
+                    </interactionClass>
+                </interactionClass>
+                <interactionClass>
+                    <name>DDCAX</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAreliable</transportation>
+                    <order>Receive</order>
+                    <semantics>The DDCA-X message can be sent by either a Master or a Client application. DDCA-X messages are designed to provide a variable payload section, similar to that of a DIS Set Data Pdu. The variable payload section may contain any content as specified by the sender of the message. Senders and recipients of DDCA-X message(s) must have a shared understanding of the DDCA-X payload prior to using the message.</semantics>
+                    <parameter>
+                        <name>DataID</name>
+                        <dataType>UnsignedInteger32</dataType>
+                        <semantics>Identifier for the data field</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>DataLength</name>
+                        <dataType>UnsignedInteger16</dataType>
+                        <semantics>Length of the data field, in bytes</semantics>
+                    </parameter>
+                    <parameter>
+                        <name>Data</name>
+                        <dataType>UnsignedInteger8LengthlessArray</dataType>
+                        <semantics>Contents of the data field</semantics>
+                    </parameter>
+                </interactionClass>
+            </interactionClass>
+            <interactionClass>
+                <name>IRCChannelMessage</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>Receive</order>
+                <semantics></semantics>
+                <parameter>
+                    <name>ChannelName</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics>The name of the IRC channel the message was sent in</semantics>
+                </parameter>
+                <parameter>
+                    <name>SenderId</name>
+                    <dataType>EntityIdentifierStruct</dataType>
+                    <semantics>The unique id of the message sender</semantics>
+                </parameter>
+                <parameter>
+                    <name>SenderNick</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics>The IRC nick of the message sender</semantics>
+                </parameter>
+                <parameter>
+                    <name>Message</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics>The IRC message</semantics>
+                </parameter>
+                <parameter>
+                    <name>TimeSent</name>
+                    <dataType>UnsignedInteger64</dataType>
+                    <semantics>Epoch timestamp sent at message transimission</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>IRCRawMessage</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>Receive</order>
+                <semantics></semantics>
+                <parameter>
+                    <name>Prefix</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics></semantics>
+                </parameter>
+                <parameter>
+                    <name>Command</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics></semantics>
+                </parameter>
+                <parameter>
+                    <name>CommandParameters</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics></semantics>
+                </parameter>
+                <parameter>
+                    <name>TimeReceived</name>
+                    <dataType>UnsignedInteger64</dataType>
+                    <semantics>Epoch timestamp sent at message transimission</semantics>
+                </parameter>
+                <parameter>
+                    <name>SenderId</name>
+                    <dataType>EntityIdentifierStruct</dataType>
+                    <semantics>ServerId unique id for the sender</semantics>
+                </parameter>
+                <parameter>
+                    <name>SenderNick</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics>The IRC nick of the sender</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>UpdateInhibitedMidsPairing</name>
+                <sharing>Neither</sharing>
+                <transportation>HLAbestEffort</transportation>
+                <order>Receive</order>
+                <semantics>Request for calculation of degradation effects</semantics>
+                <parameter>
+                    <name>TDLType</name>
+                    <dataType>Integer32</dataType>
+                </parameter>
+                <parameter>
+                    <name>SourceEntityID</name>
+                    <dataType>EntityIdentifierStruct</dataType>
+                </parameter>
+                <parameter>
+                    <name>DestinationEntityID</name>
+                    <dataType>EntityIdentifierStruct</dataType>
+                </parameter>
+                <parameter>
+                    <name>EnableDisableMIDSTerminal</name>
+                    <dataType>HLAboolean</dataType>
+                </parameter>
+            </interactionClass>
+        </interactionClass>
+    </interactions>
+    <dimensions/>
+    <transportations/>
+    <updateRates/>
+    <dataTypes>
+        <basicDataRepresentations/>
+        <simpleDataTypes>
+            <simpleData>
+                <name>Integer64</name>
+                <representation>HLAinteger64BE</representation>
+                <units>NA</units>
+                <resolution>1</resolution>
+                <accuracy>perfect</accuracy>
+                <semantics>Integer in the range [-2^63, 2^63 - 1].</semantics>
+            </simpleData>
+        </simpleDataTypes>
+        <enumeratedDataTypes>
+            <enumeratedData>
+                <name>LevelType</name>
+                <representation>HLAoctet</representation>
+                <semantics>The log level of the associated message</semantics>
+                <enumerator>
+                    <name>DEBUG</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>INFO</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>WARNING</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>SEVERE</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>CRITICAL</name>
+                    <value>4</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>DdcaJoinLeaveResponseEnum</name>
+                <representation>HLAoctet</representation>
+                <semantics>DDCA supported values for Join / Leave responses</semantics>
+                <enumerator>
+                    <name>Accept</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Reject</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Error</name>
+                    <value>3</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>DdcaCompatibilityLevelEnum</name>
+                <representation>HLAoctet</representation>
+                <semantics>The DDCACompatibility message is issued by the Master to request a Client to report its compatibility level for DDCA interoperability</semantics>
+                <enumerator>
+                    <name>Standard</name>
+                    <value>1</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>DdcaErrorLevelEnum</name>
+                <representation>HLAoctet</representation>
+                <semantics>DDCA shall support error levels. Client applications are encouraged to use best practices when determining the appropriate error level for a given message; i.e., avoid using Critical or Error level for engineering-level debugging messages</semantics>
+                <enumerator>
+                    <name>Verbose</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Information</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Warning</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>Error</name>
+                    <value>4</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>DdcaClientStateEnum</name>
+                <representation>HLAoctet</representation>
+                <semantics>A Client application shall use the enumerated values to indicate the Client’s current state as well as the Client’s supported states. All Clients must support at least the Unjoined and Ready states. A DDCA Client application may be in exactly one state at any instance in time</semantics>
+                <enumerator>
+                    <name>Unjoined</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>Ready</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Stop</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Seek</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>Sync</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>Pause</name>
+                    <value>5</value>
+                </enumerator>
+                <enumerator>
+                    <name>Error</name>
+                    <value>6</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>DdcaSyncPurposeEnum</name>
+                <representation>RPRunsignedInteger32BE</representation>
+                <semantics>Purpose of the sync operation: Play, Stop, Pause, or Seek.</semantics>
+                <enumerator>
+                    <name>Play</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>Stop</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Pause</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Seek</name>
+                    <value>3</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>DdcaSearchTypeEnum</name>
+                <representation>HLAoctet</representation>
+                <semantics>The SearchType field indicates what recordings are to be searched and returned by the Client
+application.</semantics>
+                <enumerator>
+                    <name>AllAvailableRecordings</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>StartsAtOrLaterThan</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>StartsAtOrEarlierThan</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>EndsAtOrLaterThan</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>EndsAtOrEarlierThan</name>
+                    <value>5</value>
+                </enumerator>
+                <enumerator>
+                    <name>Inclusive</name>
+                    <value>6</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>DdcaAcknowledgeStateEnum</name>
+                <representation>HLAoctet</representation>
+                <semantics>DDCA supported acknolwedge states</semantics>
+                <enumerator>
+                    <name>AbleToComply</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>WaitingToComplete</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>UnableToComply</name>
+                    <value>3</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>SyncTimeTypeEnum</name>
+                <representation>HLAoctet</representation>
+                <semantics>Whether the time supplied to the current time field in the Sync interaction is a time of day (from the epoch), or an offset to the current time. BEGIN and END indicate that the log should seek to the beginning and end of the recording respectively.</semantics>
+                <enumerator>
+                    <name>NOT_SET</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>TIME_OF_DAY</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>OFFSET</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>BEGIN</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>END</name>
+                    <value>4</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>PrecipitationType</name>
+                <representation>HLAoctet</representation>
+                <semantics>Enum representing different kinds of precipitation</semantics>
+                <enumerator>
+                    <name>InvalidPrecipitationType</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>Rain</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>FreezingRain</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Snow</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>Ice</name>
+                    <value>4</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>CloudClassification</name>
+                <representation>HLAoctet</representation>
+                <semantics>Enum representing cloud types</semantics>
+                <enumerator>
+                    <name>InvalidCloudClassification</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>NoCloud</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cirrus</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cirrocumulus</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cirrostratus</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>Altocumulus</name>
+                    <value>5</value>
+                </enumerator>
+                <enumerator>
+                    <name>Altostratus</name>
+                    <value>6</value>
+                </enumerator>
+                <enumerator>
+                    <name>Stratocumulus</name>
+                    <value>7</value>
+                </enumerator>
+                <enumerator>
+                    <name>Nimbostratus</name>
+                    <value>8</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cumulus</name>
+                    <value>9</value>
+                </enumerator>
+                <enumerator>
+                    <name>Stratus</name>
+                    <value>10</value>
+                </enumerator>
+                <enumerator>
+                    <name>CumulusCongestus</name>
+                    <value>11</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cumulonimbus</name>
+                    <value>12</value>
+                </enumerator>
+                <enumerator>
+                    <name>Unknown</name>
+                    <value>13</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>WeatherInstanceType</name>
+                <representation>HLAoctet</representation>
+                <semantics>Describes the weather instance type.  Real instances are created from historical weather data.  Live instances are created from current and forecast weather data and are automatically updated as weather data is published.  Standard weather instances are based on a standard atmosphere model and contain user-specified basic weather conditions</semantics>
+                <enumerator>
+                    <name>InvalidInstanceType</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>Real</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Live</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Standard</name>
+                    <value>3</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>StandardAtmosphereModel</name>
+                <representation>HLAoctet</representation>
+                <semantics>Describes the type of standard atmosphere model</semantics>
+                <enumerator>
+                    <name>ISA</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>SubArcticWinter</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>SubArcticSummer</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>MidLatitudeWinter</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>MidLatitudeSummer</name>
+                    <value>5</value>
+                </enumerator>
+                <enumerator>
+                    <name>Tropical</name>
+                    <value>6</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>GeoAreaType</name>
+                <representation>HLAoctet</representation>
+                <semantics>Describes the type of a GeoArea.  Currently only the Polygon type is supported</semantics>
+                <enumerator>
+                    <name>Polygon</name>
+                    <value>1</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>Domain</name>
+                <representation>HLAoctet</representation>
+                <semantics>Represents a distinct set of weather elements. Weather instances store data for one or more domains.</semantics>
+                <enumerator>
+                    <name>InvalidDomain</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>Ground</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Cloud</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Atmosphere</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>Surface</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>Subsurface</name>
+                    <value>5</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>WeatherDataElement</name>
+                <representation>HLAoctet</representation>
+                <semantics>Describes the requested type of gridded weather data.</semantics>
+                <enumerator>
+                    <name>InvalidWeatherDataElement</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>TemperatureAtAltitude</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>PressureAtAltitude</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>WindSpeedAtAltitude</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>WindDirectionAtAltitude</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>HumidityAtAltitude</name>
+                    <value>5</value>
+                </enumerator>
+                <enumerator>
+                    <name>MSLPressure</name>
+                    <value>6</value>
+                </enumerator>
+                <enumerator>
+                    <name>VerticalWindSpeed</name>
+                    <value>7</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundHumidity</name>
+                    <value>8</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundTemperature</name>
+                    <value>9</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundPressure</name>
+                    <value>10</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundWindSpeed</name>
+                    <value>11</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundWindDirection</name>
+                    <value>12</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundWindGust</name>
+                    <value>13</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundVisibility</name>
+                    <value>14</value>
+                </enumerator>
+                <enumerator>
+                    <name>GroundLightning</name>
+                    <value>15</value>
+                </enumerator>
+                <enumerator>
+                    <name>PrecipitationRate</name>
+                    <value>16</value>
+                </enumerator>
+                <enumerator>
+                    <name>PrecipitationType</name>
+                    <value>17</value>
+                </enumerator>
+                <enumerator>
+                    <name>ConvecPrecipitationRate</name>
+                    <value>18</value>
+                </enumerator>
+                <enumerator>
+                    <name>TotalCloudCover</name>
+                    <value>19</value>
+                </enumerator>
+                <enumerator>
+                    <name>HighCloudTop</name>
+                    <value>20</value>
+                </enumerator>
+                <enumerator>
+                    <name>HighCloudBase</name>
+                    <value>21</value>
+                </enumerator>
+                <enumerator>
+                    <name>HighCloudCover</name>
+                    <value>22</value>
+                </enumerator>
+                <enumerator>
+                    <name>HighCloudType</name>
+                    <value>23</value>
+                </enumerator>
+                <enumerator>
+                    <name>MidCloudTop</name>
+                    <value>24</value>
+                </enumerator>
+                <enumerator>
+                    <name>MidCloudBase</name>
+                    <value>25</value>
+                </enumerator>
+                <enumerator>
+                    <name>MidCloudCover</name>
+                    <value>26</value>
+                </enumerator>
+                <enumerator>
+                    <name>MidCloudType</name>
+                    <value>27</value>
+                </enumerator>
+                <enumerator>
+                    <name>LowCloudTop</name>
+                    <value>28</value>
+                </enumerator>
+                <enumerator>
+                    <name>LowCloudBase</name>
+                    <value>29</value>
+                </enumerator>
+                <enumerator>
+                    <name>LowCloudCover</name>
+                    <value>30</value>
+                </enumerator>
+                <enumerator>
+                    <name>LowCloudType</name>
+                    <value>31</value>
+                </enumerator>
+                <enumerator>
+                    <name>ConvecCloudCover</name>
+                    <value>32</value>
+                </enumerator>
+                <enumerator>
+                    <name>ConvecCloudTop</name>
+                    <value>33</value>
+                </enumerator>
+                <enumerator>
+                    <name>ConvecCloudBase</name>
+                    <value>34</value>
+                </enumerator>
+                <enumerator>
+                    <name>ConvecCloudType</name>
+                    <value>35</value>
+                </enumerator>
+                <enumerator>
+                    <name>SurfaceWindSpeed</name>
+                    <value>36</value>
+                </enumerator>
+                <enumerator>
+                    <name>SurfaceWindDirection</name>
+                    <value>37</value>
+                </enumerator>
+                <enumerator>
+                    <name>SurfaceWaveHeight</name>
+                    <value>38</value>
+                </enumerator>
+                <enumerator>
+                    <name>SurfaceWaveDirection</name>
+                    <value>39</value>
+                </enumerator>
+                <enumerator>
+                    <name>SubsurfaceTemperature</name>
+                    <value>40</value>
+                </enumerator>
+                <enumerator>
+                    <name>SubsurfaceSalinity</name>
+                    <value>41</value>
+                </enumerator>
+                <enumerator>
+                    <name>SubsurfaceCurrentSpeed</name>
+                    <value>42</value>
+                </enumerator>
+                <enumerator>
+                    <name>SubsurfaceCurrentDirection</name>
+                    <value>43</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>LineOfSightElement</name>
+                <representation>HLAoctet</representation>
+                <semantics>Enumerates the possible values for a line of sight data request</semantics>
+                <enumerator>
+                    <name>Temperature</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>Pressure</name>
+                    <value>2</value>
+                </enumerator>
+                <enumerator>
+                    <name>Humidity</name>
+                    <value>3</value>
+                </enumerator>
+                <enumerator>
+                    <name>Visibility</name>
+                    <value>4</value>
+                </enumerator>
+                <enumerator>
+                    <name>PrecipitationRate</name>
+                    <value>5</value>
+                </enumerator>
+                <enumerator>
+                    <name>CloudCover</name>
+                    <value>6</value>
+                </enumerator>
+            </enumeratedData>
+            <enumeratedData>
+                <name>ClockStateEnum</name>
+                <representation>HLAoctet</representation>
+                <semantics>The state of a clock.</semantics>
+                <enumerator>
+                    <name>PAUSED</name>
+                    <value>0</value>
+                </enumerator>
+                <enumerator>
+                    <name>RUNNING</name>
+                    <value>1</value>
+                </enumerator>
+                <enumerator>
+                    <name>ERROR</name>
+                    <value>2</value>
+                </enumerator>
+            </enumeratedData>
+        </enumeratedDataTypes>
+        <arrayDataTypes>
+            <arrayData>
+                <name>SessionArray</name>
+                <dataType>SessionDataStruct</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>List of session data</semantics>
+            </arrayData>
+            <arrayData>
+                <name>BookmarkArray</name>
+                <dataType>BookmarkStruct</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>List of bookmark data</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfHLAASCIIstring</name>
+                <dataType>HLAASCIIstring</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of strings</semantics>
+            </arrayData>
+            <arrayData>
+                <name>IRCChannelArray</name>
+                <dataType>HLAASCIIstring</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>List of channel names on an IRC network.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfWeatherSegment</name>
+                <dataType>WeatherSegment</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Dynamic array of weather segments.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>GeoPolygon</name>
+                <dataType>GeoPoint2D</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>A geographic area, represented as a list of geographic points in counterclockwise order.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfDomain</name>
+                <dataType>Domain</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>List of weather Domains</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfFloat32</name>
+                <dataType>Float32</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of floats</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayofGriddedDataElement</name>
+                <dataType>GriddedDataElement</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of gridded data elements.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfWeatherDataElement</name>
+                <dataType>WeatherDataElement</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of weather data elements to update in a gridded data object.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfDateTimeStruct</name>
+                <dataType>DateTimeStruct</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of DateTimeStructs.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayofGeoPoint3D</name>
+                <dataType>GeoPoint3D</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of GeoPoint3D.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfWeatherRequestData</name>
+                <dataType>WeatherRequestData</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of WeatherRequestData.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfLineOfSightElement</name>
+                <dataType>LineOfSightElement</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of LineOfSightElement.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfRequestIdentifier</name>
+                <dataType>RequestIdentifier</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of RequestIdentifier.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfArrayOfLineOfSightElement</name>
+                <dataType>ArrayOfLineOfSightElement</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of ArrayOfLineOfSightElement.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfOrientation</name>
+                <dataType>Orientation</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of Orientation.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfMeterFloat32</name>
+                <dataType>MeterFloat32</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of MeterFloat32.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfWeatherSegmentData</name>
+                <dataType>WeatherSegmentData</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of WeatherSegmentData used in WeatherSegmentResponseList</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfWeatherResponseData</name>
+                <dataType>WeatherResponseData</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of weather responses, used in WeatherResponseList</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfWeatherResponseDataVariant</name>
+                <dataType>WeatherResponseDataVariant</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of WeatherResponseDataVariant.</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfArrayOfWeatherSegment</name>
+                <dataType>ArrayOfWeatherSegment</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of ArrayOfWeatherSegment</semantics>
+            </arrayData>
+            <arrayData>
+                <name>ArrayOfFloat64</name>
+                <dataType>Float64</dataType>
+                <cardinality>Dynamic</cardinality>
+                <encoding>HLAvariableArray</encoding>
+                <semantics>Array of doubles.</semantics>
+            </arrayData>
+        </arrayDataTypes>
+        <fixedRecordDataTypes>
+            <fixedRecordData>
+                <name>DateTimeStruct</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>A fixed record to start the date/time stamp</semantics>
+                <field>
+                    <name>Year</name>
+                    <dataType>Integer16</dataType>
+                    <semantics>Year value</semantics>
+                </field>
+                <field>
+                    <name>Month</name>
+                    <dataType>Integer16</dataType>
+                    <semantics>Month value</semantics>
+                </field>
+                <field>
+                    <name>Day</name>
+                    <dataType>Integer16</dataType>
+                    <semantics>Day Value</semantics>
+                </field>
+                <field>
+                    <name>Hour</name>
+                    <dataType>Integer16</dataType>
+                    <semantics>Hour value (in 24 hour notation)</semantics>
+                </field>
+                <field>
+                    <name>Minute</name>
+                    <dataType>Integer16</dataType>
+                    <semantics>Minute value</semantics>
+                </field>
+                <field>
+                    <name>Second</name>
+                    <dataType>Integer16</dataType>
+                    <semantics>Second value</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>SessionDataStruct</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data for showing available recordings.</semantics>
+                <field>
+                    <name>SessionIdentifier</name>
+                    <dataType>UuidArrayOfHLAbyte16</dataType>
+                    <semantics>Unique identifier of the Client session</semantics>
+                </field>
+                <field>
+                    <name>StartTime</name>
+                    <dataType>UnsignedInteger64</dataType>
+                    <semantics>The starting DataTime for the Session, in seconds since 01-Jan-1970</semantics>
+                </field>
+                <field>
+                    <name>EndTime</name>
+                    <dataType>UnsignedInteger64</dataType>
+                    <semantics>The ending DataTime for the Session, in seconds since 01-Jan-1970</semantics>
+                </field>
+                <field>
+                    <name>NameLength</name>
+                    <dataType>UnsignedInteger32</dataType>
+                    <semantics>Length of the SessionName field in bytes</semantics>
+                </field>
+                <field>
+                    <name>SessionName</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics>Name of the Client session</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>BookmarkStruct</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data for recording a bookmark.</semantics>
+                <field>
+                    <name>Name</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics>Bookmark name</semantics>
+                </field>
+                <field>
+                    <name>RecorderTime</name>
+                    <dataType>UnsignedInteger64</dataType>
+                    <semantics>Bookmark time in ns</semantics>
+                </field>
+                <field>
+                    <name>Description</name>
+                    <dataType>HLAASCIIstring</dataType>
+                    <semantics>Bookmark Description</semantics>
+                </field>
+                <field>
+                    <name>CustomData</name>
+                    <dataType>ArrayOfHLAASCIIstring</dataType>
+                    <semantics>Array of custom string data.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>GeoPoint3D</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Geodetic point in three dimensions.</semantics>
+                <field>
+                    <name>Latitude</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Latitude Value, decimal degrees.</semantics>
+                </field>
+                <field>
+                    <name>Longitude</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Longitude value, decimal degrees.</semantics>
+                </field>
+                <field>
+                    <name>Altitude</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Altitude, metres.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>Orientation</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Describes the direction of a vector for a path request.</semantics>
+                <field>
+                    <name>Phi</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Heading from north, degrees.</semantics>
+                </field>
+                <field>
+                    <name>Psi</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Pitch, -90 to 90, degrees.</semantics>
+                </field>
+                <field>
+                    <name>Theta</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Roll, degrees.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>WeatherSegment</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Represents the atmospheric conditions along a line segment at a specific date and time.</semantics>
+                <field>
+                    <name>FromLocation</name>
+                    <dataType>GeoPoint3D</dataType>
+                    <semantics>Geographic point in three dimensions.</semantics>
+                </field>
+                <field>
+                    <name>ToLocation</name>
+                    <dataType>GeoPoint3D</dataType>
+                    <semantics>Geographic point in three dimensions.</semantics>
+                </field>
+                <field>
+                    <name>SegmentLength</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Length of the segment, m.</semantics>
+                </field>
+                <field>
+                    <name>ElementType</name>
+                    <dataType>LineOfSightElement</dataType>
+                    <semantics>The type of the requested data.</semantics>
+                </field>
+                <field>
+                    <name>ElementData</name>
+                    <dataType>Float32</dataType>
+                    <semantics>The value of the data type</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>GeoArea</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>A rectangular area defined by its lower left and upper right vertices.</semantics>
+                <field>
+                    <name>LowerLeft</name>
+                    <dataType>GeoPoint2D</dataType>
+                    <semantics>Lower left (south-west) corner of the area.</semantics>
+                </field>
+                <field>
+                    <name>UpperRight</name>
+                    <dataType>GeoPoint2D</dataType>
+                    <semantics>Upper right (north-east) corner of the area</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>GeoPoint2D</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Geodetic point in three dimensions.</semantics>
+                <field>
+                    <name>Latitude</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Latitude Value, decimal degrees.</semantics>
+                </field>
+                <field>
+                    <name>Longitude</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Longitude Value, decimal degrees.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>GriddedDataElement</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Represents a grid element containing a datum for a specified type of data (e.g. pressure, temperature).</semantics>
+                <field>
+                    <name>Type</name>
+                    <dataType>WeatherDataElement</dataType>
+                    <semantics>The type of weather data.</semantics>
+                </field>
+                <field>
+                    <name>Values</name>
+                    <dataType>ArrayOfFloat32</dataType>
+                    <semantics>The data for this element as a list of (NumSamplesX * NumSamplesY) values, ordered in rows starting from the top left (north-west) corner.  Points where there is no data contain the NO_DATA_AVAILABLE value.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>CloudLayer</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Describes a cloud layer</semantics>
+                <field>
+                    <name>Top</name>
+                    <dataType>Float32</dataType>
+                    <semantics>The upper altitude of the cloud layer, in meters.</semantics>
+                </field>
+                <field>
+                    <name>Base</name>
+                    <dataType>Float32</dataType>
+                    <semantics>The base altitude of the cloud layer, in meters.</semantics>
+                </field>
+                <field>
+                    <name>Coverage</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Cloud layer cloud coverage, as a percentage of the sky.</semantics>
+                </field>
+                <field>
+                    <name>Type</name>
+                    <dataType>CloudClassification</dataType>
+                    <semantics>Describes type of cloud present.  Cirrus and Cirro* are high level clouds, Alto* are mid level clouds, and the rest are low level clouds</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>AtmosphereResponseData</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data for an atmosphere response.</semantics>
+                <field>
+                    <name>Temperature</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Temperature of requested atmospheric weather, degrees celsius.</semantics>
+                </field>
+                <field>
+                    <name>Pressure</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Pressure of requested atmospheric weather, pascals.</semantics>
+                </field>
+                <field>
+                    <name>MSLPressure</name>
+                    <dataType>Float32</dataType>
+                    <semantics>MSL Pressure of requested atmospheric weather, pascals.</semantics>
+                </field>
+                <field>
+                    <name>WindDirection</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Wind Direction of requested atmospheric weather. Compass bearing in degrees.</semantics>
+                </field>
+                <field>
+                    <name>WindSpeed</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Wind Speed of requested atmospheric weather, metres per second.</semantics>
+                </field>
+                <field>
+                    <name>Humidity</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Humidity of requested atmospheric weather, percentage.</semantics>
+                </field>
+                <field>
+                    <name>VerticalWind</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Vertical wind speed, in metres per second</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>GroundResponseData</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data for a ground response.</semantics>
+                <field>
+                    <name>Temperature</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Temperature of requested ground weather, degrees celsius.</semantics>
+                </field>
+                <field>
+                    <name>Pressure</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Pressure of requested ground weather, pascals.</semantics>
+                </field>
+                <field>
+                    <name>MSLPressure</name>
+                    <dataType>Float32</dataType>
+                    <semantics>MSL Pressure of request ground weather, pascals.</semantics>
+                </field>
+                <field>
+                    <name>Humidity</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Humidity of requested ground weather, percentage.</semantics>
+                </field>
+                <field>
+                    <name>WindDirection</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Wind Direction of requested ground weather, compass bearing in degrees.</semantics>
+                </field>
+                <field>
+                    <name>WindSpeed</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Wind Speed of requested ground weather, metres per second.</semantics>
+                </field>
+                <field>
+                    <name>WindGust</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Wind Gust of requested ground weather, metres per second.</semantics>
+                </field>
+                <field>
+                    <name>TotalCloudCover</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Total cloud coverage, as a percentage of the sky.</semantics>
+                </field>
+                <field>
+                    <name>PrecipitationRate</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Precipitation Rate of requested ground weather, mm/hr.</semantics>
+                </field>
+                <field>
+                    <name>ConvecPrecipitationRate</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Convec Precipitation Rate of requested ground weather, mm/hr.</semantics>
+                </field>
+                <field>
+                    <name>PrecipitationType</name>
+                    <dataType>PrecipitationType</dataType>
+                    <semantics>Precipitation Type of requested ground weather.</semantics>
+                </field>
+                <field>
+                    <name>Visibility</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Visibility of requested ground weather, metres.</semantics>
+                </field>
+                <field>
+                    <name>Lightning</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Lightning prevalence, expressed as the probability of lightning occurring.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>RequestIdentifier</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>An identifier for a request. The user may use one or more of these to identify a request so that it can be paired with a response.</semantics>
+                <field>
+                    <name>UUID</name>
+                    <dataType>UuidArrayOfHLAbyte16</dataType>
+                    <semantics>UUID to uniquely identify the message.</semantics>
+                </field>
+                <field>
+                    <name>EntityIdentifier</name>
+                    <dataType>EntityIdentifierStruct</dataType>
+                    <semantics>The DIS Entity ID triplet (optional).</semantics>
+                </field>
+                <field>
+                    <name>Callsign</name>
+                    <dataType>Callsign</dataType>
+                    <semantics>The entity callsign (optional).</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>WeatherRequestData</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data for a weather request</semantics>
+                <field>
+                    <name>ID</name>
+                    <dataType>RequestIdentifier</dataType>
+                    <semantics>Identifier record to allow the user to match requests and responses.</semantics>
+                </field>
+                <field>
+                    <name>TimeOffset</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Time offset since the start of the instance, seconds.</semantics>
+                </field>
+                <field>
+                    <name>Location</name>
+                    <dataType>GeoPoint3D</dataType>
+                    <semantics>Location of the request.</semantics>
+                </field>
+                <field>
+                    <name>Domains</name>
+                    <dataType>ArrayOfDomain</dataType>
+                    <semantics>The weather domains of interest</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>CloudResponseData</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data for a cloud layer response.</semantics>
+                <field>
+                    <name>TotalCloudCover</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Total Cloud Cover of requested Cloud Layer weather as a percentage.</semantics>
+                </field>
+                <field>
+                    <name>HighCloud</name>
+                    <dataType>CloudLayer</dataType>
+                    <semantics>Describes the high cloud layer.</semantics>
+                </field>
+                <field>
+                    <name>MidCloud</name>
+                    <dataType>CloudLayer</dataType>
+                    <semantics>Describes the mid cloud layer.</semantics>
+                </field>
+                <field>
+                    <name>LowCloud</name>
+                    <dataType>CloudLayer</dataType>
+                    <semantics>Describes the low cloud layer.</semantics>
+                </field>
+                <field>
+                    <name>ConvecCloud</name>
+                    <dataType>CloudLayer</dataType>
+                    <semantics>Describes the convective cloud layer.</semantics>
+                </field>
+                <field>
+                    <name>PrecipitationRate</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Precipitation rate, in mm/hr.</semantics>
+                </field>
+                <field>
+                    <name>ConvecPrecipitationRate</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Convec Precipitation Rate of requested Cloud Layer weather, mm/hr.</semantics>
+                </field>
+                <field>
+                    <name>PrecipitationType</name>
+                    <dataType>PrecipitationType</dataType>
+                    <semantics>Precipitation Type of requested Cloud Layer weather.</semantics>
+                </field>
+                <field>
+                    <name>Lightning</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Lightning prevalence, expressed as the probability of lightning occurring.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>SurfaceResponseData</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data for a surface response.</semantics>
+                <field>
+                    <name>WindDirection</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Direction wind is blowing from, compass angle in degrees.</semantics>
+                </field>
+                <field>
+                    <name>WindSpeed</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Wind speed, metres per second.</semantics>
+                </field>
+                <field>
+                    <name>TotalWaveHeight</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Significant height of combined wind waves and swell,  metres.</semantics>
+                </field>
+                <field>
+                    <name>WindWaveHeight</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Significant height of wind waves, metres.</semantics>
+                </field>
+                <field>
+                    <name>WindWavePeriod</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Mean period of wind waves, seconds.</semantics>
+                </field>
+                <field>
+                    <name>WindWaveDirection</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Direction of wind waves, compass degrees.</semantics>
+                </field>
+                <field>
+                    <name>PrimaryWavePeriod</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Mean period of primary waves, seconds.</semantics>
+                </field>
+                <field>
+                    <name>PrimaryWaveDirection</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Direction of primary waves, compass degrees.</semantics>
+                </field>
+                <field>
+                    <name>SwellHeight</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Significant height of swell, metres.</semantics>
+                </field>
+                <field>
+                    <name>SwellPeriod</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Mean period of swell waves,  seconds.</semantics>
+                </field>
+                <field>
+                    <name>SwellDirection</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Direction of swell waves, compass degrees.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>SubsurfaceResponseData</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data for a subsurface response.</semantics>
+                <field>
+                    <name>Temperature</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Temperature, degrees Celsius.</semantics>
+                </field>
+                <field>
+                    <name>Salinity</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Salinity, PSU (g/kg).</semantics>
+                </field>
+                <field>
+                    <name>CurrentSpeed</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Current speed, metres per second.</semantics>
+                </field>
+                <field>
+                    <name>CurrentDirection</name>
+                    <dataType>Float32</dataType>
+                    <semantics>Current direction, in compass degrees.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>WeatherResponseData</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data for weather reponses.</semantics>
+                <field>
+                    <name>ID</name>
+                    <dataType>RequestIdentifier</dataType>
+                    <semantics>The ID of the response.</semantics>
+                </field>
+                <field>
+                    <name>Time</name>
+                    <dataType>DateTimeStruct</dataType>
+                    <semantics>Date/Time of the response.</semantics>
+                </field>
+                <field>
+                    <name>TimeOffset</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Time since the start of the instance, seconds.</semantics>
+                </field>
+                <field>
+                    <name>Location</name>
+                    <dataType>GeoPoint3D</dataType>
+                    <semantics>Position of requested weather.</semantics>
+                </field>
+                <field>
+                    <name>ResponseDataVariant</name>
+                    <dataType>ArrayOfWeatherResponseDataVariant</dataType>
+                    <semantics>Array of variants containing the data of the requested type.</semantics>
+                </field>
+            </fixedRecordData>
+            <fixedRecordData>
+                <name>WeatherSegmentData</name>
+                <encoding>HLAfixedRecord</encoding>
+                <semantics>Data type for weather segments returned from LOS requests.</semantics>
+                <field>
+                    <name>UUID</name>
+                    <dataType>UuidArrayOfHLAbyte16</dataType>
+                    <semantics>Unique identifier for this response, matched with request.</semantics>
+                </field>
+                <field>
+                    <name>DateTime</name>
+                    <dataType>DateTimeStruct</dataType>
+                    <semantics>Date time of weather segment data.</semantics>
+                </field>
+                <field>
+                    <name>TimeOffset</name>
+                    <dataType>Float64</dataType>
+                    <semantics>Time since the start of the instance, seconds.</semantics>
+                </field>
+                <field>
+                    <name>SegmentArrays</name>
+                    <dataType>ArrayOfArrayOfWeatherSegment</dataType>
+                    <semantics>Array of arrays of weather segments corresponding to areas of changing weather (e.g. temperature, pressure, visibility).</semantics>
+                </field>
+            </fixedRecordData>
+        </fixedRecordDataTypes>
+        <variantRecordDataTypes>
+            <variantRecordData>
+                <name>WeatherResponseDataVariant</name>
+                <discriminant>DataDomain</discriminant>
+                <dataType>Domain</dataType>
+                <alternative>
+                    <enumerator>Atmosphere</enumerator>
+                    <name>Atmos</name>
+                    <dataType>AtmosphereResponseData</dataType>
+                    <semantics>The atmosphere data.</semantics>
+                </alternative>
+                <alternative>
+                    <enumerator>Ground</enumerator>
+                    <name>Ground</name>
+                    <dataType>GroundResponseData</dataType>
+                    <semantics>The ground data.</semantics>
+                </alternative>
+                <alternative>
+                    <enumerator>Cloud</enumerator>
+                    <name>Cloud</name>
+                    <dataType>CloudResponseData</dataType>
+                    <semantics>Cloud response data.</semantics>
+                </alternative>
+                <alternative>
+                    <enumerator>Surface</enumerator>
+                    <name>Surface</name>
+                    <dataType>SurfaceResponseData</dataType>
+                    <semantics>The surface data.</semantics>
+                </alternative>
+                <alternative>
+                    <enumerator>Subsurface</enumerator>
+                    <name>Subsurface</name>
+                    <dataType>SubsurfaceResponseData</dataType>
+                    <semantics>Subsurface data</semantics>
+                </alternative>
+                <encoding>HLAvariantRecord</encoding>
+                <semantics>Different types of possible response.</semantics>
+            </variantRecordData>
+        </variantRecordDataTypes>
+    </dataTypes>
+</objectModel>

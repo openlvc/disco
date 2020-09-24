@@ -18,7 +18,11 @@
 package org.openlvc.disco.pdu.custom;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.openlvc.disco.connection.rpr.custom.dcss.types.array.UuidArrayOfHLAbyte16;
@@ -27,6 +31,7 @@ import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.GeoPoint3D;
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.custom.field.DcssWeatherDomain;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.EntityId;
 
@@ -43,7 +48,7 @@ public class DcssWeatherResponsePdu extends PDU
 	private Date dateTime;
 	private double timeOffset;
 	private double[] lla;
-	private byte weatherResponseType;
+	private Set<DcssWeatherDomain> domains;
 	private UUID uuid;
 	private EntityId entityId;
 	
@@ -64,7 +69,7 @@ public class DcssWeatherResponsePdu extends PDU
 		this.dateTime = new Date( 0L );
 		this.timeOffset = 0.0;
 		this.lla = new double[3];
-		this.weatherResponseType = 0;
+		this.domains = new HashSet<DcssWeatherDomain>();
 		this.uuid = new UUID( 0L, 0L );
 		this.entityId = new EntityId();
 		
@@ -84,7 +89,8 @@ public class DcssWeatherResponsePdu extends PDU
 	public void from( DisInputStream dis ) throws IOException
 	{
 		this.entityId.from( dis );
-		this.weatherResponseType = dis.readByte();
+		byte responseDomains = dis.readByte();
+		this.setDomains( DcssWeatherDomain.fromBitField(responseDomains) );
 		dis.skipBytes( 1 );
 		this.instanceId = dis.readLong();
 		this.dateTime = DateTimeStruct.readDisDateTime( dis );
@@ -104,7 +110,7 @@ public class DcssWeatherResponsePdu extends PDU
 	public void to( DisOutputStream dos ) throws IOException
 	{
 		this.entityId.to( dos );
-		dos.writeByte( this.weatherResponseType );
+		dos.writeByte( DcssWeatherDomain.toBitField(this.domains) );
 		dos.writePadding( 1 );
 		dos.writeLong( this.instanceId );
 		DateTimeStruct.writeDisDateTime( this.dateTime, dos );
@@ -220,14 +226,27 @@ public class DcssWeatherResponsePdu extends PDU
 		this.lla[2] = alt;
 	}
 	
-	public byte getWeatherResponseType()
+	public Set<DcssWeatherDomain> getDomains()
 	{
-		return this.weatherResponseType;
+		return EnumSet.copyOf( this.domains );
 	}
 	
-	public void setWeatherResponseType( byte type )
+	public void addDomain( DcssWeatherDomain domain )
 	{
-		this.weatherResponseType = type;
+		this.domains.add( domain );
+	}
+	
+	public void setDomains( Collection<? extends DcssWeatherDomain> domains )
+	{
+		this.domains.clear();
+		this.domains.addAll( domains );
+	}
+	
+	public void setDomains( DcssWeatherDomain... domains )
+	{
+		this.domains.clear();
+		for( DcssWeatherDomain domain : domains )
+			this.domains.add( domain );
 	}
 	
 	public UUID getUuid()
