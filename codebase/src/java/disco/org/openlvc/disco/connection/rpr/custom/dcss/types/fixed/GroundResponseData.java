@@ -39,6 +39,7 @@ public class GroundResponseData extends WrappedHlaFixedRecord
 	private HLAfloat32BE windSpeed;
 	private HLAfloat32BE windGust;
 	private HLAfloat32BE totalCloudCover;
+	private HLAfloat32BE precipitationRate;
 	private HLAfloat32BE convecPrecipitationRate;
 	private EnumHolder<PrecipitationType> precipitationType;
 	private HLAfloat32BE visibility;
@@ -57,6 +58,7 @@ public class GroundResponseData extends WrappedHlaFixedRecord
 		this.windSpeed = new HLAfloat32BE();
 		this.windGust = new HLAfloat32BE();
 		this.totalCloudCover = new HLAfloat32BE();
+		this.precipitationRate = new HLAfloat32BE();
 		this.convecPrecipitationRate = new HLAfloat32BE();
 		this.precipitationType = new EnumHolder<>( PrecipitationType.InvalidPrecipitationType );
 		this.visibility = new HLAfloat32BE();
@@ -70,6 +72,7 @@ public class GroundResponseData extends WrappedHlaFixedRecord
 		          this.windSpeed,
 		          this.windGust,
 		          this.totalCloudCover,
+		          this.precipitationRate,
 		          this.convecPrecipitationRate,
 		          this.precipitationType,
 		          this.visibility,
@@ -91,6 +94,7 @@ public class GroundResponseData extends WrappedHlaFixedRecord
 	public HLAfloat32BE getWindSpeed() { return this.windSpeed; }
 	public HLAfloat32BE getWindGust() { return this.windGust; }
 	public HLAfloat32BE getTotalCloudCover() { return this.totalCloudCover; }
+	public HLAfloat32BE getPrecipitationRate() { return this.precipitationRate; }
 	public HLAfloat32BE getConvecPrecipitationRate() { return this.convecPrecipitationRate; }
 	public EnumHolder<PrecipitationType> getPrecipitationType() { return this.precipitationType; }
 	public HLAfloat32BE getVisibility() { return this.visibility; }
