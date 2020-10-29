@@ -20,7 +20,7 @@ package org.openlvc.disco.pdu.field.appearance;
 import org.openlvc.disco.pdu.field.appearance.enums.DamageState;
 import org.openlvc.disco.utils.BitField32;
 
-public class CommonAppearance
+public class CommonPlatformAppearance
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -44,7 +44,7 @@ public class CommonAppearance
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public CommonAppearance( int bits )
+	public CommonPlatformAppearance( int bits )
 	{
 		this.bitfield = new BitField32( bits );
 		
@@ -52,7 +52,7 @@ public class CommonAppearance
 		this.setActive( true );
 	}
 	
-	public CommonAppearance()
+	public CommonPlatformAppearance()
 	{
 		this( 0 );
 	}
@@ -66,7 +66,7 @@ public class CommonAppearance
 		return bitfield.getInt();
 	}
 	
-	public CommonAppearance setBits( int bits )
+	public CommonPlatformAppearance setBits( int bits )
 	{
 		this.bitfield.setInt( bits );
 		return this;
@@ -88,13 +88,13 @@ public class CommonAppearance
 		return (short)bitfield.getBits( INDEX_DAMAGE, INDEX_DAMAGE_END );
 	}
 
-	public CommonAppearance setDamageState( DamageState state )
+	public CommonPlatformAppearance setDamageState( DamageState state )
 	{
 		bitfield.setBits( INDEX_DAMAGE, INDEX_DAMAGE_END, state.value() );
 		return this;
 	}
 	
-	public CommonAppearance setDamageState( int state )
+	public CommonPlatformAppearance setDamageState( int state )
 	{
 		bitfield.setBits( 3, 4, state );
 		return this;
@@ -108,7 +108,7 @@ public class CommonAppearance
 		return bitfield.isSet( INDEX_SMOKING );
 	}
 	
-	public CommonAppearance setSmokeEmanating( boolean value )
+	public CommonPlatformAppearance setSmokeEmanating( boolean value )
 	{
 		bitfield.setBit( INDEX_SMOKING, value );
 		return this;
@@ -122,7 +122,7 @@ public class CommonAppearance
 		return bitfield.isSet( INDEX_ENGINE_SMOKING );
 	}
 	
-	public CommonAppearance setEngineSmoking( boolean value )
+	public CommonPlatformAppearance setEngineSmoking( boolean value )
 	{
 		bitfield.setBit( INDEX_ENGINE_SMOKING, value );
 		return this;
@@ -136,7 +136,7 @@ public class CommonAppearance
 		return bitfield.isSet( INDEX_IS_FLAMING );
 	}
 	
-	public CommonAppearance setFlaming( boolean value )
+	public CommonPlatformAppearance setFlaming( boolean value )
 	{
 		bitfield.setBit( INDEX_IS_FLAMING, value );
 		return this;
@@ -163,7 +163,7 @@ public class CommonAppearance
 		return bitfield.isSet( INDEX_POWERPLANT );
 	}
 	
-	public CommonAppearance setPowerplantOn( boolean on )
+	public CommonPlatformAppearance setPowerplantOn( boolean on )
 	{
 		bitfield.setBit( INDEX_POWERPLANT, on );
 		return this;
@@ -177,7 +177,7 @@ public class CommonAppearance
 		return bitfield.isSet( INDEX_IS_ACTIVE );
 	}
 	
-	public CommonAppearance setActive( boolean value )
+	public CommonPlatformAppearance setActive( boolean value )
 	{
 		bitfield.setBit( INDEX_IS_ACTIVE, value );
 		return this;

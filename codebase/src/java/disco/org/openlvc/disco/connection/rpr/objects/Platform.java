@@ -26,7 +26,7 @@ import org.openlvc.disco.connection.rpr.types.enumerated.TrailingEffectsCodeEnum
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.Domain;
 import org.openlvc.disco.pdu.field.appearance.AircraftAppearance;
-import org.openlvc.disco.pdu.field.appearance.CommonAppearance;
+import org.openlvc.disco.pdu.field.appearance.CommonPlatformAppearance;
 import org.openlvc.disco.pdu.field.appearance.GroundPlatformAppearance;
 import org.openlvc.disco.pdu.field.appearance.enums.CamouflageType;
 
@@ -185,7 +185,7 @@ public abstract class Platform extends PhysicalEntity
 		// APPEARANCE >> Platform Common -- ALWAYS
 		//
 		{
-			CommonAppearance appearance = new CommonAppearance( incoming.getAppearance() );
+			CommonPlatformAppearance appearance = new CommonPlatformAppearance( incoming.getAppearance() );
 			// Status
 			this.damageState.setEnum( DamageStatusEnum32.valueOf(appearance.getDamageStateValue()) );
 			

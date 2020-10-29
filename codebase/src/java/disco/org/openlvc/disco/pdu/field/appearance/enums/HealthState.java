@@ -15,44 +15,56 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.objects;
+package org.openlvc.disco.pdu.field.appearance.enums;
 
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.entity.EntityStatePdu;
-
-public class Human extends Lifeform
+/**
+ * Health appearance values
+ * 
+ * @see "SISO-REF-10 s4.4.3"
+ */
+public enum HealthState
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	NoInjury      ( (byte)0 ),
+	SlightInjury  ( (byte)1 ),
+	ModerateInjury( (byte)2 ),
+	FatalInjury   ( (byte)3 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private byte value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private HealthState( byte value )
+	{
+		this.value = value;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	@Override
-	public void fromPdu( PDU incoming )
+	public byte value()
 	{
-		// pass up the tree
-		super.fromPdu( incoming.as(EntityStatePdu.class) );
-	}
-	
-	@Override
-	public PDU toPdu()
-	{
-		EntityStatePdu pdu = new EntityStatePdu();
-		super.toPdu( pdu );
-		return pdu;
+		return this.value;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static HealthState fromValue( byte value )
+	{
+		switch( value )
+		{
+			case 0: return NoInjury;
+			case 1: return SlightInjury;
+			case 2: return ModerateInjury;
+			case 3: return FatalInjury;
+			default: throw new IllegalArgumentException( "Invalid Health Code: "+value );
+		}
+	}
 }

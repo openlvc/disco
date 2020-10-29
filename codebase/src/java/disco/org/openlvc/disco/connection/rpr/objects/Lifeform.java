@@ -23,6 +23,7 @@ import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
 import org.openlvc.disco.connection.rpr.types.enumerated.StanceCodeEnum32;
 import org.openlvc.disco.connection.rpr.types.enumerated.WeaponStateEnum32;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.appearance.LifeformAppearance;
 
 public abstract class Lifeform extends PhysicalEntity
 {
@@ -69,8 +70,12 @@ public abstract class Lifeform extends PhysicalEntity
 		// pass up the tree
 		super.fromPdu( incoming );
 
-
-		throw new RuntimeException( "Not Implemented Yet" );
+		LifeformAppearance disAppearance = new LifeformAppearance( incoming.getAppearance() );
+		this.flashLightsOn.setValue( disAppearance.isFlashlightOn() );
+		this.stanceCode.setEnum( StanceCodeEnum32.valueOf(disAppearance.getStateValue()) );
+		this.primaryWeaponState.setEnum( WeaponStateEnum32.valueOf(disAppearance.getPrimaryWeaponStateValue()) );
+		this.secondaryWeaponState.setEnum( WeaponStateEnum32.valueOf(disAppearance.getSecondaryWeaponStateValue()) );
+		this.complianceState.setEnum( ComplianceStateEnum32.valueOf(disAppearance.getComplianceValue()) );
 	}
 	
 	protected void toPdu( EntityStatePdu pdu )
@@ -78,8 +83,19 @@ public abstract class Lifeform extends PhysicalEntity
 		// pass up the tree
 		super.toPdu( pdu );
 
+		StanceCodeEnum32 stance = this.stanceCode.getEnum();
+		WeaponStateEnum32 primaryWeapon = this.primaryWeaponState.getEnum();
+		WeaponStateEnum32 secondaryWeapon = this.secondaryWeaponState.getEnum();
+		ComplianceStateEnum32 compliance = this.complianceState.getEnum();
 		
-		throw new RuntimeException( "Not Implemented Yet" );
+		LifeformAppearance disAppearance = new LifeformAppearance( pdu.getAppearance() );
+		disAppearance.setFlashlightOn( this.flashLightsOn.getValue() );
+		disAppearance.setStateValue( (byte)stance.getValue() );
+		disAppearance.setPrimaryWeaponStateValue( (byte)primaryWeapon.getValue() );
+		disAppearance.setSecondaryWeaponStateValue( (byte)secondaryWeapon.getValue() );
+		disAppearance.setComplianceValue( (byte)compliance.getValue() );
+		
+		pdu.setAppearance( disAppearance.getBits() );
 	}
 
 	//----------------------------------------------------------

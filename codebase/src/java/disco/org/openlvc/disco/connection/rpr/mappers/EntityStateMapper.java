@@ -134,10 +134,11 @@ public class EntityStateMapper extends AbstractMapper
 	private ObjectClass surfaceClass;
 	private ObjectClass subsurfaceClass;
 	private ObjectClass spaceClass;
-	private Map<Class<? extends Platform>,ObjectClass> javaTypeToHlaClassMap;
-	private Map<ObjectClass,Supplier<? extends Platform>> hlaClassToJavaTypeMap;
+	private Map<Class<? extends PhysicalEntity>,ObjectClass> javaTypeToHlaClassMap;
+	private Map<ObjectClass,Supplier<? extends PhysicalEntity>> hlaClassToJavaTypeMap;
 	// Lifeform
 	private ObjectClass lifeformClass;
+	private ObjectClass humanClass;
 	
 	// Base Entity
 	private AttributeClass entityType;
@@ -241,7 +242,8 @@ public class EntityStateMapper extends AbstractMapper
 		this.surfaceClass      = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.SurfaceVessel" );
 		this.subsurfaceClass   = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.SubmersibleVessel" );
 		this.spaceClass        = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.Spacecraft" );
-		this.lifeformClass     = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform" );
+		
+		
 
 		if( this.airClass == null )
 			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.Aircraft" );
@@ -257,8 +259,15 @@ public class EntityStateMapper extends AbstractMapper
 			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.SubmersibleVessel" );
 		if( this.spaceClass == null )
 			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Platform.Spacecraft" );
+		
+		
+		this.lifeformClass     = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform" );
 		if( this.lifeformClass == null )
-			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform" );
+			throw new DiscoException( "Could not find class HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform" );
+		
+		this.humanClass        = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform.Human" );
+		if( this.humanClass == null )
+			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform.Human" );
 
 		// Base Entity
 		this.entityType = platformClass.getAttribute( "EntityType" );
@@ -329,6 +338,7 @@ public class EntityStateMapper extends AbstractMapper
 		//
 		this.javaTypeToHlaClassMap.put( Aircraft.class, this.airClass );
 //		this.javaTypeToHlaClassMap.put( Amphib..., this.amphibClass );
+		this.javaTypeToHlaClassMap.put( Human.class, this.humanClass );
 		this.javaTypeToHlaClassMap.put( GroundVehicle.class, this.groundClass );
 		this.javaTypeToHlaClassMap.put( MultiDomainPlatform.class, this.multiDomainClass );
 		this.javaTypeToHlaClassMap.put( SurfaceVessel.class, this.surfaceClass );
@@ -337,6 +347,7 @@ public class EntityStateMapper extends AbstractMapper
 		
 		this.hlaClassToJavaTypeMap.put( this.airClass, Aircraft::new );
 //		this.hlaClassToJavaTypeMap.put( this.amphibClass, Amphib...::new );
+		this.hlaClassToJavaTypeMap.put( this.humanClass, Human::new );
 		this.hlaClassToJavaTypeMap.put( this.groundClass, GroundVehicle::new );
 		this.hlaClassToJavaTypeMap.put( this.multiDomainClass, MultiDomainPlatform::new );
 		this.hlaClassToJavaTypeMap.put( this.surfaceClass, SurfaceVessel::new );
@@ -347,12 +358,12 @@ public class EntityStateMapper extends AbstractMapper
 		// Publication and Subscription
 		//
 		super.publishAndSubscribe( airClass );
+		super.publishAndSubscribe( humanClass );
 		super.publishAndSubscribe( groundClass );
 		super.publishAndSubscribe( multiDomainClass );
 		super.publishAndSubscribe( surfaceClass );
 		super.publishAndSubscribe( subsurfaceClass );
 		super.publishAndSubscribe( spaceClass );
-		super.publishAndSubscribe( lifeformClass );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -767,13 +778,9 @@ public class EntityStateMapper extends AbstractMapper
 	@EventHandler
 	public void handleDiscover( HlaDiscover event )
 	{
-		if( event.theClass == this.lifeformClass )
+		if( isValid(event.theClass) )
 		{
-			// Just skip it for now
-		}
-		else if( isValid(event.theClass) )
-		{
-			Platform hlaObject = createPlatformOf( event.theClass );
+			PhysicalEntity hlaObject = createEntityOf( event.theClass );
 			hlaObject.setObjectClass( event.theClass );
 			hlaObject.setObjectHandle( event.theObject );
 			hlaObject.setObjectName( event.objectName );
@@ -831,7 +838,7 @@ public class EntityStateMapper extends AbstractMapper
 		return hlaClassToJavaTypeMap.containsKey( type );
 	}
 	
-	private Platform createPlatformOf( ObjectClass type )
+	private PhysicalEntity createEntityOf( ObjectClass type )
 	{
 		return hlaClassToJavaTypeMap.get(type).get();
 	}

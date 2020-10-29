@@ -15,44 +15,56 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.objects;
+package org.openlvc.disco.pdu.field.appearance.enums;
 
-import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.entity.EntityStatePdu;
-
-public class Human extends Lifeform
+/**
+ * Lifeform weapon appearance values
+ * 
+ * @see "SISO-REF-10 s4.4.3"
+ */
+public enum WeaponState
 {
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
+	//                        VALUES
 	//----------------------------------------------------------
+	NoWeapon               ( (byte)0 ),
+	WeaponStowed           ( (byte)1 ),
+	WeaponDeployed         ( (byte)2 ),
+	WeaponInFiringPosition ( (byte)3 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private byte value;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	private WeaponState( byte value )
+	{
+		this.value = value;
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	@Override
-	public void fromPdu( PDU incoming )
+	public byte value()
 	{
-		// pass up the tree
-		super.fromPdu( incoming.as(EntityStatePdu.class) );
-	}
-	
-	@Override
-	public PDU toPdu()
-	{
-		EntityStatePdu pdu = new EntityStatePdu();
-		super.toPdu( pdu );
-		return pdu;
+		return this.value;
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static WeaponState fromValue( byte value )
+	{
+		switch( value )
+		{
+			case 0: return NoWeapon;
+			case 1: return WeaponStowed;
+			case 2: return WeaponDeployed;
+			case 3: return WeaponInFiringPosition;
+			default: throw new IllegalArgumentException( "Invalid Weapon State Code: "+value );
+		}
+	}
 }

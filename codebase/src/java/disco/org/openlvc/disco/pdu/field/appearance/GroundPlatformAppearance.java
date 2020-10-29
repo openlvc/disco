@@ -26,7 +26,7 @@ import org.openlvc.disco.pdu.field.appearance.enums.TrailingEffects;
  * This class will extract the Aircraft Apperance bits from a given 32-bit integer
  * are received in an {@link EntityStatePdu}. Check EBV Section 17.11.1.1.
  */
-public class GroundPlatformAppearance extends CommonAppearance
+public class GroundPlatformAppearance extends CommonPlatformAppearance
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
