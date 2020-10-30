@@ -33,6 +33,7 @@ import org.openlvc.disco.connection.rpr.objects.GroundVehicle;
 import org.openlvc.disco.connection.rpr.objects.Human;
 import org.openlvc.disco.connection.rpr.objects.Lifeform;
 import org.openlvc.disco.connection.rpr.objects.MultiDomainPlatform;
+import org.openlvc.disco.connection.rpr.objects.NonHuman;
 import org.openlvc.disco.connection.rpr.objects.PhysicalEntity;
 import org.openlvc.disco.connection.rpr.objects.Platform;
 import org.openlvc.disco.connection.rpr.objects.Spacecraft;
@@ -139,6 +140,7 @@ public class EntityStateMapper extends AbstractMapper
 	// Lifeform
 	private ObjectClass lifeformClass;
 	private ObjectClass humanClass;
+	private ObjectClass nonHumanClass;
 	
 	// Base Entity
 	private AttributeClass entityType;
@@ -266,9 +268,12 @@ public class EntityStateMapper extends AbstractMapper
 			throw new DiscoException( "Could not find class HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform" );
 		
 		this.humanClass        = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform.Human" );
+		this.nonHumanClass     = rprConnection.getFom().getObjectClass( "HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform.NonHuman" );
 		if( this.humanClass == null )
 			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform.Human" );
-
+		if( this.nonHumanClass == null )
+			throw new DiscoException( "Could not find class: HLAobjectRoot.BaseEntity.PhysicalEntity.Lifeform.NonHuman" );
+		
 		// Base Entity
 		this.entityType = platformClass.getAttribute( "EntityType" );
 		this.entityIdentifier = platformClass.getAttribute( "EntityIdentifier" );
@@ -341,6 +346,7 @@ public class EntityStateMapper extends AbstractMapper
 		this.javaTypeToHlaClassMap.put( Human.class, this.humanClass );
 		this.javaTypeToHlaClassMap.put( GroundVehicle.class, this.groundClass );
 		this.javaTypeToHlaClassMap.put( MultiDomainPlatform.class, this.multiDomainClass );
+		this.javaTypeToHlaClassMap.put( NonHuman.class, this.nonHumanClass );
 		this.javaTypeToHlaClassMap.put( SurfaceVessel.class, this.surfaceClass );
 		this.javaTypeToHlaClassMap.put( SubmersibleVessel.class, this.subsurfaceClass );
 		this.javaTypeToHlaClassMap.put( Spacecraft.class, this.spaceClass );
@@ -350,6 +356,7 @@ public class EntityStateMapper extends AbstractMapper
 		this.hlaClassToJavaTypeMap.put( this.humanClass, Human::new );
 		this.hlaClassToJavaTypeMap.put( this.groundClass, GroundVehicle::new );
 		this.hlaClassToJavaTypeMap.put( this.multiDomainClass, MultiDomainPlatform::new );
+		this.hlaClassToJavaTypeMap.put( this.nonHumanClass, NonHuman::new );
 		this.hlaClassToJavaTypeMap.put( this.surfaceClass, SurfaceVessel::new );
 		this.hlaClassToJavaTypeMap.put( this.subsurfaceClass, SubmersibleVessel::new );
 		this.hlaClassToJavaTypeMap.put( this.spaceClass, Spacecraft::new );
@@ -361,6 +368,7 @@ public class EntityStateMapper extends AbstractMapper
 		super.publishAndSubscribe( humanClass );
 		super.publishAndSubscribe( groundClass );
 		super.publishAndSubscribe( multiDomainClass );
+		super.publishAndSubscribe( nonHumanClass );
 		super.publishAndSubscribe( surfaceClass );
 		super.publishAndSubscribe( subsurfaceClass );
 		super.publishAndSubscribe( spaceClass );
