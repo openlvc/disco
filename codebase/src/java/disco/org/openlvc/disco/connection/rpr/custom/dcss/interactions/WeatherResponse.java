@@ -105,7 +105,8 @@ public class WeatherResponse extends InteractionInstance
 				pdu.addDomain( DcssWeatherDomain.Ground );
 				GroundResponseData data = (GroundResponseData)v.getValue();
 				pdu.setHumidity( data.getHumidity().getValue() );
-				pdu.setPrecipitationRate( data.getConvecPrecipitationRate().getValue() );
+				pdu.setPrecipitationRate( data.getPrecipitationRate().getValue() );
+				pdu.setConvectionalPrecipitationRate( data.getConvecPrecipitationRate().getValue() );
 				pdu.setPressure( data.getPressure().getValue() );
 				pdu.setTemperature( data.getTemperature().getValue() );
 				pdu.setTotalCloudCover( data.getTotalCloudCover().getValue() );

@@ -53,6 +53,7 @@ public class DcssWeatherResponsePdu extends PDU
 	private EntityId entityId;
 	
 	private float precipitationRate;
+	private float convectionalPrecipitationRate;
 	private float temperature;
 	private float humidity;
 	private float pressure;
@@ -74,6 +75,7 @@ public class DcssWeatherResponsePdu extends PDU
 		this.entityId = new EntityId();
 		
 		this.precipitationRate = 0.0f;
+		this.convectionalPrecipitationRate = 0.0f;
 		this.temperature = 0.0f;
 		this.humidity = 0.0f;
 		this.pressure = 0.0f;
@@ -99,6 +101,7 @@ public class DcssWeatherResponsePdu extends PDU
 		this.uuid = UuidArrayOfHLAbyte16.readDisUuid( dis );
 		
 		this.precipitationRate = dis.readFloat();
+		this.convectionalPrecipitationRate = dis.readFloat();
 		this.temperature = dis.readFloat();
 		this.humidity = dis.readFloat();
 		this.pressure = dis.readFloat();
@@ -119,36 +122,37 @@ public class DcssWeatherResponsePdu extends PDU
 		UuidArrayOfHLAbyte16.writeDisUuid( this.uuid, dos );
 		
 		dos.writeFloat( this.precipitationRate );
+		dos.writeFloat( this.convectionalPrecipitationRate );
 		dos.writeFloat( this.temperature );
 		dos.writeFloat( this.humidity );
 		dos.writeFloat( this.pressure );
-		
 		dos.writeFloat( this.totalCloudCover );
 	}
 
 	@Override
 	public int getContentLength()
 	{
-		// EntityId:           6 bytes +
-		// WeatherResponeType: 1 byte +
-		// (Padding):          1 byte +
-		// InstanceId:         8 bytes +
-		// DateTime:           8 bytes +
-		// TimeOffset:         8 bytes +
-		// Latitude:           8 bytes +
-		// Longitude:          8 bytes +
-		// Altitude:           8 bytes +
-		// UuidHi:             8 bytes +
-		// UuidLo:             8 bytes +
-		// PrecipitationRate:  4 bytes +
-		// Temperature:        4 bytes +
-		// Humidity:           4 bytes +
-		// Pressure:           4 bytes +
-		// TotalCloudCover:    4 bytes
+		// EntityId:                6 bytes +
+		// WeatherResponeType:      1 byte +
+		// (Padding):               1 byte +
+		// InstanceId:              8 bytes +
+		// DateTime:                8 bytes +
+		// TimeOffset:              8 bytes +
+		// Latitude:                8 bytes +
+		// Longitude:               8 bytes +
+		// Altitude:                8 bytes +
+		// UuidHi:                  8 bytes +
+		// UuidLo:                  8 bytes +
+		// PrecipitationRate:       4 bytes +
+		// ConvecPrecipitationRate: 4 bytes +
+		// Temperature:             4 bytes +
+		// Humidity:                4 bytes +
+		// Pressure:                4 bytes +
+		// TotalCloudCover:         4 bytes
 		// --------------------------
-		//                     92 bytes
+		//                         96 bytes
 		
-		return 72;
+		return 96;
 	}
 
 	@Override
@@ -278,6 +282,16 @@ public class DcssWeatherResponsePdu extends PDU
 	{
 		this.precipitationRate = rate;
 	}
+	
+	public float getConvectionalPrecipitationRate()
+	{
+		return this.convectionalPrecipitationRate;
+	}
+	
+	public void setConvectionalPrecipitationRate( float rate )
+	{
+		this.convectionalPrecipitationRate = rate;
+	}
 
 	public float getTemperature()
 	{
@@ -318,7 +332,6 @@ public class DcssWeatherResponsePdu extends PDU
 	{
 		this.totalCloudCover = totalCloudCover;
 	}
-	
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
