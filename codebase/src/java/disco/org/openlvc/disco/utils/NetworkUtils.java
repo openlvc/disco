@@ -423,7 +423,7 @@ public class NetworkUtils
 			
 			// Create the receive socket
 			// Bind to receive DIS port and IP address of given nic
-			DatagramSocket recvSocket = new DatagramSocket( 0, getFirstIPv4Address(nic) );
+			DatagramSocket recvSocket = new DatagramSocket( port, getFirstIPv4Address(nic) );
 			recvSocket.setReuseAddress( true );
 			recvSocket.setBroadcast( true );
 			if( options != null )
