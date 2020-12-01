@@ -20,6 +20,7 @@ package org.openlvc.disco.connection.rpr.custom.dcss.objects;
 import org.openlvc.disco.connection.rpr.custom.dcss.types.enumerated.ClockStateEnum;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger32BE;
+import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.fixed.ClockTimeStruct;
 import org.openlvc.disco.connection.rpr.types.simple.Float32;
 import org.openlvc.disco.pdu.PDU;
@@ -40,7 +41,7 @@ public class WallclockTime extends ObjectInstance
 	private RPRunsignedInteger32BE simulationElapsedTime;
 	private Float32 scalingFactor;
 	private ClockTimeStruct simulationStartTime;
-	private ClockStateEnum clockState;
+	private EnumHolder<ClockStateEnum> clockState;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -52,7 +53,7 @@ public class WallclockTime extends ObjectInstance
 		this.simulationElapsedTime = new RPRunsignedInteger32BE();
 		this.scalingFactor = new Float32();
 		this.simulationStartTime = new ClockTimeStruct();
-		this.clockState = ClockStateEnum.Paused;
+		this.clockState = new EnumHolder<>( ClockStateEnum.Paused );
 	}
 
 	//----------------------------------------------------------
@@ -68,7 +69,7 @@ public class WallclockTime extends ObjectInstance
 		this.simulationElapsedTime.setValue( asWallclock.getSimulationElapsedTime() );
 		this.scalingFactor.setValue( asWallclock.getScalingFactor() );
 		this.simulationStartTime.setDisValue( asWallclock.getSimulationStartTime() );
-		this.clockState = ClockStateEnum.valueOf( asWallclock.getClockState() );
+		this.clockState.setEnum( ClockStateEnum.valueOf(asWallclock.getClockState()) );
 	}
 	
 	@Override
@@ -80,7 +81,7 @@ public class WallclockTime extends ObjectInstance
 		pdu.setSimulationElapsedTime( this.simulationElapsedTime.getValue() );
 		pdu.setScalingFactor( this.scalingFactor.getValue() );
 		pdu.setSimulationStartTime( this.simulationStartTime.getDisValue() );
-		pdu.setClockState( this.clockState.getValue() );
+		pdu.setClockState( this.clockState.getEnum().getValue() );
 		
 		return pdu;
 	}
@@ -124,7 +125,7 @@ public class WallclockTime extends ObjectInstance
 		return this.simulationStartTime;
 	}
 	
-	public ClockStateEnum getClockState()
+	public EnumHolder<ClockStateEnum> getClockState()
 	{
 		return this.clockState;
 	}
