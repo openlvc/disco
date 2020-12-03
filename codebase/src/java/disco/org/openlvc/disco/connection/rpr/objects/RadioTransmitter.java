@@ -141,17 +141,21 @@ public class RadioTransmitter extends EmbeddedSystem
 		// RelativePosition - Inherited
 		super.fromPdu( pdu );
 		
+		int cryptoKeyValue = pdu.getCryptoKey();
+		int cryptoMode = cryptoKeyValue & 0x8000;
+		int cryptoKey = cryptoKeyValue & 0x7FFF;
+		
 		// AntennaPatternData
 		antennaPatternDataArray.get(0).setValue( pdu.getAntennaPatternType() );
 		
 		// CryptographicMode
-		cryptographicMode.setEnum( CryptographicModeEnum32.valueOf(pdu.getCryptoKey()) );
+		cryptographicMode.setEnum( CryptographicModeEnum32.valueOf(cryptoMode) );
 
 		// CryptoSystem
 		cryptoSystem.setEnum( CryptographicSystemTypeEnum16.valueOf(pdu.getCryptoSystem().value()) );
 		
 		// EncryptionKeyIdentifier
-		encryptionKeyIdentifier.setValue( pdu.getCryptoKey() );
+		encryptionKeyIdentifier.setValue( cryptoKey );
 		
 		// Frequency
 		frequency.setValue( pdu.getTransmissionFrequency() );
@@ -213,15 +217,17 @@ public class RadioTransmitter extends EmbeddedSystem
 			pdu.setAntennaPattern( as.getDisDiscriminant(), as.getDisValue() );
 		}
 		
+		int cryptoKeyValue = encryptionKeyIdentifier.getValue();
+		if( cryptographicMode.getEnum() == CryptographicModeEnum32.DiphaseEncryption )
+			cryptoKeyValue |= 0x8000;
+		
+		// EncryptionKeyIdentifier
 		// CryptographicMode
-		pdu.setCryptoKey( (int)cryptographicMode.getEnum().getValue() );
+		pdu.setCryptoKey( cryptoKeyValue );
 
 		// CryptoSystem
 		pdu.setCryptoSystem( CryptoSystem.fromValue(cryptoSystem.getEnum().getValue()) );
-		
-		// EncryptionKeyIdentifier
-		pdu.setCryptoKey( encryptionKeyIdentifier.getValue() );
-		
+				
 		// Frequency
 		pdu.setTransmissionFrequency( frequency.getValue() );
 		
