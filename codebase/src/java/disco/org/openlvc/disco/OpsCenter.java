@@ -116,8 +116,18 @@ public class OpsCenter
 		logger.debug( "Flags: "+DiscoConfiguration.getFlags() );
 		
 		// open the flood gates!
-		this.pduReceiver.open();
-		this.connection.open();
+		try
+		{
+			this.pduReceiver.open();
+			this.connection.open();
+		}
+		catch( DiscoException de )
+		{
+			this.connection.close();
+			this.pduSender.close();
+			this.pduReceiver.close();
+			throw de;
+		}
 		
 		this.open = true;
 		logger.info( "OpsCenter is up and running... Can you dig it?" );

@@ -68,6 +68,9 @@ public class RprHeartbeater implements Runnable
 	
 	public void stop()
 	{
+		if( this.thread == null )
+			return;
+		
 		this.thread.interrupt();
 		try
 		{

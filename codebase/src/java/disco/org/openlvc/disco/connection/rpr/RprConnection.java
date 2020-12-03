@@ -84,6 +84,7 @@ public class RprConnection implements IConnection
 
 	// RTI Properties
 	private RTIambassador rtiamb;
+	private boolean rtiambConnected;
 	private FederateAmbassador fedamb;
 
 	// Internal Data Storage and Message Passing
@@ -110,6 +111,7 @@ public class RprConnection implements IConnection
 		
 		// RTI Properties
 		this.rtiamb = null;      // set in initializeFederation()
+		this.rtiambConnected = false;
 		this.fedamb = null;      // set in initializeFederation()
 		
 		// Internal Data Storage and Message Passing
@@ -192,39 +194,49 @@ public class RprConnection implements IConnection
 		logger.debug( "Parsing FOM modules "+Arrays.toString(modules) );
 		this.objectModel = FomHelpers.parse( modules );
 
-		// Step 2. Initialize Federation
-		//
-		// Initalize and connect to the federation
-		this.initializeFederation();
-
-		// Step 3. Initialize Mappers
-		//
-		// Set up the mappers. Must come before initializeFederation() because we do
-		// pub/sub in there, which will cause us to start receiving HLA traffic
-		AbstractMapper[] mappers = rprConfiguration.getRegisteredFomMappers();
-		for( AbstractMapper mapper : mappers )
+		try
 		{
-			logger.trace( "Registering mapper: "+mapper.getClass().getCanonicalName() );
-
-			// 1. Subscribe to the HLA bus
-			//    The mapper should do HLA pubsub inside initialize(). As soon as the mapper
-			//    does this the the fedamb will get discovery callbacks. If we're not on the
-			//    HLA event bus at that time we'll miss them, so we need to be ready.
-			//       -BUT-
-			//    We can't be on the DIS PDU bus until AFTER we do HLA publish, so hold off on that
-			hlaBus.subscribe( mapper );
-			
-			// 2. Initialize the mapper
-			//    This will cause it to cache handles and do HLA publication and subscription.
-			//    We should be ready to catch and start dealing with HLA-side data.
-			mapper.initialize( this );
-			
-			// 3. Subscribe for incoming PDUs
-			//    Now that the mapper should have done HLA publication, we can connect to the PDU
-			//    bus without fear that we'll start trying to push HLA info before publication
-			pduBus.subscribe( mapper );
-			
-			logger.debug( "Registered mapper: "+mapper.getClass().getCanonicalName() );
+    		// Step 2. Initialize Federation
+    		//
+    		// Initalize and connect to the federation
+    		this.initializeFederation();
+    
+    		// Step 3. Initialize Mappers
+    		//
+    		// Set up the mappers. Must come before initializeFederation() because we do
+    		// pub/sub in there, which will cause us to start receiving HLA traffic
+    		AbstractMapper[] mappers = rprConfiguration.getRegisteredFomMappers();
+    		for( AbstractMapper mapper : mappers )
+    		{
+    			logger.trace( "Registering mapper: "+mapper.getClass().getCanonicalName() );
+    
+    			// 1. Subscribe to the HLA bus
+    			//    The mapper should do HLA pubsub inside initialize(). As soon as the mapper
+    			//    does this the the fedamb will get discovery callbacks. If we're not on the
+    			//    HLA event bus at that time we'll miss them, so we need to be ready.
+    			//       -BUT-
+    			//    We can't be on the DIS PDU bus until AFTER we do HLA publish, so hold off on that
+    			hlaBus.subscribe( mapper );
+    			
+    			// 2. Initialize the mapper
+    			//    This will cause it to cache handles and do HLA publication and subscription.
+    			//    We should be ready to catch and start dealing with HLA-side data.
+    			mapper.initialize( this );
+    			
+    			// 3. Subscribe for incoming PDUs
+    			//    Now that the mapper should have done HLA publication, we can connect to the PDU
+    			//    bus without fear that we'll start trying to push HLA info before publication
+    			pduBus.subscribe( mapper );
+    			
+    			logger.debug( "Registered mapper: "+mapper.getClass().getCanonicalName() );
+    		}
+		}
+		catch( DiscoException de )
+		{
+			// If an error was encountered while setting up the mappers, then cleanup
+			// the federation immediately
+			this.cleanupFederation();
+			throw de;
 		}
 		
 		// Step 4. Start Local Services
@@ -238,10 +250,12 @@ public class RprConnection implements IConnection
 	public void close() throws DiscoException
 	{
 		// Stop local services
-		this.pduHeartbeater.stop();
+		if( this.pduHeartbeater != null )
+			this.pduHeartbeater.stop();
 		
 		// Clean up the federation
-		this.cleanupFederation();
+		if( this.rtiambConnected )
+			this.cleanupFederation();
 	}
 
 
@@ -315,6 +329,7 @@ public class RprConnection implements IConnection
 			this.rtiamb.connect( this.fedamb,
 			                     CallbackModel.HLA_IMMEDIATE,
 			                     rprConfiguration.getLocalSettings() );
+			this.rtiambConnected = true;
 		}
 		catch( RTIexception rtie )
 		{
@@ -434,6 +449,7 @@ public class RprConnection implements IConnection
 		try
 		{
 			this.rtiamb.disconnect();
+			this.rtiambConnected = false;
 		}
 		catch( RTIexception rtie )
 		{

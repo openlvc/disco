@@ -501,6 +501,11 @@ public class RprConfiguration
 			fomMappers.add( mapper );
 	}
 	
+	public void clearExtensionMappers()
+	{
+		this.fomMappers.clear();
+	}
+	
 	/**
 	 * Create the set of default mappers that should always be present for a RPR federation
 	 */
