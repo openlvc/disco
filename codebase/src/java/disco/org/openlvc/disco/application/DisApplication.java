@@ -145,6 +145,18 @@ public class DisApplication
 		opscenter.send( pdu );
 	}
 	
+	/**
+	 * Sends the given PDU out to the network through whatever connection Disco is configured for without 
+	 * making any modifications or additions (such as settings its exercise/site/app ids or anything like 
+	 * that). Just send the PDU straight through as it is.
+	 * 
+	 * @param pdu The PDU to serialize and send
+	 */
+	public void sendRaw( PDU pdu )
+	{
+		opscenter.sendRaw( pdu );
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// PDU Subscriber Methods   ///////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
