@@ -158,6 +158,11 @@ public class RPRunsignedInteger16BE implements DataElement
 		             ((bytes[1] & 0xFF));
 	}
 
+	public String toString()
+	{
+		return ""+this.value;
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

@@ -156,6 +156,11 @@ public class EnumHolder<T extends ExtendedDataElement<T>> implements DataElement
 		return this.decodeCalled;
 	}
 
+	public String toString()
+	{
+		return value.toString();
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

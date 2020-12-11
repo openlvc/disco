@@ -17,15 +17,12 @@
  */
 package org.openlvc.disco.connection.rpr.types.variant;
 
-import org.openlvc.disco.connection.rpr.types.enumerated.AmplitudeAngleModulationTypeEnum16;
-import org.openlvc.disco.connection.rpr.types.enumerated.AmplitudeModulationTypeEnum16;
-import org.openlvc.disco.connection.rpr.types.enumerated.AngleModulationTypeEnum16;
-import org.openlvc.disco.connection.rpr.types.enumerated.CombinationModulationTypeEnum16;
-import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
+import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 import org.openlvc.disco.connection.rpr.types.enumerated.MajorRFModulationTypeEnum16;
-import org.openlvc.disco.connection.rpr.types.enumerated.PulseModulationTypeEnum16;
-import org.openlvc.disco.connection.rpr.types.enumerated.UnmodulatedTypeEnum16;
 import org.openlvc.disco.pdu.field.MajorModulationType;
+
+import hla.rti1516e.encoding.ByteWrapper;
+import hla.rti1516e.encoding.DecoderException;
 
 public class RFmodulationTypeVariantStruct extends WrappedHlaVariantRecord<MajorRFModulationTypeEnum16>
 {
@@ -44,13 +41,21 @@ public class RFmodulationTypeVariantStruct extends WrappedHlaVariantRecord<Major
 	{
 		super( MajorRFModulationTypeEnum16.Other );
 		
-		super.setVariant( MajorRFModulationTypeEnum16.Other, EnumHolder.from(MajorRFModulationTypeEnum16.Other) );
-		super.setVariant( MajorRFModulationTypeEnum16.Amplitude, EnumHolder.from(AmplitudeModulationTypeEnum16.Other) );
-		super.setVariant( MajorRFModulationTypeEnum16.AmplitudeAndAngle, EnumHolder.from(AmplitudeAngleModulationTypeEnum16.Other) );
-		super.setVariant( MajorRFModulationTypeEnum16.Angle, EnumHolder.from(AngleModulationTypeEnum16.Other) );
-		super.setVariant( MajorRFModulationTypeEnum16.Combination, EnumHolder.from(CombinationModulationTypeEnum16.Other) );
-		super.setVariant( MajorRFModulationTypeEnum16.Pulse, EnumHolder.from(PulseModulationTypeEnum16.Other) );
-		super.setVariant( MajorRFModulationTypeEnum16.Unmodulated, EnumHolder.from(UnmodulatedTypeEnum16.Other) );
+		super.setVariant( MajorRFModulationTypeEnum16.Other,             new RPRunsignedInteger16BE(0) );
+		super.setVariant( MajorRFModulationTypeEnum16.Amplitude,         new RPRunsignedInteger16BE(0) );
+		super.setVariant( MajorRFModulationTypeEnum16.AmplitudeAndAngle, new RPRunsignedInteger16BE(0) );
+		super.setVariant( MajorRFModulationTypeEnum16.Angle,             new RPRunsignedInteger16BE(0) );
+		super.setVariant( MajorRFModulationTypeEnum16.Combination,       new RPRunsignedInteger16BE(0) );
+		super.setVariant( MajorRFModulationTypeEnum16.Pulse,             new RPRunsignedInteger16BE(0) );
+		super.setVariant( MajorRFModulationTypeEnum16.Unmodulated,       new RPRunsignedInteger16BE(0) );
+
+//		super.setVariant( MajorRFModulationTypeEnum16.Other, EnumHolder.from(MajorRFModulationTypeEnum16.Other) );
+//		super.setVariant( MajorRFModulationTypeEnum16.Amplitude, EnumHolder.from(AmplitudeModulationTypeEnum16.Other) );
+//		super.setVariant( MajorRFModulationTypeEnum16.AmplitudeAndAngle, EnumHolder.from(AmplitudeAngleModulationTypeEnum16.Other) );
+//		super.setVariant( MajorRFModulationTypeEnum16.Angle, EnumHolder.from(AngleModulationTypeEnum16.Other) );
+//		super.setVariant( MajorRFModulationTypeEnum16.Combination, EnumHolder.from(CombinationModulationTypeEnum16.Other) );
+//		super.setVariant( MajorRFModulationTypeEnum16.Pulse, EnumHolder.from(PulseModulationTypeEnum16.Other) );
+//		super.setVariant( MajorRFModulationTypeEnum16.Unmodulated, EnumHolder.from(UnmodulatedTypeEnum16.Other) );
 	}
 	
 	//----------------------------------------------------------
@@ -69,6 +74,24 @@ public class RFmodulationTypeVariantStruct extends WrappedHlaVariantRecord<Major
 	{
 		super.setDiscriminant( MajorRFModulationTypeEnum16.valueOf(type.value()) );
 	}
+	
+	public void setValue( MajorModulationType type, int detail )
+	{
+		MajorRFModulationTypeEnum16 key = MajorRFModulationTypeEnum16.valueOf( type.value() );
+		super.setVariant( key, new RPRunsignedInteger16BE(detail) );
+		super.setDiscriminant( key );
+	}
+
+	public int getDetail()
+	{
+		return ((RPRunsignedInteger16BE)super.getValue()).getValue();
+	}
+	
+	public void decode( ByteWrapper wrapper ) throws DecoderException
+	{
+		super.decode( wrapper );
+	}
+	
 	
 	public void setAmplitudeModulationType()
 	{

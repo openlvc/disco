@@ -176,7 +176,9 @@ public class RadioTransmitter extends EmbeddedSystem
 		rfModulationSystemType.setEnum( RFmodulationSystemTypeEnum16.valueOf(pdu.getModulationType().getSystem().value()) );
 
 		// RFModulationType
-		rfModulationType.setValue( pdu.getModulationType().getMajorModulationType() ); // FIXME
+//		rfModulationType.setValue( pdu.getModulationType().getMajorModulationType() ); // FIXME
+		rfModulationType.setValue( pdu.getModulationType().getMajorModulationType(),
+		                           pdu.getModulationType().getDetail() );
 		
 		// SpreadSpectrum
 		spreadSpectrum.setValue( pdu.getModulationType().getSpreadSpectrum() );
@@ -248,7 +250,8 @@ public class RadioTransmitter extends EmbeddedSystem
 
 		// RFModulationType
 		pdu.getModulationType().setMajorModulationType( MajorModulationType.fromValue(rfModulationType.getDiscriminant().getValue()) );
-		
+		pdu.getModulationType().setDetail( ((RPRunsignedInteger16BE)rfModulationType.getValue()).getValue() );
+
 		// SpreadSpectrum
 		// FIXME
 		
