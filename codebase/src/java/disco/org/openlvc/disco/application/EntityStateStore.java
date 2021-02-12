@@ -65,14 +65,24 @@ public class EntityStateStore implements IDeleteReaperManaged
 	{
 		// bang the entity into the ID indexed store
 		EntityStatePdu existing = byId.put( pdu.getEntityID(), pdu );
-
+		
 		// if we are discovering this entity for first time, store in marking indexed store as well
 		if( existing == null )
 		{
-			byMarking.put( pdu.getMarking(), pdu );
+			EntityStatePdu existingMarking = byMarking.put( pdu.getMarking(), pdu );
+			
+			// If there is already an entity against this marking with a different id, then
+			// we assume that it has gone stale in favor of the one that we have just received.
+			//
+			// Note: This check was added for observed behavior when restarting a VR-Forces 
+			// simulation with HLA. The Entities in the scenario are removed and then re-added 
+			// with different EntityIds, however their marking are the same.
+			if( existingMarking != null )
+				byId.remove( existingMarking.getEntityID(), existingMarking );
+			
 		}
 		else if( existing.getMarking().equals(pdu.getMarking()) == false )
-		{
+		{	
 			// marking has changed, need to update the marking indexed store
 			byMarking.remove( existing.getMarking() );
 			byMarking.put( pdu.getMarking(), pdu );
@@ -179,13 +189,12 @@ public class EntityStateStore implements IDeleteReaperManaged
 	@Override
 	public int removeStaleData( long oldestTimestamp )
 	{
-		AtomicInteger removed = new AtomicInteger(0);
-
+		AtomicInteger removed = new AtomicInteger(0); 
 		byId.values().parallelStream()
 		             .filter( espdu -> espdu.getLocalTimestamp() < oldestTimestamp )
 		             .forEach( espdu -> {
 		            	 byId.remove( espdu.getEntityID() );
-		            	 byMarking.remove( espdu.getMarking() );
+		            	 byMarking.remove( espdu.getMarking(), espdu );
 		            	 removed.incrementAndGet();
 		              });
 		
