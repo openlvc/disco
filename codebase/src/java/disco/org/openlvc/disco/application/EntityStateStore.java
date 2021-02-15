@@ -193,9 +193,15 @@ public class EntityStateStore implements IDeleteReaperManaged
 		byId.values().parallelStream()
 		             .filter( espdu -> espdu.getLocalTimestamp() < oldestTimestamp )
 		             .forEach( espdu -> {
-		            	 byId.remove( espdu.getEntityID() );
-		            	 byMarking.remove( espdu.getMarking(), espdu );
-		            	 removed.incrementAndGet();
+		                 EntityId entityId = espdu.getEntityID();
+		                 String entityMarking = espdu.getMarking();
+		                 
+		                 byId.remove( entityId );
+		                 EntityStatePdu markingEntry = byMarking.get( entityMarking );
+		                 if( markingEntry.getEntityID().equals(entityId) )
+		                     byMarking.remove( espdu.getMarking() );
+		                 
+		                 removed.incrementAndGet();
 		              });
 		
 		return removed.intValue();
