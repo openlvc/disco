@@ -194,7 +194,7 @@ public class UdpConnection implements IConnection
 	@Override
 	public void close() throws DiscoException
 	{
-		if( this.recvSocket.isClosed() )
+		if( this.recvSocket == null || this.recvSocket.isClosed() )
 			return;
 		
 		// Close the socket we're listening on and the thread will drop out
