@@ -586,6 +586,7 @@ public class RprConnection implements IConnection
 		
 		// Slam the arrays together and return
 		return Stream.concat( Arrays.stream(createModules), Arrays.stream(joinModules) )
+		//return Stream.concat( Arrays.stream(joinModules), Arrays.stream(createModules) )
 		             .toArray( URL[]::new );
 	}
 		

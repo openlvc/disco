@@ -373,6 +373,8 @@ public class NetworkUtils
 	}
 
 	/**
+	 * Create and return a pair of datagram sockets configured to use the broadcast address
+	 * associated with the given IP address. 
 	 * Creates a pair of datagram sockets (one for sending, one for listening/receiving) configured
 	 * to use broadcast and returns them. The sender socket will be bound to an ephemeral port as
 	 * its source. The receiver socket will listen on the provided port. This is done to allow

@@ -25,6 +25,9 @@ import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.common.CommonSetup;
 import org.openlvc.disco.common.TestListener;
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.connection.rpr.RprConnection;
+import org.openlvc.disco.connection.rpr.objects.PhysicalEntity;
+import org.openlvc.disco.connection.rpr.objects.RadioTransmitter;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.DeadReckoningAlgorithm;
 import org.openlvc.disco.pdu.field.EncodingClass;
@@ -175,6 +178,81 @@ public class RprFomTest extends AbstractTest
 		Assert.assertEquals( received.getRadioID(), transmitterTwo.getRadioID() );
 	}
 	
+	@Test
+	public void testRprTransmitterAttachedToPlatform()
+	{
+		// Radio transmitters can be attached to platforms. To achieve this in DIS, the transmitter
+		// will set its Site/App/Entity ID to mirror that of the platform it is attached to. In RPR
+		// however there is a separate "HostObjectIdentifer" field that points to the RTIobjectId
+		// of the platform the transmitter is attached to.
+		//
+		// We can't fully test this from the DIS level, because the HLA information we want to
+		// inspect will be wiped away in the bridge. We'll have to set up a situation where an
+		// entity should appear at attached in DIS, and then dig into the receiving HLA side and
+		// make sure that the host identifier is being properly identified and associatd.
+		//
+		// To do this we will create two platforms and a radio. The radio will start attached to
+		// one platform and then we'll update it to be attached to another. As we dig under the
+		// covers, we should see that the HostObjectIdentifier of the radio points to the
+		// RTIobjectId of the first platform, and then changes to the second.
+		
+		EntityId id1 = new EntityId(1,1,1);
+		EntityId id2 = new EntityId(7,7,8);
+		
+		// 1. Create the platforms we'll attached to
+		EntityStatePdu platform1 = new EntityStatePdu();
+		platform1.setEntityType( EntityType.fromString("1.1.1.1.2.3.4") );
+		platform1.setEntityID( id1 );
+		platform1.setMarking( "1/A" );
+
+		EntityStatePdu platform2 = new EntityStatePdu();
+		platform2.setEntityType( EntityType.fromString("1.1.1.1.2.3.4") );
+		platform2.setEntityID( id2 );
+		platform2.setMarking( "2/A" );
+
+		// 2. Create the transmitter
+		TransmitterPdu transmitter = new TransmitterPdu();
+		transmitter.setEntityId( platform1.getEntityID() ); // attached to platform1 initially
+		transmitter.setRadioID( 1 );
+		
+		// 3. Send the PDUs and wait for reception
+		left.send( platform1 );
+		left.send( platform2 );
+		left.send( transmitter );
+		rightListener.waitForEntityState( "1/A" );
+		rightListener.waitForEntityState( "2/A" );
+		rightListener.waitForTransmitter( new EntityId(1,1,1) );
+		
+		// 4. Fetch the internal HLA state from within the connection
+		RprConnection rprConnection = (RprConnection)right.getConnection();
+		
+		RadioTransmitter rprTransmitter = rprConnection.getObjectStore().getHlaRadioTransmitter(
+		    radio -> radio.getDisId().equals(id1) );
+		Assert.assertNotNull( rprTransmitter );
+		
+		PhysicalEntity rprPlatform1 = rprConnection.getObjectStore().getHlaPhysicalEntity(
+		    entity -> entity.getDisId().equals(id1) );
+		Assert.assertNotNull( rprPlatform1 );
+
+		PhysicalEntity rprPlatform2 = rprConnection.getObjectStore().getHlaPhysicalEntity(
+		    entity -> entity.getDisId().equals(id2) );
+		Assert.assertNotNull( rprPlatform2 );
+
+		// 5. Make sure the radio has the HostObjectIdentifer and that it points to the right entity
+		Assert.assertEquals( rprTransmitter.getHostObjectIdentifier(), rprPlatform1.getRtiObjectId() );
+		Assert.assertNotEquals( rprTransmitter.getHostObjectIdentifier(), rprPlatform2.getRtiObjectId() );
+
+		// 6. On the DIS sender, udpate the radio to be attached to the other platform and push
+		//    that update out to the network 
+		transmitter.setEntityId( platform2.getEntityID() );
+		left.send( transmitter );
+		rightListener.waitForTransmitter( platform2.getEntityID() );
+		
+		// 7. Make sure the underlying HLA data received by the receiver has changed
+		Assert.assertNotEquals( rprTransmitter.getHostObjectIdentifier(), rprPlatform1.getRtiObjectId() );
+		Assert.assertEquals( rprTransmitter.getHostObjectIdentifier(), rprPlatform2.getRtiObjectId() );
+	}
+	
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Signal PDU Tests   ////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
@@ -196,7 +274,6 @@ public class RprFomTest extends AbstractTest
 		signal.setSampleRate( 32000 );
 		signal.setSamples( 960 );
 		signal.setData( data );
-		signal.getEncodingScheme().setEncodingType( EncodingType.PCM16 );
 	
 		// 3. Send it from the left
 		left.send( signal );
@@ -206,7 +283,6 @@ public class RprFomTest extends AbstractTest
 		Assert.assertEquals( received.getEntityIdentifier(), new EntityId(2,3,4) );
 		Assert.assertEquals( received.getEncodingScheme().getEncodingType(), EncodingType.Mulaw8 );
 		Assert.assertEquals( received.getEncodingScheme().getEncodingClass(), EncodingClass.EncodedVoice );
-		Assert.assertEquals( received.getEncodingScheme().getEncodingType(), EncodingType.Mulaw8 );
 		Assert.assertEquals( received.getRadioID(), 5 );
 		Assert.assertEquals( received.getSampleRate(), 32000 );
 		Assert.assertEquals( received.getSamples(), 960 );
@@ -461,15 +537,15 @@ public class RprFomTest extends AbstractTest
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	// Run some stuff standalone, without the TestNG harness
-	public static void main( String[] args ) throws Exception
-	{
-		//CommonSetup.commonBeforeSuiteSetup();
-		//RprFomTest test = new RprFomTest();
-		//test.beforeClass();
-		//test.beforeMethod();
-		//test.testRprEntityStateArticulations();
-		//test.afterMethod();
-		//test.afterClass();
-	}
+//	// Run some stuff standalone, without the TestNG harness
+//	public static void main( String[] args ) throws Exception
+//	{
+//		CommonSetup.commonBeforeSuiteSetup();
+//		RprFomTest test = new RprFomTest();
+//		test.beforeClass();
+//		test.beforeMethod();
+//		test.testRprEntityStateArticulations();
+//		test.afterMethod();
+//		test.afterClass();
+//	}
 }

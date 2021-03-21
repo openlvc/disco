@@ -19,12 +19,12 @@ package org.openlvc.disco.connection.rpr;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.openlvc.disco.DiscoException;
-import org.openlvc.disco.connection.rpr.objects.BaseEntity;
 import org.openlvc.disco.connection.rpr.objects.EmitterBeamRpr;
 import org.openlvc.disco.connection.rpr.objects.EmitterSystemRpr;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
@@ -32,6 +32,7 @@ import org.openlvc.disco.connection.rpr.objects.PhysicalEntity;
 import org.openlvc.disco.connection.rpr.objects.RadioTransmitter;
 import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.pdu.emissions.EmitterSystem.EmitterSystemId;
+import org.openlvc.disco.pdu.record.FullRadioId;
 import org.openlvc.disco.pdu.record.EntityId;
 
 import hla.rti1516e.ObjectInstanceHandle;
@@ -52,7 +53,8 @@ public class ObjectStore
 	//----------------------------------------------------------
 	// DIS Object Storage
 	private Map<EntityId,ObjectInstance> disGeneral;
-	private Map<EntityId,RadioTransmitter> disTransmitters;
+	private Map<FullRadioId,RadioTransmitter> disTransmitters;
+//	private Map<EntityId,RadioTransmitter> disTransmitters;
 	private Map<EntityId,PhysicalEntity> disEntities;
 	private Map<EmitterSystemId,EmitterSystemRpr> disEmitters;
 	private Map<EmitterSystemId,Map<Short,EmitterBeamRpr>> disBeams; // Maps of maps *facepalm*
@@ -60,6 +62,9 @@ public class ObjectStore
 	// HLA Object Storage
 	private Map<ObjectInstanceHandle,ObjectInstance> hlaObjects;
 	private Map<RTIobjectId,ObjectInstance> rprObjects; // HLA Objects, but indexed by "RTI id"
+	
+	// Entity Identifier Maps -- Should only be for Physical Entities
+	private Map<EntityId,RTIobjectId> disIdToRprIdMap; 
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -76,6 +81,9 @@ public class ObjectStore
 		// HLA Object Storage
 		this.hlaObjects = new ConcurrentHashMap<>();
 		this.rprObjects = new ConcurrentHashMap<>();
+		
+		// Identifier Maps
+		this.disIdToRprIdMap = new ConcurrentHashMap<>();
 	}
 
 	//----------------------------------------------------------
@@ -105,21 +113,47 @@ public class ObjectStore
 		return (T)this.disGeneral.get( disId );
 	}
 	
-	public void addLocalTransmitter( EntityId disId, RadioTransmitter hlaObject )
+	public void addLocalTransmitter( EntityId disId, int radioId, RadioTransmitter hlaObject )
 	{
-		this.disTransmitters.put( disId, hlaObject );
+		this.disTransmitters.put( new FullRadioId(disId,radioId), hlaObject );
 		this.rprObjects.put( hlaObject.getRtiObjectId(), hlaObject );
 		hlaObject.addToStore( this );
 	}
 	
-	public RadioTransmitter getLocalTransmitter( EntityId disId )
+	public RadioTransmitter getLocalTransmitter( EntityId disId, int radioId )
 	{
-		return disTransmitters.get( disId );
+		return disTransmitters.get( new FullRadioId(disId,radioId) );
 	}
 
+	/**
+	 * Used when a radio attaches to a platform and changes its id. We will remap the object in
+	 * the store so that it is accessible under the new id.
+	 * 
+	 * @param hlaObject The object whose id changes
+	 * @param radioId The radio id (which will stay the same)
+	 * @param oldId The old entityId
+	 * @param newId The new entityId
+	 */
+	public void updateLocalTransmitterId( RadioTransmitter hlaObject,
+	                                      int radioId,
+	                                      EntityId oldId,
+	                                      EntityId newId )
+	{
+		RadioTransmitter previousHlaObject = disTransmitters.remove( new FullRadioId(oldId,radioId) );
+		if( previousHlaObject == null )
+		{
+			throw new IllegalArgumentException( "Can't remap id from "+oldId+"-"+radioId+" to "+
+			                                    newId+"-"+radioId+": could not find under old id" );
+		}
+		
+		disTransmitters.put( new FullRadioId(newId,radioId), hlaObject );
+	}
+	
+	
 	public void addLocalEntity( EntityId disId, PhysicalEntity hlaObject )
 	{
 		this.disEntities.put( disId, hlaObject );
+		this.disIdToRprIdMap.put( disId, hlaObject.getRtiObjectId() );
 		this.rprObjects.put( hlaObject.getRtiObjectId(), hlaObject );
 		hlaObject.addToStore( this );
 	}
@@ -215,9 +249,13 @@ public class ObjectStore
 	 */
 	public void removeDiscoveredHlaObject( ObjectInstanceHandle hlaId )
 	{
-		ObjectInstance hlaObject = this.hlaObjects.remove( hlaId );		
+		ObjectInstance hlaObject = this.hlaObjects.remove( hlaId );
 		if( hlaObject != null && hlaObject.getRtiObjectId() != null )
 			this.rprObjects.remove( hlaObject.getRtiObjectId() );
+
+		// if this is a physical entity (platform, lifeform) remove its id from the id lookup map
+		if( hlaObject instanceof PhysicalEntity )
+			this.disIdToRprIdMap.remove( ((PhysicalEntity)hlaObject).getDisId() );
 	}
 
 	/**
@@ -285,27 +323,28 @@ public class ObjectStore
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// RTIobjectId Based Methods   ////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	public void updateRtiIdForDisId( EntityId disId, RTIobjectId rprId )
+	{
+		this.disIdToRprIdMap.put( disId, rprId );
+	}
+	
 	/**
-	 * Looks up the {@link RTIobjectId} for the given DIS Entity ID. If we have an object that is
-	 * known to use that DIS ID we find it, extract its RTI id and return it. If we can't find one,
-	 * we return an {@link RTIobjectId} with an empty string value (should indicate unattached).
-	 * <p/>
-	 * <b>NOTE:</b> Currently limited to looking at locally created entities only, not any remote
-	 * entities discovered through the RTI.
+	 * Looks up the {@link RTIobjectId} for the given DIS Entity ID. This will check both for
+	 * entities that we have created locally, and those that have been created remotely. This
+	 * will ONLY look up ID for physical entities (platforms, lifeforms, ...). 
 	 * 
 	 * @param disId The Entity ID of the Entity we want to get the {@link RTIobjectId} for.
 	 * @return The object id of the entity with the given DIS id, or id with an empty string.
 	 */
 	public RTIobjectId getRtiIdForDisId( EntityId disId )
 	{
-		// FIXME - Currently only look at the local (DIS) entities, not any we discover through
-		//         the RTI. Needs to be updated to allow connection to entities that aren't created
-		//         only on the DIS side.
-		BaseEntity entity = this.disEntities.get( disId );
-		if( entity == null )
-			return new RTIobjectId("");
-		else
-			return entity.getRtiObjectId();
+		// Check to see if there is an RTIobjectId for this DIS ID.
+		// The only things we store IDs for should be Physical Entities (not transmitters or others
+		// due to the potential for overlap). Thus, it is _LIKELY_ that this map won't have any
+		// value for the DIS ID. In this case, rather than return null, we should return an empty
+		// object id to prevent any NPE issues further down the line
+		RTIobjectId id = this.disIdToRprIdMap.get( disId );
+		return id != null ? id : new RTIobjectId("");
 	}
 
 	/**
@@ -338,6 +377,59 @@ public class ObjectStore
 		hlaObjects.values().stream().filter( oi -> clazz.isInstance(oi) )
 		                            .map( oi -> oi.getRtiObjectId() )
 		                            .collect( Collectors.toList() );
+	}
+	
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Helper Methods (for tests)   ///////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Find and return the <i>first</i> HLA radio transmitter that matches the given predicate,
+	 * returning null if none do.
+	 * 
+	 * @param predicate The test condition to match the radio against
+	 * @return The found RadioTransmitter that matches the predicate, or null if there is none
+	 */
+	public RadioTransmitter getHlaRadioTransmitter( Predicate<RadioTransmitter> predicate )
+	{
+		try
+		{
+    		return
+    		hlaObjects.values().parallelStream().filter( object -> object instanceof RadioTransmitter )
+    		                                    .map( object -> (RadioTransmitter)object )
+    		                                    .filter( predicate::test )
+    		                                    .findFirst().get();
+		}
+		catch( NoSuchElementException nsee )
+		{
+			return null;
+		}
+		
+	}
+	
+	/**
+	 * Find and return the <i>first</i> HLA physical entity object that matches the given predicate,
+	 * returning null if none do.
+	 * 
+	 * @param predicate The test condition to match the entity against
+	 * @return The found PhysicalEntity that matches the predicate, or null if there is none
+	 */
+	public PhysicalEntity getHlaPhysicalEntity( Predicate<PhysicalEntity> predicate )
+	{
+		try
+		{
+    		return
+    		hlaObjects.values().parallelStream().filter( object -> object instanceof PhysicalEntity )
+    		                                    .map( object -> (PhysicalEntity)object )
+    		                                    .filter( predicate::test )
+    		                                    .findFirst().get();
+		}
+		catch( NoSuchElementException nsee )
+		{
+			return null;
+		}
+		
 	}
 	
 	//----------------------------------------------------------

@@ -93,7 +93,7 @@ public class TestListener implements IPduListener
 		if( marking.length() > 11 )
 			throw new RuntimeException( "Marking cannot be longer than 11 characters ["+marking+"]" );
 		
-		long finishTime = getTimeout();
+		long finishTime = getWaitUntilTime();
 		while( finishTime > System.currentTimeMillis() )
 		{
 			waitForPdu();
@@ -108,7 +108,7 @@ public class TestListener implements IPduListener
 	
 	public TransmitterPdu waitForTransmitter( EntityId id )
 	{
-		long finishTime = getTimeout();
+		long finishTime = getWaitUntilTime();
 		while( finishTime > System.currentTimeMillis() )
 		{
 			waitForPdu();
@@ -123,7 +123,7 @@ public class TestListener implements IPduListener
 	
 	public SignalPdu waitForSignal( EntityId id )
 	{
-		long finishTime = getTimeout();
+		long finishTime = getWaitUntilTime();
 		while( finishTime > System.currentTimeMillis() )
 		{
 			waitForPdu();
@@ -139,14 +139,14 @@ public class TestListener implements IPduListener
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Helper Methods   //////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-	private long getTimeout()
+	private long getWaitUntilTime()
 	{
 		return System.currentTimeMillis() + CommonSetup.TIMEOUT+10;
 	}
 	
 	private void waitForPdu()
 	{
-		waitForPdu( getTimeout() );
+		waitForPdu( CommonSetup.TIMEOUT );
 	}
 	
 	//private void waitForPduUntil( long time )

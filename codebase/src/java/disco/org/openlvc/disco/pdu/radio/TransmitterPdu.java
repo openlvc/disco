@@ -31,6 +31,7 @@ import org.openlvc.disco.pdu.field.InputSource;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.field.TransmitState;
 import org.openlvc.disco.pdu.record.AntennaLocation;
+import org.openlvc.disco.pdu.record.FullRadioId;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.ModulationType;
 import org.openlvc.disco.pdu.record.RadioEntityType;
@@ -209,6 +210,11 @@ public class TransmitterPdu extends PDU
 	public EntityId getEntityIdentifier()
 	{
 		return entityID;
+	}
+	
+	public FullRadioId getFullRadioId()
+	{
+		return new FullRadioId( this.entityID, this.radioId );
 	}
 	
 	public void setEntityId( EntityId id )
