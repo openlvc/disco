@@ -68,7 +68,7 @@
 	<property name="marineapi.dir"         location="${lib.dir}/marineapi/0.10.0"/> <!-- NEMA 0183 Formatting -->
 	<!-- HLA Settings -->
 	<property name="ieee1516e.dir"         location="${lib.dir}/hla/ifspec"/> <!-- HLA IfSpec -->
-	<property name="portico.dir"           location="${lib.dir}/hla/portico/2.0.3"/> <!-- Portico, for HLA testing -->
+	<property name="portico.dir"           location="${lib.dir}/hla/portico/2.0.4"/> <!-- Portico, for HLA testing -->
 
 	<!-- Classpaths for individual libraries -->
 	<path id="lib.testng.classpath">

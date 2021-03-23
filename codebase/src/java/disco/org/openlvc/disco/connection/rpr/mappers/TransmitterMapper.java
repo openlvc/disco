@@ -27,6 +27,7 @@ import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.objects.RadioTransmitter;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disco.pdu.record.EntityId;
 
 import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.encoding.ByteWrapper;
@@ -150,7 +151,7 @@ public class TransmitterMapper extends AbstractMapper
 	public void handlePdu( TransmitterPdu pdu )
 	{
 		// Check to see if an HLA object already exists for this transmitter
-		RadioTransmitter hlaObject = objectStore.getLocalTransmitter( pdu.getEntityId() );
+		RadioTransmitter hlaObject = findLocalTransmitter( pdu.getEntityId(), pdu.getRadioID() );
 		
 		// If there is no HLA object yet, we have to register one
 		if( hlaObject == null )
@@ -158,7 +159,7 @@ public class TransmitterMapper extends AbstractMapper
 			hlaObject = new RadioTransmitter();
 			hlaObject.setObjectClass( this.hlaClass );
 			super.registerObjectInstance( hlaObject );
-			objectStore.addLocalTransmitter( pdu.getEntityId(), hlaObject );
+			objectStore.addLocalTransmitter( pdu.getEntityId(), pdu.getRadioID(), hlaObject );
 		}
 
 		// Suck the values out of the PDU and into the object
@@ -174,6 +175,71 @@ public class TransmitterMapper extends AbstractMapper
 		if( logger.isTraceEnabled() )
 			logger.trace( "dis >> hla (Transmitter) Updated attributes for transmitter: id=%s, handle=%s",
 			              pdu.getFullId(), hlaObject.getObjectHandle() );
+	}
+	
+	/**
+	 * Find the locally created RadioTransmitter for the given entity/radio id combination. If we
+	 * cannot find an object with that id, we will try some fallbacks, but if we ultimately strike
+	 * out, null will be returned. 
+	 * 
+	 * @param entityId The entity id for the transmitter
+	 * @param radioId  The unique radio id for the transmitter
+	 * @return The found RadioTransmitter from the locally created store with the given id, or null
+	 *         if there is none bound with that id (or any of the fallbacks).
+	 */
+	private RadioTransmitter findLocalTransmitter( EntityId entityId, int radioId )
+	{
+		// Try to find a previously registered object under its full id
+		RadioTransmitter hlaObject = objectStore.getLocalTransmitter( entityId, radioId );
+		
+		// HACKS FOR CNR
+		// When a radio attaches to an entity, it will mirror its site/app/entity-id. This is fine,
+		// until it changes the entity it is attached to (common during startup as a radio goes from
+		// unattached to attached.
+		// 
+		// The problem is that on the HLA side there is a persistent RadioTransmitter object in the
+		// world, but on the DIS side we just get a PDU that one moment has one ID, and the next 
+		// moment it has a different one. We can't _know_ that these represent the same radio.
+		// As such, because we look up based on ID, when the ID changes we think there IS NOT an
+		// existing object that we've registered, and that will cause us to create a new one.
+		//
+		// CNR specifically, depending on version, defaults its site/app/entity-id to one of a few
+		// specific combinations. If we don't find a transmitter, we'll also check under these ids
+		// just to be sure, discriminating on the radio id component (the 4th number).
+		//
+		// If we _do_ find a transmitter using a default id, we need to update the store so that
+		// the radio is managed under its new id, not the old one
+		//
+		// Its not pretty, but it may cover some cracks.
+		//
+		if( hlaObject == null )
+		{
+			// The list of generic ids to use for subsequent lookups
+			EntityId[] possibles = new EntityId[] {
+			    new EntityId(1,1,0),
+			    new EntityId(1,1,1),
+			    new EntityId(0,0,0)
+			};
+			
+			// Perform a lookup until we find (or don't) a match using the generic ids
+			for( EntityId possible : possibles )
+			{
+				hlaObject = objectStore.getLocalTransmitter( possible, radioId );
+				if( hlaObject != null )
+					break;
+			}
+			
+			// We got a match! We need to update the ID in the store
+			if( hlaObject != null )
+			{
+				objectStore.updateLocalTransmitterId( hlaObject,
+				                                      radioId,
+				                                      hlaObject.getDisId(), // old
+				                                      entityId );           // new
+			}
+		}
+
+		return hlaObject;
 	}
 	
 	private AttributeHandleValueMap serializeToHla( RadioTransmitter object )

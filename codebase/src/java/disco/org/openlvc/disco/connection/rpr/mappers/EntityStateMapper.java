@@ -832,6 +832,10 @@ public class EntityStateMapper extends AbstractMapper
 		{
 			opscenter.getPduReceiver().receive( rprEntity.toPdu().toByteArray() );
 			event.hlaObject.setLastUpdatedTimeToNow();
+			
+			// We need to update the object store so that is has an accurate list of
+			// objects by entity id so that we can look up RPR object by DIS site/app/entity id.
+			objectStore.updateRtiIdForDisId( rprEntity.getDisId(), rprEntity.getRtiObjectId() );
 		}
 	}
 	
