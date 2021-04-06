@@ -84,38 +84,38 @@ public class NetworkUtils
 	{
 		try
 		{
-    		if( name.equalsIgnoreCase("LOOPBACK" ) )
-    			return InetAddress.getLoopbackAddress();
-    
-    		// Get a list of all the nics we have. The one we want will (hopefully) be in here somewhere!
-    		List<InetAddress> pool = getListOfNetworkAddresses();
-    
-    		if( name.equalsIgnoreCase("LINK_LOCAL") )
-    		{
-    			return pool.stream()
-    			           .filter( address -> address.isLinkLocalAddress() )
-    			           .findFirst()
-    			           .get();
-    		}
-    		
-    		if( name.equalsIgnoreCase("SITE_LOCAL") )
-    		{
-    			return pool.stream()
-    			           .filter( address -> address.isSiteLocalAddress() )
-    			           .findFirst()
-    			           .get();
-    		}
-    		
-    		if( name.equalsIgnoreCase("GLOBAL") )
-    		{
-    			return pool.stream()
-    			           .filter( address -> address.isLoopbackAddress() == false )
-    			           .filter( address -> address.isAnyLocalAddress() == false )
-    			           .filter( address -> address.isLinkLocalAddress() == false )
-    			           .filter( address -> address.isSiteLocalAddress() == false )
-    			           .findFirst()
-    			           .get();
-    		}
+			if( name.equalsIgnoreCase("LOOPBACK" ) )
+				return InetAddress.getLoopbackAddress();
+
+			// Get a list of all the nics we have. The one we want will (hopefully) be in here somewhere!
+			List<InetAddress> pool = getListOfNetworkAddresses();
+
+			if( name.equalsIgnoreCase("LINK_LOCAL") )
+			{
+				return pool.stream()
+				           .filter( address -> address.isLinkLocalAddress() )
+				           .findFirst()
+				           .get();
+			}
+
+			if( name.equalsIgnoreCase("SITE_LOCAL") )
+			{
+				return pool.stream()
+				           .filter( address -> address.isSiteLocalAddress() )
+				           .findFirst()
+				           .get();
+			}
+
+			if( name.equalsIgnoreCase("GLOBAL") )
+			{
+				return pool.stream()
+				           .filter( address -> address.isLoopbackAddress() == false )
+				           .filter( address -> address.isAnyLocalAddress() == false )
+				           .filter( address -> address.isLinkLocalAddress() == false )
+				           .filter( address -> address.isSiteLocalAddress() == false )
+				           .findFirst()
+				           .get();
+			}
 		}
 		catch( NoSuchElementException no )
 		{
@@ -125,9 +125,9 @@ public class NetworkUtils
 		// Try a direct name match
 		try
 		{
-    		// TODO Implement something clever that will loop up the following symbols
-    		//      LOOPBACK, LINK_LOCAL, SITE_LOCAL, GLOBAL, 192.168.*.*, etc...
-    		return InetAddress.getByName( name );
+			// TODO Implement something clever that will loop up the following symbols
+			//      LOOPBACK, LINK_LOCAL, SITE_LOCAL, GLOBAL, 192.168.*.*, etc...
+			return InetAddress.getByName( name );
 		}
 		catch( Exception e )
 		{
@@ -145,66 +145,6 @@ public class NetworkUtils
 		catch( Exception e )
 		{
 			return false;
-		}
-	}
-	
-	/**
-	 * Calls {@link #createMulticast(InetAddress, int, NetworkInterface, SocketOptions)} with
-	 * <code>null</code> for socket options.
-	 * 
-	 * @param address The multicast address to listen on
-	 * @param port    The port to send/receive on
-	 * @param nic     The network interface to communicate through
-	 * @return A MulticastSocket representing the multicast socket connected to the desired address
-	 * @throws DiscoException If there was an error connecting the socket
-	 */
-	public static DatagramSocket createMulticast( InetAddress address, int port, NetworkInterface nic )
-		throws DiscoException
-	{
-		return createMulticast( address, port, nic, null );
-	}
-
-	/**
-	 * Creates and connects to a multicast socket on the given address/port before returning it.
-	 * Before using this for sending you should note the description on the method 
-	 * {@link #createMulticastPair(InetAddress, int, NetworkInterface, SocketOptions)} in regards
-	 * to how multicast sockets need to deal with their own traffic being looped back to them.
-	 * 
-	 * @param address The multicast address to listen on
-	 * @param port    The port to send/receive on
-	 * @param nic     The network interface to communicate through
-	 * @param options Options such as buffer sizes for the socket. If null, the defaults
-	 *                {@link SocketOptions} will be used.
-	 * @return A MulticastSocket representing the multicast socket connected to the desired address
-	 * @throws DiscoException If there was an error connecting the socket
-	 */
-	public static DatagramSocket createMulticast( InetAddress address,
-	                                              int port,
-	                                              NetworkInterface nic,
-	                                              SocketOptions options )
-			throws DiscoException
-	{
-		if( options == null )
-			options = new SocketOptions();
-		
-		try
-		{
-    		MulticastSocket socket = new MulticastSocket( port );
-    		//asMulticast.setTrafficClass( multicastTrafficClass );
-    		if( options != null )
-    		{
-        		socket.setTimeToLive( options.timeToLive );
-    			socket.setSendBufferSize( options.sendBufferSize );
-    			socket.setReceiveBufferSize( options.getRecvBufferSize() );
-    		}
-
-			InetSocketAddress socketAddress = new InetSocketAddress( address, port );
-    		socket.joinGroup( socketAddress, nic );
-    		return socket;
-		}
-		catch( IOException ioex )
-		{
-			throw new DiscoException( ioex );
 		}
 	}
 
@@ -292,83 +232,13 @@ public class NetworkUtils
 
 			// Join the multicast group for the receiver socket
 			InetSocketAddress multicastAddress = new InetSocketAddress( address, port );
-    		recvSocket.joinGroup( multicastAddress, nic );
-    		
-    		return new DatagramSocket[] { sendSocket, recvSocket };
+			recvSocket.joinGroup( multicastAddress, nic );
+			
+			return new DatagramSocket[] { sendSocket, recvSocket };
 		}
 		catch( IOException ioex )
 		{
 			throw new DiscoException( ioex );
-		}
-	}
-	
-	
-	/**
-	 * Create a broadcast socket on the given address/port and return it. This just calls
-	 * {@link #createBroadcast(InetAddress, int, SocketOptions)} passing <code>null</code>
-	 * for the socket options.
-	 * <p/>
-	 * Please make sure you read the comments around local loopback of messages on the method
-	 * {@link #createBroadcastPair(InetAddress, int, SocketOptions)} for information on how to
-	 * manage/mitigate this.
-	 * <p/>
-	 * Broadcast sockets have their "broadcast" option set to <code>true</code> and have the
-	 * <code>setReuseAddress</code> set to true as well to allow multiple applications on the
-	 * same machine to listen on the same address/port pair.
-	 * 
-	 * @param address The address to send/receive on
-	 * @param port    The port to send/receive on
-	 * @return        A broadcast socket on the address/port.
-	 * @throws DiscoException If there is a problem during socket creation
-	 */
-	public static DatagramSocket createBroadcast( InetAddress address, int port )
-		throws DiscoException
-	{
-		return createBroadcast( address, port, null );
-	}
-
-	/**
-	 * Create a broadcast socket on the given address/port and return it. This just calls
-	 * {@link #createBroadcast(InetAddress, int, SocketOptions)} passing <code>null</code>
-	 * for the socket options.
-	 * <p/>
-	 * Please make sure you read the comments around local loopback of messages on the method
-	 * {@link #createBroadcastPair(InetAddress, int, SocketOptions)} for information on how to
-	 * manage/mitigate this.
-	 * <p/>
-	 * Broadcast sockets have their "broadcast" option set to <code>true</code> and have the
-	 * <code>setReuseAddress</code> set to true as well to allow multiple applications on the
-	 * same machine to listen on the same address/port pair.
-	 * 
-	 * @param address The address to send/receive on
-	 * @param port    The port to send/receive on
-	 * @param options Socket options (buffer sizes, etc...) to use for the socket
-	 * @return        A broadcast socket on the address/port.
-	 * @throws DiscoException If there is a problem during socket creation
-	 */
-	public static DatagramSocket createBroadcast( InetAddress address, int port, SocketOptions options )
-		throws DiscoException
-	{
-		try
-		{
-			// Create socket with null, which will create an unbound socket.
-			// We do this so we can modify the socket properties prior to binding
-			DatagramSocket socket = new DatagramSocket(null);
-			socket.setReuseAddress( true ); // could be others listening as well
-			socket.setBroadcast( true );
-			if( options != null )
-			{
-				socket.setSendBufferSize( options.getSendBufferSize() );
-				socket.setReceiveBufferSize( options.getRecvBufferSize() );
-			}
-
-			// Bind the socket and return
-			socket.bind( new InetSocketAddress(address,port) );
-			return socket;
-		}
-		catch( Exception e )
-		{
-			throw new DiscoException( "Cannot connect to "+address+":"+port+" - "+e.getMessage() , e );
 		}
 	}
 
@@ -412,10 +282,12 @@ public class NetworkUtils
 	{
 		try
 		{
+			InetAddress nicAddress = getFirstIPv4Address( nic );
+			
 			// Create the send socket
-			// Bind to ephemeral port (packets will have a trgt port) and ip-address of given nic
-			DatagramSocket sendSocket = new DatagramSocket( 0, getFirstIPv4Address(nic) );
-			sendSocket.setReuseAddress( true );
+			// Bind to ephemeral port (packets will have a target port) and ip-address of given nic.
+			// NOTE: SO_REUSEADDR not required here are we are binding the socket to an ephemeral port
+			DatagramSocket sendSocket = new DatagramSocket( 0, nicAddress );
 			sendSocket.setBroadcast( true );
 			if( options != null )
 			{
@@ -423,15 +295,21 @@ public class NetworkUtils
 				sendSocket.setTrafficClass( options.getTrafficClass() );
 			}
 			
-			// Create the receive socket
-			// Bind to receive DIS port and IP address of given nic
-			DatagramSocket recvSocket = new DatagramSocket( port, getFirstIPv4Address(nic) );
+			// Create the receive socket with a null bindaddr parameter so that it is created in an 
+			// unbound state. We need to do this as the SO_REUSEADDR option must be set before binding 
+			// (otherwise it is ignored).
+			//
+			// NOTE: The no-param constructor can NOT be used here as that would create a socket bound to 
+			// INADDR_ANY and an ephemeral port. 
+			DatagramSocket recvSocket = new DatagramSocket( null );
 			recvSocket.setReuseAddress( true );
 			recvSocket.setBroadcast( true );
 			if( options != null )
 				recvSocket.setReceiveBufferSize( options.getRecvBufferSize() );
 			
-			// bind the two sockets
+			// Bind receive socket now that we have set SO_REUSEADDR
+			recvSocket.bind( new InetSocketAddress(nicAddress, port) );
+			
 			return new DatagramSocket[] { sendSocket, recvSocket };
 		}
 		catch( Exception e )
@@ -449,11 +327,11 @@ public class NetworkUtils
 		try
 		{
 			Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
-    		List<NetworkInterface> list = new ArrayList<>();
-    		while( nics.hasMoreElements() )
-    			list.add( nics.nextElement() );
-    		
-    		return list;
+			List<NetworkInterface> list = new ArrayList<>();
+			while( nics.hasMoreElements() )
+				list.add( nics.nextElement() );
+			
+			return list;
 		}
 		catch( IOException ioex )
 		{
@@ -471,15 +349,15 @@ public class NetworkUtils
 		try
 		{
 			Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
-    		List<NetworkInterface> list = new ArrayList<>();
-    		while( nics.hasMoreElements() )
-    		{
-    			NetworkInterface nic = nics.nextElement();
-    			if( nic.isUp() )
-    				list.add( nic );
-    		}
-    		
-    		return list;
+			List<NetworkInterface> list = new ArrayList<>();
+			while( nics.hasMoreElements() )
+			{
+				NetworkInterface nic = nics.nextElement();
+				if( nic.isUp() )
+					list.add( nic );
+			}
+			
+			return list;
 		}
 		catch( IOException ioex )
 		{
@@ -539,7 +417,7 @@ public class NetworkUtils
 			else
 			{
 				return NetworkInterface.getByInetAddress( InetAddress.getByName( name ) );
-    		}
+			}
 		}
 		catch( Exception e )
 		{
@@ -551,12 +429,12 @@ public class NetworkUtils
 	{
 		try
 		{
-    		List<NetworkInterface> interfaces = new ArrayList<NetworkInterface>();
-    		Enumeration<NetworkInterface> temp = NetworkInterface.getNetworkInterfaces();
-    		while( temp.hasMoreElements() )
-    			interfaces.add( temp.nextElement() );
-    		
-    		return interfaces;
+			List<NetworkInterface> interfaces = new ArrayList<NetworkInterface>();
+			Enumeration<NetworkInterface> temp = NetworkInterface.getNetworkInterfaces();
+			while( temp.hasMoreElements() )
+				interfaces.add( temp.nextElement() );
+			
+			return interfaces;
 		}
 		catch( SocketException se )
 		{
@@ -587,10 +465,11 @@ public class NetworkUtils
 	 */
 	public static Inet4Address getFirstIPv4Address( NetworkInterface nic )
 	{
-		Optional<Inet4Address> found = nic.getInterfaceAddresses().stream()
-			   .filter( addr -> (addr.getAddress() instanceof Inet4Address) )
-			   .map( addr -> (Inet4Address)addr.getAddress() )
-			   .findFirst();
+		Optional<Inet4Address> found = 
+			nic.getInterfaceAddresses().stream()
+			                           .filter( addr -> (addr.getAddress() instanceof Inet4Address) )
+			                           .map( addr -> (Inet4Address)addr.getAddress() )
+			                           .findFirst();
 		
 		if( found.isPresent() )
 			return found.get();
@@ -728,20 +607,24 @@ public class NetworkUtils
 	 */
 	public static String getSubnetMaskString( short prefix )
 	{
-	    int mask = 0xffffffff << (32 - prefix);
-	    int value = mask;
-	    byte[] bytes = new byte[]{ 
-	            (byte)(value >>> 24), (byte)(value >> 16 & 0xff), (byte)(value >> 8 & 0xff), (byte)(value & 0xff) };
+		int mask = 0xffffffff << (32 - prefix);
+		int value = mask;
+		byte[] bytes = new byte[] { 
+			(byte)(value >>> 24), 
+			(byte)(value >> 16 & 0xff), 
+			(byte)(value >> 8 & 0xff), 
+			(byte)(value & 0xff) 
+		};
 
-	    try
-	    {
-	    	InetAddress netAddr = InetAddress.getByAddress(bytes);
-	    	return netAddr.getHostAddress();
-	    }
-	    catch( Exception e )
-	    {
-	    	return "<exception:"+e.getMessage()+">";
-	    }
+		try
+		{
+			InetAddress netAddr = InetAddress.getByAddress(bytes);
+			return netAddr.getHostAddress();
+		}
+		catch( Exception e )
+		{
+			return "<exception:"+e.getMessage()+">";
+		}
 	}
 }
 
