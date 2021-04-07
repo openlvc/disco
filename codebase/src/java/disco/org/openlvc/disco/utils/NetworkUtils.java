@@ -275,19 +275,30 @@ public class NetworkUtils
 	 * @param options Send/Receive socket configuration options
 	 * @return A socket pair that can be used with the above steps to mitigate local loopback.
 	 */
-	public static DatagramSocket[] createBroadcastPair( InetAddress address,
-	                                                    int port,
+	public static DatagramSocket[] createBroadcastPair( int port,
 	                                                    NetworkInterface nic,
 	                                                    SocketOptions options )
 	{
+		InetAddress nicAddr = NetworkUtils.getFirstIPv4Address( nic );
+		
+		// There is a bit of black magic involved in getting broadcast sockets to intercommunicate
+		// The address that the receiving socket is bound to is dependent on the platform: under 
+		// Unix etc it is bound to the broadcast address, however under Windows it is bound to the 
+		// NIC address.   
+		boolean windows = Platform.getOperatingSystem() == Platform.OS.Windows; 
+		InetAddress recvBindAddr = windows ? nicAddr
+		                                   : NetworkUtils.getFirstBroadcastAddress( nic );
+		
+		// The send socket is bound to the NIC address for all platforms
+		InetAddress sendBindAddr = nicAddr;
+		
+		if( recvBindAddr == null )
+			throw new DiscoException( "interface ["+nic+"] does not support broadcast" );
+		
 		try
 		{
-			InetAddress nicAddress = getFirstIPv4Address( nic );
-			
 			// Create the send socket
-			// Bind to ephemeral port (packets will have a target port) and ip-address of given nic.
-			// NOTE: SO_REUSEADDR not required here are we are binding the socket to an ephemeral port
-			DatagramSocket sendSocket = new DatagramSocket( 0, nicAddress );
+			DatagramSocket sendSocket = new DatagramSocket( 0, sendBindAddr );
 			sendSocket.setBroadcast( true );
 			if( options != null )
 			{
@@ -308,13 +319,13 @@ public class NetworkUtils
 				recvSocket.setReceiveBufferSize( options.getRecvBufferSize() );
 			
 			// Bind receive socket now that we have set SO_REUSEADDR
-			recvSocket.bind( new InetSocketAddress(nicAddress, port) );
+			recvSocket.bind( new InetSocketAddress(recvBindAddr, port) );
 			
 			return new DatagramSocket[] { sendSocket, recvSocket };
 		}
 		catch( Exception e )
 		{
-			throw new DiscoException( "Cannot connect to "+address+":"+port+" - "+e.getMessage() , e );
+			throw new DiscoException( "Cannot connect to "+recvBindAddr+":"+port+" - "+e.getMessage() , e );
 		}
 	}
 
@@ -458,7 +469,7 @@ public class NetworkUtils
 		
 		return pool;
 	}
-
+	
 	/**
 	 * Return the first IPv4 address associated with the given network interface.
 	 * Return null if one could not be found.
@@ -477,6 +488,17 @@ public class NetworkUtils
 			return null;
 	}
 
+	public static InetAddress getFirstBroadcastAddress( NetworkInterface nic )
+	{
+		Optional<InetAddress> found = 
+			nic.getInterfaceAddresses().stream()
+			                           .filter( addr -> addr.getBroadcast() != null )
+			                           .map( addr -> addr.getBroadcast() )
+			                           .findFirst();
+		
+		return found.isPresent() ? found.get() : null;
+	}
+	
 	/**
 	 * Return the first {@link InterfaceAddress} for IPv4 in the given NIC.
 	 * Return null if none could be found.
