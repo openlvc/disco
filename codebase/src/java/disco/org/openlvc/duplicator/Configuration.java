@@ -502,7 +502,7 @@ public class Configuration
 		builder.append( "   --hla                           If set, HLA will be used rather than DIS\n" );
 		builder.append( "   --hla-federate        (string)  Name of federate                     (default:Duplicator)\n" );
 		builder.append( "   --hla-federation      (string)  Name of federation to join           (default:Disco)\n" );
-		builder.append( "   --hla-rti-provider    (string)  RTI Vendor [Portico|Pitch]           (default:Portico)\n" );
+		builder.append( "   --hla-rti-provider    (string)  RTI Vendor [Portico|Pitch|Mak]       (default:Portico)\n" );
 		builder.append( "   --hla-rti-installdir     (dir)  Directory where RTI is installed     (default:./) \n" );
 		builder.append( "                                   Checks RTI_HOME env-var if not set.\n" );
 		builder.append( "   --hla-create-federation         If set, try to create federation     (default:true)\n" );

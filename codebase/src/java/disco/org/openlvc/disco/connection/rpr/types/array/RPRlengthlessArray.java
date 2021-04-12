@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.openlvc.disco.connection.rpr.types.basic.HLAfloat32BE;
+
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DataElementFactory;
@@ -159,6 +161,10 @@ public class RPRlengthlessArray<T extends DataElement> implements DataElement, I
 				element = items.get(count);
 			else
 				element = createElement();
+			
+			// not sure why this occurs, but it should be a HLAoctect, which gets handled elsewhere
+			if ( element instanceof HLAfloat32BE && buffer.remaining() == 1 )
+				break;
 			
 			// Decode into the element
 			element.decode( buffer );

@@ -18,9 +18,11 @@
 package org.openlvc.disco.utils;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.List;
 
 import org.openlvc.disco.DiscoException;
@@ -76,6 +78,43 @@ public class ClassLoaderUtils
 		catch( Throwable throwable )
 		{
 			throw new DiscoException( "Error extending system classloader lookup path: "+
+			                          throwable.getMessage(), throwable );
+		}
+	}
+	
+	/**
+	 * Adds the given paths to the Java library path
+	 *
+	 * @param paths The paths to add to the library path
+	 * @throws DiscoException If there is a problem loading the library path or
+	 *                        extending it
+	 */
+	public static void extendLibraryPath( List<File> paths ) throws DiscoException
+	{
+		try
+		{
+			// apparently need to use usr_paths in place of java.library.path
+			// if we want to append to path rather than replace it
+			final Field libPathsField = ClassLoader.class.getDeclaredField( "usr_paths" );
+			libPathsField.setAccessible( true );
+			
+			// get array of paths and copy to new larger array
+			final String[] libPaths = (String[])libPathsField.get(null);
+			final String[] newPaths = Arrays.copyOf( libPaths, libPaths.length + paths.size() );
+			
+			// add the new library paths
+			int i = libPaths.length;
+			for( File file : paths )
+			{
+				newPaths[i] = file.getAbsolutePath();
+				i++;
+			}
+			
+			libPathsField.set( null, newPaths );
+		}
+		catch( Throwable throwable )
+		{
+			throw new DiscoException( "Error extending Java library path: "+
 			                          throwable.getMessage(), throwable );
 		}
 	}

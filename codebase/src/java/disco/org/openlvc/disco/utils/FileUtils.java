@@ -18,6 +18,13 @@
 package org.openlvc.disco.utils;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.openlvc.disco.DiscoException;
 
@@ -82,5 +89,57 @@ public class FileUtils
 		{
 			throw new DiscoException( "Error creating file path: " + path.getAbsolutePath(), e );
 		}
+	}
+	
+	/**
+	 * Extract specified files from inside a jar to a specified directory, and returns a list of the
+	 * new URLs. The main purpose of this is for using non-Java plugins etc. that need to load
+	 * resources inside a Jar, but can't use the JVM to load in directly from a Jar.
+	 *
+	 * @param paths The relative paths of the files to extract from the jar 
+	 * @param destDir The directory to put the new unjar'd files in
+	 * @param loader The classloader to use to load the jar files from 
+	 * @return A List of URLs to the new unjar'd files
+	 * @throws DiscoException If there is an error creating the destDir or in extracting files from the jar
+	 */
+	public static List<URL> extractFilesFromJar( Iterable<String> paths, File destDir, ClassLoader loader ) throws DiscoException
+	{
+		List<URL> extractedFiles = new ArrayList<>();
+		
+		// ensure the destination directory exists, creating it if it doesn't
+		try
+		{
+			Files.createDirectories( destDir.toPath() );
+		} 
+		catch ( IOException e )
+		{
+			throw new DiscoException( "Error creating directory: "+destDir, e );
+		}
+		
+		try
+		{
+			// extract each file from the jar into the destDir
+			for( String path : paths )
+			{
+				URL url = loader.getResource( path );
+				File jarFile = new File( url.getFile() );
+				File destFile = new File( destDir, jarFile.getName() );
+				if( !destFile.exists() )
+				{
+					// copy data over to a regular file
+					InputStream stream = url.openStream();
+					Files.copy( stream, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING );
+				}
+				
+				URL newUrl = destFile.toURI().toURL();
+				extractedFiles.add( newUrl );
+			}
+		}
+		catch( IOException e )
+		{
+			throw new DiscoException( "Error extracting files from jar", e);
+		}
+		
+		return extractedFiles;
 	}
 }

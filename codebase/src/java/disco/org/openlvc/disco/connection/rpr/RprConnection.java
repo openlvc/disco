@@ -17,10 +17,12 @@
  */
 package org.openlvc.disco.connection.rpr;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
 
@@ -31,6 +33,7 @@ import org.openlvc.disco.bus.ErrorHandler;
 import org.openlvc.disco.bus.MessageBus;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration;
+import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.connection.Metrics;
 import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
@@ -45,6 +48,7 @@ import org.openlvc.disco.connection.rpr.model.ObjectModel;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.utils.FileUtils;
 
 import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.CallbackModel;
@@ -580,9 +584,20 @@ public class RprConnection implements IConnection
 
 		// Get the create-only modules
 		ClassLoader loader = getClass().getClassLoader();
-		URL[] createModules = new URL[] {
-		    loader.getResource( "hla/rpr2/RPR-Switches_v2.0.xml" )
-		};
+		String fomPath = "hla/rpr2/RPR-Switches_v2.0.xml";
+		URL url = loader.getResource( fomPath );
+		
+		// using mak rti, so can't load modules from jar
+		if( rprConfiguration.getRtiProvider() == RtiProvider.Mak )
+		{
+			List<URL> urls = FileUtils.extractFilesFromJar( Arrays.asList(fomPath), new File("hla/rpr2"), loader );
+			url = urls.get(0);
+		}
+		
+		if( url == null )
+			throw new DiscoException( "Could not find FOM module: "+url );
+		
+		URL[] createModules = new URL[] { url };
 		
 		// Slam the arrays together and return
 		return Stream.concat( Arrays.stream(createModules), Arrays.stream(joinModules) )
