@@ -101,7 +101,16 @@ public class HLAfloat32BE implements hla.rti1516e.encoding.HLAfloat32BE
 	@Override
 	public final void decode( ByteWrapper byteWrapper ) throws DecoderException
 	{
+		if( byteWrapper.remaining() < this.getEncodedLength() )
+			throw new DecoderException( "Insufficient space remaining in buffer to decode this value" );
+		
 		byteWrapper.align( 4 );
+
+		if ( (byteWrapper.remaining() % 4) != 0)
+		{
+			value = 0;
+			return;
+		}
 		value = Float.intBitsToFloat( byteWrapper.getInt() );
 	}
 

@@ -34,6 +34,7 @@ import org.openlvc.disco.connection.rpr.mappers.EntityStateMapper;
 import org.openlvc.disco.connection.rpr.mappers.SetDataMapper;
 import org.openlvc.disco.connection.rpr.mappers.SignalMapper;
 import org.openlvc.disco.connection.rpr.mappers.TransmitterMapper;
+import org.openlvc.disco.utils.FileUtils;
 
 /**
  * Contains the core configuration data for the RPR connection type that will translate between
@@ -47,7 +48,8 @@ public class RprConfiguration
 	public enum RtiProvider
 	{
 		Portico("C:/Program Files/Portico", "lib/portico.jar" ),
-		Pitch("C:/Program Files/prti1516e", "lib/prtifull.jar" );
+		Pitch("C:/Program Files/prti1516e", "lib/prtifull.jar" ),
+		Mak("C:/MAK", "lib/hla.jar" );
 		
 		private String defaultInstallDir;
 		private String defaultJarPath;
@@ -157,6 +159,15 @@ public class RprConfiguration
 		
 		// 4. Add the current working directory
 		paths.add( new File("./",jarpath) );
+		
+		// 5. Add Mak libraries if installed
+		String makHome = System.getenv( "Mak_RTIDIR" );
+		if( makHome != null )
+		{
+			paths.add( new File(rtihome, "lib/java"));
+			paths.add( new File(rtihome, "lib"));
+			paths.add( new File(rtihome, "bin"));
+		}
 		
 		return paths;
 	}
@@ -426,6 +437,11 @@ public class RprConfiguration
 					throw new DiscoException( e.getMessage(), e );
 				}
 			}
+			else if( getRtiProvider() == RtiProvider.Mak )
+			{
+				// if we're using Mak and it's not an external module, must be dcss
+				createMakFomFiles( new String[]{path}, new File("hla/dcss") );
+			}
 			else
 			{
 				URL temp = loader.getResource( path );
@@ -445,30 +461,58 @@ public class RprConfiguration
 	{
 		// List of defaults
 		String[] defaultModules = new String[] {
-		    "hla/rpr2/HLAstandardMIM.xml",
-		    "hla/rpr2/RPR-Foundation_v2.0.xml",
-		    "hla/rpr2/RPR-Base_v2.0.xml",
-		    "hla/rpr2/RPR-Communication_v2.0.xml",
-		    "hla/rpr2/RPR-DER_v2.0.xml",
-		    "hla/rpr2/RPR-Enumerations_v2.0.xml",
-		    "hla/rpr2/RPR-Physical_v2.0.xml",
-		    "hla/rpr2/RPR-SIMAN_v2.0.xml",
-		    "hla/rpr2/RPR-Warfare_v2.0.xml"
+			"hla/rpr2/HLAstandardMIM.xml",
+			"hla/rpr2/RPR-Foundation_v2.0.xml",
+			"hla/rpr2/RPR-Base_v2.0.xml",
+			"hla/rpr2/RPR-Communication_v2.0.xml",
+			"hla/rpr2/RPR-DER_v2.0.xml",
+			"hla/rpr2/RPR-Enumerations_v2.0.xml",
+			"hla/rpr2/RPR-Physical_v2.0.xml",
+			"hla/rpr2/RPR-SIMAN_v2.0.xml",
+			"hla/rpr2/RPR-Warfare_v2.0.xml"
 		};
-
-		// Make sure we can find each default
-		ClassLoader loader = getClass().getClassLoader();
-		for( String module : defaultModules )
+		
+		if( getRtiProvider() == RtiProvider.Mak )
 		{
-			URL url = loader.getResource( module );
-			if( url == null )
-				throw new DiscoException( "Could not find FOM module: "+url );
-			else
-				fomModules.add( url );
+			createMakFomFiles( defaultModules, new File("hla/rpr2") );
+		}
+		else
+		{
+			// Make sure we can find each default
+			ClassLoader loader = getClass().getClassLoader();
+			for( String module : defaultModules )
+			{
+				URL url = loader.getResource( module );
+				if( url == null  )
+					throw new DiscoException( "Could not find FOM module: "+url );
+				else
+					fomModules.add( url );
+			}
 		}
 	}
 	
-
+	/**
+	 * Mak refuses to load anything from a jar file, as such need to copy any
+	 * module files in the jar outside into a folder where Mak can load them.
+	 * This method does that, creating a folder for the modules in the destDir
+	 * copying in the given module files, and adding them to the list of module URLs
+	 */
+	private void createMakFomFiles( String[] modules, File destDir )
+	{
+		ArrayList<String> modulesList = new ArrayList<>();
+		for( String module : modules )
+		{
+			// Mak doesn't like this module being included
+			if( module.contains("HLAstandardMIM") )
+				continue;
+				
+			modulesList.add(module);
+		}
+		
+		// add the URLs of the unjar'd files
+		fomModules.addAll( FileUtils.extractFilesFromJar(modulesList, destDir, getClass().getClassLoader()) );
+	}
+	
 	////////////////////////////////////////
 	/// FOM Mappers   //////////////////////
 	////////////////////////////////////////

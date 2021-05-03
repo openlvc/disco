@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.configuration.DiscoConfiguration;
+import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.connection.ConnectionFactory;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.connection.Metrics;
@@ -169,8 +170,15 @@ public class OpsCenter
 				logger.warn( "Missing jar file: "+file.getAbsolutePath() );
 		}
 		
-		ClassLoaderUtils.extendClasspath( configuration.getRprConfiguration().getRtiPathExtension() );
+		ClassLoaderUtils.extendClasspath( paths );
 		logger.debug( "Extended classpath to include HLA libraries; added: "+paths );
+		
+		// Mak is too cool for the classpath, it needs to be put on the library path
+		if( configuration.getRprConfiguration().getRtiProvider() == RtiProvider.Mak )
+		{
+			ClassLoaderUtils.extendLibraryPath( paths );
+			logger.debug( "Extended Java library path to include HLA libraries; added: "+paths );
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

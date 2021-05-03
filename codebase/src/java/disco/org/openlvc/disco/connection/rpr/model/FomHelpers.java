@@ -29,6 +29,7 @@ import hla.rti1516e.AttributeHandleSet;
 import hla.rti1516e.InteractionClassHandle;
 import hla.rti1516e.ObjectClassHandle;
 import hla.rti1516e.RTIambassador;
+import hla.rti1516e.exceptions.NameNotFound;
 import hla.rti1516e.exceptions.RTIexception;
 
 /**
@@ -336,7 +337,21 @@ public class FomHelpers
 		
 		// get the attribute handles
 		for( AttributeClass attribute : objectClass.getDeclaredAttributes() )
-			attribute.setHandle( rtiamb.getAttributeHandle(ocHandle,attribute.getName()) );
+		{
+			try
+			{
+				attribute.setHandle( rtiamb.getAttributeHandle(ocHandle,attribute.getName()) );
+			}
+			catch( NameNotFound e )
+			{
+				// if the rti is throwing an error about not finding HLAObjectRoot attributes
+				// its probably Mak, so safe to ignore
+				if ( objectClass.getQualifiedName().equals("HLAobjectRoot") )
+					break;
+				else
+					throw e;
+			}
+		}
 		
 		// recurse for each child
 		for( ObjectClass child : objectClass.getChildren() )
@@ -397,7 +412,12 @@ public class FomHelpers
 		// Turn the attributes into a handle set
 		AttributeHandleSet ahs = rtiamb.getAttributeHandleSetFactory().create();
 		for( AttributeClass attribute : attributes )
+		{
+			if(attribute.getHandle() == null )
+				continue;
+			
 			ahs.add( attribute.getHandle() );
+		}
 
 		//
 		// Publish

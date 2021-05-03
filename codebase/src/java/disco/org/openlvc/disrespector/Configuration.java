@@ -458,7 +458,7 @@ public class Configuration
 		System.out.println( "  --dis-log-file        string   (optional)  Set log file for DIS side only             (default: logs/disrespector.dis.log)" );
 		System.out.println( "" );
 		System.out.println( "HLA Network Settings" );
-		System.out.println( "  --hla-rti-provider    string   (optional)  Portico or Pitch                           (default: Portico)" );
+		System.out.println( "  --hla-rti-provider    string   (optional)  Portico, Pitch or Mak                      (default: Portico)" );
 		System.out.println( "  --hla-rti-dir         string   (optional)  Directory where RTI is installed           (default: RTI Specific)" );
 		System.out.println( "  --hla-local-settings  string   (optional)  Setting string given to RTI on connection" );
 		System.out.println( "  --hla-federation      string   (optional)  Name of federation to join                 (default: disrespector)" );
