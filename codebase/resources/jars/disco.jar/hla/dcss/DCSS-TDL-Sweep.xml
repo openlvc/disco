@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<objectModel xsi:schemaLocation="http://standards.ieee.org/IEEE1516-2010 http://standards.ieee.org/downloads/1516/1516.2-2010/IEEE1516-DIF-2010.xsd" xmlns="http://standards.ieee.org/IEEE1516-2010" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelIdentification>
+        <name>New Module</name>
+        <type>FOM</type>
+        <version>1.0</version>
+        <securityClassification>unclassified</securityClassification>
+        <purpose></purpose>
+        <applicationDomain></applicationDomain>
+        <description>Description of New Module</description>
+        <useLimitation></useLimitation>
+        <poc>
+            <pocType>Primary author</pocType>
+            <pocName>Michael Jobson</pocName>
+            <pocOrg>Boeing Defence UK</pocOrg>
+            <pocEmail>michael.i.jobson@boeing.com</pocEmail>
+        </poc>
+        <poc>
+            <pocType></pocType>
+            <pocName></pocName>
+            <pocOrg></pocOrg>
+        </poc>
+        <other></other>
+    </modelIdentification>
+    <!--  ======================================================================= -->
+    <!--                         Object Class Definitions                         -->
+    <!--  ======================================================================= -->
+    <objects>
+        <objectClass>
+            <name>HLAobjectRoot</name>
+        </objectClass>
+    </objects>
+    <!--  ======================================================================= -->
+    <!--                       Interaction Class Definitions                      -->
+    <!--  ======================================================================= -->
+    <interactions>
+        <interactionClass>
+            <name>HLAinteractionRoot</name>
+            <interactionClass>
+			    <name>UpdateInhibitedMidsPairing</name>
+			    <sharing>Neither</sharing>
+			    <transportation>HLAbestEffort</transportation>
+			    <order>Receive</order>
+			    <semantics>Request for calculation of degradation effects</semantics>
+			    <parameter>
+			        <name>TDLType</name>
+			        <dataType>Integer32</dataType>
+			    </parameter>
+			    <parameter>
+			        <name>SourceEntityID</name>
+			        <dataType>EntityIdentifierStruct</dataType>
+			    </parameter>
+			    <parameter>
+			        <name>DestinationEntityID</name>
+			        <dataType>EntityIdentifierStruct</dataType>
+			    </parameter>
+			    <parameter>
+			        <name>EnableDisableMIDSTerminal</name>
+			        <dataType>HLAboolean</dataType>
+			    </parameter>
+			</interactionClass>
+		</interactionClass>
+    </interactions>
+    <!--  ======================================================================= -->
+    <!--                           Data Type Definitions                          -->
+    <!--  ======================================================================= -->
+    <dataTypes>
+        <simpleDataTypes/>
+        <enumeratedDataTypes/>
+        <variantRecordDataTypes/>
+        <arrayDataTypes/>
+        <fixedRecordDataTypes/>
+    </dataTypes>
+</objectModel>
+    
