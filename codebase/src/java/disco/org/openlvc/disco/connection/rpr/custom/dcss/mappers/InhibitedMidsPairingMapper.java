@@ -107,6 +107,8 @@ public class InhibitedMidsPairingMapper extends AbstractMapper
 		interaction.fromPdu( pdu );
 
 		ParameterHandleValueMap map = super.createParameters( this.hlaClass );
+		interaction.setParameters( map );
+		
 		serializeInto( interaction.getTdlType(), tdlType, map );
 		serializeInto( interaction.getSourceEntityId(), sourceEntityId, map );
 		serializeInto( interaction.getDestinationEntityId(), destinationEntityId, map );
