@@ -18,6 +18,7 @@
 package org.openlvc.disco;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -164,20 +165,29 @@ public class OpsCenter
 	private void applyRprClasspathHack()
 	{
 		List<File> paths = configuration.getRprConfiguration().getRtiPathExtension();
+		ArrayList<File> found = new ArrayList<File>();
+		
 		for( File file : paths )
 		{
-			if( file.exists() == false )
-				logger.warn( "Missing jar file: "+file.getAbsolutePath() );
+			if( file.exists() )
+				found.add( file );
 		}
 		
-		ClassLoaderUtils.extendClasspath( paths );
-		logger.debug( "Extended classpath to include HLA libraries; added: "+paths );
-		
-		// Mak is too cool for the classpath, it needs to be put on the library path
-		if( configuration.getRprConfiguration().getRtiProvider() == RtiProvider.Mak )
+		if ( found.size() > 0 )
 		{
-			ClassLoaderUtils.extendLibraryPath( paths );
-			logger.debug( "Extended Java library path to include HLA libraries; added: "+paths );
+			ClassLoaderUtils.extendClasspath( found );
+			logger.debug( "Extended classpath to include HLA libraries; added: "+found );
+			
+			// Mak is too cool for the classpath, it needs to be put on the library path
+			if( configuration.getRprConfiguration().getRtiProvider() == RtiProvider.Mak )
+			{
+				ClassLoaderUtils.extendLibraryPath( found );
+				logger.debug( "Extended Java library path to include HLA libraries; added: "+found );
+			}
+		}
+		else
+		{
+			logger.warn( "HLA RTI jar file could not be found in any of these locations: " + paths );
 		}
 	}
 
