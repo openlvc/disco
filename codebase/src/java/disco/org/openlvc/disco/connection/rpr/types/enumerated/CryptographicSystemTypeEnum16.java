@@ -33,7 +33,15 @@ public enum CryptographicSystemTypeEnum16 implements ExtendedDataElement<Cryptog
 	KY_58( new RPRunsignedInteger16BE(2) ),
 	NarrowSpectrumSecureVoice_NSVE( new RPRunsignedInteger16BE(3) ),
 	WideSpectrumSecureVoice_WSVE( new RPRunsignedInteger16BE(4) ),
-	SINCGARS_ICOM( new RPRunsignedInteger16BE(5) );
+	SINCGARS_ICOM( new RPRunsignedInteger16BE(5) ),
+	KY_75( new RPRunsignedInteger16BE(6) ),
+	KY_100( new RPRunsignedInteger16BE(7) ),
+	KY_57( new RPRunsignedInteger16BE(8) ),
+	KYV_5( new RPRunsignedInteger16BE(9) ),
+	Link11KG_40A_P_NTDS_( new RPRunsignedInteger16BE(10) ),
+	Link11BKG_40A_S( new RPRunsignedInteger16BE(11) ),
+	Link11KG_40AR( new RPRunsignedInteger16BE(12) ),
+	KGV_135A( new RPRunsignedInteger16BE(13) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
