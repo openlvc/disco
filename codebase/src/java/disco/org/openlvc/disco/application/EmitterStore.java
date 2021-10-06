@@ -101,6 +101,10 @@ public class EmitterStore implements IDeleteReaperManaged
 			existing.setLastUpdatedTime( incoming.getLastUpdatedTime() );
 			existing.setLocation( incoming.getLocation() );
 			existing.setSystemType( incoming.getSystemType() );
+
+			// Remove any Beams we have first.
+			// If the pdu does not contain any, they should be deleted...
+			existing.getBeams().clear();
 			
 			// Update the beams - either adding them or replacing them
 			for( EmitterBeam beam : incoming.getBeams() )
