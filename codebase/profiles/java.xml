@@ -63,7 +63,7 @@
 	     for a library can be changed in a single spot. The properties should be used
 	     when defining paths and the like later in the build file -->
 	<property name="testng.dir"            location="${lib.dir}/testng/testng-6.8"/>
-	<property name="log4j.dir"             location="${lib.dir}/log4j/apache-log4j-2.16.0-bin"/>
+	<property name="log4j.dir"             location="${lib.dir}/log4j/apache-log4j-2.17.0-bin"/>
 	<property name="json-simple.dir"       location="${lib.dir}/json-simple/1.1.1"/>
 	<property name="marineapi.dir"         location="${lib.dir}/marineapi/0.10.0"/> <!-- NEMA 0183 Formatting -->
 	<!-- HLA Settings -->
