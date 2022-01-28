@@ -344,10 +344,13 @@ public class FomHelpers
 			}
 			catch( NameNotFound e )
 			{
-				// if the rti is throwing an error about not finding HLAObjectRoot attributes
-				// its probably Mak, so safe to ignore
-				if ( objectClass.getQualifiedName().equals("HLAobjectRoot") )
+				// if the rti is throwing an error about not finding the privilege to delete
+				// attribute, it may be using a slightly different name for it
+				if ( attribute.getName().equals("HLAprivilegeToDelete") )
+				{
+					attribute.setHandle( rtiamb.getAttributeHandle(ocHandle,"HLAprivilegeToDeleteObject") );
 					break;
+				}
 				else
 					throw e;
 			}
