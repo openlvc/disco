@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.connection.rpr.types.variant;
 
+import org.openlvc.disco.connection.rpr.types.basic.Empty;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 import org.openlvc.disco.connection.rpr.types.enumerated.SpreadSpectrumEnum16;
 import org.openlvc.disco.connection.rpr.types.fixed.SINCGARSModulationStruct;
@@ -39,7 +40,7 @@ public class SpreadSpectrumVariantStruct extends WrappedHlaVariantRecord<SpreadS
 	{
 		super( SpreadSpectrumEnum16.None );
 		
-		super.setVariant( SpreadSpectrumEnum16.None,                    new RPRunsignedInteger16BE()/*dummy*/ );
+		super.setVariant( SpreadSpectrumEnum16.None,                    new Empty()/*dummy*/ );
 		super.setVariant( SpreadSpectrumEnum16.SINCGARSFrequencyHop,    new SINCGARSModulationStruct() );
 		super.setVariant( SpreadSpectrumEnum16.JTIDS_MIDS_SpectrumType, new RPRunsignedInteger16BE()/*dummy*/ );
 		
