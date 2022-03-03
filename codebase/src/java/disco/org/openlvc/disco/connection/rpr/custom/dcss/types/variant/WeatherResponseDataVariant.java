@@ -18,7 +18,11 @@
 package org.openlvc.disco.connection.rpr.custom.dcss.types.variant;
 
 import org.openlvc.disco.connection.rpr.custom.dcss.types.enumerated.Domain;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.AtmosphereResponseData;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.CloudResponseData;
 import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.GroundResponseData;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.SubsurfaceResponseData;
+import org.openlvc.disco.connection.rpr.custom.dcss.types.fixed.SurfaceResponseData;
 import org.openlvc.disco.connection.rpr.types.variant.WrappedHlaVariantRecord;
 
 public class WeatherResponseDataVariant extends WrappedHlaVariantRecord<Domain>
@@ -37,11 +41,11 @@ public class WeatherResponseDataVariant extends WrappedHlaVariantRecord<Domain>
 	public WeatherResponseDataVariant()
 	{
 		super( Domain.InvalidDomain );
-		// this.setVariant( Domain.Atmosphere, new AtmosphereResponseData() );
+		this.setVariant( Domain.Atmosphere, new AtmosphereResponseData() );
 		this.setVariant( Domain.Ground, new GroundResponseData() );
-		// this.setVariant( Domain.Cloud, new CloudResponseData() );
-		// this.setVariant( Domain.Surface, new SurfaceResponseData() );
-		// this.setVariant( Domain.Subsurface, new SubsurfaceResponseData() );
+		this.setVariant( Domain.Cloud, new CloudResponseData() );
+		this.setVariant( Domain.Surface, new SurfaceResponseData() );
+		this.setVariant( Domain.Subsurface, new SubsurfaceResponseData() );
 	}
 
 	//----------------------------------------------------------
