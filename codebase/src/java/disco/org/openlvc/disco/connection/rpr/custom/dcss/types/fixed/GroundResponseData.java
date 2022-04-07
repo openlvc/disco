@@ -43,6 +43,7 @@ public class GroundResponseData extends WrappedHlaFixedRecord
 	private HLAfloat32BE convecPrecipitationRate;
 	private EnumHolder<PrecipitationType> precipitationType;
 	private HLAfloat32BE visibility;
+	private HLAfloat32BE cloudCeiling;
 	private HLAfloat32BE lightning;
 
 	//----------------------------------------------------------
@@ -62,6 +63,7 @@ public class GroundResponseData extends WrappedHlaFixedRecord
 		this.convecPrecipitationRate = new HLAfloat32BE();
 		this.precipitationType = new EnumHolder<>( PrecipitationType.InvalidPrecipitationType );
 		this.visibility = new HLAfloat32BE();
+		this.cloudCeiling = new HLAfloat32BE();
 		this.lightning = new HLAfloat32BE();
 		
 		this.add( this.temperature, 
@@ -76,6 +78,7 @@ public class GroundResponseData extends WrappedHlaFixedRecord
 		          this.convecPrecipitationRate,
 		          this.precipitationType,
 		          this.visibility,
+		          this.cloudCeiling,
 		          this.lightning );
 	}
 
@@ -98,6 +101,7 @@ public class GroundResponseData extends WrappedHlaFixedRecord
 	public HLAfloat32BE getConvecPrecipitationRate() { return this.convecPrecipitationRate; }
 	public EnumHolder<PrecipitationType> getPrecipitationType() { return this.precipitationType; }
 	public HLAfloat32BE getVisibility() { return this.visibility; }
+	public HLAfloat32BE getCloudCeiling() { return this.cloudCeiling; }
 	public HLAfloat32BE getLightning() { return this.lightning; }
 
 	//----------------------------------------------------------

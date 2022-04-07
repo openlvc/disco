@@ -15,6 +15,7 @@ public class CloudResponseData extends WrappedHlaFixedRecord
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private HLAfloat32BE totalCloudCover;
+	private HLAfloat32BE cloudCeiling;
 	private CloudLayer highCloud;
 	private CloudLayer midCloud;
 	private CloudLayer lowCloud;
@@ -30,6 +31,7 @@ public class CloudResponseData extends WrappedHlaFixedRecord
 	public CloudResponseData()
 	{
 		this.totalCloudCover = new HLAfloat32BE();
+		this.cloudCeiling = new HLAfloat32BE();
 		this.highCloud = new CloudLayer();
 		this.midCloud = new CloudLayer();
 		this.lowCloud = new CloudLayer();
@@ -40,6 +42,7 @@ public class CloudResponseData extends WrappedHlaFixedRecord
 		this.lightning = new HLAfloat32BE();
 		
 		this.add( this.totalCloudCover,
+		          this.cloudCeiling,
 		          this.highCloud,
 		          this.midCloud,
 		          this.lowCloud,
@@ -59,6 +62,7 @@ public class CloudResponseData extends WrappedHlaFixedRecord
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public HLAfloat32BE getTotalCloudCover() { return this.totalCloudCover; }
+	public HLAfloat32BE getCloudCeiling() { return this.cloudCeiling; }
 	public CloudLayer getHighCloud() { return this.highCloud; }
 	public CloudLayer getMidCloud() { return this.midCloud; }
 	public CloudLayer getLowCloud() { return this.lowCloud; }
