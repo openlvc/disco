@@ -21,6 +21,7 @@ public class SurfaceResponseData extends WrappedHlaFixedRecord
 	private HLAfloat32BE primaryWavePeriod;
 	private HLAfloat32BE primaryWaveDirection;
 	private HLAfloat32BE swellHeight;
+	private HLAfloat32BE swellPeriod;
 	private HLAfloat32BE swellDirection;
 
 	//----------------------------------------------------------
@@ -37,6 +38,7 @@ public class SurfaceResponseData extends WrappedHlaFixedRecord
 		this.primaryWavePeriod = new HLAfloat32BE();
 		this.primaryWaveDirection = new HLAfloat32BE();
 		this.swellHeight = new HLAfloat32BE();
+		this.swellPeriod = new HLAfloat32BE();
 		this.swellDirection = new HLAfloat32BE();
 		
 		this.add( this.windDirection,
@@ -48,6 +50,7 @@ public class SurfaceResponseData extends WrappedHlaFixedRecord
 		          this.primaryWavePeriod,
 		          this.primaryWaveDirection,
 		          this.swellHeight,
+		          this.swellPeriod,
 		          this.swellDirection );
 	}
 
@@ -67,6 +70,7 @@ public class SurfaceResponseData extends WrappedHlaFixedRecord
 	public HLAfloat32BE getPrimaryWavePeriod() { return this.primaryWaveDirection; }
 	public HLAfloat32BE getPrimaryWaveDirection() { return this.primaryWaveDirection; }
 	public HLAfloat32BE getSwellHeight() { return this.swellHeight; }
+	public HLAfloat32BE getSwellPeriod() { return this.swellPeriod; }
 	public HLAfloat32BE getSwellDirection() { return this.swellDirection; }
 
 	//----------------------------------------------------------
