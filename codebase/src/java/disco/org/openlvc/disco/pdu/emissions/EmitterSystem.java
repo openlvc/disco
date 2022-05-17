@@ -105,7 +105,14 @@ public class EmitterSystem implements IPduComponent, Cloneable
 	@Override
 	public void to( DisOutputStream dos ) throws IOException
 	{
-		dos.writeUI8( (short)getByteLength() );
+		// ref DIS-7 spec section 7.6.2 paragraph f.1
+		// if length exceeds 255 this value is not used and should be set to 0
+		short length = (short) getByteLength();
+		if( length > 255 )
+		{
+			length = 0;
+		}
+		dos.writeUI8( length );
 		dos.writeUI8( (short)beams.size() );
 		dos.writePadding16();
 		systemType.to( dos );
