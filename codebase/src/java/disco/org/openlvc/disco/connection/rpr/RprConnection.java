@@ -424,10 +424,15 @@ public class RprConnection implements IConnection
 	 */
 	private void cleanupFederation()
 	{
+		if( this.rtiamb == null )
+		{
+			return;
+		}
+		
 		try
 		{
 			// Resign from the federation
-    		this.rtiamb.resignFederationExecution( ResignAction.DELETE_OBJECTS_THEN_DIVEST );
+			this.rtiamb.resignFederationExecution( ResignAction.DELETE_OBJECTS_THEN_DIVEST );
 		}
 		catch( RTIexception rtie )
 		{

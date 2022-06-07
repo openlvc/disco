@@ -99,6 +99,8 @@ public class RprConfiguration
 	// FOM-specific values. Careful to manage with DIS properties so they don't ignore each other
 	private List<URL> fomModules;
 	private List<AbstractMapper> fomMappers;
+	
+	private List<String> extensionModules;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -109,6 +111,8 @@ public class RprConfiguration
 		
 		this.fomModules = new ArrayList<>();
 		this.fomMappers = new ArrayList<>();
+		
+		this.extensionModules = new ArrayList<>();
 	}
 
 	//----------------------------------------------------------
@@ -175,6 +179,17 @@ public class RprConfiguration
 	public void setRtiProvider( RtiProvider provider )
 	{
 		parent.setProperty( PROP_RTI_PROVIDER, provider.name() );
+		
+		// Mak is picky, best to clear and reload the FOMs - now that Mak is set
+		// they will be extracted out from the jar so it can load them
+		if( provider == RtiProvider.Mak )
+		{
+			this.fomModules.clear();
+			loadDefaultModules();
+			
+			// re-add extension modules
+			registerExtensionModules( this.extensionModules.toArray(new String[0]) );
+		}
 	}
 	
 	public void setRtiProvider( String provider )
@@ -450,6 +465,12 @@ public class RprConfiguration
 				else
 					// can't find it!
 					throw new DiscoException( "Cannot find extension module: "+path );
+			}
+			
+			//keeping track of these helps if at some point we switch to using Mak
+			if( !this.extensionModules.contains(path) )
+			{
+				this.extensionModules.add( path );
 			}
 		}
 	}
