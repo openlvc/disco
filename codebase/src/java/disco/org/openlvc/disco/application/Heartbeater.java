@@ -90,6 +90,11 @@ public class Heartbeater implements Runnable
 	
 	public void stop()
 	{
+		if( this.thread == null )
+		{
+			return;
+		}
+		
 		this.thread.interrupt();
 		try
 		{
