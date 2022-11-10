@@ -317,7 +317,6 @@ public class RprConnection implements IConnection
 	 *   <li>Join the federation</li>
 	 *   <li>Parse all relevant FOM modules</li>
 	 *   <li>Cache handles for all classes/attributes/parameters from the model</li>
-	 *   <li>Publish and Subscribe to all relevant classes</li>
 	 * </ol>
 	 */
 	private void initializeFederation()
@@ -412,6 +411,20 @@ public class RprConnection implements IConnection
 		logger.debug( "Loading handles for FOM" );
 		FomHelpers.loadHandlesFromRti( this.rtiamb, this.objectModel );
 
+		//
+		// Step 5. Any special post-join things we should do
+		//
+		try
+		{
+			this.rtiamb.enableCallbacks();
+			this.rtiamb.enableAsynchronousDelivery();
+		}
+		catch( RTIexception rtie )
+		{
+			throw new DiscoException( "Error enabling callbacks/async delivery",
+			                          rtie.getMessage(), rtie );
+		}
+		
 		//
 		// Step 5. Publish and Subscribe -- this will start data flowing from the HLA
 		//

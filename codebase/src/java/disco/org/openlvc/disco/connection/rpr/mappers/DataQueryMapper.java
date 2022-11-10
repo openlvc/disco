@@ -84,7 +84,7 @@ public class DataQueryMapper extends AbstractMapper
 		this.variableDatumIdentifiers  = hlaClass.getParameter( "VariableDatumIdentifiers" );
 		
 		// Publish and Subscribe
-		super.publishAndSubscribe( this.hlaClass );
+		//super.publishAndSubscribe( this.hlaClass );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////

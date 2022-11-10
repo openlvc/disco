@@ -82,7 +82,7 @@ public class DataMapper extends AbstractMapper
 		this.variableDatumSet  = hlaClass.getParameter( "VariableDatumSet" );
 		
 		// Publish and Subscribe
-		super.publishAndSubscribe( this.hlaClass );
+		//super.publishAndSubscribe( this.hlaClass );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
