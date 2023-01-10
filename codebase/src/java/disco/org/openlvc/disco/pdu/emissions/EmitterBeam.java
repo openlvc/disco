@@ -137,6 +137,13 @@ public class EmitterBeam implements IPduComponent, Cloneable
 	@Override
     public void to( DisOutputStream dos ) throws IOException
     {
+		// ref DIS-7 spec section 7.6.2 paragraph f.5.i
+		// if length exceeds 255 this value is not used and should be set to 0
+		
+		int beamLength = getByteLength();
+		if( beamLength > 255 )
+			beamLength = 0;
+
 		dos.writeUI8( (short)getByteLength() );
 		dos.writeUI8( beamNumber );
 		dos.writeUI16( parameterIndex );
