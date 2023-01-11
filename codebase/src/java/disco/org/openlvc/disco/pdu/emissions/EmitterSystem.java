@@ -107,7 +107,7 @@ public class EmitterSystem implements IPduComponent, Cloneable
 	{
 		// ref DIS-7 spec section 7.6.2 paragraph f.1
 		// if length exceeds 255 this value is not used and should be set to 0
-		short length = (short) getByteLength();
+		short length = (short)(getByteLength() / 4);  // 32-bit words
 		if( length > 255 )
 		{
 			length = 0;
