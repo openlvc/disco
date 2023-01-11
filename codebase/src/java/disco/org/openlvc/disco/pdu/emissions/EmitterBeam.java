@@ -140,7 +140,7 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		// ref DIS-7 spec section 7.6.2 paragraph f.5.i
 		// if length exceeds 255 this value is not used and should be set to 0
 		
-		int beamLength = getByteLength();
+		int beamLength = getByteLength() / 4;  // Count in 32-bit words
 		if( beamLength > 255 )
 			beamLength = 0;
 
