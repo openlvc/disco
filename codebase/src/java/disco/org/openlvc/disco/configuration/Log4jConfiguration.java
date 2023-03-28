@@ -18,19 +18,18 @@
 package org.openlvc.disco.configuration;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
-import org.apache.logging.log4j.core.appender.FileAppender;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
+import org.apache.logging.log4j.core.config.builder.api.LayoutComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
 /**
  * Allows a user to define the basic properties for a Log4j configuration and then tell it
@@ -41,6 +40,8 @@ public class Log4jConfiguration
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static final String DEFAULT_PATTERN_REG  = "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36}: %msg%n";
+	private static final String DEFAULT_PATTERN_DATE = "%d{dd MMM yyyy @ HH:mm:ss.SSS} [%t] %-5level %logger{36}: %msg%n";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -51,7 +52,6 @@ public class Log4jConfiguration
 	private boolean consoleOn;
 	private boolean fileOn;
 	private File file;
-	private Set<Appender> additionalAppenders;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -60,14 +60,13 @@ public class Log4jConfiguration
 	{
 		this.appName = appName;
 		if( appName == null )
-			this.appName = "disco"; //this.appName = LogManager.ROOT_LOGGER_NAME;
+			this.appName = LogManager.ROOT_LOGGER_NAME;
 		
-		this.pattern = "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36}: %msg%n";
+		this.pattern = DEFAULT_PATTERN_REG;
 		this.level = Level.INFO;
 		this.consoleOn = true;
-		this.fileOn = false;
-		this.file = new File( "disco.log" );
-		this.additionalAppenders = new HashSet<>();
+		this.fileOn = true;
+		this.file = new File( "logs/bts.log" );
 	}
 
 	//----------------------------------------------------------
@@ -77,101 +76,91 @@ public class Log4jConfiguration
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Configuration Activation Methods    ////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	
+	private void attachConsoleAppender( ConfigurationBuilder<BuiltConfiguration> rootBuilder,
+	                                    RootLoggerComponentBuilder rootLogger )
+	{
+		AppenderComponentBuilder appender = rootBuilder.newAppender( "Console", "CONSOLE" );
+		appender.addAttribute( "target", ConsoleAppender.Target.SYSTEM_OUT );
+		appender.add( getLayout(rootBuilder) );
+		rootLogger.add( rootBuilder.newAppenderRef("Console") );
+		rootBuilder.add( appender );
+	}
+
+	private void attachFileAppender( ConfigurationBuilder<BuiltConfiguration> rootBuilder,
+	                                 RootLoggerComponentBuilder rootLogger )
+	{
+		// create the appender builder - arguments are (name, type) where type is a magic string
+		// that references a file-type appender
+		AppenderComponentBuilder appender = rootBuilder.newAppender( "File", "File" );
+		appender.addAttribute( "fileName", file.getAbsolutePath() )
+		        .addAttribute( "append", false )
+		        .addAttribute( "ignoreExceptions", false )
+		        .addAttribute( "bufferedIo", true )
+		        .addAttribute( "bufferSize", 8192 )
+		        .add( getLayout(rootBuilder) );
+		
+		rootLogger.add( rootBuilder.newAppenderRef("File") );
+		rootBuilder.add( appender );
+	}
+
+	@SuppressWarnings("unused")
+	private void attachRollingFileAppender( ConfigurationBuilder<BuiltConfiguration> rootBuilder,
+	                                        RootLoggerComponentBuilder rootLogger )
+	{
+		// create a rollover trigger
+		@SuppressWarnings("rawtypes")
+		ComponentBuilder rolloverTrigger =
+			rootBuilder.newComponent( "Policies" )
+			           .addComponent( rootBuilder.newComponent("SizeBasedTriggeringPolicy")
+			                                     .addAttribute( "size", "100MB" ) );
+
+		AppenderComponentBuilder appender = rootBuilder.newAppender( "File", "RollingFile" );
+		appender.addAttribute( "fileName", file.getAbsolutePath() )
+		        .addAttribute( "filePattern", file.getName()+"-%d{MM-dd-yy-HH-mm-ss}.log" )
+		        .add( getLayout(rootBuilder) )
+		        .addComponent( rolloverTrigger );
+		
+		rootLogger.add( rootBuilder.newAppenderRef("File") );
+		rootBuilder.add( appender );
+	}
+
+	private LayoutComponentBuilder getLayout( ConfigurationBuilder<BuiltConfiguration> builder )
+	{
+		return builder.newLayout( "PatternLayout" ).addAttribute( "pattern", this.pattern )
+		                                           .addAttribute( "charset", "UTF-8" );
+	}
+	
 	/** Take the configuration values and make them active for the specified root logger */
 	public void activateConfiguration()
 	{
-		// create a new config object and get the context (we'll need it later)
-		// once we're done configuring the config we'll add it to the context and then
-		// tell it to refresh itself
-		LoggerConfig config = new LoggerConfig( appName, Level.OFF, true );
-		LoggerContext context = (LoggerContext)LogManager.getContext( false );
+		// What an absolute pile of trash. This is apparently the way you are meant to build
+		// configurations in code. With a bunch of magic strings pointing at plugins for what
+		// are standard parts of the Log4j core. What enterprise pattern abstract factory crack
+		// were these guys smoking?
 		
-		// remove any existing appenaders
-		Map<String,Appender> appenders = new HashMap<String,Appender>( config.getAppenders() );
-		for( String key : appenders.keySet() )
-			config.removeAppender( key );
-
-		// create the new appenders and attach them
+		// Create the main configuration builder
+		ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
+		builder.setStatusLevel( Level.OFF );
+		builder.setConfigurationName( appName );
+		
+		// Specify the root logger configuration
+		RootLoggerComponentBuilder rootLogger = builder.newRootLogger( this.level );
+		
+		// Create the appenders and add them
 		if( this.consoleOn )
-		{
-			ConsoleAppender appender = createConsoleAppender();
-			appender.start();
-			config.addAppender( appender, level, null );
-		}
+			attachConsoleAppender( builder, rootLogger );
 		
 		if( this.fileOn )
-		{
-			FileAppender appender = createFileAppender( context );
-			appender.start();
-			config.addAppender( appender, level, null );
-		}
-
-		for( Appender appender : this.additionalAppenders )
-		{
-			appender.start();
-			config.addAppender( appender, level, null );
-		}
+			attachFileAppender( builder, rootLogger );
 		
-		// set the logger level
-		config.setLevel( this.level );
-		
-		// flush the update
-		context.getConfiguration().addLogger( appName, config );
-		context.updateLoggers();
-	}
-
-	/**
-	 * Adds an additional appender to disco's logger.
-	 * <p/>
-	 * By default, Disco provides console and file appenders which are activated according to the 
-	 * configuration within this object. Additional appenders may be added through this method.
-	 * <p/>
-	 * NOTE: Appenders added by this method will not be activated until {@link #activateConfiguration()}
-	 * is called.
-	 * 
-	 * @param appender the appender to add to disco's logger
-	 */
-	public void addAdditionalAppender( Appender appender )
-	{
-		this.additionalAppenders.add( appender );
-	}
-	
-	public void removeAdditionalAppender( Appender appender )
-	{
-		this.additionalAppenders.remove( appender );
-	}
-
-	private ConsoleAppender createConsoleAppender()
-	{
-		PatternLayout layout = PatternLayout.newBuilder().withPattern(this.pattern).build();
-		return ConsoleAppender.createAppender( layout,
-		                                       null,                      // filter
-		                                       "SYSTEM_OUT",              // targetString
-		                                       appName+"-"+"Console",     // name
-		                                       null,                      // "follow"
-		                                       "false" );                 // ignoreExceptions
-	}
-	
-	private FileAppender createFileAppender( LoggerContext context )
-	{
-		PatternLayout layout = PatternLayout.newBuilder().withPattern(this.pattern).build();
-		return FileAppender.createAppender( file.getAbsolutePath(),       // fileName
-		                                    "false",                      // append
-		                                    "false",                      // locking
-		                                    appName+"-"+"File",           // name
-		                                    "true",                       // immediateFlush
-		                                    "false",                      // ignoreExceptions
-		                                    "true",                       // bufferedIo
-		                                    "8192",                       // bufferSizeStr
-		                                    layout,                       // layout
-		                                    null,                         // filter
-		                                    "false",                      // advertise
-		                                    null,                         // advertiseUri
-		                                    context.getConfiguration() ); // configuration
+		// Add the root logger and configure
+		builder.add( rootLogger );
+		Configurator.reconfigure( builder.build() );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////// Accessor and Mutator Methods ///////////////////////////////
+	/// Accessor and Mutator Methods ///////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Disable this configuration entirely. Sets the log level to OFF and disables file and
@@ -202,6 +191,23 @@ public class Log4jConfiguration
 
 	public String getPattern() { return this.pattern; }
 	public void setPattern( String pattern ) { this.pattern = pattern; }
+	
+	public boolean isLogWithDate() { return this.pattern.equals(DEFAULT_PATTERN_DATE); }
+	/** This will cause the logger to include the date in each message prefix. Note that if you
+	    are using a custom pattern, or this value is set after the configuration is applied, this
+	    call will have no effect */
+	public void setLogWithDate( boolean extended )
+	{
+		// if we are using a custom pattern, just ignore this
+		if( this.pattern.equals(DEFAULT_PATTERN_REG) == false &&
+			this.pattern.equals(DEFAULT_PATTERN_DATE) == false )
+			return;
+		
+		if( extended )
+			this.pattern = DEFAULT_PATTERN_DATE;
+		else
+			this.pattern = DEFAULT_PATTERN_REG;
+	}
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
