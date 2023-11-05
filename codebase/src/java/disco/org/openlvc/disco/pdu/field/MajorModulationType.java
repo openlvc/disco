@@ -33,7 +33,8 @@ public enum MajorModulationType
 	Combination( 4 ),
 	Pulse( 5 ),
 	Unmodulated( 6 ),
-	CPSM( 7 );
+	CPSM( 7 ),
+	SATCOM( 8 );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
