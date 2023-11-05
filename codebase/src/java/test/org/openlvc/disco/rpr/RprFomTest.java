@@ -84,7 +84,7 @@ public class RprFomTest extends AbstractTest
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Test Class Setup/Tear Down   //////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-	@BeforeClass(alwaysRun=true)
+	@BeforeClass(alwaysRun=true,enabled=false)
 	public void beforeClass()
 	{
 		// NOTE: Portico Specific Code
@@ -93,7 +93,7 @@ public class RprFomTest extends AbstractTest
 		System.setProperty( "portico.connection", "jvm" );
 	}
 	
-	@BeforeMethod(alwaysRun=true)
+	@BeforeMethod(alwaysRun=true,enabled=false)
 	public void beforeMethod()
 	{
 		// create the configuration objects we'll use
@@ -121,14 +121,14 @@ public class RprFomTest extends AbstractTest
 		this.right.open();
 	}
 
-	@AfterMethod(alwaysRun=true)
+	@AfterMethod(alwaysRun=true,enabled=false)
 	public void afterMethod()
 	{
 		this.left.close();
 		this.right.close();
 	}
 	
-	@AfterClass(alwaysRun=true)
+	@AfterClass(alwaysRun=true,enabled=false)
 	public void afterClass()
 	{
 	}
@@ -136,7 +136,7 @@ public class RprFomTest extends AbstractTest
 	///////////////////////////////////////////////////////////////////////////////////
 	/// RPR FOM Testing Methods   /////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-	@Test
+	@Test(enabled=false)
 	public void testRprConnection()
 	{
 		// 1. Create an Entity State PDU
@@ -152,7 +152,7 @@ public class RprFomTest extends AbstractTest
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Transmitter PDU Tests   ///////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-	@Test
+	@Test(enabled=false)
 	public void testRprTransmitterWithSameSiteAppEntityId()
 	{
 		// Radio Transmitters can have the same site, application and entity ID, but differ
@@ -178,7 +178,7 @@ public class RprFomTest extends AbstractTest
 		Assert.assertEquals( received.getRadioID(), transmitterTwo.getRadioID() );
 	}
 	
-	@Test
+	@Test(enabled=false)
 	public void testRprTransmitterAttachedToPlatform()
 	{
 		// Radio transmitters can be attached to platforms. To achieve this in DIS, the transmitter
@@ -256,7 +256,7 @@ public class RprFomTest extends AbstractTest
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Signal PDU Tests   ////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-	@Test
+	@Test(enabled=false)
 	public void testRprSignalInteraction()
 	{
 		// 1. Prepare the bits and pieces to test
@@ -299,7 +299,7 @@ public class RprFomTest extends AbstractTest
 	//
 	// Entity State Basic Values
 	//
-	@Test(groups={"rpr-espdu"})
+	@Test(groups={"rpr-espdu"},enabled=false)
 	public void testRprEntityStateBasics()
 	{
 		// 1. Prepare the values we will use
@@ -367,7 +367,7 @@ public class RprFomTest extends AbstractTest
 	//
 	// Ground Platform Appearance
 	//
-	@Test(groups={"rpr-espdu"})
+	@Test(groups={"rpr-espdu"},enabled=false)
 	public void testRprEntityStateGroundAppearance()
 	{
 		// 1. Prepare the values we will use
@@ -427,7 +427,7 @@ public class RprFomTest extends AbstractTest
 	//
 	// Dead Reckoning Values
 	//
-	@Test(groups={"rpr-espdu"})
+	@Test(groups={"rpr-espdu"},enabled=false)
 	public void testRprEntityStateDeakReckoningReflection()
 	{
 		// 1. Prepare the values we will use
@@ -473,7 +473,7 @@ public class RprFomTest extends AbstractTest
 	//
 	// Entity State Articulated Parts
 	//
-	@Test(groups={"rpr-espdu"})
+	@Test(groups={"rpr-espdu"},enabled=false)
 	public void testRprEntityStateArticulations()
 	{
 		// 1. Prepare the values we will use

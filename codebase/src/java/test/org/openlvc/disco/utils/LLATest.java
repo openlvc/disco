@@ -75,7 +75,9 @@ public class LLATest
 		LLA pointA = LLA.fromDegrees( 38.898556, -77.037852, 0 );
 		LLA pointB = LLA.fromDegrees( 38.897147, -77.043934, 0 );
 		double dist = pointB.distanceBetweenHavershine( pointA );
-		Assert.assertEquals( dist, 549.1557912038083 );
+		double expected = 549.1557912038083;
+		double epsilon =    0.000000000001;
+		Assert.assertTrue( Math.abs(dist-expected) < epsilon );
 	}
 
 	@Test
