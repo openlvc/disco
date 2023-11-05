@@ -78,10 +78,7 @@
 	<!-- JDK Locations -->
 	<!-- These are typically used for locating a JRE to package -->
 	<!-- The specific values should be defined in build.properties -->
-	<property name="jdk.home.macosx"  location=""/>  <!-- override in local/build.properties -->
-	<property name="jdk.home.win32"   location=""/>  <!-- override in local/build.properties -->
 	<property name="jdk.home.win64"   location=""/>  <!-- override in local/build.properties -->
-	<property name="jdk.home.linux32" location=""/>  <!-- override in local/build.properties -->
 	<property name="jdk.home.linux64" location=""/>  <!-- override in local/build.properties -->
 
 	<!-- Location Properties -->
@@ -108,7 +105,7 @@
 	<!-- =========================================================== -->
 	<!--                   Common Compiler Settings                  -->
 	<!-- =========================================================== -->
-	<property name="java.compiler.source"   value="1.7"/> <!-- override in local/build.properties -->
-	<property name="java.compiler.target"   value="1.7"/> <!-- override in local/build.properties -->
+	<property name="java.compiler.source"   value="17"/> <!-- override in local/build.properties -->
+	<property name="java.compiler.target"   value="17"/> <!-- override in local/build.properties -->
 
 </project>
