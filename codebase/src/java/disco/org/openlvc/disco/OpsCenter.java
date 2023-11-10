@@ -22,12 +22,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.openlvc.disco.configuration.DisConfiguration;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.connection.ConnectionFactory;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.connection.Metrics;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.utils.ClassLoaderUtils;
 
 public class OpsCenter
@@ -45,8 +47,9 @@ public class OpsCenter
 	private PduReceiver pduReceiver;   // where we receive byte[]'s from the network    (incoming)
 	private PduSender pduSender;       // where we send PDUs to the network             (outgoing)
 	private IPduListener pduListener;  // where we send PDU's received from the network (incoming)
+	private PduFactory pduFactory;     // what we will use to build PDUs from byte[]
 
-	private IConnection connection;    // source and destiantion for PDUs - typically network
+	private IConnection connection;    // source and destination for PDUs - typically network
 
 	// Cached configuration settings for quick access
 	private short exerciseId;
@@ -63,6 +66,7 @@ public class OpsCenter
 		this.pduSender = null;
 		this.pduListener = null;
 		this.connection = null;
+		this.pduFactory = null;
 		
 		this.exerciseId = 1;
 	}
@@ -92,6 +96,11 @@ public class OpsCenter
 		this.logger = configuration.getDiscoLogger();
 		welcomeMessage();
 
+		// Create and configure PDU Factory
+		this.pduFactory = new PduFactory();
+		DisConfiguration disConfig = this.configuration.getDisConfiguration();
+		disConfig.getPduSuppliers().forEach( (t,s) -> this.pduFactory.registerSupplier(t, s) );
+		
 		// enable networking
 		if( this.connection == null )
 		{
@@ -262,6 +271,11 @@ public class OpsCenter
 		return this.connection;
 	}
 
+	public PduFactory getPduFactory()
+	{
+		return this.pduFactory;
+	}
+	
 	/**
 	 * Set the {@link PduReceiver} to use. This will override any receiver information from the
 	 * configuration data. This must be called _before_ the center is opened, otherwise it will

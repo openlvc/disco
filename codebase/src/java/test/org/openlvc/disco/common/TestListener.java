@@ -23,6 +23,7 @@ import java.util.Map;
 import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.radio.SignalPdu;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
 import org.openlvc.disco.pdu.record.EntityId;
@@ -60,25 +61,21 @@ public class TestListener implements IPduListener
 	@Override
 	public void receive( PDU pdu )
 	{
-		switch( pdu.getType() )
+		PduType type = pdu.getType();
+		if( type.equals(PduType.EntityState) )
 		{
-			case EntityState:
-				EntityStatePdu espdu = (EntityStatePdu)pdu;
-				espdus.put( espdu.getMarking(), espdu );
-				break;
-
-			case Transmitter:
-				TransmitterPdu trpdu = pdu.as( TransmitterPdu.class );
-				transmitterPdus.put( trpdu.getEntityId(), trpdu );
-				break;
-
-			case Signal:
-				SignalPdu spdu = pdu.as( SignalPdu.class );
-				signalPdus.put( spdu.getEntityIdentifier(), spdu );
-				break;
-
-			default:
-				break;
+			EntityStatePdu espdu = (EntityStatePdu)pdu;
+			espdus.put( espdu.getMarking(), espdu );
+		}
+		else if( type.equals(PduType.Transmitter) )
+		{
+			TransmitterPdu trpdu = pdu.as( TransmitterPdu.class );
+			transmitterPdus.put( trpdu.getEntityId(), trpdu );
+		}
+		else if( type.equals(PduType.Signal) )
+		{
+			SignalPdu spdu = pdu.as( SignalPdu.class );
+			signalPdus.put( spdu.getEntityIdentifier(), spdu );
 		}
 
 		synchronized( this ) { this.notifyAll(); }

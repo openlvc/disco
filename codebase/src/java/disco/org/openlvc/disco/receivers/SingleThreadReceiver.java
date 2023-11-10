@@ -170,7 +170,8 @@ public class SingleThreadReceiver extends PduReceiver
 					byte[] packet = receiveQueue.take();
 					
 					long nanoStart = System.nanoTime();
-					clientListener.receive( PduFactory.create(packet) );
+					PduFactory factory = opscenter.getPduFactory();
+					clientListener.receive( factory.create(packet) );
 					long nanoTime = System.nanoTime() - nanoStart;
 
 					// take our metrics
@@ -192,13 +193,7 @@ public class SingleThreadReceiver extends PduReceiver
 				{
 					// log and continue
 					if( logger.isTraceEnabled() )
-						logger.trace( "(PduRecv) Received unsupported PDU, skipping it: "+up.getMessage() );					
-				}
-				catch( DiscoException de )
-				{
-					// log and continue
-					if( logger.isDebugEnabled() )
-						logger.debug( "(PduRecv) Problem deserializing PDU, skipping it: "+de.getMessage(), de );
+						logger.trace( "(PduRecv) Received unsupported PDU, skipping it: "+up.getMessage() );
 				}
 				catch( Exception e )
 				{

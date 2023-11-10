@@ -26,6 +26,7 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.field.RequestStatus;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.FixedDatum;
@@ -52,7 +53,7 @@ public class ActionResponsePdu extends PDU
 	//----------------------------------------------------------
 	public ActionResponsePdu()
 	{
-		super( PduType.ActionResponse );
+		super( PduType.ActionResponse, ProtocolFamily.SimMgmt );
 		this.requestId = 0;
 		this.requestStatus = RequestStatus.Other;
 		this.originatingEntity = new EntityId();

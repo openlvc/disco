@@ -29,6 +29,7 @@ import org.openlvc.disco.pdu.field.AntennaPatternType;
 import org.openlvc.disco.pdu.field.CryptoSystem;
 import org.openlvc.disco.pdu.field.InputSource;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.field.TransmitState;
 import org.openlvc.disco.pdu.record.AntennaLocation;
 import org.openlvc.disco.pdu.record.FullRadioId;
@@ -73,7 +74,7 @@ public class TransmitterPdu extends PDU
 	//----------------------------------------------------------
 	public TransmitterPdu()
 	{
-		super( PduType.Transmitter );
+		super( PduType.Transmitter, ProtocolFamily.Radio );
 
 		this.entityID = new EntityId();
 		this.radioId = 0;

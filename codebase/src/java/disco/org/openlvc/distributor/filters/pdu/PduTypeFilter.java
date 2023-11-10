@@ -38,10 +38,10 @@ public class PduTypeFilter extends AbstractFilter implements IFilter
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public PduTypeFilter( Operator operator, String value )
+	public PduTypeFilter( Operator operator, String name )
 	{
-		super( FILTER_KEY, operator, value );
-		this.type = PduType.valueOf(value).value();
+		super( FILTER_KEY, operator, name );
+		this.type = PduType.fromName(name).value();
 	}
 
 	//----------------------------------------------------------

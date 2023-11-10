@@ -24,6 +24,7 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.field.TdlType;
 import org.openlvc.disco.pdu.record.EncodingScheme;
 import org.openlvc.disco.pdu.record.EntityId;
@@ -58,7 +59,7 @@ public class SignalPdu extends PDU
 	//----------------------------------------------------------
 	public SignalPdu()
 	{
-		super( PduType.Signal );
+		super( PduType.Signal, ProtocolFamily.Radio );
 
 		this.entityID = new EntityId();
 		this.radioID = 0;

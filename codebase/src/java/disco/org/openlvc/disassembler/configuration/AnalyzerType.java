@@ -70,7 +70,8 @@ public enum AnalyzerType
 	{
 		try
 		{
-			return this.analyzerClass.newInstance();
+			return this.analyzerClass.getDeclaredConstructor()
+			                         .newInstance();
 		}
 		catch( Exception e )
 		{

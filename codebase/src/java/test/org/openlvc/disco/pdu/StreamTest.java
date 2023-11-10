@@ -23,7 +23,6 @@ import org.openlvc.disco.AbstractTest;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.ParameterTypeDesignator;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
-import org.openlvc.disco.utils.StringUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -78,6 +77,8 @@ public class StreamTest extends AbstractTest
 	@Test
 	public void testDisStreamSerialize() throws Exception
 	{
+		PduFactory factory = new PduFactory();
+		
 		// Create a PDU to send
 		EntityStatePdu before = new EntityStatePdu();
 		
@@ -89,7 +90,7 @@ public class StreamTest extends AbstractTest
 		
 		// Read the PDU back in
 		// This call will create a DisInputStream and read through it for us
-		EntityStatePdu after = (EntityStatePdu)PduFactory.create( baos.toByteArray() );	
+		EntityStatePdu after = (EntityStatePdu)factory.create( baos.toByteArray() );	
 		ByteArrayOutputStream baos2 = new ByteArrayOutputStream( PDU.MAX_SIZE );
 		dos = new DisOutputStream( baos2 );
 		after.writePdu( dos );
@@ -101,6 +102,8 @@ public class StreamTest extends AbstractTest
 	@Test
 	public void testDisStreamSerializeWithArticulations() throws Exception
 	{
+		PduFactory factory = new PduFactory();
+		
 		// Create a PDU to send
 		EntityStatePdu before = new EntityStatePdu();
 		ArticulationParameter param1 = new ArticulationParameter();
@@ -118,11 +121,11 @@ public class StreamTest extends AbstractTest
 		before.writePdu( dos );
 		dos.flush();
 
-		System.out.println(StringUtils.formatAsWireshark(baos.toByteArray()) );
+		//System.out.println(StringUtils.formatAsWireshark(baos.toByteArray()) );
 		
 		// Read the PDU back in
 		// This call will create a DisInputStream and read through it for us
-		EntityStatePdu after = (EntityStatePdu)PduFactory.create( baos.toByteArray() );	
+		EntityStatePdu after = (EntityStatePdu)factory.create( baos.toByteArray() );	
 		ByteArrayOutputStream baos2 = new ByteArrayOutputStream( PDU.MAX_SIZE );
 		dos = new DisOutputStream( baos2 );
 		after.writePdu( dos );

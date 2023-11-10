@@ -1,5 +1,5 @@
 /*
- *   Copyright 2020 Open LVC Project.
+ *   Copyright 2023 Open LVC Project.
  *
  *   This file is part of Open LVC Disco.
  *
@@ -15,15 +15,17 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.disco.connection.rpr.custom.dcss.types.array;
+package org.openlvc.duplicator;
 
-import org.openlvc.disco.connection.rpr.types.EncoderFactory;
-import org.openlvc.disco.connection.rpr.types.array.WrappedHlaVariableArray;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
-import hla.rti1516e.encoding.DataElementFactory;
-import hla.rti1516e.encoding.HLAASCIIstring;
+import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.field.PduType;
 
-public class IRCRoomArray extends WrappedHlaVariableArray<HLAASCIIstring>
+public class PduCounter
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -32,36 +34,62 @@ public class IRCRoomArray extends WrappedHlaVariableArray<HLAASCIIstring>
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private Map<PduType,AtomicLong> counts;
+	private AtomicLong total;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public IRCRoomArray()
+	public PduCounter()
 	{
-		super( new IRCRoomArray.Factory() );
+		this.counts = new HashMap<>();
+		this.total = new AtomicLong();
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	public void handle( PDU pdu )
+	{
+		PduType type = pdu.getType();
+		AtomicLong count = counts.get( type );
+		if( count == null )
+		{
+			count = new AtomicLong();
+			counts.put( type, count );
+		}
+		
+		count.incrementAndGet();
+		this.total.incrementAndGet();
+	}
 
+	public void reset()
+	{
+		this.counts.clear();
+		this.total.set( 0 );
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-
+	public long getCount( PduType type )
+	{
+		AtomicLong count = counts.get( type );
+		return count != null ? count.get() : 0;
+	}
+	
+	public long getCount()
+	{
+		return total.get();
+	}
+	
+	public Map<PduType,Long> getCounts()
+	{
+		return counts.entrySet().stream()
+		                        .collect( Collectors.toMap(e -> e.getKey(), 
+		                                                   e -> e.getValue().get()) );
+	}
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// DataElement Factory Methods   //////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
-	private static class Factory implements DataElementFactory<HLAASCIIstring>
-	{
-    	@Override
-    	public HLAASCIIstring createElement( int index )
-    	{
-    		return EncoderFactory.createHLAASCIIstring();
-    	}
-	}
 }

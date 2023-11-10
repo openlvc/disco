@@ -17,43 +17,54 @@
  */
 package org.openlvc.disco.pdu.field;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 
-public enum ProtocolFamily
+public class ProtocolFamily
 {
 	//----------------------------------------------------------
-	//                        VALUES
+	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	Other         ( (short)0 ),
-	Entity        ( (short)1 ),
-	Warfare       ( (short)2 ),
-	Logistics     ( (short)3 ),
-	Radio         ( (short)4 ),
-	SimMgmt       ( (short)5 ),
-	Emission      ( (short)6 ),
-	EntityMgmt    ( (short)7 ),
-	Minefield     ( (short)8 ),
-	SyntheticEnv  ( (short)9 ),
-	SimMgmt_R     ( (short)10 ),
-	LiveEntity    ( (short)11 ),
-	NonRealTime   ( (short)12 ),
-	InformationOps( (short)13 ),
-	// Custom
-	DiscoCustom   ( (short)221 ); // 0xdd
+	private static final Map<Short,ProtocolFamily> StandardValues = new HashMap<>();
+	
+	public static final ProtocolFamily Other            = registerStandardValue( 0, "Other" );
+	public static final ProtocolFamily Entity           = registerStandardValue( 1, "Entity" );
+	public static final ProtocolFamily Warfare          = registerStandardValue( 2, "Warfare" );
+	public static final ProtocolFamily Logistics        = registerStandardValue( 3, "Logistics" );
+	public static final ProtocolFamily Radio            = registerStandardValue( 4, "Radio" );
+	public static final ProtocolFamily SimMgmt          = registerStandardValue( 5, "SimMgmt" );
+	public static final ProtocolFamily Emission         = registerStandardValue( 6, "Emission" );
+	public static final ProtocolFamily EntityMgmt       = registerStandardValue( 7, "EntityMgmt" );
+	public static final ProtocolFamily Minefield        = registerStandardValue( 8, "Minefield" );
+	public static final ProtocolFamily SyntheticEnv     = registerStandardValue( 9, "SyntheticEnv" );
+	public static final ProtocolFamily SimMgmt_R        = registerStandardValue( 10, "SimMgmt_R" );
+	public static final ProtocolFamily LiveEntity       = registerStandardValue( 11, "LiveEntity" );
+	public static final ProtocolFamily NonRealTime      = registerStandardValue( 12, "NonRealTime" );
+	public static final ProtocolFamily InformationOps   = registerStandardValue( 13, "InformationOps" );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private short value;
+	private String name;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	private ProtocolFamily( short value )
 	{
+		this( value, null );
+	}
+	
+	private ProtocolFamily( short value, String name )
+	{
 		this.value = value;
+		this.name = name;
 	}
 
 	//----------------------------------------------------------
@@ -64,6 +75,39 @@ public enum ProtocolFamily
 		return this.value;
 	}
 
+	public String name()
+	{
+		return this.name;
+	}
+	
+	@Override
+	public String toString()
+	{
+		if( this.name != null )
+			return String.format( "%s (%d)", this.name, this.value );
+		else
+			return String.valueOf( this.value );
+	}
+	
+	@Override
+	public boolean equals( Object other )
+	{
+		if( other == this )
+			return true;
+		
+		if( !(other instanceof ProtocolFamily) )
+			return false;
+		
+		ProtocolFamily otherFamily = (ProtocolFamily)other;
+		return otherFamily.value == this.value;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return this.value;
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
@@ -74,29 +118,34 @@ public enum ProtocolFamily
 
 	public static ProtocolFamily fromValue( short value )
 	{
-		switch( value )
+		ProtocolFamily result = StandardValues.get( value );
+		if( result == null )
 		{
-			 case  1:  return Entity;
-			 case  2:  return Warfare;
-			 case  3:  return Logistics;
-			 case  4:  return Radio;
-			 case  5:  return SimMgmt;
-			 case  6:  return Emission;
-			 case  7:  return EntityMgmt;
-			 case  8:  return Minefield;
-			 case  9:  return SyntheticEnv;
-			 case 10:  return SimMgmt_R;
-			 case 11:  return LiveEntity;
-			 case 12:  return NonRealTime;
-			 case 13:  return InformationOps;
-			 case 221: return DiscoCustom;
-			default:  break;
+			if( DiscoConfiguration.isSet(Flag.Strict) )
+				throw new IllegalArgumentException( value+" is not a valid value for ProtocolFamily" );
+			
+			result = new ProtocolFamily( value );
 		}
 
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" is not a valid value for ProtocolFamily" );
-		else
-			return Other;
+		return result;
 	}
 	
+	public static ProtocolFamily fromName( String name )
+	{
+		Optional<ProtocolFamily> result = StandardValues.values().stream()
+		                                                         .filter( v -> v.name.equalsIgnoreCase(name) )
+		                                                         .findFirst();
+		
+		if( result.isPresent() )
+			return result.get();
+		else
+			throw new IllegalArgumentException( name+" is not a valid name for ProtocolFamily" );
+	}
+	
+	private static ProtocolFamily registerStandardValue( Number value, String name )
+	{
+		ProtocolFamily family = new ProtocolFamily( value.shortValue(), name );
+		StandardValues.put( value.shortValue(), family );
+		return family;
+	}
 }

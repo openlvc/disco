@@ -20,6 +20,7 @@ package org.openlvc.disco.pdu;
 import java.io.IOException;
 
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 
 /**
  * This class represetns a raw PDU whose body is not parsed, but rather just stored.
@@ -50,7 +51,7 @@ public class UnparsedPdu extends PDU
 	//----------------------------------------------------------
 	public UnparsedPdu()
 	{
-		super( PduType.Other );
+		super( PduType.Other, ProtocolFamily.Other );
 		
 		this.payload = EMPTY;
 	}

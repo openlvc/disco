@@ -18,16 +18,33 @@
 package org.openlvc.disco.pdu;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.Flag;
+import org.openlvc.disco.pdu.emissions.DesignatorPdu;
+import org.openlvc.disco.pdu.emissions.EmissionPdu;
+import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.radio.ReceiverPdu;
+import org.openlvc.disco.pdu.radio.SignalPdu;
+import org.openlvc.disco.pdu.radio.TransmitterPdu;
 import org.openlvc.disco.pdu.record.PduHeader;
+import org.openlvc.disco.pdu.simman.ActionRequestPdu;
+import org.openlvc.disco.pdu.simman.ActionResponsePdu;
+import org.openlvc.disco.pdu.simman.CommentPdu;
+import org.openlvc.disco.pdu.simman.DataPdu;
+import org.openlvc.disco.pdu.simman.SetDataPdu;
+import org.openlvc.disco.pdu.warfare.DetonationPdu;
+import org.openlvc.disco.pdu.warfare.FirePdu;
 
 /**
- * Methods to help quickly create certain types of PDU's, or to create PDUs from an
+ * Methods to help quickly create certain types of PDUs, or to create PDUs from an
  * incoming stream/source.
  */
 public class PduFactory
@@ -39,18 +56,24 @@ public class PduFactory
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private Map<PduType,Supplier<? extends PDU>> typeSuppliers;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
+	public PduFactory()
+	{
+		this.typeSuppliers = getDefaultPduSuppliers();
+	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
-	//----------------------------------------------------------
-	//                     STATIC METHODS
-	//----------------------------------------------------------
+	public void registerSupplier( PduType type, 
+	                              Supplier<? extends PDU> supplier )
+	{
+		this.typeSuppliers.put( type, supplier );
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	/// PDU Creation - Header   ///////////////////////////////////////////////////////////
@@ -65,7 +88,7 @@ public class PduFactory
 	 * @throws UnsupportedPDU If Disco does not currently support PDUs of this type.
 	 * @throws DiscoException If there is an internal problem instantiating the PDU type.
 	 */
-	public static PDU create( PduHeader header ) throws UnsupportedPDU, DiscoException
+	public PDU create( PduHeader header ) throws UnsupportedPDU
 	{
 		// If the configuration it set to use Unparsed PDUs exclusively, just do that
 		if( DiscoConfiguration.isSet(Flag.UnparsedExclusive) )
@@ -73,29 +96,21 @@ public class PduFactory
 
 		// Get the implementation class for this PDU type
 		PduType type = header.getPduType();
-		Class<? extends PDU> implementationClass = type.getImplementationClass();
+		Supplier<? extends PDU> supplier = typeSuppliers.get( type );
 		
 		// If we don't have an implementation class, the PDU is unsupported
-		if( implementationClass == null )
+		if( supplier == null )
 		{
 			if( DiscoConfiguration.isSet(Flag.Unparsed) )
 				return new UnparsedPdu().setHeader(header);
 			else
 				throw new UnsupportedPDU( "PDU Type not supported: "+type.name() );
-			
 		}
 		
 		// Create a new PDU instance from the type and return it
-		try
-		{
-			PDU pdu = implementationClass.newInstance();
-			pdu.setHeader( header );
-			return pdu;
-		}
-		catch( IllegalAccessException | InstantiationException e )
-		{
-			throw new DiscoException( "Error creating PDU ["+type.name()+"]: "+e.getMessage(), e );
-		}
+		PDU pdu = supplier.get();
+		pdu.setHeader( header );
+		return pdu;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -109,11 +124,9 @@ public class PduFactory
 	 * @return A new {@link PDU} child that corresponds to the PDU type identified in the header
 	 * @throws IOException     Problem reading from the byte[] (e.g. underflow)
 	 * @throws UnsupportedPDU  The PDU type identified in the header isn't supported by Disco yet
-	 * @throws DiscoException  There was a problem instanting a new instance of the desired PDU
 	 */
-	public static <T extends PDU> T create( byte[] pdubytes ) throws IOException,
-	                                                                 UnsupportedPDU,
-	                                                                 DiscoException
+	public <T extends PDU> T create( byte[] pdubytes ) throws IOException,
+	                                                          UnsupportedPDU
 	{
 		return create( pdubytes, 0, pdubytes.length );
 	}
@@ -133,11 +146,10 @@ public class PduFactory
 	 *               the contents of the buffer
 	 * @throws IOException     Problem parsing the buffer (e.g. underflow)
 	 * @throws UnsupportedPDU  The PDU type identified in the header is not supported by Disco yet
-	 * @throws DiscoException  Problem instantiating a new instances of the desired PDU
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends PDU> T create( byte[] buffer, int offset, int length )
-		throws IOException, UnsupportedPDU, DiscoException
+	public <T extends PDU> T create( byte[] buffer, int offset, int length )
+		throws IOException, UnsupportedPDU
 	{
 		// wrap the buffer in a stream we can read from
 		DisInputStream instream = new DisInputStream( buffer, offset, length );
@@ -159,17 +171,42 @@ public class PduFactory
 	/**
 	 * Return the set of PDU Types that we currently support decoding.
 	 */
-	public static List<PduType> getSupportedPduTypes()
+	public Set<PduType> getSupportedPduTypes()
 	{
-		return PduType.getSupportedPduTypes();
+		Set<PduType> types = new HashSet<>();
+		types.addAll( typeSuppliers.keySet() );
+		return types;
 	}
 
 	/**
 	 * Return a string listing the set of PDU types that we currently support decoding.
 	 */
-	public static String getSupportedPduTypesString()
+	public String getSupportedPduTypesString()
 	{
 		return getSupportedPduTypes().toString();
 	}
 
+	//----------------------------------------------------------
+	//                     STATIC METHODS
+	//----------------------------------------------------------
+	public static final Map<PduType,Supplier<? extends PDU>> getDefaultPduSuppliers()
+	{
+		Map<PduType,Supplier<? extends PDU>> suppliers = new HashMap<>();
+		
+		suppliers.put( PduType.EntityState,    () -> new EntityStatePdu() );
+		suppliers.put( PduType.Fire,           () -> new FirePdu() );
+		suppliers.put( PduType.Detonation,     () -> new DetonationPdu() );
+		suppliers.put( PduType.ActionRequest,  () -> new ActionRequestPdu() );
+		suppliers.put( PduType.ActionResponse, () -> new ActionResponsePdu() );
+		suppliers.put( PduType.SetData,        () -> new SetDataPdu() );
+		suppliers.put( PduType.Data,           () -> new DataPdu() );
+		suppliers.put( PduType.Comment,        () -> new CommentPdu() );
+		suppliers.put( PduType.Emission,       () -> new EmissionPdu() );
+		suppliers.put( PduType.Designator,     () -> new DesignatorPdu() );
+		suppliers.put( PduType.Transmitter,    () -> new TransmitterPdu() );
+		suppliers.put( PduType.Signal,         () -> new SignalPdu() );
+		suppliers.put( PduType.Receiver,       () -> new ReceiverPdu() );
+		
+		return suppliers;
+	}
 }

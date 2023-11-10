@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.IPduListener;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.utils.StringUtils;
 import org.openlvc.disco.utils.ThreadUtils;
 
@@ -73,10 +74,7 @@ public class Replayer
 	private SessionReader sessionReader;
 
 	// Metrics
-	private long pdusWritten;
-	private long esPdusWritten;
-	private long firePdusWritten;
-	private long detPdusWritten;
+	private PduCounter pduCounter;
 	private long pdusWrittenSize;
 	private Queue<Long> lastTenSeconds;
 	
@@ -107,7 +105,7 @@ public class Replayer
 		this.sessionReader = new SessionReader( sessionFile );
 		
 		// Metrics
-		// These are all set in startReplay
+		this.pduCounter = new PduCounter();
 		
 		// Timer Tasks
 		this.statusLogging = true;
@@ -143,10 +141,7 @@ public class Replayer
 		logger.debug( "Session file is open and ready for reading" );
 
 		// reset metrics
-		this.pdusWritten = 0;
-		this.esPdusWritten = 0;
-		this.firePdusWritten = 0;
-		this.detPdusWritten = 0;
+		this.pduCounter.reset();
 		this.pdusWrittenSize = 0;
 		this.lastTenSeconds = new LinkedList<Long>();
 		
@@ -233,7 +228,6 @@ public class Replayer
 	private void replaySession()
 	{
 		// Clean up any counters
-		this.pdusWritten = 0;
 		this.pdusWrittenSize = 0;
 		this.lastTenSeconds.clear();
 		
@@ -280,20 +274,15 @@ public class Replayer
 			// Send the PDU to the network
 			this.pduListener.receive( next.pdu );
 			lastTrackOffset = next.offset;
-			pdusWritten++;
+			this.pduCounter.handle( next.pdu );
 			pdusWrittenSize += next.pdu.getPduLength();
-			switch( next.pdu.getType() )
-			{
-				case EntityState: esPdusWritten++;   break;
-				case Fire:        firePdusWritten++; break;
-				case Detonation:  detPdusWritten++;  break;
-				default: break;
-			}
 		}
 
 		// queue should never get empty - getNextTrack() will refill it. If we get here we are done
 		logger.info( "No more tracks to replay. Session over." );
-		logger.info( "Sent %d PDUs in %dms", pdusWritten, System.currentTimeMillis()-startTime );
+		logger.info( "Sent %d PDUs in %dms", 
+		             this.pduCounter.getCount(), 
+		             System.currentTimeMillis()-startTime );
 		this.endReplay();
 	}
 
@@ -403,12 +392,12 @@ public class Replayer
 			// Generate the log
 			String line = String.format( "(Replay >> %s) pdus=%,d (%,d/s); bytes=%s [e=%,d; f=%,d; d=%,d]",
 			                             pduListener.toString(),
-			                             pdusWritten,
+			                             pduCounter.getCount(),
 			                             (lastTenTotal/9),
 			                             StringUtils.humanReadableSize(pdusWrittenSize),
-			                             esPdusWritten,
-			                             firePdusWritten,
-			                             detPdusWritten );
+			                             pduCounter.getCount(PduType.EntityState),
+			                             pduCounter.getCount(PduType.Fire),
+			                             pduCounter.getCount(PduType.Detonation) );
 			
 			// Log the log!
 			logger.info( line );
@@ -421,7 +410,7 @@ public class Replayer
 		public void run()
 		{
 			// Get PDU average
-			lastTenSeconds.add( pdusWritten );
+			lastTenSeconds.add( pduCounter.getCount() );
 			if( lastTenSeconds.size() > 10 )
 				lastTenSeconds.remove();
 		}

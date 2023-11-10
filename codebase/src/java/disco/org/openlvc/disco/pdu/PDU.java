@@ -56,18 +56,12 @@ public abstract class PDU
 		this.localTimestamp = System.currentTimeMillis();
 	}
 	
-	protected PDU( PduType type )
+	protected PDU( PduType type, ProtocolFamily family )
 	{
 		this.header = new PduHeader();
 		this.header.setPduType( type );
-		this.header.setProtocolFamily( type.getProtocolFamily() );
+		this.header.setProtocolFamily( family );
 		this.localTimestamp = System.currentTimeMillis();
-		
-		// Add the special marker for custom PDUs
-		if( type.getProtocolFamily() == ProtocolFamily.DiscoCustom )
-		{
-			
-		}
 	}
 
 	//----------------------------------------------------------
@@ -224,11 +218,11 @@ public abstract class PDU
 	{
 		try
 		{
-    		ByteArrayOutputStream baos = new ByteArrayOutputStream( PDU.MAX_SIZE );
-    		DisOutputStream dos = new DisOutputStream( baos );
-    		this.writeHeader( dos );
-    		this.to( dos );
-    		return baos.toByteArray();
+			ByteArrayOutputStream baos = new ByteArrayOutputStream( PDU.MAX_SIZE );
+			DisOutputStream dos = new DisOutputStream( baos );
+			this.writeHeader( dos );
+			this.to( dos );
+			return baos.toByteArray();
 		}
 		catch( IOException ioex )
 		{

@@ -26,6 +26,7 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.FixedDatum;
 import org.openlvc.disco.pdu.record.VariableDatum;
@@ -50,7 +51,7 @@ public class SetDataPdu extends PDU
 	//----------------------------------------------------------
 	public SetDataPdu()
 	{
-		super( PduType.SetData );
+		super( PduType.SetData, ProtocolFamily.SimMgmt );
 		this.requestId = 0;
 		this.originatingEntity = new EntityId();
 		this.receivingEntity = new EntityId();

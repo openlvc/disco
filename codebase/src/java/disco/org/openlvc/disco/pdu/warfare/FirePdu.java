@@ -23,6 +23,7 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.BurstDescriptor;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.EventIdentifier;
@@ -61,7 +62,7 @@ public class FirePdu extends PDU
 	//----------------------------------------------------------
 	public FirePdu()
 	{
-		super( PduType.Fire );
+		super( PduType.Fire, ProtocolFamily.Warfare );
 
 		this.firingEntityID = new EntityId();
 		this.targetEntityID = new EntityId();

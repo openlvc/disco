@@ -56,9 +56,8 @@ public class Recorder implements IPduListener
 	private SessionWriter sessionWriter;
 	
 	// PDU Metrics
-	private long pdusWritten;
 	private long bytesWritten;
-	private long[] pduCounter;          // index is ordinal of PduType
+	private PduCounter pduCounter;
 	private Queue<Long> lastTenSeconds; // pdu count for each of the last 10 seconds
 	
 	// Other Things
@@ -82,9 +81,8 @@ public class Recorder implements IPduListener
 		this.sessionWriter = new SessionWriter( configuration.getFilename() );
 		
 		// PDU Metrics
-		this.pdusWritten = 0;
 		this.bytesWritten = 0;
-		this.pduCounter = new long[PduType.values().length];
+		this.pduCounter = new PduCounter();
 		this.lastTenSeconds = new LinkedList<Long>();
 		
 		// Other Things
@@ -184,9 +182,7 @@ public class Recorder implements IPduListener
 	public void receive( PDU pdu )
 	{
 		// increment count for this PDU type
-		int typeIndex = pdu.getType().ordinal();
-		pduCounter[typeIndex] += 1;
-		++pdusWritten;
+		pduCounter.handle( pdu );
 		bytesWritten += pdu.getContentLength();
 		
 		sessionWriter.add( pdu ); // non-blocking call
@@ -204,12 +200,12 @@ public class Recorder implements IPduListener
 		public void run()
 		{
 			// Get PDU average
-			lastTenSeconds.add( pdusWritten );
+			lastTenSeconds.add( pduCounter.getCount() );
 			if( lastTenSeconds.size() > 10 )
 				lastTenSeconds.remove();
 		}
 	}
-
+	
 	private class ActivityLogger extends TimerTask
 	{
 		public void run()
@@ -221,9 +217,10 @@ public class Recorder implements IPduListener
 			int port = opscenter.getConfiguration().getUdpConfiguration().getPort();
 
 			// Get PDU received breakdown
-			long espduCount = pduCounter[PduType.EntityState.ordinal()];
-			long firepduCount = pduCounter[PduType.Fire.ordinal()];
-			long detpduCount = pduCounter[PduType.Detonation.ordinal()];
+			long totalCount = pduCounter.getCount();
+			long espduCount = pduCounter.getCount( PduType.EntityState );
+			long firepduCount = pduCounter.getCount( PduType.Fire );
+			long detpduCount = pduCounter.getCount( PduType.Detonation );
 
 			// Get PDU average
 			Long[] stream = lastTenSeconds.toArray( new Long[]{} );
@@ -235,7 +232,7 @@ public class Recorder implements IPduListener
 			String line = String.format( "(%s:%d) pdus=%,d (%,d/s); bytes=%s [e=%,d; f=%,d; d=%,d]",
 			                             ip,
 			                             port,
-			                             pdusWritten,
+			                             totalCount,
 			                             (lastTenTotal/9),
 			                             StringUtils.humanReadableSize(bytesWritten),
 			                             espduCount,

@@ -25,6 +25,7 @@ import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.CodeName;
 import org.openlvc.disco.pdu.field.DeadReckoningAlgorithm;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.VectorRecord;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
@@ -55,7 +56,7 @@ public class DesignatorPdu extends PDU
 	//----------------------------------------------------------
 	public DesignatorPdu()
 	{
-		super( PduType.Designator );
+		super( PduType.Designator, ProtocolFamily.Emission );
 
 		this.designatingEntityId = new EntityId();
 		this.codeName = CodeName.NotSpecified;
