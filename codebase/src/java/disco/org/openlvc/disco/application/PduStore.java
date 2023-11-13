@@ -17,9 +17,14 @@
  */
 package org.openlvc.disco.application;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
 
 /**
@@ -39,6 +44,7 @@ public class PduStore
 	private EntityStateStore entityStore;
 	private TransmitterStore transmitterStore;
 	private EmitterStore     emitterStore;
+	private Map<PduType,Consumer<PDU>> handlers;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -52,38 +58,21 @@ public class PduStore
 		app.getDeleteReaper().registerTarget( entityStore );
 		app.getDeleteReaper().registerTarget( transmitterStore );
 		app.getDeleteReaper().registerTarget( emitterStore );
+		
+		this.handlers = new HashMap<>();
+		handlers.put( PduType.EntityState, (p) -> this.entityStore.receivePdu(p.as(EntityStatePdu.class)) );
+		handlers.put( PduType.Transmitter, (p) -> this.transmitterStore.receivePdu(p.as(TransmitterPdu.class)) );
+		handlers.put( PduType.Emission,    (p) -> this.emitterStore.receivePdu(p.as(EmissionPdu.class)) );
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
 	protected void pduReceived( PDU pdu )
 	{
-		switch( pdu.getType() )
-		{
-			case EntityState: entityStore.receivePdu( (EntityStatePdu)pdu ); break;
-			case Transmitter: transmitterStore.receivePdu( (TransmitterPdu)pdu ); break;
-			case Emission: emitterStore.receivePdu( (EmissionPdu)pdu ); break;
-			
-			// PDUs to support next
-			case Designator:
-				break;
-			case Signal:
-				break;
-			case Fire:
-				break;
-			case Detonation:
-				break;
-			case DataQuery:
-				break;
-			case Data:
-				break;
-			case SetData:
-				break;
-			default:
-				break;
-		}
+		Consumer<PDU> handler = handlers.get( pdu.getType() );
+		if( handler != null )
+			handler.accept( pdu );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

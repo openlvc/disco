@@ -26,6 +26,7 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.EntityId;
 
 public class DataQueryPdu extends PDU
@@ -49,7 +50,7 @@ public class DataQueryPdu extends PDU
 	//----------------------------------------------------------
 	public DataQueryPdu()
 	{
-		super( PduType.DataQuery );
+		super( PduType.DataQuery, ProtocolFamily.SimMgmt );
 		this.originatingEntity = new EntityId();
 		this.receivingEntity = new EntityId();
 		this.requestId = 0;

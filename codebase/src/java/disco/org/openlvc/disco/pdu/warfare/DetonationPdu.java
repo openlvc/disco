@@ -27,6 +27,7 @@ import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.DetonationResult;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
 import org.openlvc.disco.pdu.record.BurstDescriptor;
 import org.openlvc.disco.pdu.record.EntityCoordinate;
@@ -61,7 +62,7 @@ public class DetonationPdu extends PDU
 	//----------------------------------------------------------
 	public DetonationPdu()
 	{
-		super( PduType.Detonation );
+		super( PduType.Detonation, ProtocolFamily.Warfare );
 
 		this.firingEntityID = new EntityId();
 		this.targetEntityID = new EntityId();

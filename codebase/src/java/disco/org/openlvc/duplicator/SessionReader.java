@@ -57,6 +57,7 @@ public class SessionReader implements Iterable<Track>, Iterator<Track>
 
 	private boolean fileIsEmpty;
 	private Queue<Track> queue;
+	private PduFactory pduFactory;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -69,6 +70,7 @@ public class SessionReader implements Iterable<Track>, Iterator<Track>
 		
 		this.fileIsEmpty = false; // managed in refillBugger
 		this.queue = new LinkedList<>();
+		this.pduFactory = new PduFactory();
 	}
 
 	//----------------------------------------------------------
@@ -205,7 +207,7 @@ public class SessionReader implements Iterable<Track>, Iterator<Track>
 				dataIn.readFully( pdubytes );
 				
 				// convert the byte[] into a PDU
-				PDU pdu = PduFactory.create( pdubytes );
+				PDU pdu = pduFactory.create( pdubytes );
 				queue.add( new Track(pdu,timeOffset) );
 				
 				// is there more information to process?

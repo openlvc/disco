@@ -29,6 +29,7 @@ import org.openlvc.disco.pdu.field.Domain;
 import org.openlvc.disco.pdu.field.ForceId;
 import org.openlvc.disco.pdu.field.Kind;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
 import org.openlvc.disco.pdu.record.DeadReckoningParameter;
 import org.openlvc.disco.pdu.record.EntityCapabilities;
@@ -66,7 +67,7 @@ public class EntityStatePdu extends PDU
 	//----------------------------------------------------------
 	public EntityStatePdu()
 	{
-		super( PduType.EntityState );
+		super( PduType.EntityState, ProtocolFamily.Entity );
 
 		this.entityID = new EntityId();
 		this.forceID = ForceId.Other;

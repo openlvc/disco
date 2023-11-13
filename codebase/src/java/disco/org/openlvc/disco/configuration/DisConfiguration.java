@@ -17,7 +17,13 @@
  */
 package org.openlvc.disco.configuration;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.function.Supplier;
+
+import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.field.PduType;
 
 /**
  * General DIS protocol settings that are applicable regardless of transport, sender or receiver
@@ -42,6 +48,8 @@ public class DisConfiguration
 	private int   siteId;
 	private int   appId;
 
+	private Map<PduType,Supplier<PDU>> pduSuppliers;
+	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -52,6 +60,7 @@ public class DisConfiguration
 		this.exerciseId = -1; // -1 so we can lazy load
 		this.siteId     = Integer.MIN_VALUE; // will cause lazy load
 		this.appId      = Integer.MIN_VALUE; // will cause lazy load
+		this.pduSuppliers = new HashMap<>();
 	}
 
 	//----------------------------------------------------------
@@ -148,6 +157,15 @@ public class DisConfiguration
 		this.appId = appId;
 	}
 	
+	public Map<PduType,Supplier<PDU>> getPduSuppliers()
+	{
+		return new HashMap<>( this.pduSuppliers );
+	}
+	
+	public void registerPduSupplier( PduType type, Supplier<PDU> supplier )
+	{
+		this.pduSuppliers.put( type, supplier );
+	}
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS

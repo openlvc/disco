@@ -57,7 +57,8 @@ public class SimpleReceiver extends PduReceiver
 	{
 		try
 		{
-			clientListener.receive( PduFactory.create(array) );
+			PduFactory factory = opscenter.getPduFactory();
+			clientListener.receive( factory.create(array) );
 		}
 		catch( IOException ioex )
 		{
@@ -67,7 +68,7 @@ public class SimpleReceiver extends PduReceiver
 		{
 			// log and continue
 			if( logger.isTraceEnabled() )
-				logger.trace( "(PduRecv) Received unsupported PDU, skipping it: "+up.getMessage() );					
+				logger.trace( "(PduRecv) Received unsupported PDU, skipping it: "+up.getMessage() );
 		}
 		catch( DiscoException de )
 		{

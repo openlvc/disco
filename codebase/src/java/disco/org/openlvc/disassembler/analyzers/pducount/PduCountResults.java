@@ -19,7 +19,8 @@ package org.openlvc.disassembler.analyzers.pducount;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -47,7 +48,7 @@ public class PduCountResults implements IResults
 	private PduCountConfiguration configuration;
 	private long benchmarkMillis;
 
-	private long[] pduCounter;
+	private Map<PduType,PduCount> pduCounts;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -57,7 +58,7 @@ public class PduCountResults implements IResults
 		this.configuration = configuration;
 		this.benchmarkMillis = -1;
 		
-		this.pduCounter = new long[PduType.values().length];
+		this.pduCounts = new HashMap<>();
 	}
 
 	//----------------------------------------------------------
@@ -98,7 +99,15 @@ public class PduCountResults implements IResults
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void add( PDU pdu ) throws DiscoException
 	{
-		pduCounter[pdu.getType().ordinal()] += 1;
+		PduType type = pdu.getType();
+		PduCount count = pduCounts.get( type );
+		if( count == null )
+		{
+			count = new PduCount( type, 0 );
+			pduCounts.put( type, count );
+		}
+		
+		count.pduCount.incrementAndGet();
 	}
 
 	
@@ -111,22 +120,15 @@ public class PduCountResults implements IResults
 	////////////////////////////////////////////////////////
 	public String toPrintableString() throws DiscoException
 	{
-		// 1. Build up a map that only has the PDU Types we observed
-		PduType[] typeArray = PduType.values();
-		Collection<PduCountSummary> summaries = new LinkedList<>();
-		for( int i = 0; i < pduCounter.length; i++ )
-		{
-			if( pduCounter[i] > 0 )
-				summaries.add( new PduCountSummary(typeArray[i],pduCounter[i]) );
-		}
-
-		// 2. Order and filter our result set
-		summaries = CollectionUtils.sort( summaries, configuration.getOrderBy(), configuration.getAscending() );
+		// 1. Order and filter our result set
+		Collection<PduCount> summaries = CollectionUtils.sort( pduCounts.values(), 
+		                                                       configuration.getOrderBy(), 
+		                                                       configuration.getAscending() );
 
 		if( configuration.hasFilterBy() )
 			summaries = CollectionUtils.search( summaries, configuration.getFilterBy() );
 
-		// 3. Generate the table header
+		// 2. Generate the table header
 		StringBuilder builder = new StringBuilder();
 		builder.append( "\n" );
 		builder.append( " -----------------------------------------------------------------\n" );
@@ -136,7 +138,7 @@ public class PduCountResults implements IResults
 		builder.append( " -----------------------------------------------------------------\n" );
 
 		// 4. Write the results
-		for( PduCountSummary summary : summaries )
+		for( PduCount summary : summaries )
 		{
 			String line = String.format( "  %19s | %,11d | %,9d | %s \n",
 			                             summary.type,
@@ -187,13 +189,13 @@ public class PduCountResults implements IResults
 	////////////////////////////////////////////////////////////////////////////////////////////
 	///                           Inner Class: EnumerationSummary                            /// 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public class PduCountSummary implements FieldComparable<PduCountSummary>,
-	                                        Searchable<PduCountSummary>
+	public class PduCount implements FieldComparable<PduCount>,
+	                                        Searchable<PduCount>
 	{
 		protected PduType type            = null;
 		protected AtomicLong pduCount     = new AtomicLong(0);
 		
-		protected PduCountSummary( PduType type, long count )
+		protected PduCount( PduType type, long count )
 		{
 			this.type = type;
 			this.pduCount = new AtomicLong(count);
@@ -224,7 +226,7 @@ public class PduCountResults implements IResults
 		}
 		
 		@Override
-		public int compareTo( PduCountSummary other, String field )
+		public int compareTo( PduCount other, String field )
 		{
 			if( field.equals("pdu-type") || field.equals("type") )
 				return type.toString().compareTo( other.type.toString() );

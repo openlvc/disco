@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -58,6 +59,7 @@ public class EnumUsageResults implements IResults
 	private Map<EntityType,EnumerationSummary> espdus;
 	private Map<EntityType,EnumerationSummary> firepdus;
 	private Map<EntityType,EnumerationSummary> detpdus;
+	private Map<PduType,Consumer<PDU>> pduHandlers;
 
 	private long totalPdus;
 	private long benchmarkMillis;
@@ -72,6 +74,12 @@ public class EnumUsageResults implements IResults
 		this.espdus   = new HashMap<>();
 		this.firepdus = new HashMap<>();
 		this.detpdus  = new HashMap<>();
+		
+		this.pduHandlers = new HashMap<>();
+		this.pduHandlers.put( PduType.EntityState, (p) -> observe(p.as(EntityStatePdu.class)) );
+		this.pduHandlers.put( PduType.Fire,        (p) -> observe(p.as(FirePdu.class)) );
+		this.pduHandlers.put( PduType.Detonation,  (p) -> observe(p.as(DetonationPdu.class)) );
+		
 		
 		this.totalPdus = 0;
 		this.benchmarkMillis = -1;
@@ -120,20 +128,9 @@ public class EnumUsageResults implements IResults
 		// for all records, so there is some duplication. However, I anticipate shortly
 		// doing more PDU-specific things, so the duplication in the observe() methods will
 		// be OK for now.
-		switch( pdu.getType() )
-		{
-			case EntityState:
-				observe( pdu.as(EntityStatePdu.class) );
-				break;
-			case Fire:
-				observe( pdu.as(FirePdu.class) );
-				break;
-			case Detonation:
-				observe( pdu.as(DetonationPdu.class) );
-				break;
-			default:
-				break;
-		}
+		Consumer<PDU> handler = this.pduHandlers.get( pdu.getType() );
+		if( handler != null )
+			handler.accept( pdu );
 		
 		++totalPdus;
 	}

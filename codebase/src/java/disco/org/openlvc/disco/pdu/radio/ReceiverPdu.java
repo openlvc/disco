@@ -23,6 +23,7 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.EntityId;
 
 /**
@@ -49,7 +50,7 @@ public class ReceiverPdu extends PDU
 	//----------------------------------------------------------
 	public ReceiverPdu()
 	{
-		super( PduType.Receiver );
+		super( PduType.Receiver, ProtocolFamily.Radio );
 
 		this.entityID = new EntityId();
 		this.radioID = 0;

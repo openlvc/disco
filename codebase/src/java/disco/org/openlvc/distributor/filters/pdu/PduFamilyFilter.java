@@ -38,10 +38,10 @@ public class PduFamilyFilter extends AbstractFilter implements IFilter
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public PduFamilyFilter( Operator operator, String value )
+	public PduFamilyFilter( Operator operator, String name )
 	{
-		super( FILTER_KEY, operator, value );
-		this.family = ProtocolFamily.valueOf(value).value();
+		super( FILTER_KEY, operator, name );
+		this.family = ProtocolFamily.fromName( value ).value();
 	}
 
 	//----------------------------------------------------------

@@ -181,20 +181,15 @@ public class ThreadPoolReceiver extends PduReceiver implements RejectedExecution
 			PDU pdu = null;
 			try
 			{
-				pdu = PduFactory.create( header );
+				PduFactory factory = opscenter.getPduFactory();
+				pdu = factory.create( header );
 				pdu.from( instream );
 			}
 			catch( UnsupportedPDU up )
 			{
 				// log and continue
 				if( logger.isTraceEnabled() )
-					logger.trace( "(PduRecv) Received unsupported PDU, skipping it: "+up.getMessage() );					
-			}
-			catch( DiscoException de )
-			{
-				// log and continue
-				if( logger.isDebugEnabled() )
-					logger.debug( "(PduRecv) Problem deserializing PDU, skipping it: "+de.getMessage(), de );
+					logger.trace( "(PduRecv) Received unsupported PDU, skipping it: "+up.getMessage() );
 			}
 			catch( Exception e )
 			{

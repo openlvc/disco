@@ -58,6 +58,7 @@ public class TcpWanLink extends LinkBase implements ILink
 	private DataInputStream instream;
 	private DataOutputStream outstream;
 	private Bundler bundler;
+	private PduFactory pduFactory;
 	private Receiver receiveThread;
 	
 	// metrics gathering
@@ -77,6 +78,7 @@ public class TcpWanLink extends LinkBase implements ILink
 		this.bundler       = new Bundler( this, logger );
 		this.receiveThread = null;   // set in up()
 		
+		this.pduFactory = new PduFactory(); // default, can be overwritten in setPduFactory()
 		this.metrics       = new Metrics();
 	}
 
@@ -350,7 +352,7 @@ public class TcpWanLink extends LinkBase implements ILink
 				position += 4;
 				
 				// read the PDU straight off the buffer
-				PDU pdu = PduFactory.create( payload, position, pduSize );
+				PDU pdu = pduFactory.create( payload, position, pduSize );
 				position += pduSize;
 				
 				// reflect the PDU to the other links

@@ -17,12 +17,17 @@
  */
 package org.openlvc.disassembler.analyzers.enumeration;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 import org.openlvc.disassembler.analyzers.IAnalyzer;
 import org.openlvc.disassembler.analyzers.IResults;
 import org.openlvc.disassembler.configuration.AnalyzerType;
 import org.openlvc.disassembler.configuration.Configuration;
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.pdu.PDU;
+import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.duplicator.SessionReader;
 import org.openlvc.duplicator.Track;
 
@@ -37,6 +42,7 @@ public class EnumUsageAnalyzer implements IAnalyzer
 	//----------------------------------------------------------
 	private EnumUsageConfiguration configuration;
 	private Logger logger;
+	private Set<PduType> acceptedTypes;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -64,16 +70,10 @@ public class EnumUsageAnalyzer implements IAnalyzer
 		long pduCount = 0;
 		for( Track track : session )
 		{
-			switch( track.getPdu().getType() )
-			{
-				case EntityState:
-				case Fire:
-				case Detonation:
-					resultset.add( track.getPdu() );
-					break;
-				default:
-					break;
-			}
+			PDU pdu = track.getPdu();
+			PduType type = pdu.getType();
+			if( acceptedTypes.contains(type) )
+				resultset.add( pdu );
 			
 			if( ++pduCount % 100000 == 0 )
 				logger.info( "Analyzed %,d pdus", pduCount );
@@ -89,6 +89,11 @@ public class EnumUsageAnalyzer implements IAnalyzer
 	{
 		this.configuration = (EnumUsageConfiguration)configuration;
 		this.logger = this.configuration.getDisassemblerLogger();
+		
+		this.acceptedTypes = new HashSet<>();
+		this.acceptedTypes.add( PduType.EntityState );
+		this.acceptedTypes.add( PduType.Fire );
+		this.acceptedTypes.add( PduType.Detonation );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

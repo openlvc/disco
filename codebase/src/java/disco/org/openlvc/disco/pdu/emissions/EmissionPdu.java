@@ -25,6 +25,7 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.field.StateUpdateIndicator;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.EventIdentifier;
@@ -49,7 +50,7 @@ public class EmissionPdu extends PDU
 	//----------------------------------------------------------
 	public EmissionPdu()
 	{
-		super( PduType.Emission );
+		super( PduType.Emission, ProtocolFamily.Emission );
 		
 		this.emittingEntityId = new EntityId();
 		this.eventId = new EventIdentifier();

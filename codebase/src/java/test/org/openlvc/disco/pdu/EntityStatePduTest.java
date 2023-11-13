@@ -79,12 +79,14 @@ public class EntityStatePduTest extends AbstractTest
 	@Test
 	public void testEntityStatePduSerialize() throws Exception
 	{
+		PduFactory factory = new PduFactory();
+		
 		// turn an ESPDU into a byte[]
 		EntityStatePdu before = new EntityStatePdu();
 		byte[] beforeArray = before.toByteArray();
 		
 		// convert it back
-		EntityStatePdu after = (EntityStatePdu)PduFactory.create( beforeArray );
+		EntityStatePdu after = (EntityStatePdu)factory.create( beforeArray );
 		//Assert.assertEquals( after, before );
 		
 		// turn this one into a byte[]
