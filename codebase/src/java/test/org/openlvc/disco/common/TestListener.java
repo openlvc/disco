@@ -61,23 +61,25 @@ public class TestListener implements IPduListener
 	@Override
 	public void receive( PDU pdu )
 	{
-		PduType type = pdu.getType();
-		if( type.equals(PduType.EntityState) )
+		short type = pdu.getType();
+		switch( type )
 		{
-			EntityStatePdu espdu = (EntityStatePdu)pdu;
-			espdus.put( espdu.getMarking(), espdu );
+			case PduType.EntityState:
+				EntityStatePdu espdu = (EntityStatePdu)pdu;
+				espdus.put( espdu.getMarking(), espdu );
+				break;
+				
+			case PduType.Transmitter:
+				TransmitterPdu trpdu = pdu.as( TransmitterPdu.class );
+				transmitterPdus.put( trpdu.getEntityId(), trpdu );
+				break;
+				
+			case PduType.Signal:
+				SignalPdu spdu = pdu.as( SignalPdu.class );
+				signalPdus.put( spdu.getEntityIdentifier(), spdu );
+				break;
 		}
-		else if( type.equals(PduType.Transmitter) )
-		{
-			TransmitterPdu trpdu = pdu.as( TransmitterPdu.class );
-			transmitterPdus.put( trpdu.getEntityId(), trpdu );
-		}
-		else if( type.equals(PduType.Signal) )
-		{
-			SignalPdu spdu = pdu.as( SignalPdu.class );
-			signalPdus.put( spdu.getEntityIdentifier(), spdu );
-		}
-
+		
 		synchronized( this ) { this.notifyAll(); }
 	}
 

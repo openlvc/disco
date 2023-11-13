@@ -44,7 +44,7 @@ public class PduStore
 	private EntityStateStore entityStore;
 	private TransmitterStore transmitterStore;
 	private EmitterStore     emitterStore;
-	private Map<PduType,Consumer<PDU>> handlers;
+	private Map<Short,Consumer<PDU>> handlers;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS

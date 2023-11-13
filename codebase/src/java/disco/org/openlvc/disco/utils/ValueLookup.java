@@ -15,16 +15,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.duplicator;
+package org.openlvc.disco.utils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
+import java.util.Set;
 
-import org.openlvc.disco.pdu.PDU;
-
-public class PduCounter
+public class ValueLookup<T extends Number>
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -33,61 +31,45 @@ public class PduCounter
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Map<Short,AtomicLong> counts;
-	private AtomicLong total;
+	private Map<String,T> byName;
+	private Map<T,String> byValue;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public PduCounter()
+	public ValueLookup()
 	{
-		this.counts = new HashMap<>();
-		this.total = new AtomicLong();
+		this.byName = new HashMap<>();
+		this.byValue = new HashMap<>();
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public void handle( PDU pdu )
+	public void addNamedValue( String name, T value )
 	{
-		short type = pdu.getType();
-		AtomicLong count = counts.get( type );
-		if( count == null )
-		{
-			count = new AtomicLong();
-			counts.put( type, count );
-		}
-		
-		count.incrementAndGet();
-		this.total.incrementAndGet();
-	}
-
-	public void reset()
-	{
-		this.counts.clear();
-		this.total.set( 0 );
+		this.byName.put( name, value );
+		this.byValue.put( value, name );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public long getCount( short type )
+	public String getNameForValue( T value )
 	{
-		AtomicLong count = counts.get( type );
-		return count != null ? count.get() : 0;
+		return this.byValue.get( value );
+	}
+
+	public T getValueForName( String name )
+	{
+		return this.byName.get( name );
 	}
 	
-	public long getCount()
+	public Set<T> getValues()
 	{
-		return total.get();
+		return new HashSet<>( this.byValue.keySet() );
 	}
 	
-	public Map<Short,Long> getCounts()
-	{
-		return counts.entrySet().stream()
-		                        .collect( Collectors.toMap(e -> e.getKey(), 
-		                                                   e -> e.getValue().get()) );
-	}
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

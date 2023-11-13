@@ -59,7 +59,7 @@ public class EnumUsageResults implements IResults
 	private Map<EntityType,EnumerationSummary> espdus;
 	private Map<EntityType,EnumerationSummary> firepdus;
 	private Map<EntityType,EnumerationSummary> detpdus;
-	private Map<PduType,Consumer<PDU>> pduHandlers;
+	private Map<Short,Consumer<PDU>> pduHandlers;
 
 	private long totalPdus;
 	private long benchmarkMillis;
@@ -265,7 +265,7 @@ public class EnumUsageResults implements IResults
 	}
 
 	@SuppressWarnings("unchecked")
-	private JSONObject toJson( PduType pduType, Collection<EnumerationSummary> summaries )
+	private JSONObject toJson( short pduType, Collection<EnumerationSummary> summaries )
 	{
 		JSONObject rootObject = new JSONObject();
 		rootObject.put( "type", pduType );

@@ -37,8 +37,8 @@ public class PduHeader
 	//----------------------------------------------------------
 	private ProtocolVersion version;
 	private short exerciseId;
-	private PduType pduType;
-	private ProtocolFamily family;
+	private short pduType;
+	private short family;
 	private long timestamp;
 	private int pduLength;
 
@@ -73,8 +73,8 @@ public class PduHeader
 	{
 		this.version = ProtocolVersion.fromValue( dis.readUI8() );
 		this.exerciseId = dis.readUI8();
-		this.pduType = PduType.fromValue( dis.readUI8() );
-		this.family = ProtocolFamily.fromValue( dis.readUI8() );
+		this.pduType = dis.readUI8();
+		this.family = dis.readUI8();
 		this.timestamp = dis.readUI32();
 		this.pduLength = dis.readUI16(); // Length
 		dis.readUI16(); // padding bytes
@@ -95,8 +95,8 @@ public class PduHeader
 		
 		dos.writeUI8( this.version.value() );
 		dos.writeUI8( exerciseId );
-		dos.writeUI8( pduType.value() );
-		dos.writeUI8( family.value() );
+		dos.writeUI8( pduType );
+		dos.writeUI8( family );
 		dos.writeUI32( timestamp );
 
 		dos.writeUI16( totalLength );
@@ -111,7 +111,7 @@ public class PduHeader
 	@Override
 	public String toString()
 	{
-		return "("+version+") "+family+"/"+pduType+", ExerciseID="+exerciseId;
+		return "("+version+") "+ProtocolFamily.describe(family)+"/"+PduType.describe(pduType)+", ExerciseID="+exerciseId;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -120,21 +120,14 @@ public class PduHeader
 	public ProtocolVersion getVersion() { return this.version; }
 	public void setVersion( ProtocolVersion version ) { this.version = version; }
 	
-	public PduType getPduType() { return this.pduType; }
-	public PduHeader setPduType( PduType type )
-	{
-		this.pduType = type;
-		return this;
-	}
+	public short getPduType() { return this.pduType; }
+	public void setPduType( short type ) { this.pduType = type; }
 	
 	public short getExerciseId() { return this.exerciseId; }
 	public void setExerciseId( short id ) { this.exerciseId = id; }
 	
-	public ProtocolFamily getProtocolFamily() { return this.family; }
-	public void setProtocolFamily( ProtocolFamily family )
-	{
-		this.family = family;
-	}
+	public short getProtocolFamily() { return this.family; }
+	public void setProtocolFamily( short family ) { this.family = family; }
 	
 	public long getTimestamp() { return this.timestamp; }
 	public void setTimestamp( long timestamp ) { this.timestamp = timestamp; }

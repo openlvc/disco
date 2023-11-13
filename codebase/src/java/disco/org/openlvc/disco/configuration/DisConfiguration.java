@@ -23,7 +23,6 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.field.PduType;
 
 /**
  * General DIS protocol settings that are applicable regardless of transport, sender or receiver
@@ -48,7 +47,7 @@ public class DisConfiguration
 	private int   siteId;
 	private int   appId;
 
-	private Map<PduType,Supplier<PDU>> pduSuppliers;
+	private Map<Short,Supplier<PDU>> pduSuppliers;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -157,12 +156,12 @@ public class DisConfiguration
 		this.appId = appId;
 	}
 	
-	public Map<PduType,Supplier<PDU>> getPduSuppliers()
+	public Map<Short,Supplier<PDU>> getPduSuppliers()
 	{
 		return new HashMap<>( this.pduSuppliers );
 	}
 	
-	public void registerPduSupplier( PduType type, Supplier<PDU> supplier )
+	public void registerPduSupplier( short type, Supplier<PDU> supplier )
 	{
 		this.pduSuppliers.put( type, supplier );
 	}

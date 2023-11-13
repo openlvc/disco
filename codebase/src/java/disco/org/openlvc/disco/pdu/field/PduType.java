@@ -17,228 +17,226 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.ValueLookup;
 
 public class PduType
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	private static final Map<Short,PduType> StandardValues = new HashMap<>();
-
-	public static final PduType Other                 = registerStandardValue( 0, "Other" );
-	public static final PduType EntityState           = registerStandardValue( 1, "EntityState" );
-	public static final PduType Fire                  = registerStandardValue( 2, "Fire" );
-	public static final PduType Detonation            = registerStandardValue( 3, "Detonation" );
-	public static final PduType Collision             = registerStandardValue( 4, "Collision" );
-	public static final PduType ServiceRequest        = registerStandardValue( 5, "ServiceRequest" );
-	public static final PduType ResupplyOffer         = registerStandardValue( 6, "ResupplyOffer" );
-	public static final PduType ResupplyReceived      = registerStandardValue( 7, "ResupplyReceived" );
-	public static final PduType ResupplyCancel        = registerStandardValue( 8, "ResupplyCancel" );
-	public static final PduType RepairComplete        = registerStandardValue( 9, "RepairComplete" );
-	public static final PduType RepairResponse        = registerStandardValue( 10, "RepairResponse" );
+	private static final ValueLookup<Short> StandardValueLookup; 
+	
+	public static final short Other                 = 0;
+	public static final short EntityState           = 1;
+	public static final short Fire                  = 2;
+	public static final short Detonation            = 3;
+	public static final short Collision             = 4;
+	public static final short ServiceRequest        = 5;
+	public static final short ResupplyOffer         = 6;
+	public static final short ResupplyReceived      = 7;
+	public static final short ResupplyCancel        = 8;
+	public static final short RepairComplete        = 9;
+	public static final short RepairResponse        = 10;
  	
-	public static final PduType CreateEntity          = registerStandardValue( 11, "CreateEntity" );
-	public static final PduType RemoveEntity          = registerStandardValue( 12, "RemoveEntity" );
-	public static final PduType StartResume           = registerStandardValue( 13, "StartResume" );
-	public static final PduType StopFreeze            = registerStandardValue( 14, "StopFreeze" );
-	public static final PduType Acknowledge           = registerStandardValue( 15, "Acknowledge" );
-	public static final PduType ActionRequest         = registerStandardValue( 16, "ActionRequest" );
-	public static final PduType ActionResponse        = registerStandardValue( 17, "ActionResponse" );
-	public static final PduType DataQuery             = registerStandardValue( 18, "DataQuery" );
-	public static final PduType SetData               = registerStandardValue( 19, "SetData" );
-	public static final PduType Data                  = registerStandardValue( 20, "Data" );
-	public static final PduType EventReport           = registerStandardValue( 21, "EventReport" );
-	public static final PduType Comment               = registerStandardValue( 22, "Comment" );
+	public static final short CreateEntity          = 11;
+	public static final short RemoveEntity          = 12;
+	public static final short StartResume           = 13;
+	public static final short StopFreeze            = 14;
+	public static final short Acknowledge           = 15;
+	public static final short ActionRequest         = 16;
+	public static final short ActionResponse        = 17;
+	public static final short DataQuery             = 18;
+	public static final short SetData               = 19;
+	public static final short Data                  = 20;
+	public static final short EventReport           = 21;
+	public static final short Comment               = 22;
 	
-	public static final PduType Emission              = registerStandardValue( 23, "Emission" );
-	public static final PduType Designator            = registerStandardValue( 24, "Designator" );
-	public static final PduType Transmitter           = registerStandardValue( 25, "Transmitter" );
-	public static final PduType Signal                = registerStandardValue( 26, "Signal" );
-	public static final PduType Receiver              = registerStandardValue( 27, "Receiver" );
-	public static final PduType IFF                   = registerStandardValue( 28, "IFF" );
-	public static final PduType UnderwaterAcoustic    = registerStandardValue( 29, "UnderwaterAcoustic" );
-	public static final PduType SupplementalEmmission = registerStandardValue( 30, "SupplementalEmmission" );
+	public static final short Emission              = 23;
+	public static final short Designator            = 24;
+	public static final short Transmitter           = 25;
+	public static final short Signal                = 26;
+	public static final short Receiver              = 27;
+	public static final short IFF                   = 28;
+	public static final short UnderwaterAcoustic    = 29;
+	public static final short SupplementalEmmission = 30;
 	
-	public static final PduType IntercomSignal        = registerStandardValue( 31, "IntercomSignal" );
-	public static final PduType IntercomControl       = registerStandardValue( 32, "IntercomControl" );
+	public static final short IntercomSignal        = 31;
+	public static final short IntercomControl       = 32;
 	
-	public static final PduType AggregateSate         = registerStandardValue( 33, "AggregateSate" );
-	public static final PduType IsGroupOf             = registerStandardValue( 34, "IsGroupOf" );
+	public static final short AggregateSate         = 33;
+	public static final short IsGroupOf             = 34;
 	
-	public static final PduType TransferOwnership     = registerStandardValue( 35, "TransferOwnership" );
-	public static final PduType IsPartOf              = registerStandardValue( 36, "IsPartOf" );
+	public static final short TransferOwnership     = 35;
+	public static final short IsPartOf              = 36;
 	
-	public static final PduType MinefieldState        = registerStandardValue( 37, "MinefieldState" );
-	public static final PduType MinefieldQuery        = registerStandardValue( 38, "MinefieldQuery" );
-	public static final PduType MinefieldData         = registerStandardValue( 39, "MinefieldData" );
-	public static final PduType MinefieldRspNACK      = registerStandardValue( 40, "MinefieldRspNACK" );
+	public static final short MinefieldState        = 37;
+	public static final short MinefieldQuery        = 38;
+	public static final short MinefieldData         = 39;
+	public static final short MinefieldRspNACK      = 40;
 	
-	public static final PduType EnvironmentalProc     = registerStandardValue( 41, "EnvironmentalProc" );
-	public static final PduType GriddedData           = registerStandardValue( 42, "GriddedData" );
-	public static final PduType PointObjectState      = registerStandardValue( 43, "PointObjectState" );
-	public static final PduType LinearObjectState     = registerStandardValue( 44, "LinearObjectState" );
-	public static final PduType ArealObjectState      = registerStandardValue( 45, "ArealObjectState" );
+	public static final short EnvironmentalProc     = 41;
+	public static final short GriddedData           = 42;
+	public static final short PointObjectState      = 43;
+	public static final short LinearObjectState     = 44;
+	public static final short ArealObjectState      = 45;
 	
-	public static final PduType TSPI                  = registerStandardValue( 46, "TSPI" );
-	public static final PduType Appearance            = registerStandardValue( 47, "Appearance" );
-	public static final PduType ArticulatedParts      = registerStandardValue( 48, "ArticulatedParts" );
-	public static final PduType LEFire                = registerStandardValue( 49, "LEFire" );
-	public static final PduType LEDetonation          = registerStandardValue( 50, "LEDetonation" );
+	public static final short TSPI                  = 46;
+	public static final short Appearance            = 47;
+	public static final short ArticulatedParts      = 48;
+	public static final short LEFire                = 49;
+	public static final short LEDetonation          = 50;
 
-	public static final PduType CreateEntity_R        = registerStandardValue( 51, "CreateEntity_R" );
-	public static final PduType RemoveEntity_R        = registerStandardValue( 52, "RemoveEntity_R" );
-	public static final PduType StartResume_R         = registerStandardValue( 53, "StartResume_R" );
-	public static final PduType StopFreeze_R          = registerStandardValue( 54, "StopFreeze_R" );
-	public static final PduType Acknowledge_R         = registerStandardValue( 55, "Acknowledge_R" );
-	public static final PduType ActionRequest_R       = registerStandardValue( 56, "ActionRequest_R" );
-	public static final PduType ActionResponse_R      = registerStandardValue( 57, "ActionResponse_R" );
-	public static final PduType DataQuery_R           = registerStandardValue( 58, "DataQuery_R" );
-	public static final PduType SetData_R             = registerStandardValue( 59, "SetData_R" );
-	public static final PduType Data_R                = registerStandardValue( 60, "Data_R" );
-	public static final PduType EventReport_R         = registerStandardValue( 61, "EventReport_R" );
-	public static final PduType Comment_R             = registerStandardValue( 62, "Comment_R" );
-	public static final PduType Record_R              = registerStandardValue( 63, "Record_R" );
-	public static final PduType SetRecord_R           = registerStandardValue( 64, "SetRecord_R" );
-	public static final PduType RecordQuery_R         = registerStandardValue( 65, "RecordQuery_R" );
+	public static final short CreateEntity_R        = 51;
+	public static final short RemoveEntity_R        = 52;
+	public static final short StartResume_R         = 53;
+	public static final short StopFreeze_R          = 54;
+	public static final short Acknowledge_R         = 55;
+	public static final short ActionRequest_R       = 56;
+	public static final short ActionResponse_R      = 57;
+	public static final short DataQuery_R           = 58;
+	public static final short SetData_R             = 59;
+	public static final short Data_R                = 60;
+	public static final short EventReport_R         = 61;
+	public static final short Comment_R             = 62;
+	public static final short Record_R              = 63;
+	public static final short SetRecord_R           = 64;
+	public static final short RecordQuery_R         = 65;
 
-	public static final PduType CollisionElastic      = registerStandardValue( 66, "CollisionElastic" );
-	public static final PduType EntityStateUpdate     = registerStandardValue( 67, "EntityStateUpdate" );
-	public static final PduType DirectedEnergyFire    = registerStandardValue( 68, "DirectedEnergyFire" );
-	public static final PduType EntityDamageStatus    = registerStandardValue( 69, "EntityDamageStatus" );
+	public static final short CollisionElastic      = 66;
+	public static final short EntityStateUpdate     = 67;
+	public static final short DirectedEnergyFire    = 68;
+	public static final short EntityDamageStatus    = 69;
 
-	public static final PduType InfoOpsAction         = registerStandardValue( 70, "InfoOpsAction" );
-	public static final PduType InfoOpsReport         = registerStandardValue( 71, "InfoOpsReport" );
-	public static final PduType Attribute             = registerStandardValue( 72, "Attribute" );
+	public static final short InfoOpsAction         = 70;
+	public static final short InfoOpsReport         = 71;
+	public static final short Attribute             = 72;
 	
-	// Custom Extensions
-		/*
-		IRCUser              ( (short)160, ProtocolFamily.DiscoCustom, IrcUserPdu.class ),
-		IRCMessage           ( (short)161, ProtocolFamily.DiscoCustom, IrcMessagePdu.class ),
-		IRCRawMessage        ( (short)162, ProtocolFamily.DiscoCustom, IrcRawMessagePdu.class ),
+	static
+	{
+		StandardValueLookup = new ValueLookup<>();
+		StandardValueLookup.addNamedValue( "Other",       Other );
+		StandardValueLookup.addNamedValue( "EntityState", EntityState );
+		StandardValueLookup.addNamedValue( "Fire",        Fire );
+		StandardValueLookup.addNamedValue( "Detonation",  Detonation );
+		StandardValueLookup.addNamedValue( "Collision",   Collision );
+		StandardValueLookup.addNamedValue( "ServiceRequest", ServiceRequest );
+		StandardValueLookup.addNamedValue( "ResupplyOffer",  ResupplyOffer );
+		StandardValueLookup.addNamedValue( "ResupplyReceived", ResupplyReceived );
+		StandardValueLookup.addNamedValue( "ResupplyCancel", ResupplyCancel );
+		StandardValueLookup.addNamedValue( "RepairComplete", RepairComplete );
+		StandardValueLookup.addNamedValue( "RepairResponse", RepairResponse );
+	 	
+		StandardValueLookup.addNamedValue( "CreateEntity", CreateEntity );
+		StandardValueLookup.addNamedValue( "RemoveEntity", RemoveEntity );
+		StandardValueLookup.addNamedValue( "StartResume", StartResume );
+		StandardValueLookup.addNamedValue( "StopFreeze", StopFreeze );
+		StandardValueLookup.addNamedValue( "Acknowledge", Acknowledge );
+		StandardValueLookup.addNamedValue( "ActionRequest", ActionRequest );
+		StandardValueLookup.addNamedValue( "ActionResponse", ActionResponse );
+		StandardValueLookup.addNamedValue( "DataQuery", DataQuery );
+		StandardValueLookup.addNamedValue( "SetData", SetData );
+		StandardValueLookup.addNamedValue( "Data", Data );
+		StandardValueLookup.addNamedValue( "EventReport", EventReport );
+		StandardValueLookup.addNamedValue( "Comment", Comment );
 		
-		DcssWallclockTime         ( (short)170, ProtocolFamily.DiscoCustom, DcssWallclockTimePdu.class ),
-		DcssWeatherRequest        ( (short)171, ProtocolFamily.DiscoCustom, DcssWeatherRequestPdu.class ),
-		DcssWeatherResponse       ( (short)172, ProtocolFamily.DiscoCustom, DcssWeatherResponsePdu.class ),
-		DcssWeatherInstance       ( (short)173, ProtocolFamily.DiscoCustom, DcssWeatherInstancePdu.class ),
+		StandardValueLookup.addNamedValue( "Emission", Emission );
+		StandardValueLookup.addNamedValue( "Designator", Designator );
+		StandardValueLookup.addNamedValue( "Transmitter", Transmitter );
+		StandardValueLookup.addNamedValue( "Signal", Signal );
+		StandardValueLookup.addNamedValue( "Receiver", Receiver );
+		StandardValueLookup.addNamedValue( "IFF", IFF );
+		StandardValueLookup.addNamedValue( "UnderwaterAcoustic", UnderwaterAcoustic );
+		StandardValueLookup.addNamedValue( "SupplementalEmmission", SupplementalEmmission );
 		
-		InhibitedMidsPairing ( (short)180, ProtocolFamily.DiscoCustom, InhibitedMidsPairingPdu.class );
-		*/
+		StandardValueLookup.addNamedValue( "IntercomSignal", IntercomSignal );
+		StandardValueLookup.addNamedValue( "IntercomControl", IntercomControl );
+		
+		StandardValueLookup.addNamedValue( "AggregateSate", AggregateSate );
+		StandardValueLookup.addNamedValue( "IsGroupOf", IsGroupOf );
+		
+		StandardValueLookup.addNamedValue( "TransferOwnership", TransferOwnership );
+		StandardValueLookup.addNamedValue( "IsPartOf", IsPartOf );
+		
+		StandardValueLookup.addNamedValue( "MinefieldState", MinefieldState );
+		StandardValueLookup.addNamedValue( "MinefieldQuery", MinefieldQuery );
+		StandardValueLookup.addNamedValue( "MinefieldData", MinefieldData );
+		StandardValueLookup.addNamedValue( "MinefieldRspNACK", MinefieldRspNACK );
+		
+		StandardValueLookup.addNamedValue( "EnvironmentalProc", EnvironmentalProc );
+		StandardValueLookup.addNamedValue( "GriddedData", GriddedData );
+		StandardValueLookup.addNamedValue( "PointObjectState", PointObjectState );
+		StandardValueLookup.addNamedValue( "LinearObjectState", LinearObjectState );
+		StandardValueLookup.addNamedValue( "ArealObjectState", ArealObjectState );
+		
+		StandardValueLookup.addNamedValue( "TSPI", TSPI );
+		StandardValueLookup.addNamedValue( "Appearance", Appearance );
+		StandardValueLookup.addNamedValue( "ArticulatedParts", ArticulatedParts );
+		StandardValueLookup.addNamedValue( "Fire", Fire );
+		StandardValueLookup.addNamedValue( "LEDetonation", LEDetonation );
+
+		StandardValueLookup.addNamedValue( "CreateEntity_R", CreateEntity_R );
+		StandardValueLookup.addNamedValue( "RemoveEntity_R", RemoveEntity_R );
+		StandardValueLookup.addNamedValue( "StartResume_R", StartResume_R );
+		StandardValueLookup.addNamedValue( "StopFreeze_R", StopFreeze_R );
+		StandardValueLookup.addNamedValue( "Acknowledge_R", Acknowledge_R );
+		StandardValueLookup.addNamedValue( "ActionRequest_R", ActionRequest_R );
+		StandardValueLookup.addNamedValue( "ActionResponse_R", ActionResponse_R );
+		StandardValueLookup.addNamedValue( "DataQuery_R", DataQuery_R );
+		StandardValueLookup.addNamedValue( "SetData_R", SetData_R );
+		StandardValueLookup.addNamedValue( "Data_R", Data_R );
+		StandardValueLookup.addNamedValue( "EventReport_R", EventReport_R );
+		StandardValueLookup.addNamedValue( "Comment_R", Comment_R );
+		StandardValueLookup.addNamedValue( "Record_R", Record_R );
+		StandardValueLookup.addNamedValue( "SetRecord_R", SetRecord_R );
+		StandardValueLookup.addNamedValue( "RecordQuery_R", RecordQuery_R );
+
+		StandardValueLookup.addNamedValue( "CollisionElastic", CollisionElastic );
+		StandardValueLookup.addNamedValue( "EntityStateUpdate", EntityStateUpdate );
+		StandardValueLookup.addNamedValue( "DirectedEnergyFire", DirectedEnergyFire );
+		StandardValueLookup.addNamedValue( "EntityDamageStatus", EntityDamageStatus );
+
+		StandardValueLookup.addNamedValue( "InfoOpsAction", InfoOpsAction );
+		StandardValueLookup.addNamedValue( "InfoOpsReport", InfoOpsReport );
+		StandardValueLookup.addNamedValue( "Attribute", Attribute );
+		
+	}
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private short value;
-	private String name;
-
+	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private PduType( short value )
-	{
-		this( value, null );
-	}
-	
-	private PduType( short value, String name )
-	{
-		this.value = value;
-		this.name = name;
-	}
-	
-	//----------------------------------------------------------
-	//                    INSTANCE METHODS
-	//----------------------------------------------------------
-	public short value()
-	{
-		return this.value;
-	}
-	
-	public String name()
-	{
-		return this.name;
-	}
-
-	@Override
-	public String toString()
-	{
-		if( this.name != null )
-			return this.name;
-		else
-			return String.valueOf( this.value );
-	}
-	
-	@Override
-	public boolean equals( Object other )
-	{
-		if( other == this )
-			return true;
-		
-		if( !(other instanceof PduType) )
-			return false;
-		
-		PduType otherType = (PduType)other;
-		return otherType.value == this.value;
-	}
-	
-	@Override
-	public int hashCode()
-	{
-		return this.value;
-	}
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static Set<PduType> getStandardValues()
+	public static Set<Short> getStandardValues()
 	{
-		Set<PduType> values = new HashSet<>();
-		values.addAll( StandardValues.values() );
-		return values;
+		return StandardValueLookup.getValues();
 	}
 	
 	public static int getByteLength()
 	{
 		return DisSizes.UI8_SIZE;
 	}
-
-	public static PduType fromValue( short value )
+	
+	public static short fromName( String name )
 	{
-		PduType result = StandardValues.get( value );
-		if( result == null )
-		{
-			if( DiscoConfiguration.isSet(Flag.Strict) )
-				throw new IllegalArgumentException( value+" is not a valid value for PduType" );
-			
-			result = new PduType( value );
-		}
-
-		return result;
+		Short value = StandardValueLookup.getValueForName( name );
+		if( value == null )
+			throw new IllegalArgumentException( name+" is not a valid name for PduType" );
+		
+		return value.shortValue();
 	}
 	
-	public static PduType fromName( String name )
+	public static String describe( Number value )
 	{
-		Optional<PduType> result = StandardValues.values().stream()
-		                                                  .filter( v -> v.name.equalsIgnoreCase(name) )
-		                                                  .findFirst();
-
-		if( result.isPresent() )
-			return result.get();
-		else
-			throw new IllegalArgumentException( name+" is not a valid name for PduType" ); 
-	}
-	
-	private static PduType registerStandardValue( Number value, String name )
-	{
-		PduType type = new PduType( value.shortValue(), name );
-		StandardValues.put( value.shortValue(), type );
-		return type;
+		String name = StandardValueLookup.getNameForValue( value.shortValue() );
+		return name != null ? name : String.format( "Unknown (%d)", value.shortValue() );
 	}
 }

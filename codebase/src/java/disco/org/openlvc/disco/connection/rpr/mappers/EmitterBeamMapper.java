@@ -83,7 +83,7 @@ public class EmitterBeamMapper extends AbstractEmitterMapper
 	//----------------------------------------------------------
 
 	@Override
-	public Collection<PduType> getSupportedPdus()
+	public Collection<Short> getSupportedPdus()
 	{
 		return Arrays.asList( PduType.Emission );
 	}

@@ -48,7 +48,7 @@ public class PduCountResults implements IResults
 	private PduCountConfiguration configuration;
 	private long benchmarkMillis;
 
-	private Map<PduType,PduCount> pduCounts;
+	private Map<Short,PduCount> pduCounts;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -99,7 +99,7 @@ public class PduCountResults implements IResults
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void add( PDU pdu ) throws DiscoException
 	{
-		PduType type = pdu.getType();
+		short type = pdu.getType();
 		PduCount count = pduCounts.get( type );
 		if( count == null )
 		{
@@ -192,10 +192,10 @@ public class PduCountResults implements IResults
 	public class PduCount implements FieldComparable<PduCount>,
 	                                        Searchable<PduCount>
 	{
-		protected PduType type            = null;
+		protected short type              = PduType.Other;
 		protected AtomicLong pduCount     = new AtomicLong(0);
 		
-		protected PduCount( PduType type, long count )
+		protected PduCount( short type, long count )
 		{
 			this.type = type;
 			this.pduCount = new AtomicLong(count);
@@ -213,7 +213,8 @@ public class PduCountResults implements IResults
 			
 			if( field.equals("pdu-type") || field.equals("type") )
 			{
-				return type.name().contains( value );
+				return PduType.describe( type )
+				              .contains( value );
 			}
 			else if( field.equals("pdu-count") || field.equals("count") )
 			{
@@ -229,7 +230,7 @@ public class PduCountResults implements IResults
 		public int compareTo( PduCount other, String field )
 		{
 			if( field.equals("pdu-type") || field.equals("type") )
-				return type.toString().compareTo( other.type.toString() );
+				return PduType.describe( type ).compareTo( PduType.describe(other.type) );
 			else if( field.equals("pdu-count") || field.equals("count") )
 				return pduCount.get() > other.pduCount.get() ? 1 : -1;
 			else

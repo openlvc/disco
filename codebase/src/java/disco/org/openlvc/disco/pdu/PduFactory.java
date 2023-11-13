@@ -56,7 +56,7 @@ public class PduFactory
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private Map<PduType,Supplier<? extends PDU>> typeSuppliers;
+	private Map<Short,Supplier<? extends PDU>> typeSuppliers;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -69,7 +69,7 @@ public class PduFactory
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public void registerSupplier( PduType type, 
+	public void registerSupplier( short type, 
 	                              Supplier<? extends PDU> supplier )
 	{
 		this.typeSuppliers.put( type, supplier );
@@ -95,7 +95,7 @@ public class PduFactory
 			return new UnparsedPdu().setHeader(header);
 
 		// Get the implementation class for this PDU type
-		PduType type = header.getPduType();
+		short type = header.getPduType();
 		Supplier<? extends PDU> supplier = typeSuppliers.get( type );
 		
 		// If we don't have an implementation class, the PDU is unsupported
@@ -104,7 +104,7 @@ public class PduFactory
 			if( DiscoConfiguration.isSet(Flag.Unparsed) )
 				return new UnparsedPdu().setHeader(header);
 			else
-				throw new UnsupportedPDU( "PDU Type not supported: "+type.name() );
+				throw new UnsupportedPDU( "PDU Type not supported: "+PduType.describe(type) );
 		}
 		
 		// Create a new PDU instance from the type and return it
@@ -171,11 +171,9 @@ public class PduFactory
 	/**
 	 * Return the set of PDU Types that we currently support decoding.
 	 */
-	public Set<PduType> getSupportedPduTypes()
+	public Set<Short> getSupportedPduTypes()
 	{
-		Set<PduType> types = new HashSet<>();
-		types.addAll( typeSuppliers.keySet() );
-		return types;
+		return new HashSet<>( typeSuppliers.keySet() );
 	}
 
 	/**
@@ -189,9 +187,9 @@ public class PduFactory
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	public static final Map<PduType,Supplier<? extends PDU>> getDefaultPduSuppliers()
+	public static final Map<Short,Supplier<? extends PDU>> getDefaultPduSuppliers()
 	{
-		Map<PduType,Supplier<? extends PDU>> suppliers = new HashMap<>();
+		Map<Short,Supplier<? extends PDU>> suppliers = new HashMap<>();
 		
 		suppliers.put( PduType.EntityState,    () -> new EntityStatePdu() );
 		suppliers.put( PduType.Fire,           () -> new FirePdu() );

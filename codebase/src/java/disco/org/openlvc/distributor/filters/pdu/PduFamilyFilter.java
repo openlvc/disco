@@ -41,7 +41,7 @@ public class PduFamilyFilter extends AbstractFilter implements IFilter
 	public PduFamilyFilter( Operator operator, String name )
 	{
 		super( FILTER_KEY, operator, name );
-		this.family = ProtocolFamily.fromName( value ).value();
+		this.family = ProtocolFamily.fromName( name );
 	}
 
 	//----------------------------------------------------------
@@ -53,7 +53,7 @@ public class PduFamilyFilter extends AbstractFilter implements IFilter
 	 */
 	public final boolean matches( PDU pdu )
 	{
-		return operator.compare( family, pdu.getHeader().getProtocolFamily().value() );
+		return operator.compare( family, pdu.getHeader().getProtocolFamily() );
 	}
 
 	//----------------------------------------------------------

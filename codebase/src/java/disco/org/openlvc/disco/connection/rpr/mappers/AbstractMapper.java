@@ -32,7 +32,6 @@ import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.model.ParameterClass;
 import org.openlvc.disco.connection.rpr.model.PubSub;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
-import org.openlvc.disco.pdu.field.PduType;
 
 import hla.rti1516e.AttributeHandleSet;
 import hla.rti1516e.AttributeHandleValueMap;
@@ -127,7 +126,7 @@ public abstract class AbstractMapper
 	 * This allows the mapper to declare the PDU types it supports converting to/from.
 	 * @return The set of all PDU types it supports.
 	 */
-	public abstract Collection<PduType> getSupportedPdus();
+	public abstract Collection<Short> getSupportedPdus();
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA Object Helpers   ///////////////////////////////////////////////////////////////////

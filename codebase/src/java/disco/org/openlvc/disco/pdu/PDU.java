@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.pdu.field.ProtocolFamily;
 import org.openlvc.disco.pdu.record.PduHeader;
 
 /**
@@ -56,7 +55,7 @@ public abstract class PDU
 		this.localTimestamp = System.currentTimeMillis();
 	}
 	
-	protected PDU( PduType type, ProtocolFamily family )
+	protected PDU( short type, short family )
 	{
 		this.header = new PduHeader();
 		this.header.setPduType( type );
@@ -141,7 +140,7 @@ public abstract class PDU
 	/**
 	 * Each PDU has a specific type, as enumerated in {@link PduType}. 
 	 */
-	public final PduType getType()
+	public final short getType()
 	{
 		if( header == null )
 			throw new IllegalStateException( "The PDU does not contain a header" );

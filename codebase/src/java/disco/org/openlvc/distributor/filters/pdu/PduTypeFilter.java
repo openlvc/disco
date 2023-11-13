@@ -41,7 +41,7 @@ public class PduTypeFilter extends AbstractFilter implements IFilter
 	public PduTypeFilter( Operator operator, String name )
 	{
 		super( FILTER_KEY, operator, name );
-		this.type = PduType.fromName(name).value();
+		this.type = PduType.fromName( name );
 	}
 
 	//----------------------------------------------------------
@@ -53,7 +53,7 @@ public class PduTypeFilter extends AbstractFilter implements IFilter
 	 */
 	public final boolean matches( PDU pdu )
 	{
-		return operator.compare( type, pdu.getType().value() );
+		return operator.compare( type, pdu.getType() );
 	}
 
 	//----------------------------------------------------------

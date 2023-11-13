@@ -59,7 +59,7 @@ public class SetDataMapper extends AbstractMapper
 	//----------------------------------------------------------
 
 	@Override
-	public Collection<PduType> getSupportedPdus()
+	public Collection<Short> getSupportedPdus()
 	{
 		return Arrays.asList( PduType.SetData );
 	}

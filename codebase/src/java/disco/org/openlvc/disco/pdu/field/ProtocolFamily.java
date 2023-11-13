@@ -17,135 +17,92 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.ValueLookup;
 
 public class ProtocolFamily
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	private static final Map<Short,ProtocolFamily> StandardValues = new HashMap<>();
+	private static ValueLookup<Short> StandardValueLookup;
 	
-	public static final ProtocolFamily Other            = registerStandardValue( 0, "Other" );
-	public static final ProtocolFamily Entity           = registerStandardValue( 1, "Entity" );
-	public static final ProtocolFamily Warfare          = registerStandardValue( 2, "Warfare" );
-	public static final ProtocolFamily Logistics        = registerStandardValue( 3, "Logistics" );
-	public static final ProtocolFamily Radio            = registerStandardValue( 4, "Radio" );
-	public static final ProtocolFamily SimMgmt          = registerStandardValue( 5, "SimMgmt" );
-	public static final ProtocolFamily Emission         = registerStandardValue( 6, "Emission" );
-	public static final ProtocolFamily EntityMgmt       = registerStandardValue( 7, "EntityMgmt" );
-	public static final ProtocolFamily Minefield        = registerStandardValue( 8, "Minefield" );
-	public static final ProtocolFamily SyntheticEnv     = registerStandardValue( 9, "SyntheticEnv" );
-	public static final ProtocolFamily SimMgmt_R        = registerStandardValue( 10, "SimMgmt_R" );
-	public static final ProtocolFamily LiveEntity       = registerStandardValue( 11, "LiveEntity" );
-	public static final ProtocolFamily NonRealTime      = registerStandardValue( 12, "NonRealTime" );
-	public static final ProtocolFamily InformationOps   = registerStandardValue( 13, "InformationOps" );
+	public static final short Other            = 0;
+	public static final short Entity           = 1;
+	public static final short Warfare          = 2;
+	public static final short Logistics        = 3;
+	public static final short Radio            = 4;
+	public static final short SimMgmt          = 5;
+	public static final short Emission         = 6;
+	public static final short EntityMgmt       = 7;
+	public static final short Minefield        = 8;
+	public static final short SyntheticEnv     = 9;
+	public static final short SimMgmt_R        = 10;
+	public static final short LiveEntity       = 11;
+	public static final short NonRealTime      = 12;
+	public static final short InformationOps   = 13;
+	
+	static
+	{
+		StandardValueLookup = new ValueLookup<Short>();
+		
+		StandardValueLookup.addNamedValue( "Other", Other );
+		StandardValueLookup.addNamedValue( "Entity", Entity );
+		StandardValueLookup.addNamedValue( "Warfare", Warfare );
+		StandardValueLookup.addNamedValue( "Logistics", Logistics );
+		StandardValueLookup.addNamedValue( "Radio", Radio );
+		StandardValueLookup.addNamedValue( "SimMgmt", SimMgmt );
+		StandardValueLookup.addNamedValue( "Emission", Emission );
+		StandardValueLookup.addNamedValue( "EntityMgmt", EntityMgmt );
+		StandardValueLookup.addNamedValue( "Minefield", Minefield );
+		StandardValueLookup.addNamedValue( "SyntheticEnv", SyntheticEnv );
+		StandardValueLookup.addNamedValue( "SimMgmt_R", SimMgmt_R );
+		StandardValueLookup.addNamedValue( "LiveEntity", LiveEntity );
+		StandardValueLookup.addNamedValue( "NonRealTime", NonRealTime );
+		StandardValueLookup.addNamedValue( "InformationOps", InformationOps );
+		
+	}
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private short value;
-	private String name;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private ProtocolFamily( short value )
-	{
-		this( value, null );
-	}
-	
-	private ProtocolFamily( short value, String name )
-	{
-		this.value = value;
-		this.name = name;
-	}
+	private ProtocolFamily() {}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public short value()
-	{
-		return this.value;
-	}
-
-	public String name()
-	{
-		return this.name;
-	}
-	
-	@Override
-	public String toString()
-	{
-		if( this.name != null )
-			return String.format( "%s (%d)", this.name, this.value );
-		else
-			return String.valueOf( this.value );
-	}
-	
-	@Override
-	public boolean equals( Object other )
-	{
-		if( other == this )
-			return true;
-		
-		if( !(other instanceof ProtocolFamily) )
-			return false;
-		
-		ProtocolFamily otherFamily = (ProtocolFamily)other;
-		return otherFamily.value == this.value;
-	}
-	
-	@Override
-	public int hashCode()
-	{
-		return this.value;
-	}
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	public static Set<Short> getStandardValues()
+	{
+		return StandardValueLookup.getValues();
+	}
+	
 	public static int getByteLength()
 	{
 		return DisSizes.UI8_SIZE;
 	}
-
-	public static ProtocolFamily fromValue( short value )
-	{
-		ProtocolFamily result = StandardValues.get( value );
-		if( result == null )
-		{
-			if( DiscoConfiguration.isSet(Flag.Strict) )
-				throw new IllegalArgumentException( value+" is not a valid value for ProtocolFamily" );
-			
-			result = new ProtocolFamily( value );
-		}
-
-		return result;
-	}
 	
-	public static ProtocolFamily fromName( String name )
+	public static short fromName( String name )
 	{
-		Optional<ProtocolFamily> result = StandardValues.values().stream()
-		                                                         .filter( v -> v.name.equalsIgnoreCase(name) )
-		                                                         .findFirst();
-		
-		if( result.isPresent() )
-			return result.get();
-		else
+		Short value = StandardValueLookup.getValueForName( name );
+		if( value == null )
 			throw new IllegalArgumentException( name+" is not a valid name for ProtocolFamily" );
+		
+		return value.shortValue();
 	}
 	
-	private static ProtocolFamily registerStandardValue( Number value, String name )
+	public static String describe( Number value )
 	{
-		ProtocolFamily family = new ProtocolFamily( value.shortValue(), name );
-		StandardValues.put( value.shortValue(), family );
-		return family;
+		String name = StandardValueLookup.getNameForValue( value.shortValue() );
+		return name != null ? name : String.format( "Unknown (%d)", value.shortValue() );
 	}
 }

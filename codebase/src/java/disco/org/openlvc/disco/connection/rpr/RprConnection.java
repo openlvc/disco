@@ -47,7 +47,6 @@ import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.model.ObjectModel;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.utils.FileUtils;
 
 import hla.rti1516e.AttributeHandleValueMap;
@@ -145,9 +144,9 @@ public class RprConnection implements IConnection
 	}
 
 	@Override
-	public Collection<PduType> getSupportedPduTypes()
+	public Collection<Short> getSupportedPduTypes()
 	{
-		Collection<PduType> collection = new LinkedHashSet<>();
+		Collection<Short> collection = new LinkedHashSet<>();
 		for( AbstractMapper mapper : rprConfiguration.getRegisteredFomMappers() )
 			collection.addAll( mapper.getSupportedPdus() );
 

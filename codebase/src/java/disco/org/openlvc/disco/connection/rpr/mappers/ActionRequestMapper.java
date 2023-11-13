@@ -59,7 +59,7 @@ public class ActionRequestMapper extends AbstractMapper
 	//----------------------------------------------------------
 
 	@Override
-	public Collection<PduType> getSupportedPdus()
+	public Collection<Short> getSupportedPdus()
 	{
 		return Arrays.asList( PduType.ActionRequest );
 	}

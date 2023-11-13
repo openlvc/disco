@@ -42,9 +42,11 @@ public interface IConnection
 	public String getName();
 
 	/**
-	 * @return The PDUs that this connection supports
+	 * @return The PDU Types that this connection supports
+	 * 
+	 * @see PduType
 	 */
-	public Collection<PduType> getSupportedPduTypes();	
+	public Collection<Short> getSupportedPduTypes();
 	
 	/**
 	 * Configure the provider as it is being deployed into the given {@link OpsCenter}.

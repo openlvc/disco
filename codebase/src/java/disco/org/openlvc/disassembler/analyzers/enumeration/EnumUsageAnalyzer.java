@@ -42,7 +42,7 @@ public class EnumUsageAnalyzer implements IAnalyzer
 	//----------------------------------------------------------
 	private EnumUsageConfiguration configuration;
 	private Logger logger;
-	private Set<PduType> acceptedTypes;
+	private Set<Short> acceptedTypes;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -71,7 +71,7 @@ public class EnumUsageAnalyzer implements IAnalyzer
 		for( Track track : session )
 		{
 			PDU pdu = track.getPdu();
-			PduType type = pdu.getType();
+			short type = pdu.getType();
 			if( acceptedTypes.contains(type) )
 				resultset.add( pdu );
 			

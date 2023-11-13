@@ -35,7 +35,6 @@ import org.openlvc.disco.configuration.UdpConfiguration;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.utils.NetworkUtils;
 import org.openlvc.disco.utils.SocketOptions;
 import org.openlvc.disco.utils.StringUtils;
@@ -90,7 +89,7 @@ public class UdpConnection implements IConnection
 	/////////////////////////////// Accessor and Mutator Methods ///////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
-	public Collection<PduType> getSupportedPduTypes()
+	public Collection<Short> getSupportedPduTypes()
 	{
 		return this.opscenter.getPduFactory().getSupportedPduTypes();
 	}
