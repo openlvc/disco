@@ -17,7 +17,12 @@
  */
 package org.openlvc.disco.configuration;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
+
+import org.openlvc.disco.pdu.PDU;
 
 /**
  * General DIS protocol settings that are applicable regardless of transport, sender or receiver
@@ -42,6 +47,9 @@ public class DisConfiguration
 	private int   siteId;
 	private int   appId;
 
+	// Customer PDUs supported
+	private Set<Class<? extends PDU>> customPduTypes;
+
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -52,6 +60,8 @@ public class DisConfiguration
 		this.exerciseId = -1; // -1 so we can lazy load
 		this.siteId     = Integer.MIN_VALUE; // will cause lazy load
 		this.appId      = Integer.MIN_VALUE; // will cause lazy load
+		
+		this.customPduTypes = new HashSet<>();
 	}
 
 	//----------------------------------------------------------
@@ -148,6 +158,18 @@ public class DisConfiguration
 		this.appId = appId;
 	}
 	
+	/////////////////////////////////////////////////////////////////////////////////////
+	/// Custom PDU Support Methods    ///////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////
+	public void registerCustomPdu( Class<? extends PDU> type )
+	{
+		this.customPduTypes.add( type );
+	}
+	
+	public Set<Class<? extends PDU>> getRegisteredCustomPdu()
+	{
+		return Collections.unmodifiableSet( this.customPduTypes );
+	}
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS

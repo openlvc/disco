@@ -17,7 +17,7 @@
  */
 package org.openlvc.disco;
 
-import org.openlvc.disco.common.TestListener;
+import org.openlvc.disco.common.TestPduListener;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -39,7 +39,7 @@ public class OpsCenterTest extends AbstractTest
 	private OpsCenter left;
 	private OpsCenter right;
 //	private TestListener leftListener;
-	private TestListener rightListener;
+	private TestPduListener rightListener;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -64,7 +64,7 @@ public class OpsCenterTest extends AbstractTest
 		this.right = super.newOpsCenter();
 		
 //		this.leftListener = (TestListener)left.getPduListener();
-		this.rightListener = (TestListener)right.getPduListener();
+		this.rightListener = (TestPduListener)right.getPduListener();
 
 		this.left.open();
 		this.right.open();

@@ -21,6 +21,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
@@ -98,7 +99,7 @@ public class RprConfiguration
 	
 	// FOM-specific values. Careful to manage with DIS properties so they don't ignore each other
 	private List<URL> fomModules;
-	private List<AbstractMapper> fomMappers;
+	private List<Class<? extends AbstractMapper>> fomMappers;
 	
 	private List<String> extensionModules;
 
@@ -454,8 +455,8 @@ public class RprConfiguration
 			}
 			else if( getRtiProvider() == RtiProvider.Mak )
 			{
-				// if we're using Mak and it's not an external module, must be dcss
-				createMakFomFiles( new String[]{path}, new File("hla/dcss") );
+				// if we're using Mak and it's not an external module, copy stuff out
+				createMakFomFiles( new String[]{path}, new File("hla/mak") );
 			}
 			else
 			{
@@ -534,66 +535,70 @@ public class RprConfiguration
 		fomModules.addAll( FileUtils.extractFilesFromJar(modulesList, destDir, getClass().getClassLoader()) );
 	}
 	
-	////////////////////////////////////////
-	/// FOM Mappers   //////////////////////
-	////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////
+	/// FOM Mappers   /////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////
 	/**
-	 * This method will look up the list of configured mappers and INSTANTIATE each of them
-	 * in turn, returning an array of new mapper instances. The mapper must have a no-arg
-	 * @return
+	 * This method will return all the registered FOM mappers, including the set of default
+	 * mappers that we have for the RPR types.
+	 * 
+	 * @return A list of the mappers registered with this RPR configuration
 	 */
-	public AbstractMapper[] getRegisteredFomMappers()
+	public List<Class<? extends AbstractMapper>> getRegisteredFomMappers()
 	{
 		if( fomMappers.isEmpty() )
 			loadDefaultMappers();
 		
-		return this.fomMappers.toArray( new AbstractMapper[]{} );
+		return this.fomMappers;
 	}
 
 	/**
-	 * Register a custom mapper with the configuration. On connection initialization, all default
-	 * and extension mappers will be brought into service through an initialization call before
-	 * being passed messages.
+	 * Register the given custom/extension mapper type with this configuration.
 	 * 
-	 * @param mappers The set of customer mappers that should be added to the list of defaults
+	 * @param mapper The mapper to register.
 	 */
-	public void registerExtensionMappers( AbstractMapper... mappers )
+	public void registerExtensionMapper( Class<? extends AbstractMapper> mapper )
 	{
 		if( fomMappers.isEmpty() )
 			loadDefaultMappers();
 		
-		for( AbstractMapper mapper : mappers )
-			fomMappers.add( mapper );
+		fomMappers.add( mapper );
 	}
+
+	/**
+	 * Register the given custom/extension mapper types with this configuration.
+	 * 
+	 * @param mappers The collection of customer mapper types.
+	 */
+	public void registerExtensionMappers( Set<Class<? extends AbstractMapper>> mappers )
+	{
+		for( Class<? extends AbstractMapper> mapper : mappers )
+			registerExtensionMapper( mapper );
+	}
+	
+	private final void loadDefaultMappers()
+	{
+		// Entity & Warfare
+		this.fomMappers.add( EntityStateMapper.class );
+		// Communications
+		this.fomMappers.add( TransmitterMapper.class );
+		this.fomMappers.add( SignalMapper.class );
+		// Emissions
+		this.fomMappers.add( EmitterSystemMapper.class );
+		this.fomMappers.add( EmitterBeamMapper.class );
+		// Sim Mgmt
+		this.fomMappers.add( DataQueryMapper.class );
+		this.fomMappers.add( DataMapper.class );
+		this.fomMappers.add( SetDataMapper.class );
+		this.fomMappers.add( ActionRequestMapper.class );
+		this.fomMappers.add( ActionResponseMapper.class );
+	}
+	
 	
 	public void clearExtensionMappers()
 	{
 		this.fomMappers.clear();
 	}
-	
-	/**
-	 * Create the set of default mappers that should always be present for a RPR federation
-	 */
-	private final void loadDefaultMappers()
-	{
-		// Entity & Warfare
-		this.fomMappers.add( new EntityStateMapper() );
-		// Communications
-		this.fomMappers.add( new TransmitterMapper() );
-		this.fomMappers.add( new SignalMapper() );
-		// Emissions
-		this.fomMappers.add( new EmitterSystemMapper() );
-		this.fomMappers.add( new EmitterBeamMapper() );
-		// Sim Mgmt
-		this.fomMappers.add( new DataQueryMapper() );
-		this.fomMappers.add( new DataMapper() );
-		this.fomMappers.add( new SetDataMapper() );
-		this.fomMappers.add( new ActionRequestMapper() );
-		this.fomMappers.add( new ActionResponseMapper() );
-	}
-	
-	
-	
 	
 	//----------------------------------------------------------
 	//                     STATIC METHODS

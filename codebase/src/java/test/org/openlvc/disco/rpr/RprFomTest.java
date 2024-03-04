@@ -23,7 +23,7 @@ import java.util.Random;
 import org.openlvc.disco.AbstractTest;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.common.CommonSetup;
-import org.openlvc.disco.common.TestListener;
+import org.openlvc.disco.common.TestPduListener;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.connection.rpr.RprConnection;
 import org.openlvc.disco.connection.rpr.objects.PhysicalEntity;
@@ -70,8 +70,8 @@ public class RprFomTest extends AbstractTest
 	//----------------------------------------------------------
 	private OpsCenter left;
 	private OpsCenter right;
-	private TestListener leftListener;
-	private TestListener rightListener;
+	private TestPduListener leftListener;
+	private TestPduListener rightListener;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -114,8 +114,8 @@ public class RprFomTest extends AbstractTest
 		// create the opscenter instances we'll use for testing
 		this.left = super.newOpsCenter( leftConfiguration );
 		this.right = super.newOpsCenter( rightConfiguration );
-		this.leftListener = (TestListener)left.getPduListener();
-		this.rightListener = (TestListener)right.getPduListener();
+		this.leftListener = (TestPduListener)left.getPduListener();
+		this.rightListener = (TestPduListener)right.getPduListener();
 
 		this.left.open();
 		this.right.open();

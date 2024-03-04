@@ -23,8 +23,6 @@ import org.openlvc.disco.application.DisApplication;
 import org.openlvc.disco.bus.EventHandler;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
-import org.openlvc.disco.connection.rpr.custom.dcss.mappers.IRCChannelMessageMapper;
-import org.openlvc.disco.connection.rpr.custom.dcss.mappers.IRCRawMessageMapper;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
 import org.openlvc.disrespector.Configuration;
@@ -66,7 +64,7 @@ public class EmitterPrinterTest
 	{
 		Configuration configuration = new Configuration();
 		configuration.setHlaFederateName( "Disrespector" );
-		configuration.setHlaFederationName( "DCSS" );
+		configuration.setHlaFederationName( "Test" );
 		configuration.setHlaRtiProvider( RtiProvider.Pitch );
 		configuration.setDisNic( "SITE_LOCAL" );
 		configuration.setDisAddress( "BROADCAST" );
@@ -88,14 +86,11 @@ public class EmitterPrinterTest
 		// RPR Connection Basics
 		configuration.setConnection( "rpr" );
 		configuration.getRprConfiguration().setFederateName( "Test" );
-		configuration.getRprConfiguration().setFederationName( "DCSS2" );
+		configuration.getRprConfiguration().setFederationName( "Test2" );
 		configuration.getRprConfiguration().setRtiProvider( RtiProvider.Pitch );
 		
 		// Extensions
-		configuration.getRprConfiguration().registerExtensionModules( "hla/dcss/DCSS-NETN-FOM.xml",
-		                                                              "hla/dcss/DCSS-FOM.xml" );
-		configuration.getRprConfiguration().registerExtensionMappers( new IRCChannelMessageMapper() );
-		configuration.getRprConfiguration().registerExtensionMappers( new IRCRawMessageMapper() );
+		configuration.getRprConfiguration().registerExtensionModules( "hla/netn/NETN-FOM.xml" );
 		
 		return configuration;
 	}
