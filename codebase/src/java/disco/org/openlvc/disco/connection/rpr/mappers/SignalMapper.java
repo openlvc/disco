@@ -30,8 +30,6 @@ import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.radio.SignalPdu;
 
 import hla.rti1516e.ParameterHandleValueMap;
-import hla.rti1516e.encoding.ByteWrapper;
-import hla.rti1516e.encoding.DecoderException;
 
 public class SignalMapper extends AbstractMapper
 {
@@ -83,11 +81,15 @@ public class SignalMapper extends AbstractMapper
 	@EventHandler
 	public void handlePdu( SignalPdu pdu )
 	{
+		// Create a set of parameters to send
+		ParameterHandleValueMap map = super.createParameters( this.hlaClass );
+
+		// Populate an interaction instance from the PDU data
 		InteractionInstance interaction = null;
 		switch( pdu.getEncodingScheme().getEncodingClass() )
 		{
 			case EncodedVoice:
-				interaction = serializeAudioSignal( pdu );
+				interaction = serializeToAudioSignal( pdu, map );
 				break;
 			case RawBinaryData:
 			case ApplicationSpecificData:
@@ -97,30 +99,23 @@ public class SignalMapper extends AbstractMapper
 		}
 
 		// Send the interaction
-		super.sendInteraction( interaction, interaction.getParameters() );
+		super.sendInteraction( interaction, map );
 	}
 	
-	private InteractionInstance serializeAudioSignal( SignalPdu pdu )
+	private InteractionInstance serializeToAudioSignal( SignalPdu pdu, ParameterHandleValueMap map )
 	{
 		// Create the interaction object
-		EncodedAudioRadioSignal signal = new EncodedAudioRadioSignal();
-		signal.setInteractionClass( hlaClass );
+		EncodedAudioRadioSignal hlaInteraction = new EncodedAudioRadioSignal();
+		hlaInteraction.setInteractionClass( hlaClass );
 		
 		// Populate it from the PDU
-		signal.fromPdu( pdu );
-		
-		// Serialize it to a set of Parameters
-		ParameterHandleValueMap map = super.createParameters( this.hlaClass );
-		signal.setParameters( map );
+		hlaInteraction.fromPdu( pdu );
 		
 		// Populdate the Parameters
 		// AudioData
-		ByteWrapper wrapper = new ByteWrapper( signal.getAudioData().getEncodedLength() );
-		signal.getAudioData().encode( wrapper );
-		map.put( audioData.getHandle(), wrapper.array() );
+		hlaEncode( hlaInteraction.getAudioData(), audioData, map );
 		
-		// Send it
-		return signal;
+		return hlaInteraction;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -134,17 +129,10 @@ public class SignalMapper extends AbstractMapper
 			InteractionInstance interaction = null;
 			
 			// Deserialize the parameters into the right signal type
-			try
-			{
-	    		if( hlaClass.equals(this.hlaClass) )
-	    			interaction = deserializeAudioSignal( event.parameters );
-	    		else
-	    			; // Unsupported Type
-			}
-			catch( DecoderException de )
-			{
-				throw new DiscoException( de.getMessage(), de );
-			}
+			if( hlaClass.equals(this.hlaClass) )
+				interaction = deserializeFromAudioSignal( event.parameters );
+			else
+				; // Unsupported Type
 			
 			// Send the PDU off to the OpsCenter
 			// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
@@ -153,19 +141,15 @@ public class SignalMapper extends AbstractMapper
 		}
 	}
 
-	private InteractionInstance deserializeAudioSignal( ParameterHandleValueMap map )
-		throws DecoderException
+	private InteractionInstance deserializeFromAudioSignal( ParameterHandleValueMap map )
 	{
 		// Create an instance to decode in to
-		EncodedAudioRadioSignal interaction = new EncodedAudioRadioSignal();
+		EncodedAudioRadioSignal hlaInteraction = new EncodedAudioRadioSignal();
 		
-		if( map.containsKey(audioData.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(audioData.getHandle()) );
-			interaction.getAudioData().decode( wrapper );
-		}
+		// AudioData
+		hlaDecode( hlaInteraction.getAudioData(), audioData, map );
 		
-		return interaction;
+		return hlaInteraction;
 	}
 	
 	//----------------------------------------------------------

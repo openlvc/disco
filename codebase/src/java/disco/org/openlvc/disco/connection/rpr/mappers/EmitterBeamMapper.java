@@ -35,8 +35,6 @@ import org.openlvc.disco.pdu.emissions.EmitterSystem;
 import org.openlvc.disco.pdu.field.PduType;
 
 import hla.rti1516e.AttributeHandleValueMap;
-import hla.rti1516e.encoding.ByteWrapper;
-import hla.rti1516e.encoding.DecoderException;
 
 public class EmitterBeamMapper extends AbstractEmitterMapper
 {
@@ -186,6 +184,7 @@ public class EmitterBeamMapper extends AbstractEmitterMapper
 				//
 				// 6. Send an update for the object
 				//
+				// use Jammer to create attribute map as it has more attributes
 				super.sendAttributeUpdate( hlaObject, serializeToHla(hlaObject) );
 
 				if( logger.isTraceEnabled() )
@@ -197,118 +196,77 @@ public class EmitterBeamMapper extends AbstractEmitterMapper
 		}	
 	}
 
-	private AttributeHandleValueMap serializeToHla( EmitterBeamRpr object )
+	private AttributeHandleValueMap serializeToHla( EmitterBeamRpr hlaObject )
 	{
-		AttributeHandleValueMap map = object.getObjectAttributes();
+		AttributeHandleValueMap map = hlaObject.getObjectAttributes();
 
 		// BeamAzimuthCenter
-		ByteWrapper wrapper = new ByteWrapper( object.getBeamAzimuthCenter().getEncodedLength() );
-		object.getBeamAzimuthCenter().encode(wrapper);
-		map.put( beamAzimuthCenter.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getBeamAzimuthCenter(), beamAzimuthCenter, map );
 
 		// BeamAzimuthSweep
-		wrapper = new ByteWrapper( object.getBeamAzimuthSweep().getEncodedLength() );
-		object.getBeamAzimuthSweep().encode(wrapper);
-		map.put( beamAzimuthSweep.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getBeamAzimuthSweep(), beamAzimuthSweep, map );
 
 		// BeamElevationCenter
-		wrapper = new ByteWrapper( object.getBeamElevationCenter().getEncodedLength() );
-		object.getBeamElevationCenter().encode(wrapper);
-		map.put( beamElevationCenter.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getBeamElevationCenter(), beamElevationCenter, map );
 
 		// BeamElevationSweep
-		wrapper = new ByteWrapper( object.getBeamElevationSweep().getEncodedLength() );
-		object.getBeamElevationSweep().encode(wrapper);
-		map.put( beamElevationSweep.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getBeamElevationSweep(), beamElevationSweep, map );
 
 		// BeamFunctionCode
-		wrapper = new ByteWrapper( object.getBeamFunctionCode().getEncodedLength() );
-		object.getBeamFunctionCode().encode(wrapper);
-		map.put( beamFunctionCode.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getBeamFunctionCode(), beamFunctionCode, map );
 
 		// BeamIdentifier
-		wrapper = new ByteWrapper( object.getBeamIdentifier().getEncodedLength() );
-		object.getBeamIdentifier().encode(wrapper);
-		map.put( beamIdentifier.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getBeamIdentifier(), beamIdentifier, map );
 
 		// BeamParameterIndex
-		wrapper = new ByteWrapper( object.getBeamParameterIndex().getEncodedLength() );
-		object.getBeamParameterIndex().encode(wrapper);
-		map.put( beamParameterIndex.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getBeamParameterIndex(), beamParameterIndex, map );
 
 		// EffectiveRadiatedPower
-		wrapper = new ByteWrapper( object.getEffectiveRadiatedPower().getEncodedLength() );
-		object.getEffectiveRadiatedPower().encode(wrapper);
-		map.put( effectiveRadiatedPower.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getEffectiveRadiatedPower(), effectiveRadiatedPower, map );
 
 		// EmissionFrequency
-		wrapper = new ByteWrapper( object.getEmissionFrequency().getEncodedLength() );
-		object.getEmissionFrequency().encode(wrapper);
-		map.put( emissionFrequency.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getEmissionFrequency(), emissionFrequency, map );
 
 		// EmitterSystemIdentifier
-		wrapper = new ByteWrapper( object.getEmitterSystemIdentifier().getEncodedLength() );
-		object.getEmitterSystemIdentifier().encode(wrapper);
-		map.put( emitterSystemIdentifier.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getEmitterSystemIdentifier(), emitterSystemIdentifier, map );
 
 		// EventIdentifier
-		wrapper = new ByteWrapper( object.getEventIdentifier().getEncodedLength() );
-		object.getEventIdentifier().encode(wrapper);
-		map.put( eventIdentifier.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getEventIdentifier(), eventIdentifier, map );
 		
 		// FrequencyRange
-		wrapper = new ByteWrapper( object.getFrequencyRange().getEncodedLength() );
-		object.getFrequencyRange().encode(wrapper);
-		map.put( frequencyRange.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getFrequencyRange(), frequencyRange, map );
 		
 		// PulseRepetitionFrequency
-		wrapper = new ByteWrapper( object.getPulseRepetitionFrequency().getEncodedLength() );
-		object.getPulseRepetitionFrequency().encode(wrapper);
-		map.put( pulseRepetitionFrequency.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getPulseRepetitionFrequency(), pulseRepetitionFrequency, map );
 		
 		// PulseWidth
-		wrapper = new ByteWrapper( object.getPulseWidth().getEncodedLength() );
-		object.getPulseWidth().encode(wrapper);
-		map.put( pulseWidth.getHandle(), wrapper.array() );
-		this.pulseWidth = jammerClass.getAttribute( "PulseWidth" );
+		hlaEncode( hlaObject.getPulseWidth(), pulseWidth, map );
 		
 		// SweepSync
-		wrapper = new ByteWrapper( object.getSweepSync().getEncodedLength() );
-		object.getSweepSync().encode(wrapper);
-		map.put( sweepSynch.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getSweepSync(), sweepSynch, map );
 		
-		if( object instanceof JammerBeam )
+		if( hlaObject instanceof JammerBeam )
 		{
-			JammerBeam beam = (JammerBeam)object;
+			JammerBeam beam = (JammerBeam)hlaObject;
 
 			// JammingModeSequence
-			wrapper = new ByteWrapper( beam.getJammingModeSequence().getEncodedLength() );
-			beam.getJammingModeSequence().encode(wrapper);
-			map.put( jammingModeSequence.getHandle(), wrapper.array() );
+			hlaEncode( beam.getJammingModeSequence(), jammingModeSequence, map );
 
     		// HighDensityJam
-    		wrapper = new ByteWrapper( beam.getHighDensityJam().getEncodedLength() );
-    		beam.getHighDensityJam().encode(wrapper);
-    		map.put( highDensityJam.getHandle(), wrapper.array() );
+			hlaEncode( beam.getHighDensityJam(), highDensityJam, map );
 
     		// JammedObjectIdentifiers
-    		wrapper = new ByteWrapper( beam.getJammedObjectIdentifiers().getEncodedLength() );
-    		beam.getJammedObjectIdentifiers().encode(wrapper);
-    		map.put( jammedObjectIdentifiers.getHandle(), wrapper.array() );
+			hlaEncode( beam.getJammedObjectIdentifiers(), jammedObjectIdentifiers, map );
 		}
-		else if( object instanceof RadarBeam )
+		else if( hlaObject instanceof RadarBeam )
 		{
-			 RadarBeam beam = (RadarBeam)object;
+			RadarBeam beam = (RadarBeam)hlaObject;
 
     		// HighDensityTrack
-    		wrapper = new ByteWrapper( beam.getHighDensityTrack().getEncodedLength() );
-    		beam.getHighDensityTrack().encode(wrapper);
-    		map.put( highDensityTrack.getHandle(), wrapper.array() );
+			hlaEncode( beam.getHighDensityTrack(), highDensityTrack, map );
 
     		// TrackObjectIdentifiers
-    		wrapper = new ByteWrapper( beam.getTrackObjectIdentifiers().getEncodedLength() );
-    		beam.getTrackObjectIdentifiers().encode(wrapper);
-    		map.put( trackObjectIdentifiers.getHandle(), wrapper.array() );
+			hlaEncode( beam.getTrackObjectIdentifiers(), trackObjectIdentifiers, map );
 		}
 		
 		return map;
@@ -329,6 +287,7 @@ public class EmitterBeamMapper extends AbstractEmitterMapper
 			hlaObject.setObjectClass( event.theClass );
 			hlaObject.setObjectHandle( event.theObject );
 			hlaObject.setObjectName( event.objectName );
+			hlaObject.setObjectAttributes( super.createAttributes(event.theClass ) );
 			objectStore.addDiscoveredHlaObject( hlaObject );
 
 			if( logger.isDebugEnabled() )
@@ -357,14 +316,7 @@ public class EmitterBeamMapper extends AbstractEmitterMapper
 		//
 		// 2. Update the local representation of the emitter beam
 		//
-		try
-		{
-			deserializeFromHla( rprBeam, event.attributes );
-		}
-		catch( DecoderException de )
-		{
-			throw new DiscoException( de.getMessage(), de );
-		}
+		deserializeFromHla( rprBeam, event.attributes );
 
 		//
 		// 3. Check to see if we have enough information to emit a PDU. If not, skip
@@ -384,156 +336,75 @@ public class EmitterBeamMapper extends AbstractEmitterMapper
 		opscenter.getPduReceiver().receive( pdu.toByteArray() );
 	}
 	
-	private void deserializeFromHla( EmitterBeamRpr object, AttributeHandleValueMap map )
-		throws DecoderException
+	private void deserializeFromHla( EmitterBeamRpr hlaObject, AttributeHandleValueMap map )
 	{
 		// BeamAzimuthCenter
-		if( map.containsKey(beamAzimuthCenter.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(beamAzimuthCenter.getHandle()) );
-    		object.getBeamAzimuthCenter().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getBeamAzimuthCenter(), beamAzimuthCenter, map );
 
 		// BeamAzimuthSweep
-		if( map.containsKey(beamAzimuthSweep.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(beamAzimuthSweep.getHandle()) );
-    		object.getBeamAzimuthSweep().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getBeamAzimuthSweep(), beamAzimuthSweep, map );
 
 		// BeamElevationCenter
-		if( map.containsKey(beamElevationCenter.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(beamElevationCenter.getHandle()) );
-    		object.getBeamElevationCenter().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getBeamElevationCenter(), beamElevationCenter, map );
 
 		// BeamElevationSweep
-		if( map.containsKey(beamElevationSweep.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(beamElevationSweep.getHandle()) );
-    		object.getBeamElevationSweep().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getBeamElevationSweep(), beamElevationSweep, map );
 
 		// BeamFunctionCode
-		if( map.containsKey(beamFunctionCode.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(beamFunctionCode.getHandle()) );
-    		object.getBeamFunctionCode().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getBeamFunctionCode(), beamFunctionCode, map );
 
 		// BeamIdentifier
-		if( map.containsKey(beamIdentifier.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(beamIdentifier.getHandle()) );
-    		object.getBeamIdentifier().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getBeamIdentifier(), beamIdentifier, map );
 
 		// BeamParameterIndex
-		if( map.containsKey(beamParameterIndex.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(beamParameterIndex.getHandle()) );
-    		object.getBeamParameterIndex().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getBeamParameterIndex(), beamParameterIndex, map );
 
 		// EffectiveRadiatedPower
-		if( map.containsKey(effectiveRadiatedPower.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(effectiveRadiatedPower.getHandle()) );
-    		object.getEffectiveRadiatedPower().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getEffectiveRadiatedPower(), effectiveRadiatedPower, map );
 
 		// EmissionFrequency
-		if( map.containsKey(emissionFrequency.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(emissionFrequency.getHandle()) );
-    		object.getEmissionFrequency().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getEmissionFrequency(), emissionFrequency, map );
 
 		// EmitterSystemIdentifier
-		if( map.containsKey(emitterSystemIdentifier.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(emitterSystemIdentifier.getHandle()) );
-    		object.getEmitterSystemIdentifier().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getEmitterSystemIdentifier(), emitterSystemIdentifier, map );
 
 		// EventIdentifier
-		if( map.containsKey(eventIdentifier.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(eventIdentifier.getHandle()) );
-    		object.getEventIdentifier().decode( wrapper );
-		}
-
-		// FrequencyRange
-		if( map.containsKey(frequencyRange.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(frequencyRange.getHandle()) );
-    		object.getFrequencyRange().decode( wrapper );
-		}
-
-		// PulseRepetitionFrequency
-		if( map.containsKey(pulseRepetitionFrequency.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(pulseRepetitionFrequency.getHandle()) );
-    		object.getPulseRepetitionFrequency().decode( wrapper );
-		}
-
-		// PulseWidth
-		if( map.containsKey(pulseWidth.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(pulseWidth.getHandle()) );
-    		object.getPulseWidth().decode( wrapper );
-		}
-
-		// SweepSync
-		if( map.containsKey(sweepSynch.getHandle()) )
-		{
-    		ByteWrapper wrapper = new ByteWrapper( map.get(sweepSynch.getHandle()) );
-    		object.getSweepSync().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getEventIdentifier(), eventIdentifier, map );
 		
-		if( object instanceof JammerBeam )
+		// FrequencyRange
+		hlaDecode( hlaObject.getFrequencyRange(), frequencyRange, map );
+		
+		// PulseRepetitionFrequency
+		hlaDecode( hlaObject.getPulseRepetitionFrequency(), pulseRepetitionFrequency, map );
+		
+		// PulseWidth
+		hlaDecode( hlaObject.getPulseWidth(), pulseWidth, map );
+		
+		// SweepSync
+		hlaDecode( hlaObject.getSweepSync(), sweepSynch, map );
+		
+		if( hlaObject instanceof JammerBeam )
 		{
-			JammerBeam beam = (JammerBeam)object;
+			JammerBeam beam = (JammerBeam)hlaObject;
 
 			// JammingModeSequence
-			if( map.containsKey(jammingModeSequence.getHandle()) )
-			{
-	    		ByteWrapper wrapper = new ByteWrapper( map.get(jammingModeSequence.getHandle()) );
-	    		beam.getJammingModeSequence().decode( wrapper );
-			}
+			hlaDecode( beam.getJammingModeSequence(), jammingModeSequence, map );
 			
     		// HighDensityJam
-			if( map.containsKey(highDensityJam.getHandle()) )
-			{
-	    		ByteWrapper wrapper = new ByteWrapper( map.get(highDensityJam.getHandle()) );
-	    		beam.getHighDensityJam().decode( wrapper );
-			}
+			hlaDecode( beam.getHighDensityJam(), highDensityJam, map );
 			
     		// JammedObjectIdentifiers
-			if( map.containsKey(jammedObjectIdentifiers.getHandle()) )
-			{
-	    		ByteWrapper wrapper = new ByteWrapper( map.get(jammedObjectIdentifiers.getHandle()) );
-	    		beam.getJammedObjectIdentifiers().decode( wrapper );
-			}
+			hlaDecode( beam.getJammedObjectIdentifiers(), jammedObjectIdentifiers, map );
 		}
-		else if( object instanceof RadarBeam )
+		else if( hlaObject instanceof RadarBeam )
 		{
-			 RadarBeam beam = (RadarBeam)object;
+			 RadarBeam beam = (RadarBeam)hlaObject;
 
     		// HighDensityTrack
-			if( map.containsKey(highDensityTrack.getHandle()) )
-			{
-	    		ByteWrapper wrapper = new ByteWrapper( map.get(highDensityTrack.getHandle()) );
-	    		beam.getHighDensityTrack().decode( wrapper );
-			}
+			hlaDecode( beam.getHighDensityTrack(), highDensityTrack, map );
 
 			// TrackObjectIdentifiers
-			if( map.containsKey(trackObjectIdentifiers.getHandle()) )
-			{
-	    		ByteWrapper wrapper = new ByteWrapper( map.get(trackObjectIdentifiers.getHandle()) );
-	    		beam.getTrackObjectIdentifiers().decode( wrapper );
-			}				
+			hlaDecode( beam.getTrackObjectIdentifiers(), trackObjectIdentifiers, map );
 		}
 	}
 

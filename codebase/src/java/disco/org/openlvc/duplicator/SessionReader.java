@@ -26,8 +26,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.PduFactory;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.PduFactory;
 
 /**
  * This class represents a window into a Duplicator session that resides on disk.
@@ -205,7 +205,8 @@ public class SessionReader implements Iterable<Track>, Iterator<Track>
 				dataIn.readFully( pdubytes );
 				
 				// convert the byte[] into a PDU
-				PDU pdu = PduFactory.create( pdubytes );
+				
+				PDU pdu = PduFactory.getDefaultFactory().create( pdubytes );
 				queue.add( new Track(pdu,timeOffset) );
 				
 				// is there more information to process?

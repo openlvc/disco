@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu;
 
 import org.openlvc.disco.AbstractTest;
+import org.openlvc.disco.PduFactory;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.appearance.GroundPlatformAppearance;
 import org.openlvc.disco.pdu.field.appearance.enums.CamouflageType;
@@ -84,7 +85,7 @@ public class EntityStatePduTest extends AbstractTest
 		byte[] beforeArray = before.toByteArray();
 		
 		// convert it back
-		EntityStatePdu after = (EntityStatePdu)PduFactory.create( beforeArray );
+		EntityStatePdu after = (EntityStatePdu)PduFactory.getDefaultFactory().create( beforeArray );
 		//Assert.assertEquals( after, before );
 		
 		// turn this one into a byte[]

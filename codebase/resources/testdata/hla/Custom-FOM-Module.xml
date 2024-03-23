@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<objectModel>
+    <modelIdentification>
+        <name>Disco Custom Extension Test FOM</name>
+        <type>FOM</type>
+        <version>1.0</version>
+        <modificationDate>2020-03-17</modificationDate>
+        <securityClassification>Unclassified</securityClassification>
+        <purpose>A custom test FOM for Disco custom PDUs.</purpose>
+        <applicationDomain>All domains</applicationDomain>
+        <description>A custom test FOM for Disco custom PDUs.</description>
+        <useLimitation></useLimitation>
+    </modelIdentification>
+    <objects>
+        <objectClass>
+            <name>HLAobjectRoot</name>
+            <objectClass>
+                <name>CustomObjectClass</name>
+                <attribute>
+                    <name>CustomString</name>
+                    <dataType>HLAunicodeString</dataType>
+                    <updateType>Conditional</updateType>
+                    <updateCondition>On change</updateCondition>
+                    <ownership>DivestAcquire</ownership>
+                    <sharing>PublishSubscribe</sharing>
+                    <transportation>HLAbestEffort</transportation>
+                    <order>Receive</order>
+                    <semantics>Just some boring old characters</semantics>
+                </attribute>
+            </objectClass>
+        </objectClass>
+    </objects>
+</objectModel>
+

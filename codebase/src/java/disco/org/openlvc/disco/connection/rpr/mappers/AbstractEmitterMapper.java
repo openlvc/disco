@@ -57,7 +57,9 @@ public abstract class AbstractEmitterMapper extends AbstractMapper
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// DIS >> HLA Helper Methods   ////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	protected void fromPdu( EmitterSystemRpr rprSystem, EmitterSystem disSystem, EventIdentifier disEvent )
+	protected void fromPdu( EmitterSystemRpr rprSystem,
+	                        EmitterSystem disSystem,
+	                        EventIdentifier disEvent )
 	{
 		// EntityIdentifier
 		rprSystem.getEntityIdentifier().setValue( disSystem.getEmittingEntity() );

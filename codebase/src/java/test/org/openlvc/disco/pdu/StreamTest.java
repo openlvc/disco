@@ -20,6 +20,7 @@ package org.openlvc.disco.pdu;
 import java.io.ByteArrayOutputStream;
 
 import org.openlvc.disco.AbstractTest;
+import org.openlvc.disco.PduFactory;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.ParameterTypeDesignator;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
@@ -89,7 +90,7 @@ public class StreamTest extends AbstractTest
 		
 		// Read the PDU back in
 		// This call will create a DisInputStream and read through it for us
-		EntityStatePdu after = (EntityStatePdu)PduFactory.create( baos.toByteArray() );	
+		EntityStatePdu after = (EntityStatePdu)PduFactory.getDefaultFactory().create( baos.toByteArray() );	
 		ByteArrayOutputStream baos2 = new ByteArrayOutputStream( PDU.MAX_SIZE );
 		dos = new DisOutputStream( baos2 );
 		after.writePdu( dos );
@@ -122,7 +123,7 @@ public class StreamTest extends AbstractTest
 		
 		// Read the PDU back in
 		// This call will create a DisInputStream and read through it for us
-		EntityStatePdu after = (EntityStatePdu)PduFactory.create( baos.toByteArray() );	
+		EntityStatePdu after = (EntityStatePdu)PduFactory.getDefaultFactory().create( baos.toByteArray() );	
 		ByteArrayOutputStream baos2 = new ByteArrayOutputStream( PDU.MAX_SIZE );
 		dos = new DisOutputStream( baos2 );
 		after.writePdu( dos );

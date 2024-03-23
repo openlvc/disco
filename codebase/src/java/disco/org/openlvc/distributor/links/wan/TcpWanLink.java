@@ -29,9 +29,9 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.PduFactory;
 import org.openlvc.disco.connection.Metrics;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.pdu.UnsupportedPDU;
 import org.openlvc.disco.utils.BitHelpers;
 import org.openlvc.disco.utils.NetworkUtils;
@@ -350,7 +350,8 @@ public class TcpWanLink extends LinkBase implements ILink
 				position += 4;
 				
 				// read the PDU straight off the buffer
-				PDU pdu = PduFactory.create( payload, position, pduSize );
+				// FIXME Need to add support for custom PDUs?
+				PDU pdu = PduFactory.getDefaultFactory().create( payload, position, pduSize );
 				position += pduSize;
 				
 				// reflect the PDU to the other links

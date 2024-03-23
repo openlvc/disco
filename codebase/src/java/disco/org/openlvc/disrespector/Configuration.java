@@ -18,7 +18,9 @@
 package org.openlvc.disrespector;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.DiscoConfiguration;
@@ -61,7 +63,7 @@ public class Configuration
 	private Properties properties;
 	private String configFile = "etc/disrespector.config";
 	private String[] extensionModules;
-	private AbstractMapper[] extensionMappers;
+	private Set<Class<? extends AbstractMapper>> extensionMappers;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -80,7 +82,7 @@ public class Configuration
 		this.properties = new Properties();
 		this.configFile = "etc/disrespector.config";
 		this.extensionModules = new String[0];
-		this.extensionMappers = new AbstractMapper[0];
+		this.extensionMappers = new HashSet<>();
 
 		// see if the user specified a config file on the command line before we process it
 		this.checkArgsForConfigFile( args );
@@ -334,7 +336,7 @@ public class Configuration
 		this.extensionModules = paths;
 	}
 	
-	public void setHlaExtensionMappers( AbstractMapper... mappers )
+	public void setHlaExtensionMappers( Set<Class<? extends AbstractMapper>> mappers )
 	{
 		this.extensionMappers = mappers;
 	}

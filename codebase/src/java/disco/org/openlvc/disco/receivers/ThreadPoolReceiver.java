@@ -31,7 +31,6 @@ import org.openlvc.disco.PduReceiver;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.pdu.UnsupportedPDU;
 import org.openlvc.disco.pdu.record.PduHeader;
 
@@ -181,7 +180,7 @@ public class ThreadPoolReceiver extends PduReceiver implements RejectedExecution
 			PDU pdu = null;
 			try
 			{
-				pdu = PduFactory.create( header );
+				pdu = pduFactory.create( header );
 				pdu.from( instream );
 			}
 			catch( UnsupportedPDU up )

@@ -22,7 +22,6 @@ import java.io.IOException;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduReceiver;
-import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.pdu.UnsupportedPDU;
 
 public class SimpleReceiver extends PduReceiver
@@ -57,7 +56,7 @@ public class SimpleReceiver extends PduReceiver
 	{
 		try
 		{
-			clientListener.receive( PduFactory.create(array) );
+			clientListener.receive( pduFactory.create(array) );
 		}
 		catch( IOException ioex )
 		{

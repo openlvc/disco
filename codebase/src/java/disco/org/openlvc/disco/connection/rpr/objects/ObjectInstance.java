@@ -158,6 +158,11 @@ public abstract class ObjectInstance
 	{
 		this.rtiId = new RTIobjectId( objectName );
 	}
+
+	public String getObjectName()
+	{
+		return this.rtiId.getValue();
+	}
 	
 	public RTIobjectId getRtiObjectId()
 	{

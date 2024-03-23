@@ -32,8 +32,6 @@ import org.openlvc.disco.pdu.emissions.EmitterSystem;
 import org.openlvc.disco.pdu.field.PduType;
 
 import hla.rti1516e.AttributeHandleValueMap;
-import hla.rti1516e.encoding.ByteWrapper;
-import hla.rti1516e.encoding.DecoderException;
 
 public class EmitterSystemMapper extends AbstractEmitterMapper
 {
@@ -128,44 +126,30 @@ public class EmitterSystemMapper extends AbstractEmitterMapper
 		}
 	}
 
-	private AttributeHandleValueMap serializeToHla( EmitterSystemRpr object )
+	private AttributeHandleValueMap serializeToHla( EmitterSystemRpr hlaObject )
 	{
-		AttributeHandleValueMap map = object.getObjectAttributes();
-		
+		AttributeHandleValueMap map = hlaObject.getObjectAttributes();
+
 		// EntityIdentifier
-		ByteWrapper wrapper = new ByteWrapper( object.getEntityIdentifier().getEncodedLength() );
-		object.getEntityIdentifier().encode(wrapper);
-		map.put( entityIdentifier.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getEntityIdentifier(), entityIdentifier, map );
 		
 		// HostObjectIdentifier
-		wrapper = new ByteWrapper( object.getHostObjectIdentifier().getEncodedLength() );
-		object.getHostObjectIdentifier().encode(wrapper);
-		map.put( hostObjectIdentifier.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getHostObjectIdentifier(), hostObjectIdentifier, map );
 		
 		// RelativePosition
-		wrapper = new ByteWrapper( object.getRelativePosition().getEncodedLength() );
-		object.getRelativePosition().encode(wrapper);
-		map.put( relativePosition.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getRelativePosition(), relativePosition, map );
 		
 		// EmitterFunctionCode
-		wrapper = new ByteWrapper( object.getEmitterFunctionCode().getEncodedLength() );
-		object.getEmitterFunctionCode().encode(wrapper);
-		map.put( emitterFunctionCode.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getEmitterFunctionCode(), emitterFunctionCode, map );
 		
 		// EmitterType
-		wrapper = new ByteWrapper( object.getEmitterType().getEncodedLength() );
-		object.getEmitterType().encode(wrapper);
-		map.put( emitterType.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getEmitterType(), emitterType, map );
 		
 		// EmitterIndex
-		wrapper = new ByteWrapper( object.getEmitterIndex().getEncodedLength() );
-		object.getEmitterIndex().encode(wrapper);
-		map.put( emitterIndex.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getEmitterIndex(), emitterIndex, map );
 		
 		// EventIdentifier
-		wrapper = new ByteWrapper( object.getEventIdentifier().getEncodedLength() );
-		object.getEventIdentifier().encode(wrapper);
-		map.put( eventIdentifier.getHandle(), wrapper.array() );
+		hlaEncode( hlaObject.getEventIdentifier(), eventIdentifier, map );
 		
 		return map;
 	}
@@ -182,6 +166,7 @@ public class EmitterSystemMapper extends AbstractEmitterMapper
 			hlaObject.setObjectClass( event.theClass );
 			hlaObject.setObjectHandle( event.theObject );
 			hlaObject.setObjectName( event.objectName );
+			hlaObject.setObjectAttributes( super.createAttributes(this.hlaClass) );
 			objectStore.addDiscoveredHlaObject( hlaObject );
 			
 			if( logger.isDebugEnabled() )
@@ -210,14 +195,7 @@ public class EmitterSystemMapper extends AbstractEmitterMapper
 		//
 		// 2. Update the local representation of the emitter system
 		//
-		try
-		{
-			deserializeFromHla( rprSystem, event.attributes );
-		}
-		catch( DecoderException de )
-		{
-			throw new DiscoException( de.getMessage(), de );
-		}
+		deserializeFromHla( rprSystem, event.attributes );
 		
 		// 
 		// 3. Check to see if the system is loaded enough to emit a PDU.
@@ -243,57 +221,28 @@ public class EmitterSystemMapper extends AbstractEmitterMapper
 		opscenter.getPduReceiver().receive( pdu.toByteArray() );
 	}
 
-	private void deserializeFromHla( EmitterSystemRpr object, AttributeHandleValueMap map )
-		throws DecoderException
+	private void deserializeFromHla( EmitterSystemRpr hlaObject, AttributeHandleValueMap map )
 	{
 		// EntityIdentifier
-		if( map.containsKey(entityIdentifier.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(entityIdentifier.getHandle()) );
-			object.getEntityIdentifier().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getEntityIdentifier(), entityIdentifier, map );
 		
 		// HostObjectIdentifier
-		if( map.containsKey(hostObjectIdentifier.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(hostObjectIdentifier.getHandle()) );
-			object.getHostObjectIdentifier().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getHostObjectIdentifier(), hostObjectIdentifier, map );
 		
 		// RelativePosition
-		if( map.containsKey(relativePosition.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(relativePosition.getHandle()) );
-			object.getRelativePosition().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getRelativePosition(), relativePosition, map );
 		
 		// EmitterFunctionCode
-		if( map.containsKey(emitterFunctionCode.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(emitterFunctionCode.getHandle()) );
-			object.getEmitterFunctionCode().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getEmitterFunctionCode(), emitterFunctionCode, map );
 		
 		// EmitterType
-		if( map.containsKey(emitterType.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(emitterType.getHandle()) );
-			object.getEmitterType().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getEmitterType(), emitterType, map );
 		
 		// EmitterIndex
-		if( map.containsKey(emitterIndex.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(emitterIndex.getHandle()) );
-			object.getEmitterIndex().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getEmitterIndex(), emitterIndex, map );
 		
 		// EventIdentifier
-		if( map.containsKey(eventIdentifier.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(eventIdentifier.getHandle()) );
-			object.getEventIdentifier().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getEventIdentifier(), eventIdentifier, map );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

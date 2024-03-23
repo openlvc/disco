@@ -30,8 +30,6 @@ import org.openlvc.disco.pdu.radio.TransmitterPdu;
 import org.openlvc.disco.pdu.record.EntityId;
 
 import hla.rti1516e.AttributeHandleValueMap;
-import hla.rti1516e.encoding.ByteWrapper;
-import hla.rti1516e.encoding.DecoderException;
 
 /**
  *  > HLAobjectRoot.EmbeddedSystem
@@ -177,6 +175,73 @@ public class TransmitterMapper extends AbstractMapper
 			              pdu.getFullId(), hlaObject.getObjectHandle() );
 	}
 	
+	private AttributeHandleValueMap serializeToHla( RadioTransmitter hlaObject )
+	{
+		AttributeHandleValueMap map = hlaObject.getObjectAttributes();
+		
+		// EntityIdentifier
+		hlaEncode( hlaObject.getEntityIdentifier(), entityIdentifier, map );
+		
+		// HostObjectIdentifier
+		hlaEncode( hlaObject.getHostObjectIdentifier(), hostObjectIdentifier, map );
+		
+		// RelativePosition
+		hlaEncode( hlaObject.getRelativePosition(), relativePosition, map );
+		
+		// Antenna Pattern Data
+		hlaEncode( hlaObject.getAntennaPatternDataArray(), antennaPatternData, map );
+		
+		// CryptographicMode
+		hlaEncode( hlaObject.getCryptographicMode(), cryptographicMode, map );
+
+		// CryptographicMode
+		hlaEncode( hlaObject.getCryptoSystem(), cryptoSystem, map );
+
+		// EncryptionKeyIdentifier
+		hlaEncode( hlaObject.getEncryptionKeyIdentifier(), encryptionKeyIdentifier, map );
+		
+		// Frequency
+		hlaEncode( hlaObject.getFrequency(), frequency, map );
+		
+		// FrequencyBandwidth
+		hlaEncode( hlaObject.getFrequencyBandwidth(), frequencyBandwidth, map );
+		
+		// RadioIndex
+		hlaEncode( hlaObject.getRadioIndex(), radioIndex, map );
+		
+		// RadioInputSource
+		hlaEncode( hlaObject.getRadioInputSource(), radioInputSource, map );
+		
+		// RadioSystemType
+		hlaEncode( hlaObject.getRadioSystemType(), radioSystemType, map );
+		
+		// RFModulationSystemType
+		hlaEncode( hlaObject.getRfModulationSystemType(), rfModulationSystemType, map );
+
+		// RFModulationType
+		hlaEncode( hlaObject.getRfModulationType(), rfModulationType, map );
+		
+		// SpreadSpectrum
+		hlaEncode( hlaObject.getSpreadSpectrum(), spreadSpectrum, map );
+		
+		// StreamTag
+		hlaEncode( hlaObject.getStreamTag(), streamTag, map );
+
+		// TimeHopInUse
+		hlaEncode( hlaObject.getTimeHopInUse(), timeHopInUse, map );
+		
+		// TransmittedPower
+		hlaEncode( hlaObject.getTransmittedPower(), transmittedPower, map );
+		
+		// TransmitterOperationalStatus
+		hlaEncode( hlaObject.getTransmitterOperationalStatus(), transmitterOperationalStatus, map );
+		
+		// WorldLocation
+		hlaEncode( hlaObject.getWorldLocation(), worldLocation, map );
+		
+		return map;
+	}
+
 	/**
 	 * Find the locally created RadioTransmitter for the given entity/radio id combination. If we
 	 * cannot find an object with that id, we will try some fallbacks, but if we ultimately strike
@@ -241,113 +306,6 @@ public class TransmitterMapper extends AbstractMapper
 
 		return hlaObject;
 	}
-	
-	private AttributeHandleValueMap serializeToHla( RadioTransmitter object )
-	{
-		AttributeHandleValueMap map = object.getObjectAttributes();
-		
-		// EntityIdentifier
-		ByteWrapper wrapper = new ByteWrapper( object.getEntityIdentifier().getEncodedLength() );
-		object.getEntityIdentifier().encode(wrapper);
-		map.put( entityIdentifier.getHandle(), wrapper.array() );
-		
-		// HostObjectIdentifier
-		wrapper = new ByteWrapper( object.getHostObjectIdentifier().getEncodedLength() );
-		object.getHostObjectIdentifier().encode(wrapper);
-		map.put( hostObjectIdentifier.getHandle(), wrapper.array() );
-		
-		// RelativePosition
-		wrapper = new ByteWrapper( object.getRelativePosition().getEncodedLength() );
-		object.getRelativePosition().encode(wrapper);
-		map.put( relativePosition.getHandle(), wrapper.array() );
-		
-		// Antenna Pattern Data
-		wrapper = new ByteWrapper( object.getAntennaPatternDataArray().getEncodedLength() );
-		object.getAntennaPatternDataArray().encode(wrapper);
-		map.put( antennaPatternData.getHandle(), wrapper.array() );
-		
-		// CryptographicMode
-		wrapper = new ByteWrapper( object.getCryptographicMode().getEncodedLength() );
-		object.getCryptographicMode().encode( wrapper );
-		map.put( cryptographicMode.getHandle(), wrapper.array() );
-
-		// CryptographicMode
-		wrapper = new ByteWrapper( object.getCryptoSystem().getEncodedLength() );
-		object.getCryptoSystem().encode( wrapper );
-		map.put( cryptoSystem.getHandle(), wrapper.array() );
-
-		// EncryptionKeyIdentifier
-		wrapper = new ByteWrapper( object.getEncryptionKeyIdentifier().getEncodedLength() );
-		object.getEncryptionKeyIdentifier().encode( wrapper );
-		map.put( encryptionKeyIdentifier.getHandle(), wrapper.array() );
-		
-		// Frequency
-		wrapper = new ByteWrapper( object.getFrequency().getEncodedLength() );
-		object.getFrequency().encode( wrapper );
-		map.put( frequency.getHandle(), wrapper.array() );
-		
-		// FrequencyBandwidth
-		wrapper = new ByteWrapper( object.getFrequencyBandwidth().getEncodedLength() );
-		object.getFrequencyBandwidth().encode( wrapper );
-		map.put( frequencyBandwidth.getHandle(), wrapper.array() );
-		
-		// RadioIndex
-		wrapper = new ByteWrapper( object.getRadioIndex().getEncodedLength() );
-		object.getRadioIndex().encode( wrapper );
-		map.put( radioIndex.getHandle(), wrapper.array() );
-		
-		// RadioInputSource
-		wrapper = new ByteWrapper( object.getRadioInputSource().getEncodedLength() );
-		object.getRadioInputSource().encode( wrapper );
-		map.put( radioInputSource.getHandle(), wrapper.array() );
-		
-		// RadioSystemType
-		wrapper = new ByteWrapper( object.getRadioSystemType().getEncodedLength() );
-		object.getRadioSystemType().encode( wrapper );
-		map.put( radioSystemType.getHandle(), wrapper.array() );
-		
-		// RFModulationSystemType
-		wrapper = new ByteWrapper( object.getRfModulationSystemType().getEncodedLength() );
-		object.getRfModulationSystemType().encode( wrapper );
-		map.put( rfModulationSystemType.getHandle(), wrapper.array() );
-
-		// RFModulationType
-		wrapper = new ByteWrapper( object.getRfModulationType().getEncodedLength() );
-		object.getRfModulationType().encode( wrapper );
-		map.put( rfModulationType.getHandle(), wrapper.array() );
-		
-		// SpreadSpectrum
-		wrapper = new ByteWrapper( object.getSpreadSpectrum().getEncodedLength() );
-		object.getSpreadSpectrum().encode( wrapper );
-		map.put( spreadSpectrum.getHandle(), wrapper.array() );
-		
-		// StreamTag
-		wrapper = new ByteWrapper( object.getStreamTag().getEncodedLength() );
-		object.getStreamTag().encode( wrapper );
-		map.put( streamTag.getHandle(), wrapper.array() );
-
-		// TimeHopInUse
-		wrapper = new ByteWrapper( object.getTimeHopInUse().getEncodedLength() );
-		object.getTimeHopInUse().encode( wrapper );
-		map.put( timeHopInUse.getHandle(), wrapper.array() );
-		
-		// TransmittedPower
-		wrapper = new ByteWrapper( object.getTransmittedPower().getEncodedLength() );
-		object.getTransmittedPower().encode( wrapper );
-		map.put( transmittedPower.getHandle(), wrapper.array() );
-		
-		// TransmitterOperationalStatus
-		wrapper = new ByteWrapper( object.getTransmitterOperationalStatus().getEncodedLength() );
-		object.getTransmitterOperationalStatus().encode( wrapper );
-		map.put( transmitterOperationalStatus.getHandle(), wrapper.array() );
-		
-		// WorldLocation
-		wrapper = new ByteWrapper( object.getWorldLocation().getEncodedLength() );
-		object.getWorldLocation().encode( wrapper );
-		map.put( worldLocation.getHandle(), wrapper.array() );
-		
-		return map;
-	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// HLA -> DIS Methods   ///////////////////////////////////////////////////////////////////
@@ -362,6 +320,7 @@ public class TransmitterMapper extends AbstractMapper
 			hlaObject.setObjectClass( event.theClass );
 			hlaObject.setObjectHandle( event.theObject );
 			hlaObject.setObjectName( event.objectName );
+			hlaObject.setObjectAttributes( super.createAttributes(this.hlaClass) );
 			objectStore.addDiscoveredHlaObject( hlaObject );
 
 			if( logger.isDebugEnabled() )
@@ -384,15 +343,8 @@ public class TransmitterMapper extends AbstractMapper
 		
 		RadioTransmitter rprTransmitter = (RadioTransmitter)event.hlaObject;
 
-		try
-		{
-			// Update the local object representation from the received attributes
-			deserializeFromHla( rprTransmitter, event.attributes );
-		}
-		catch( DecoderException de )
-		{
-			throw new DiscoException( de.getMessage(), de );
-		}
+		// Update the local object representation from the received attributes
+		deserializeFromHla( rprTransmitter, event.attributes );
 		
 		// Send the PDU off to the OpsCenter
 		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
@@ -409,148 +361,67 @@ public class TransmitterMapper extends AbstractMapper
 		return rprTransmitter.getEntityIdentifier().isDecodeCalled();
 	}
 	
-	private void deserializeFromHla( RadioTransmitter object, AttributeHandleValueMap map )
-		throws DecoderException
+	private void deserializeFromHla( RadioTransmitter hlaObject, AttributeHandleValueMap map )
 	{
 		// EntityIdentifier
-		if( map.containsKey(entityIdentifier.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(entityIdentifier.getHandle()) );
-			object.getEntityIdentifier().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getEntityIdentifier(), entityIdentifier, map );
 		
 		// HostObjectIdentifier
-		if( map.containsKey(hostObjectIdentifier.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(hostObjectIdentifier.getHandle()) );
-			object.getHostObjectIdentifier().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getHostObjectIdentifier(), hostObjectIdentifier, map );
 		
 		// RelativePosition
-		if( map.containsKey(relativePosition.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(relativePosition.getHandle()) );
-			object.getRelativePosition().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getRelativePosition(), relativePosition, map );
 		
 		// Antenna Pattern Data
-		if( map.containsKey(antennaPatternData.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(antennaPatternData.getHandle()) );
-			object.getAntennaPatternDataArray().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getAntennaPatternDataArray(), antennaPatternData, map );
 		
 		// CryptographicMode
-		if( map.containsKey(cryptographicMode.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(cryptographicMode.getHandle()) );
-			object.getCryptographicMode().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getCryptographicMode(), cryptographicMode, map );
 
 		// CryptographicMode
-		if( map.containsKey(cryptoSystem.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(cryptoSystem.getHandle()) );
-			object.getCryptoSystem().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getCryptoSystem(), cryptoSystem, map );
 
 		// EncryptionKeyIdentifier
-		if( map.containsKey(encryptionKeyIdentifier.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(encryptionKeyIdentifier.getHandle()) );
-			object.getEncryptionKeyIdentifier().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getEncryptionKeyIdentifier(), encryptionKeyIdentifier, map );
 	
 		// Frequency
-		if( map.containsKey(frequency.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(frequency.getHandle()) );
-			object.getFrequency().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getFrequency(), frequency, map );
 	
 		// FrequencyBandwidth
-		if( map.containsKey(frequencyBandwidth.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(frequencyBandwidth.getHandle()) );
-			object.getFrequencyBandwidth().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getFrequencyBandwidth(), frequencyBandwidth, map );
 		
 		// RadioIndex
-		if( map.containsKey(radioIndex.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(radioIndex.getHandle()) );
-			object.getRadioIndex().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getRadioIndex(), radioIndex, map );
 		
 		// RadioInputSource
-		if( map.containsKey(radioInputSource.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(radioInputSource.getHandle()) );
-			object.getRadioInputSource().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getRadioInputSource(), radioInputSource, map );
 	
 		// RadioSystemType
-		if( map.containsKey(radioSystemType.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(radioSystemType.getHandle()) );
-			object.getRadioSystemType().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getRadioSystemType(), radioSystemType, map );
 		
 		// RFModulationSystemType
-		if( map.containsKey(rfModulationSystemType.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(rfModulationSystemType.getHandle()) );
-			object.getRfModulationSystemType().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getRfModulationSystemType(), rfModulationSystemType, map );
 
 		// RFModulationType
-		if( map.containsKey(rfModulationType.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(rfModulationType.getHandle()) );
-			object.getRfModulationType().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getRfModulationType(), rfModulationType, map );
 	
 		// SpreadSpectrum
-		if( map.containsKey(spreadSpectrum.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(spreadSpectrum.getHandle()) );
-			object.getSpreadSpectrum().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getSpreadSpectrum(), spreadSpectrum, map );
 		
 		// StreamTag
-		if( map.containsKey(streamTag.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(streamTag.getHandle()) );
-			object.getStreamTag().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getStreamTag(), streamTag, map );
 
 		// TimeHopInUse
-		if( map.containsKey(timeHopInUse.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(timeHopInUse.getHandle()) );
-			object.getTimeHopInUse().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getTimeHopInUse(), timeHopInUse, map );
 		
 		// TransmittedPower
-		if( map.containsKey(transmittedPower.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(transmittedPower.getHandle()) );
-			object.getTransmittedPower().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getTransmittedPower(), transmittedPower, map );
 		
 		// TransmitterOperationalStatus
-		if( map.containsKey(transmitterOperationalStatus.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(transmitterOperationalStatus.getHandle()) );
-			object.getTransmitterOperationalStatus().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getTransmitterOperationalStatus(), transmitterOperationalStatus, map );
 		
 		// WorldLocation
-		if( map.containsKey(worldLocation.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(worldLocation.getHandle()) );
-			object.getWorldLocation().decode( wrapper );
-		}
+		hlaDecode( hlaObject.getWorldLocation(), worldLocation, map );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

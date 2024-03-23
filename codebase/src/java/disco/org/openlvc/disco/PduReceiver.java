@@ -49,6 +49,7 @@ public abstract class PduReceiver
 	//----------------------------------------------------------
 	protected Logger logger;
 	protected OpsCenter opscenter;
+	protected PduFactory pduFactory;
 	protected IPduListener clientListener;
 	
 	//----------------------------------------------------------
@@ -58,6 +59,7 @@ public abstract class PduReceiver
 	{
 		this.logger = opscenter.getLogger();
 		this.opscenter = opscenter;
+		this.pduFactory = opscenter.getPduFactory();
 		this.clientListener = opscenter.getPduListener();
 	}
 

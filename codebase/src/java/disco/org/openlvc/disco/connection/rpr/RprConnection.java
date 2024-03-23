@@ -48,6 +48,7 @@ import org.openlvc.disco.connection.rpr.model.ObjectModel;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.utils.ReflectionUtils;
 import org.openlvc.disco.utils.FileUtils;
 
 import hla.rti1516e.AttributeHandleValueMap;
@@ -148,8 +149,11 @@ public class RprConnection implements IConnection
 	public Collection<PduType> getSupportedPduTypes()
 	{
 		Collection<PduType> collection = new LinkedHashSet<>();
-		for( AbstractMapper mapper : rprConfiguration.getRegisteredFomMappers() )
-			collection.addAll( mapper.getSupportedPdus() );
+		for( Class<? extends AbstractMapper> type : rprConfiguration.getRegisteredFomMappers() )
+		{
+			AbstractMapper temp = ReflectionUtils.newInstance( type );
+			collection.addAll( temp.getSupportedPdus() );
+		}
 
 		return collection;
 	}
@@ -200,40 +204,68 @@ public class RprConnection implements IConnection
 
 		try
 		{
-    		// Step 2. Initialize Federation
-    		//
-    		// Initalize and connect to the federation
-    		this.initializeFederation();
-    
-    		// Step 3. Initialize Mappers
-    		//
-    		// Set up the mappers. Must come before initializeFederation() because we do
-    		// pub/sub in there, which will cause us to start receiving HLA traffic
-    		AbstractMapper[] mappers = rprConfiguration.getRegisteredFomMappers();
-    		for( AbstractMapper mapper : mappers )
-    		{
-    			logger.trace( "Registering mapper: "+mapper.getClass().getCanonicalName() );
-    
-    			// 1. Subscribe to the HLA bus
-    			//    The mapper should do HLA pubsub inside initialize(). As soon as the mapper
-    			//    does this the the fedamb will get discovery callbacks. If we're not on the
-    			//    HLA event bus at that time we'll miss them, so we need to be ready.
-    			//       -BUT-
-    			//    We can't be on the DIS PDU bus until AFTER we do HLA publish, so hold off on that
-    			hlaBus.subscribe( mapper );
-    			
-    			// 2. Initialize the mapper
-    			//    This will cause it to cache handles and do HLA publication and subscription.
-    			//    We should be ready to catch and start dealing with HLA-side data.
-    			mapper.initialize( this );
-    			
-    			// 3. Subscribe for incoming PDUs
-    			//    Now that the mapper should have done HLA publication, we can connect to the PDU
-    			//    bus without fear that we'll start trying to push HLA info before publication
-    			pduBus.subscribe( mapper );
-    			
-    			logger.debug( "Registered mapper: "+mapper.getClass().getCanonicalName() );
-    		}
+			// Step 2. Initialize Federation
+			//
+			// Initalize and connect to the federation
+			this.initializeFederation();
+
+			// Step 3. Initialize Mappers
+			//
+			// Set up the mappers. Must come before initializeFederation() because we do
+			// pub/sub in there, which will cause us to start receiving HLA traffic
+			for( Class<? extends AbstractMapper> mapperType : rprConfiguration.getRegisteredFomMappers() )
+			{
+				logger.trace( "Registering mapper: "+mapperType.getSimpleName() );
+
+				// 1. Create an instance of the mapper
+				AbstractMapper mapper = ReflectionUtils.newInstance( mapperType );
+
+				// 2. Subscribe to the HLA bus
+				//    The mapper should do HLA pubsub inside initialize(). As soon as the mapper
+				//    does this the the fedamb will get discovery callbacks. If we're not on the
+				//    HLA event bus at that time we'll miss them, so we need to be ready.
+				//       -BUT-
+				//    We can't be on the DIS PDU bus until AFTER we do HLA publish, so hold off on that
+				hlaBus.subscribe( mapper );
+
+				// 3. Initialize the mapper
+				//    This will cause it to cache handles and do HLA publication and subscription.
+				//    We should be ready to catch and start dealing with HLA-side data.
+				mapper.initialize( this );
+
+				// 4. Subscribe for incoming PDUs
+				//    Now that the mapper should have done HLA publication, we can connect to the PDU
+				//    bus without fear that we'll start trying to push HLA info before publication
+				pduBus.subscribe( mapper );
+
+				logger.debug( "Registered mapper: " + mapper.getClass().getCanonicalName() );
+			}
+
+//    		AbstractMapper[] mappers = rprConfiguration.getRegisteredFomMappers();
+//    		for( AbstractMapper mapper : mappers )
+//    		{
+//    			logger.trace( "Registering mapper: "+mapper.getClass().getCanonicalName() );
+//    
+//    			// 1. Subscribe to the HLA bus
+//    			//    The mapper should do HLA pubsub inside initialize(). As soon as the mapper
+//    			//    does this the the fedamb will get discovery callbacks. If we're not on the
+//    			//    HLA event bus at that time we'll miss them, so we need to be ready.
+//    			//       -BUT-
+//    			//    We can't be on the DIS PDU bus until AFTER we do HLA publish, so hold off on that
+//    			hlaBus.subscribe( mapper );
+//    			
+//    			// 2. Initialize the mapper
+//    			//    This will cause it to cache handles and do HLA publication and subscription.
+//    			//    We should be ready to catch and start dealing with HLA-side data.
+//    			mapper.initialize( this );
+//    			
+//    			// 3. Subscribe for incoming PDUs
+//    			//    Now that the mapper should have done HLA publication, we can connect to the PDU
+//    			//    bus without fear that we'll start trying to push HLA info before publication
+//    			pduBus.subscribe( mapper );
+//    			
+//    			logger.debug( "Registered mapper: "+mapper.getClass().getCanonicalName() );
+//    		}
 		}
 		catch( DiscoException de )
 		{
@@ -283,14 +315,9 @@ public class RprConnection implements IConnection
 			pduBus.publish( pdu );
 			metrics.pduSent( pdu.getPduLength() );
 		}
-		catch( DiscoException de )
-		{
-			logger.warn( "(RprConnection) Exception converting/sending PDU to HLA: "+de.getMessage(), de );
-			metrics.pduDiscarded();
-		}
 		catch( Exception e )
 		{
-			logger.warn( "(RprConnection) Exception converting/sending PDU to HLA: "+e.getMessage(), e );
+			logger.warn( "(RprConnection) Exception sending DIS >> HLA: "+e.getMessage(), e );
 			metrics.pduDiscarded();
 		}
 	}
@@ -490,12 +517,12 @@ public class RprConnection implements IConnection
 	                                   ObjectClassHandle theClass,
 	                                   String objectName )
 	{
-		logger.debug( "hla >> dis (Discover) object=%s, class=%s", theObject, theClass );
+		logger.debug( "[hla>>dis] (Discover) object=%s, class=%s", theObject, theClass );
 
 		// Find the metadata information we have for the class
 		ObjectClass objectClass = objectModel.getObjectClass( theClass );
 		if( objectClass == null )
-			logger.error( "hla >> dis (Discover) Received discover for unknown class: handle="+theClass );
+			logger.error( "[hla>>dis] (Discover) Received discover for unknown class: handle="+theClass );
 
 		// Publish to the HLA bus so that someone picks this up and creates the local object
 		hlaBus.publish( new HlaDiscover(theObject,objectClass,objectName) );
@@ -507,13 +534,13 @@ public class RprConnection implements IConnection
 	protected void receiveHlaReflection( ObjectInstanceHandle objectHandle,
 	                                     AttributeHandleValueMap attributes )
 	{
-		logger.trace( "hla >> dis (Reflect) >> object=%s, attribute=%d", objectHandle, attributes.size() );
+		logger.trace( "[hla>>dis] (Reflect) object=%s, attribute=%d", objectHandle, attributes.size() );
 
 		// Find the local object representation for this object handle
 		ObjectInstance hlaObject = objectStore.getDiscoveredHlaObject( objectHandle );
 		if( hlaObject == null )
 		{
-			logger.warn( "hla >> dis (Reflect) Reflection for object prior to discovery: "+objectHandle );
+			logger.warn( "[hla>>dis] (Reflect) Reflection for object prior to discovery: "+objectHandle );
 			return;
 		}
 		
@@ -531,8 +558,14 @@ public class RprConnection implements IConnection
 	//
 	protected void receiveHlaRemove( ObjectInstanceHandle objectHandle )
 	{
-		logger.debug( "hla >> dis (Remove) >> object=%s", objectHandle );
-		objectStore.removeDiscoveredHlaObject( objectHandle );
+		ObjectInstance hlaObject = objectStore.removeDiscoveredHlaObject( objectHandle );
+
+		if( logger.isDebugEnabled() )
+		{
+			logger.debug( "[hla>>dis] (Remove) Removed object: handle=%s, name=%s",
+			              objectHandle.toString(),
+			              hlaObject == null ? "null" : hlaObject.getObjectName() );
+		}
 	}
 	
 	//
@@ -541,13 +574,13 @@ public class RprConnection implements IConnection
 	protected void receiveHlaInteraction( InteractionClassHandle classHandle,
 	                                      ParameterHandleValueMap parameters )
 	{
-		logger.trace( "hla >> dis (Interaction) >> class=%s, parameters=%d", classHandle, parameters.size() );
+		logger.trace( "[hla>>dis] (Interaction) class=%s, parameters=%d", classHandle, parameters.size() );
 
 		// Find the class of interaction that this is
 		InteractionClass theClass = objectModel.getInteractionClass( classHandle );
 		if( theClass == null )
 		{
-			logger.warn( "hla >> dis (Interaction) Received for unknown class: "+classHandle );
+			logger.warn( "[hla>>dis] (Interaction) Received for unknown class: "+classHandle );
 			return;
 		}
 

@@ -30,8 +30,6 @@ import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.simman.DataQueryPdu;
 
 import hla.rti1516e.ParameterHandleValueMap;
-import hla.rti1516e.encoding.ByteWrapper;
-import hla.rti1516e.encoding.DecoderException;
 
 public class DataQueryMapper extends AbstractMapper
 {
@@ -93,59 +91,46 @@ public class DataQueryMapper extends AbstractMapper
 	@EventHandler
 	public void handlePdu( DataQueryPdu pdu )
 	{
-		// Populate the Interaction
-		InteractionInstance interaction = serializeDataQuery( pdu );
+		// Create a set of parameters to send
+		ParameterHandleValueMap map = super.createParameters( this.hlaClass );
+
+		// Populate an interaction instance from the PDU data
+		InteractionInstance interaction = serializeToHla( pdu, map );
 
 		// Send the interaction
-		super.sendInteraction( interaction, interaction.getParameters() );
+		super.sendInteraction( interaction, map );
 	}
 	
-	private InteractionInstance serializeDataQuery( DataQueryPdu pdu )
+	private InteractionInstance serializeToHla( DataQueryPdu pdu, ParameterHandleValueMap map )
 	{
 		// Create the interaction object
-		DataQuery dataQuery = new DataQuery(); 
-		dataQuery.setInteractionClass( hlaClass );
+		DataQuery hlaInteraction = new DataQuery(); 
+		hlaInteraction.setInteractionClass( hlaClass );
 		
 		// Populate it from the PDU
-		dataQuery.fromPdu( pdu );
-		
-		// Serialize it to a set of Parameters
-		ParameterHandleValueMap map = super.createParameters( this.hlaClass );
-		dataQuery.setParameters( map );
+		hlaInteraction.fromPdu( pdu );
 		
 		// Populate the Parameters
 		// OriginatingEntity
-		ByteWrapper wrapper = new ByteWrapper( dataQuery.getOriginatingEntity().getEncodedLength() );
-		dataQuery.getOriginatingEntity().encode( wrapper );
-		map.put( originatingEntity.getHandle(), wrapper.array() );
+		hlaEncode( hlaInteraction.getOriginatingEntity(), originatingEntity, map );
 		
 		// ReceivingEntity
-		wrapper = new ByteWrapper( dataQuery.getReceivingEntity().getEncodedLength() );
-		dataQuery.getReceivingEntity().encode( wrapper );
-		map.put( receivingEntity.getHandle(), wrapper.array() );
-
+		hlaEncode( hlaInteraction.getReceivingEntity(), receivingEntity, map );
+		
 		// RequestIdentifier
-		wrapper = new ByteWrapper( dataQuery.getRequestIdentifier().getEncodedLength() );
-		dataQuery.getRequestIdentifier().encode( wrapper );
-		map.put( requestIdentifier.getHandle(), wrapper.array() );
-
+		hlaEncode( hlaInteraction.getRequestIdentifier(), requestIdentifier, map );
+		
 		// TimeInterval
-		wrapper = new ByteWrapper( dataQuery.getTimeInterval().getEncodedLength() );
-		dataQuery.getTimeInterval().encode( wrapper );
-		map.put( timeInterval.getHandle(), wrapper.array() );
+		hlaEncode( hlaInteraction.getTimeInterval(), timeInterval, map );
 
-		// FixedDatums
-		wrapper = new ByteWrapper( dataQuery.getFixedDatumIdentifiers().getEncodedLength() );
-		dataQuery.getFixedDatumIdentifiers().encode( wrapper );
-		map.put( fixedDatumIdentifiers.getHandle(), wrapper.array() );
-
-		// VariableDatumSet
-		wrapper = new ByteWrapper( dataQuery.getVariableDatumIdentifiers().getEncodedLength() );
-		dataQuery.getVariableDatumIdentifiers().encode( wrapper );
-		map.put( variableDatumIdentifiers.getHandle(), wrapper.array() );
+		// FixedDatumIdentifiers
+		hlaEncode( hlaInteraction.getFixedDatumIdentifiers(), fixedDatumIdentifiers, map );
+		
+		// VariableDatumIdentifiers
+		hlaEncode( hlaInteraction.getVariableDatumIdentifiers(), variableDatumIdentifiers, map );
 
 		// Send it
-		return dataQuery;
+		return hlaInteraction;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,17 +141,7 @@ public class DataQueryMapper extends AbstractMapper
 	{
 		if( hlaClass == event.theClass )
 		{
-			DataQuery interaction = null;
-			
-			// Deserialize the parameters into an interaction instance
-			try
-			{
-				interaction = deserializeDataQuery( event.parameters );
-			}
-			catch( DecoderException de )
-			{
-				throw new DiscoException( de.getMessage(), de );
-			}
+			DataQuery interaction = deserializeFromHla( event.parameters );
 
 			// If the request ID is negative, discard it.
 			// This shoudn't happen, because the spec says the request ID is unsigned.
@@ -187,49 +162,30 @@ public class DataQueryMapper extends AbstractMapper
 		}
 	}
 
-	private DataQuery deserializeDataQuery( ParameterHandleValueMap map )
-		throws DecoderException
+	private DataQuery deserializeFromHla( ParameterHandleValueMap map )
 	{
 		// Create an instance to decode in to
-		DataQuery interaction = new DataQuery();
+		DataQuery hlaInteraction = new DataQuery();
 
-		if( map.containsKey(originatingEntity.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(originatingEntity.getHandle()) );
-			interaction.getOriginatingEntity().decode( wrapper );
-		}
+		// OriginatingEntity
+		hlaDecode( hlaInteraction.getOriginatingEntity(), originatingEntity, map );
 		
-		if( map.containsKey(receivingEntity.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(receivingEntity.getHandle()) );
-			interaction.getReceivingEntity().decode( wrapper );
-		}
+		// ReceivingEntity
+		hlaDecode( hlaInteraction.getReceivingEntity(), receivingEntity, map );
 		
-		if( map.containsKey(requestIdentifier.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(requestIdentifier.getHandle()) );
-			interaction.getRequestIdentifier().decode( wrapper );
-		}
+		// RequestIdentifier
+		hlaDecode( hlaInteraction.getRequestIdentifier(), requestIdentifier, map );
 		
-		if( map.containsKey(timeInterval.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(timeInterval.getHandle()) );
-			interaction.getTimeInterval().decode( wrapper );
-		}
-		
-		if( map.containsKey(fixedDatumIdentifiers.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(fixedDatumIdentifiers.getHandle()) );
-			interaction.getFixedDatumIdentifiers().decode( wrapper );
-		}
-		
-		if( map.containsKey(variableDatumIdentifiers.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(variableDatumIdentifiers.getHandle()) );
-			interaction.getVariableDatumIdentifiers().decode( wrapper );
-		}
+		// TimeInterval
+		hlaDecode( hlaInteraction.getTimeInterval(), timeInterval, map );
 
-		return interaction;
+		// FixedDatumIdentifiers
+		hlaDecode( hlaInteraction.getFixedDatumIdentifiers(), fixedDatumIdentifiers, map );
+		
+		// VariableDatumIdentifiers
+		hlaDecode( hlaInteraction.getVariableDatumIdentifiers(), variableDatumIdentifiers, map );
+
+		return hlaInteraction;
 	}
 
 	//----------------------------------------------------------

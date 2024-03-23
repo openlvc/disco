@@ -42,6 +42,7 @@ public class OpsCenter
 	private boolean open;
 	private DiscoConfiguration configuration;
 	private Logger logger;
+	private PduFactory pduFactory;     // factory used to create PDUs
 	private PduReceiver pduReceiver;   // where we receive byte[]'s from the network    (incoming)
 	private PduSender pduSender;       // where we send PDUs to the network             (outgoing)
 	private IPduListener pduListener;  // where we send PDU's received from the network (incoming)
@@ -59,6 +60,7 @@ public class OpsCenter
 		this.open = false;
 		this.configuration = new DiscoConfiguration();
 		this.logger = null;
+		this.pduFactory = new PduFactory();
 		this.pduReceiver = null;
 		this.pduSender = null;
 		this.pduListener = null;
@@ -91,6 +93,11 @@ public class OpsCenter
 		// activate logging - fetching the logger will cause the configuration to be lazy loaded
 		this.logger = configuration.getDiscoLogger();
 		welcomeMessage();
+		
+		// register all the custom PDU Types
+		this.configuration.getDisConfiguration().getRegisteredCustomPdu().forEach( type -> {
+			this.pduFactory.registerCustomPdu( type );
+		});
 
 		// enable networking
 		if( this.connection == null )
@@ -262,6 +269,11 @@ public class OpsCenter
 		return this.connection;
 	}
 
+	public PduFactory getPduFactory()
+	{
+		return this.pduFactory;
+	}
+	
 	/**
 	 * Set the {@link PduReceiver} to use. This will override any receiver information from the
 	 * configuration data. This must be called _before_ the center is opened, otherwise it will

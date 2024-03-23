@@ -35,7 +35,6 @@ import org.openlvc.disco.configuration.UdpConfiguration;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.utils.NetworkUtils;
 import org.openlvc.disco.utils.SocketOptions;
@@ -94,7 +93,7 @@ public class UdpConnection implements IConnection
 	@Override
 	public Collection<PduType> getSupportedPduTypes()
 	{
-		return PduFactory.getSupportedPduTypes();
+		return opscenter.getPduFactory().getSupportedPduTypes();
 	}
 
 	@Override
@@ -237,7 +236,7 @@ public class UdpConnection implements IConnection
 			throw new DiscoException( ioex.getMessage(), ioex );
 		}
 	}
-	
+
 	public void send( PDU pdu ) throws DiscoException
 	{
 		// Create a DISOutputStream to write to

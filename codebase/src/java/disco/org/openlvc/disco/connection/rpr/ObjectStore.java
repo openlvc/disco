@@ -217,8 +217,8 @@ public class ObjectStore
 		if( hlaObject.getObjectHandle() == null )
 			throw new DiscoException( "Cannot add HLA Object with a null ObjectInstanceHandle" );
 		
-		// We used to require that the object had an RTIobjectId (as all RPR objects do), however for
-		// DCSS we also want to be able track WallclockTime which isn't part of the RPR object hierarchy 
+		// We used to require that the object had an RTIobjectId (as all RPR objects do), however
+		// for non-RPR extensions we may also want to track non-RPR things...
 		/*
 		if( hlaObject.getRtiObjectId() == null )
 			throw new DiscoException( "Cannot add HLA Object with a null RTIobjectId" );
@@ -246,8 +246,9 @@ public class ObjectStore
 	 * representation of the object with the given handle.
 	 * 
 	 * @param hlaId The object instance handle we should remove from the local store.
+	 * @return The removed object, or <code>null</code> if none was removed
 	 */
-	public void removeDiscoveredHlaObject( ObjectInstanceHandle hlaId )
+	public ObjectInstance removeDiscoveredHlaObject( ObjectInstanceHandle hlaId )
 	{
 		ObjectInstance hlaObject = this.hlaObjects.remove( hlaId );
 		if( hlaObject != null && hlaObject.getRtiObjectId() != null )
@@ -256,6 +257,8 @@ public class ObjectStore
 		// if this is a physical entity (platform, lifeform) remove its id from the id lookup map
 		if( hlaObject instanceof PhysicalEntity )
 			this.disIdToRprIdMap.remove( ((PhysicalEntity)hlaObject).getDisId() );
+		
+		return hlaObject;
 	}
 
 	/**
