@@ -73,6 +73,16 @@ public class DiscoException extends RuntimeException
 		super( message, cause );
 	}
 
+	/**
+	 * @param cause The root cause of the exception
+	 * @param formatString Format string to use for the message
+	 * @param arguments Format arguments
+	 */
+	public DiscoException( Throwable cause, String formatString, Object... arguments )
+	{
+		super( String.format(formatString,arguments), cause );
+	}
+	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------

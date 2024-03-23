@@ -20,7 +20,7 @@ package org.openlvc.disco;
 import java.util.function.BooleanSupplier;
 
 import org.openlvc.disco.common.CommonSetup;
-import org.openlvc.disco.common.TestListener;
+import org.openlvc.disco.common.TestPduListener;
 import org.openlvc.disco.common.TimeoutException;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.testng.Assert;
@@ -30,6 +30,7 @@ public class AbstractTest
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	public static final String CUSTOM_MODULE_PATH = "resources/testdata/hla/Custom-FOM-Module.xml";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -48,13 +49,13 @@ public class AbstractTest
 		configuration.getLoggingConfiguration().setLevel( CommonSetup.CONSOLE_LOG_LEVEL );
 		
 		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setPduListener( new TestListener() );
+		opscenter.setPduListener( new TestPduListener() );
 		return opscenter;
 	}
 
 	/**
 	 * Create a new {@link OpsCenter} using the given configuration and a default
-	 * {@link TestListener} and return it.
+	 * {@link TestPduListener} and return it.
 	 * 
 	 * @param configuration The configuration to use
 	 * @return An initialized OpsCenter instance using the given configuration
@@ -66,7 +67,7 @@ public class AbstractTest
 
 		// create and return the opscenter
 		OpsCenter opscenter = new OpsCenter( configuration );
-		opscenter.setPduListener( new TestListener() );
+		opscenter.setPduListener( new TestPduListener() );
 		return opscenter;
 	}
 

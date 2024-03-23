@@ -30,8 +30,6 @@ import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.simman.DataPdu;
 
 import hla.rti1516e.ParameterHandleValueMap;
-import hla.rti1516e.encoding.ByteWrapper;
-import hla.rti1516e.encoding.DecoderException;
 
 public class DataMapper extends AbstractMapper
 {
@@ -91,54 +89,42 @@ public class DataMapper extends AbstractMapper
 	@EventHandler
 	public void handlePdu( DataPdu pdu )
 	{
-		// Populate the Interaction
-		InteractionInstance interaction = serializeData( pdu );
+		// Create a set of parameters to send
+		ParameterHandleValueMap map = super.createParameters( this.hlaClass );
 
+		// Populate the Interaction
+		InteractionInstance interaction = serializeToHla( pdu, map );
+		
 		// Send the interaction
-		super.sendInteraction( interaction, interaction.getParameters() );
+		super.sendInteraction( interaction, map );
 	}
 	
-	private InteractionInstance serializeData( DataPdu pdu )
+	private InteractionInstance serializeToHla( DataPdu pdu, ParameterHandleValueMap map )
 	{
 		// Create the interaction object
-		Data data = new Data(); 
-		data.setInteractionClass( hlaClass );
+		Data hlaInteraction = new Data(); 
+		hlaInteraction.setInteractionClass( hlaClass );
 		
 		// Populate it from the PDU
-		data.fromPdu( pdu );
+		hlaInteraction.fromPdu( pdu );
 		
-		// Serialize it to a set of Parameters
-		ParameterHandleValueMap map = super.createParameters( this.hlaClass );
-		data.setParameters( map );
-		
-		// Populate the Parameters
+		// Populate the Parameter Map
 		// OriginatingEntity
-		ByteWrapper wrapper = new ByteWrapper( data.getOriginatingEntity().getEncodedLength() );
-		data.getOriginatingEntity().encode( wrapper );
-		map.put( originatingEntity.getHandle(), wrapper.array() );
+		hlaEncode( hlaInteraction.getOriginatingEntity(), originatingEntity, map );
 		
 		// ReceivingEntity
-		wrapper = new ByteWrapper( data.getReceivingEntity().getEncodedLength() );
-		data.getReceivingEntity().encode( wrapper );
-		map.put( receivingEntity.getHandle(), wrapper.array() );
+		hlaEncode( hlaInteraction.getReceivingEntity(), receivingEntity, map );
 
 		// RequestIdentifier
-		wrapper = new ByteWrapper( data.getRequestIdentifier().getEncodedLength() );
-		data.getRequestIdentifier().encode( wrapper );
-		map.put( requestIdentifier.getHandle(), wrapper.array() );
+		hlaEncode( hlaInteraction.getRequestIdentifier(), requestIdentifier, map );
 
 		// FixedDatums
-		wrapper = new ByteWrapper( data.getFixedDatums().getEncodedLength() );
-		data.getFixedDatums().encode( wrapper );
-		map.put( fixedDatums.getHandle(), wrapper.array() );
+		hlaEncode( hlaInteraction.getFixedDatums(), fixedDatums, map );
 
 		// VariableDatumSet
-		wrapper = new ByteWrapper( data.getVariableDatumSet().getEncodedLength() );
-		data.getVariableDatumSet().encode( wrapper );
-		map.put( variableDatumSet.getHandle(), wrapper.array() );
-
-		// Send it
-		return data;
+		hlaEncode( hlaInteraction.getVariableDatumSet(), variableDatumSet, map );
+		
+		return hlaInteraction;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,17 +135,8 @@ public class DataMapper extends AbstractMapper
 	{
 		if( hlaClass == event.theClass )
 		{
-			Data interaction = null;
-			
 			// Deserialize the parameters into an interaction instance
-			try
-			{
-				interaction = deserializeData( event.parameters );
-			}
-			catch( DecoderException de )
-			{
-				throw new DiscoException( de.getMessage(), de );
-			}
+			Data interaction = deserializeFromHla( event.parameters );
 
 			// If the request ID is negative, discard it.
 			// This shoudn't happen, because the spec says the request ID is unsigned.
@@ -179,43 +156,27 @@ public class DataMapper extends AbstractMapper
 		}
 	}
 
-	private Data deserializeData( ParameterHandleValueMap map )
-		throws DecoderException
+	private Data deserializeFromHla( ParameterHandleValueMap map )
 	{
 		// Create an instance to decode in to
-		Data interaction = new Data();
+		Data hlaInteraction = new Data();
 
-		if( map.containsKey(originatingEntity.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(originatingEntity.getHandle()) );
-			interaction.getOriginatingEntity().decode( wrapper );
-		}
+		// OriginatingEntity
+		hlaDecode( hlaInteraction.getOriginatingEntity(), originatingEntity, map );
 		
-		if( map.containsKey(receivingEntity.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(receivingEntity.getHandle()) );
-			interaction.getReceivingEntity().decode( wrapper );
-		}
-		
-		if( map.containsKey(requestIdentifier.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(requestIdentifier.getHandle()) );
-			interaction.getRequestIdentifier().decode( wrapper );
-		}
-		
-		if( map.containsKey(fixedDatums.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(fixedDatums.getHandle()) );
-			interaction.getFixedDatums().decode( wrapper );
-		}
-		
-		if( map.containsKey(variableDatumSet.getHandle()) )
-		{
-			ByteWrapper wrapper = new ByteWrapper( map.get(variableDatumSet.getHandle()) );
-			interaction.getVariableDatumSet().decode( wrapper );
-		}
+		// ReceivingEntity
+		hlaDecode( hlaInteraction.getReceivingEntity(), receivingEntity, map );
 
-		return interaction;
+		// RequestIdentifier
+		hlaDecode( hlaInteraction.getRequestIdentifier(), requestIdentifier, map );
+
+		// FixedDatums
+		hlaDecode( hlaInteraction.getFixedDatums(), fixedDatums, map );
+
+		// VariableDatumSet
+		hlaDecode( hlaInteraction.getVariableDatumSet(), variableDatumSet, map );
+
+		return hlaInteraction;
 	}
 
 	//----------------------------------------------------------

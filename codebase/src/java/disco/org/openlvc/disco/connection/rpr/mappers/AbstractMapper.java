@@ -85,14 +85,27 @@ public abstract class AbstractMapper
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	private final RTIambassador getRtiAmb()
-	{
-		return rprConnection.getRtiAmb();
-	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Initialization   ///////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * This method is to be implemented by all child types of {@link AbstractMapper} and will be
+	 * called once the mapper itself has performed its internal initialization after being linked
+	 * to a {@link RprConnection}. This will give each mapper the opportunity to initialize itself
+	 * on startup.
+	 * 
+	 * @throws DiscoException Throw if there is a problem initializing the concrete mapper
+	 */
+	protected abstract void initialize() throws DiscoException;
+
+	/**
+	 * This allows the mapper to declare the PDU types it supports converting to/from.
+	 * @return The set of all PDU types it supports.
+	 */
+	public abstract Collection<PduType> getSupportedPdus();
+
+	
 	/**
 	 * This method is called when a mapper is added to a {@link RprConnection}. It allows the
 	 * mapper to get access to all the internal state that it requires. A mapper will not be
@@ -112,38 +125,23 @@ public abstract class AbstractMapper
 		// Tell the concrete type to initialize itself
 		this.initialize();
 	}
-
-	/**
-	 * This method is to be implemented by all child types of {@link AbstractMapper} and will be
-	 * called once the mapper itself has performed its internal initialization after being linked
-	 * to a {@link RprConnection}. This will give each mapper the opportunity to initialize itself
-	 * on startup.
-	 * 
-	 * @throws DiscoException Throw if there is a problem initializing the concrete mapper
-	 */
-	protected abstract void initialize() throws DiscoException;
-
-	/**
-	 * This allows the mapper to declare the PDU types it supports converting to/from.
-	 * @return The set of all PDU types it supports.
-	 */
-	public abstract Collection<PduType> getSupportedPdus();
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// HLA Object Helpers   ///////////////////////////////////////////////////////////////////
+	/// HLA Helper Methods: Objects   //////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
 	protected void publishAndSubscribe( ObjectClass clazz )
 	{
 		logger.debug( "[ObjectClass] Publish and subscribe [%s]", clazz.getQualifiedName() );
-		FomHelpers.pubsub( getRtiAmb(), PubSub.Both, clazz );
+		FomHelpers.pubsub( rti(), PubSub.Both, clazz );
 	}
-	
-	protected void publishAndSubscribe( InteractionClass clazz )
-	{
-		logger.debug( "[InteractionClass] Publish and subscribe [%s]", clazz.getQualifiedName() );
-		FomHelpers.pubsub( getRtiAmb(), PubSub.Both, clazz );
-	}
-	
+
+	/**
+	 * Tell the RTI to register the given object instance. Will call the HLA's
+	 * <code>registerObjectInstance()</code> method.
+	 * 
+	 * @param object The {@link ObjectInstance} to register.
+	 * @throws DiscoException
+	 */
 	protected void registerObjectInstance( ObjectInstance object )
 		throws DiscoException
 	{
@@ -151,13 +149,13 @@ public abstract class AbstractMapper
 		{
 			// register the object and store its handle
 			ObjectInstanceHandle objectHandle =
-				getRtiAmb().registerObjectInstance( object.getObjectClass().getHandle() );
+				rti().registerObjectInstance( object.getObjectClass().getHandle() );
 			object.setObjectHandle( objectHandle );
-			object.setObjectName( getRtiAmb().getObjectInstanceName(objectHandle) );
+			object.setObjectName( rti().getObjectInstanceName(objectHandle) );
 			
 			// create an AHVM for the object once, with enough room to hold all attributes
 			int size = object.getObjectClass().getAllAttributes().size();
-			AttributeHandleValueMap ahvm = getRtiAmb().getAttributeHandleValueMapFactory().create( size );
+			AttributeHandleValueMap ahvm = rti().getAttributeHandleValueMapFactory().create( size );
 			object.setObjectAttributes( ahvm );
 		}
 		catch( RTIexception rtie )
@@ -166,6 +164,19 @@ public abstract class AbstractMapper
 		}
 	}
 
+	protected AttributeHandleValueMap createAttributes( ObjectClass clazz )
+		throws DiscoException
+	{
+		try
+		{
+			return rti().getAttributeHandleValueMapFactory().create( clazz.getAllAttributes().size() );
+		}
+		catch( RTIexception rtie )
+		{
+			throw new DiscoException( rtie.getMessage(), rtie );
+		}
+	}
+	
 	protected void sendAttributeUpdate( ObjectInstance object, AttributeHandleValueMap attributes )
 		throws DiscoException
 	{
@@ -173,9 +184,7 @@ public abstract class AbstractMapper
 		{
 			// update the cached attributes in the object
 			// send the attributes out
-			getRtiAmb().updateAttributeValues( object.getObjectHandle(),
-			                                   attributes,
-			                                   null );
+			rti().updateAttributeValues( object.getObjectHandle(), attributes, null );
 			
 			object.setLastUpdatedTimeToNow();
 		}
@@ -190,11 +199,11 @@ public abstract class AbstractMapper
 		try
 		{
 			// Generate the attribute handle set
-			AttributeHandleSet ahs = getRtiAmb().getAttributeHandleSetFactory().create();
+			AttributeHandleSet ahs = rti().getAttributeHandleSetFactory().create();
 			object.getObjectClass().getAllAttributes().forEach( ac -> ahs.add(ac.getHandle()) );
 			
 			// Sent the request
-			getRtiAmb().requestAttributeValueUpdate( object.getObjectHandle(), ahs, null );
+			rti().requestAttributeValueUpdate( object.getObjectHandle(), ahs, null );
 		}
 		catch( RTIexception rtie )
 		{
@@ -202,15 +211,25 @@ public abstract class AbstractMapper
 		}
 	}
 	
+	
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
-	/// HLA Interaction Helpers   //////////////////////////////////////////////////////////////
+	/// HLA Helper Methods: Interactions   /////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	protected void publishAndSubscribe( InteractionClass clazz )
+	{
+		logger.debug( "[InteractionClass] Publish and subscribe [%s]", clazz.getQualifiedName() );
+		FomHelpers.pubsub( rti(), PubSub.Both, clazz );
+	}
+	
 	protected void sendInteraction( InteractionInstance interaction,
 	                                ParameterHandleValueMap parameters )
 	{
 		try
 		{
-			getRtiAmb().sendInteraction( interaction.getInteractionClass().getHandle(), parameters, null );
+			rti().sendInteraction( interaction.getInteractionClass().getHandle(),
+			                       parameters,
+			                       null );
 		}
 		catch( RTIexception rtie )
 		{
@@ -222,7 +241,7 @@ public abstract class AbstractMapper
 	{
 		try
 		{
-			return getRtiAmb().getParameterHandleValueMapFactory().create( clazz.getAllParameters().size() );
+			return rti().getParameterHandleValueMapFactory().create( clazz.getAllParameters().size() );
 		}
 		catch( RTIexception rtie )
 		{
@@ -231,12 +250,117 @@ public abstract class AbstractMapper
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/// HLA Helper Methods: DataElement   //////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Encode the given source <code>DatElement</code> into the given map, associating it with the
+	 * identified parameter class.
+	 * 
+	 * @param source The <code>DatElement</code> we want to encode into the map
+	 * @param pc     The <code>ParameterClass</code> with the handle we should link the value with
+	 * @param map    The HLA map we should encode into
+	 */
+	protected final void hlaEncode( DataElement source,
+	                                ParameterClass pc,
+	                                ParameterHandleValueMap map )
+	{
+		ByteWrapper wrapper = new ByteWrapper( source.getEncodedLength() );
+		source.encode( wrapper );
+		map.put( pc.getHandle(), wrapper.array() );
+	}
+
+	/**
+	 * Encode the given source <code>DatElement</code> into the given map, associating it with the
+	 * identified attribute class.
+	 * 
+	 * @param source The <code>DatElement</code> we want to encode into the map
+	 * @param pc     The <code>AttributeClass</code> with the handle we should link the value with
+	 * @param map    The HLA map we should encode into
+	 */
+	protected final void hlaEncode( DataElement source,
+	                                AttributeClass ac,
+	                                AttributeHandleValueMap map )
+	{
+		ByteWrapper wrapper = new ByteWrapper( source.getEncodedLength() );
+		source.encode( wrapper );
+		map.put( ac.getHandle(), wrapper.array() );
+	}
+
+	/**
+	 * Decode the parameter represented by the given {@link ParameterClass} and store it in the
+	 * target {@link DataElement}. The value will be extrated from the given map.
+	 * 
+	 * @param target The location we want to decode in
+	 * @param pc     The parameter class we should look in the map fore
+	 * @param map    The map we should get the value from.
+	 * @throws DiscoException If there is an HLA exception while trying to decode.
+	 */
+	protected final void hlaDecode( DataElement target,
+	                                ParameterClass pc,
+	                                ParameterHandleValueMap map )
+		throws DiscoException
+	{
+		byte[] bytes = map.get( pc.getHandle() );
+		if( bytes != null )
+		{
+			ByteWrapper wrapper = new ByteWrapper( bytes );
+			try
+			{
+				target.decode( wrapper );
+			}
+			catch( DecoderException de )
+			{
+				throw new DiscoException( de.getMessage(), de );
+			}
+		}
+	}
+
+	/**
+	 * Decode the attribute represented by the given {@link AttributeClass} and store it in the
+	 * target {@link DataElement}. The value will be extrated from the given map.
+	 * 
+	 * @param target The location we want to decode in
+	 * @param ac     The attribute class we should look in the map fore
+	 * @param map    The map we should get the value from.
+	 * @throws DiscoException If there is an HLA exception while trying to decode.
+	 */
+	protected final void hlaDecode( DataElement target,
+	                                AttributeClass ac,
+	                                AttributeHandleValueMap map )
+		throws DiscoException
+	{
+		byte[] bytes = map.get( ac.getHandle() );
+		if( bytes != null )
+		{
+			ByteWrapper wrapper = new ByteWrapper( bytes );
+			try
+			{
+				target.decode( wrapper );
+			}
+			catch( DecoderException de )
+			{
+				throw new DiscoException( de.getMessage(), de );
+			}
+		}
+	}	
+
+	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	protected final RTIambassador rti()
+	{
+		return rprConnection.getRtiAmb();
+	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	
+	
+	
+	
+	
+	@Deprecated
 	protected static void serializeInto( DataElement source,
 	                                     ParameterClass pc,
 	                                     ParameterHandleValueMap target )
@@ -245,7 +369,8 @@ public abstract class AbstractMapper
 		source.encode( wrapper );
 		target.put( pc.getHandle(), wrapper.array() );
 	}
-	
+
+	@Deprecated
 	protected static void deserializeInto( AttributeHandleValueMap source,
 	                                       AttributeClass ac, 
 	                                       DataElement target ) 
@@ -258,7 +383,8 @@ public abstract class AbstractMapper
 			target.decode( wrapper );
 		}
 	}
-	
+
+	@Deprecated
 	protected static void deserializeInto( ParameterHandleValueMap source,
 	                                       ParameterClass pc, 
 	                                       DataElement target ) 
@@ -271,4 +397,32 @@ public abstract class AbstractMapper
 			target.decode( wrapper );
 		}
 	}
+	
+	// TIM: This is a param reversal of above, because when I read `deserializeInto` I anticipated
+	//      that the first param will be what I want to deserialize into, with the latter params
+	//      being the actual data
+	@Deprecated
+	protected static void deserializeInto( DataElement target,
+	                                       ParameterHandleValueMap map,
+	                                       ParameterClass clazz )
+		throws DecoderException
+	{
+		byte[] bytes = map.get( clazz.getHandle() );
+		if( bytes != null )
+		{
+			ByteWrapper wrapper = new ByteWrapper( bytes );
+			target.decode( wrapper );
+		}
+	}
+	
+	// TIM: See RprConnection#receiveHlaInteraction()
+	// TIM: See IRCChannelMessage#newInteractionInstance()
+	@Deprecated
+	public <X extends InteractionInstance> X newInteractionInstance( ParameterHandleValueMap parameters )
+		throws DecoderException
+	{
+		return null;
+	}
+
+
 }

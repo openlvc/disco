@@ -17,7 +17,7 @@
  */
 package org.openlvc.disco;
 
-import org.openlvc.disco.common.TestListener;
+import org.openlvc.disco.common.TestPduListener;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -74,7 +74,7 @@ public class LifecycleTest
 	{
 		try
 		{
-    		TestListener listener = new TestListener();
+    		TestPduListener listener = new TestPduListener();
     		OpsCenter opscenter = new OpsCenter();
     		opscenter.setPduListener( listener );
     		opscenter.open();

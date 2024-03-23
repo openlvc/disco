@@ -24,7 +24,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.PduReceiver;
-import org.openlvc.disco.pdu.PduFactory;
 import org.openlvc.disco.pdu.UnsupportedPDU;
 
 /**
@@ -170,7 +169,7 @@ public class SingleThreadReceiver extends PduReceiver
 					byte[] packet = receiveQueue.take();
 					
 					long nanoStart = System.nanoTime();
-					clientListener.receive( PduFactory.create(packet) );
+					clientListener.receive( pduFactory.create(packet) );
 					long nanoTime = System.nanoTime() - nanoStart;
 
 					// take our metrics

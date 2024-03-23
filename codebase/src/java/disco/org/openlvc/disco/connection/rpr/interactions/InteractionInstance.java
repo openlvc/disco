@@ -20,8 +20,6 @@ package org.openlvc.disco.connection.rpr.interactions;
 import org.openlvc.disco.connection.rpr.model.InteractionClass;
 import org.openlvc.disco.pdu.PDU;
 
-import hla.rti1516e.ParameterHandleValueMap;
-
 public abstract class InteractionInstance
 {
 	//----------------------------------------------------------
@@ -32,7 +30,6 @@ public abstract class InteractionInstance
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private InteractionClass interactionClass;
-	private ParameterHandleValueMap parameters;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -57,16 +54,6 @@ public abstract class InteractionInstance
 	public void setInteractionClass( InteractionClass interactionClass )
 	{
 		this.interactionClass = interactionClass;
-	}
-
-	public ParameterHandleValueMap getParameters()
-	{
-		return parameters;
-	}
-
-	public void setParameters( ParameterHandleValueMap parameters )
-	{
-		this.parameters = parameters;
 	}
 
 	//----------------------------------------------------------
