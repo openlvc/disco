@@ -89,9 +89,6 @@ public class EmitterPrinterTest
 		configuration.getRprConfiguration().setFederationName( "Test2" );
 		configuration.getRprConfiguration().setRtiProvider( RtiProvider.Pitch );
 		
-		// Extensions
-		configuration.getRprConfiguration().registerExtensionModules( "hla/netn/NETN-FOM.xml" );
-		
 		return configuration;
 	}
 	
