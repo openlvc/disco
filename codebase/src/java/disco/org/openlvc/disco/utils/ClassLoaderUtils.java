@@ -19,7 +19,6 @@ package org.openlvc.disco.utils;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
@@ -53,32 +52,45 @@ public class ClassLoaderUtils
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	/**
-	 * Add a given path or set of paths to the system classloader.
+	 * Add a given path or set of paths to a custom classloader, and sets that as the ClassLoader
+	 * for the current Thread
 	 * 
 	 * @param paths The paths to add to the lookup set
-	 * @throws DiscoException If there is a problem fetching the classloader or
-	 *                        extending its search path
+	 * @throws DiscoException If there any invalid files are provided
 	 */
+	@SuppressWarnings("resource")
 	public static void extendClasspath( List<File> paths ) throws DiscoException
 	{
-		// Find the classloader and use reflection to make the addURL method visible
-		URLClassLoader sysloader = (URLClassLoader)ClassLoader.getSystemClassLoader();
-		Class<?> sysclass = URLClassLoader.class;
-
-		try
+		DiscoClassLoader loader = new DiscoClassLoader();
+		for( File file : paths )
+			try
+			{
+				loader.addURL( file.toURI().toURL() );
+			}
+			catch( Exception e )
+			{
+				throw new DiscoException( "Error extending system classloader lookup path: "+ 
+				                          e.getMessage(),
+			                              e );
+			}
+		
+		Thread.currentThread().setContextClassLoader( loader );
+	}
+	
+	/**
+	 * A Custom class loader to allow us to extend the classpath
+	 */
+	private static class DiscoClassLoader extends URLClassLoader
+	{
+		public DiscoClassLoader()
 		{
-			// Make the method accessible
-			Method method = sysclass.getDeclaredMethod( "addURL", URL.class );
-			method.setAccessible( true );
-			
-			// Call it
-			for( File file : paths )
-				method.invoke( sysloader, new Object[]{ file.toURI().toURL() } );
+			super( new URL[0], DiscoClassLoader.class.getClassLoader() );
 		}
-		catch( Throwable throwable )
+		
+		@Override
+		public void addURL( URL url )
 		{
-			throw new DiscoException( "Error extending system classloader lookup path: "+
-			                          throwable.getMessage(), throwable );
+			super.addURL( url );
 		}
 	}
 	
