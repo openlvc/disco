@@ -19,7 +19,7 @@ package org.openlvc.disco.utils;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
@@ -53,32 +53,37 @@ public class ClassLoaderUtils
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 	/**
-	 * Add a given path or set of paths to the system classloader.
+	 * Add a given path or set of paths to a custom classloader, and sets that as the ClassLoader
+	 * for the current Thread
 	 * 
 	 * @param paths The paths to add to the lookup set
-	 * @throws DiscoException If there is a problem fetching the classloader or
-	 *                        extending its search path
+	 * @throws DiscoException If there any invalid files are provided
 	 */
+	@SuppressWarnings("resource")
 	public static void extendClasspath( List<File> paths ) throws DiscoException
 	{
-		// Find the classloader and use reflection to make the addURL method visible
-		URLClassLoader sysloader = (URLClassLoader)ClassLoader.getSystemClassLoader();
-		Class<?> sysclass = URLClassLoader.class;
+		// Get the thread's current classloader which any Disco loader should chain off
+		ClassLoader threadContextLoader = Thread.currentThread().getContextClassLoader();
 
-		try
+		// If we've called this before, the classloader will already be a DiscoClassLoader
+		// and we can just extend the path (if we didn't do this, multiple calls to this
+		// method would cause the last extension to be used
+		if( threadContextLoader instanceof DiscoClassLoader )
 		{
-			// Make the method accessible
-			Method method = sysclass.getDeclaredMethod( "addURL", URL.class );
-			method.setAccessible( true );
-			
-			// Call it
+			// We've call this method before, just use the current classloader
+			DiscoClassLoader discoLoader = (DiscoClassLoader)threadContextLoader;
 			for( File file : paths )
-				method.invoke( sysloader, new Object[]{ file.toURI().toURL() } );
+				discoLoader.addPath( file );
 		}
-		catch( Throwable throwable )
+		else
 		{
-			throw new DiscoException( "Error extending system classloader lookup path: "+
-			                          throwable.getMessage(), throwable );
+			// The current classloader isn't one of ours, so let's extend it
+			DiscoClassLoader discoLoader = new DiscoClassLoader( threadContextLoader );
+			for( File file : paths )
+				discoLoader.addPath( file );
+			
+			// Set the new DiscoLoader as the context loader for the thread
+			Thread.currentThread().setContextClassLoader( discoLoader );
 		}
 	}
 	
@@ -118,4 +123,40 @@ public class ClassLoaderUtils
 			                          throwable.getMessage(), throwable );
 		}
 	}
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Private Inner Class: DiscoClassLoader   ////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * A custom class loader to allow us to extend the classpath. Chains off the current thread's
+	 * context class loader.
+	 */
+	private static class DiscoClassLoader extends URLClassLoader
+	{
+		public DiscoClassLoader( ClassLoader parent )
+		{
+			super( new URL[0], parent );
+		}
+		
+		@Override
+		public void addURL( URL url )
+		{
+			super.addURL( url );
+		}
+		
+		public void addPath( File file )
+		{
+			try
+			{
+				super.addURL( file.toURI().toURL() );
+			}
+			catch( MalformedURLException mfe )
+			{
+				throw new DiscoException( "Cannot extend classpath (Bad Path): "+
+				                          file.getAbsolutePath() );
+			}
+		}
+	}
+	
 }
