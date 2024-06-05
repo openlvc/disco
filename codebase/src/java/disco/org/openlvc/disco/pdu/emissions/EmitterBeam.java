@@ -107,6 +107,44 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		                      targetString );
 	}
 	
+	/**
+	 * Creates a deep clone of this EmitterBeam
+	 * <p/>
+	 * Note: The off-spec parent system field that holds the upstream Emitter System that this
+	 * beam is a part of will not be deep cloned, but will instead refer to the original system. 
+	 */
+	@Override
+	public EmitterBeam clone()
+	{
+		return this.clone( this.parentSystem );
+	}
+	
+	/**
+	 * Creates a deep clone of this EmitterBeam
+	 * <p/>
+	 * The upstream parentSystem reference will be set to that provided.
+	 * <p/> 
+	 * This method is intended for chain cloning as part of {@link EmitterSystem#clone()} where a 
+	 * clone of the parent system has been created upstream.
+	 */
+	public EmitterBeam clone( EmitterSystem parentSystem )
+	{
+		EmitterBeam cloned = new EmitterBeam();
+		cloned.beamNumber = this.beamNumber;
+		cloned.parameterIndex = this.parameterIndex;
+		cloned.parameterData = this.parameterData.clone();
+		cloned.beamData = this.beamData.clone();
+		cloned.beamFunction = this.beamFunction;
+		cloned.highDensityTrackJam = this.highDensityTrackJam;
+		cloned.beamStatus = this.beamStatus;
+		cloned.jammingTechnique = this.jammingTechnique.clone();
+		this.targets.forEach( (key,value) -> cloned.targets.put(key, value.clone()) );
+		
+		cloned.parentSystem = parentSystem;
+		
+		return cloned;
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// IPduComponent Methods   ////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////

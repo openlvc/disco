@@ -73,11 +73,22 @@ public class EmitterSystem implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
 	@Override
 	public String toString()
 	{
 		return systemType.toString()+", Beams="+beams.size();
+	}
+	
+	@Override
+	public EmitterSystem clone()
+	{
+		EmitterSystem cloned = new EmitterSystem();
+		cloned.systemType = this.systemType.clone();
+		cloned.location = this.location.clone();
+		this.beams.forEach( (key,value) -> cloned.beams.put(key, value.clone(cloned)) );
+		cloned.lastUpdated = this.lastUpdated;
+		
+		return cloned;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
