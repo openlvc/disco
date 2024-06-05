@@ -114,13 +114,13 @@ public class SignalPdu extends PDU
 	@Override
 	public final int getContentLength()
 	{
-		return 19 + data.length;
+		return 20 + data.length;
 		
 		// int size = entityID.getByteLength();              // 6
 		// size += DisSizes.UI16_SIZE;	// Radio ID          // 2
 
 		// size += encodingScheme.getByteLength();           // 2
-		// size += TdlType.getByteLength();                  // 1
+		// size += TdlType.getByteLength();                  // 2
 		// size += DisSizes.UI32_SIZE;		// Sample Rate   // 4
 		// size += DisSizes.UI16_SIZE;		// Data Length   // 2
 		// size += DisSizes.UI16_SIZE;		// Samples       // 2
