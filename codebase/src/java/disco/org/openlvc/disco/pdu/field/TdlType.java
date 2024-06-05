@@ -78,7 +78,7 @@ public enum TdlType
 	//----------------------------------------------------------
 	public static final int getByteLength()
 	{
-		return DisSizes.UI8_SIZE;
+		return DisSizes.UI16_SIZE;
 	}
 
 	public static TdlType fromValue( int value )
