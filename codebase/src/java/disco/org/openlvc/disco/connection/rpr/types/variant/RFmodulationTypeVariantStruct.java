@@ -42,12 +42,14 @@ public class RFmodulationTypeVariantStruct extends WrappedHlaVariantRecord<Major
 		super( MajorRFModulationTypeEnum16.Other );
 		
 		super.setVariant( MajorRFModulationTypeEnum16.Other,             new RPRunsignedInteger16BE(0) );
-		super.setVariant( MajorRFModulationTypeEnum16.Amplitude,         new RPRunsignedInteger16BE(0) );
-		super.setVariant( MajorRFModulationTypeEnum16.AmplitudeAndAngle, new RPRunsignedInteger16BE(0) );
-		super.setVariant( MajorRFModulationTypeEnum16.Angle,             new RPRunsignedInteger16BE(0) );
-		super.setVariant( MajorRFModulationTypeEnum16.Combination,       new RPRunsignedInteger16BE(0) );
-		super.setVariant( MajorRFModulationTypeEnum16.Pulse,             new RPRunsignedInteger16BE(0) );
-		super.setVariant( MajorRFModulationTypeEnum16.Unmodulated,       new RPRunsignedInteger16BE(0) );
+		super.setVariant( MajorRFModulationTypeEnum16.Amplitude,         new RPRunsignedInteger16BE(1) );
+		super.setVariant( MajorRFModulationTypeEnum16.AmplitudeAndAngle, new RPRunsignedInteger16BE(2) );
+		super.setVariant( MajorRFModulationTypeEnum16.Angle,             new RPRunsignedInteger16BE(3) );
+		super.setVariant( MajorRFModulationTypeEnum16.Combination,       new RPRunsignedInteger16BE(4) );
+		super.setVariant( MajorRFModulationTypeEnum16.Pulse,             new RPRunsignedInteger16BE(5) );
+		super.setVariant( MajorRFModulationTypeEnum16.Unmodulated,       new RPRunsignedInteger16BE(6) );
+		super.setVariant( MajorRFModulationTypeEnum16.CPSM,              new RPRunsignedInteger16BE(7) );
+		super.setVariant( MajorRFModulationTypeEnum16.SATCOM,            new RPRunsignedInteger16BE(8) );
 
 //		super.setVariant( MajorRFModulationTypeEnum16.Other, EnumHolder.from(MajorRFModulationTypeEnum16.Other) );
 //		super.setVariant( MajorRFModulationTypeEnum16.Amplitude, EnumHolder.from(AmplitudeModulationTypeEnum16.Other) );

@@ -34,7 +34,9 @@ public enum MajorRFModulationTypeEnum16 implements ExtendedDataElement<MajorRFMo
 	Angle            ( new RPRunsignedInteger16BE(3) ),
 	Combination      ( new RPRunsignedInteger16BE(4) ),
 	Pulse            ( new RPRunsignedInteger16BE(5) ),
-	Unmodulated      ( new RPRunsignedInteger16BE(6) );
+	Unmodulated      ( new RPRunsignedInteger16BE(6) ),
+	CPSM             ( new RPRunsignedInteger16BE(7) ),
+	SATCOM           ( new RPRunsignedInteger16BE(8) );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
