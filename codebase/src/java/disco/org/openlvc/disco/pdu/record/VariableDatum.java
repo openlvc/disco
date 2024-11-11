@@ -100,6 +100,11 @@ public class VariableDatum implements IPduComponent, Cloneable
 		int lengthInBytes = lengthInBits / 8;
 		byte[] value = new byte[lengthInBytes];
 		dis.readFully( value );
+		
+		int paddingDelta = lengthInBytes % 8;
+		if( paddingDelta > 0 )
+			dis.skipBytes( 8 - paddingDelta );
+		
 		setDatumValue( value );
     }
 
