@@ -26,6 +26,7 @@ import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -214,18 +215,20 @@ public class NetworkUtils
 			//                           and our address check against the send socket address will
 			//                           differ (valid address != 0.0.0.0 so it thinks they're from
 			//                           different PCs
-			DatagramSocket sendSocket = new DatagramSocket( 0, getFirstIPv4Address(nic) ); // ephemeral
+			SocketAddress sendAddr = new InetSocketAddress( getFirstIPv4Address(nic), 0 ); // ephemeral
+			MulticastSocket sendSocket = new MulticastSocket( sendAddr ); 
 			if( options != null )
 			{
 				sendSocket.setSendBufferSize( options.getSendBufferSize() );
 				sendSocket.setTrafficClass( options.getTrafficClass() );
+				sendSocket.setTimeToLive( options.timeToLive );
 			}
 			
 			// Create the receiver socket
 			MulticastSocket recvSocket = new MulticastSocket( port );
 			if( options != null )
 			{
-				recvSocket.setTimeToLive( options.timeToLive );
+				
 				//recvSocket.setLoopbackMode( true ); LEAVE LOCAL LOOPBACK ALONE.
 				recvSocket.setReceiveBufferSize( options.getRecvBufferSize() );
 			}
