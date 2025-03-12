@@ -19,6 +19,7 @@ package org.openlvc.disco.pdu;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -100,7 +101,8 @@ public class EmitterBeamRecordTest extends AbstractTest
 		                                                                         44000f ); 
 		EntityId targetId = new EntityId( 5, 6, 7 );
 		TrackJamData target = new TrackJamData( targetId, (short)8, (short)9 );
-		List<TrackJamData> targets = List.of( target );
+		List<TrackJamData> targets = new ArrayList<>();
+		targets.add( target );
 		
 		EmitterBeam beamRecord = new EmitterBeam();
 		beamRecord.setBeamActive( true );

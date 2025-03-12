@@ -20,9 +20,8 @@ package org.openlvc.disco.pdu;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
-import java.util.random.RandomGenerator;
-import java.util.random.RandomGeneratorFactory;
 
 import org.openlvc.disco.AbstractTest;
 import org.openlvc.disco.pdu.emissions.EmitterBeam;
@@ -50,10 +49,15 @@ public class EmitterSystemRecordTest extends AbstractTest
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	private static final float FMIN = 20000;
+	private static final float FMAX = 40000;
+	private static final int UI8MIN = 128;
+	private static final int UI8MAX = 255;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	private Random random;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -62,36 +66,42 @@ public class EmitterSystemRecordTest extends AbstractTest
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	private float nextFloat( float min, float max )
+	{
+		return (random.nextFloat() * (max - min)) + min; 
+	}
+	
+	private int nextInt( int min, int max )
+	{
+		return random.nextInt( max - min ) + min; 
+	}
+	
 	private EmitterBeam quickCreateBeam( int emitterNumber, int beamNumber, int targetCount )
 	{
-		final float FORIGIN = 20000;
-		final float FBOOUND = 40000;
-		final int UBYTEORIGIN = 128;
-		final int UBYTEBOUND = 255;
-		RandomGenerator gen = RandomGeneratorFactory.getDefault().create();
 		
 		
-		BeamData beamData = new BeamData( gen.nextFloat(FORIGIN, FBOOUND), 
-		                                  gen.nextFloat(FORIGIN, FBOOUND), 
-		                                  gen.nextFloat(FORIGIN, FBOOUND), 
-		                                  gen.nextFloat(FORIGIN, FBOOUND), 
-		                                  gen.nextFloat(FORIGIN, FBOOUND) );
-		JammingTechnique jammingTechnique = new JammingTechnique( gen.nextInt(UBYTEORIGIN, UBYTEBOUND), 
-		                                                          gen.nextInt(UBYTEORIGIN, UBYTEBOUND), 
-		                                                          gen.nextInt(UBYTEORIGIN, UBYTEBOUND), 
-		                                                          gen.nextInt(UBYTEORIGIN, UBYTEBOUND) );
-		FundamentalParameterData fundamentalData = new FundamentalParameterData( gen.nextFloat(FORIGIN, FBOOUND), 
-		                                                                         gen.nextFloat(FORIGIN, FBOOUND), 
-		                                                                         gen.nextFloat(FORIGIN, FBOOUND), 
-		                                                                         gen.nextFloat(FORIGIN, FBOOUND), 
-		                                                                         gen.nextFloat(FORIGIN, FBOOUND) ); 
+		
+		BeamData beamData = new BeamData( nextFloat(FMIN, FMAX), 
+		                                  nextFloat(FMIN, FMAX), 
+		                                  nextFloat(FMIN, FMAX), 
+		                                  nextFloat(FMIN, FMAX), 
+		                                  nextFloat(FMIN, FMAX) );
+		JammingTechnique jammingTechnique = new JammingTechnique( nextInt(UI8MIN, UI8MAX), 
+		                                                          nextInt(UI8MIN, UI8MAX), 
+		                                                          nextInt(UI8MIN, UI8MAX), 
+		                                                          nextInt(UI8MIN, UI8MAX) );
+		FundamentalParameterData fundamentalData = new FundamentalParameterData( nextFloat(FMIN, FMAX), 
+		                                                                         nextFloat(FMIN, FMAX), 
+		                                                                         nextFloat(FMIN, FMAX), 
+		                                                                         nextFloat(FMIN, FMAX), 
+		                                                                         nextFloat(FMIN, FMAX) ); 
 		
 		Set<TrackJamData> targets = new HashSet<>(); 
 		for( int i = 0 ; i < targetCount ; ++i )
 		{
-			EntityId targetId = new EntityId( gen.nextInt(UBYTEORIGIN, UBYTEBOUND), 
-			                                  gen.nextInt(UBYTEORIGIN, UBYTEBOUND), 
-			                                  gen.nextInt(UBYTEORIGIN, UBYTEBOUND) );
+			EntityId targetId = new EntityId( nextInt(UI8MIN, UI8MAX), 
+			                                  nextInt(UI8MIN, UI8MAX), 
+			                                  nextInt(UI8MIN, UI8MAX) );
 			
 			TrackJamData target = new TrackJamData( targetId, 
 			                                        (short)emitterNumber, 
@@ -125,13 +135,14 @@ public class EmitterSystemRecordTest extends AbstractTest
 	@BeforeMethod(alwaysRun=true)
 	public void beforeMethod()
 	{
-		// no-op
+		this.random = new Random();
 	}
 
 	@AfterMethod(alwaysRun=true)
 	public void afterMethod()
 	{
 		// no-op
+		this.random = null;
 	}
 	
 	@AfterClass(alwaysRun=true)
