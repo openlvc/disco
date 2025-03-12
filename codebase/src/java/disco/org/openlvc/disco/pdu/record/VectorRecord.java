@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.record;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -80,6 +81,14 @@ public class VectorRecord implements IPduComponent, Cloneable
 		return false;
 	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash( this.firstComponent, 
+		                     this.secondComponent, 
+		                     this.thirdComponent );
+	}
+	
 	@Override
 	public VectorRecord clone()
 	{

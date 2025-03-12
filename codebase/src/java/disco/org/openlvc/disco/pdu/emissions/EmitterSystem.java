@@ -20,7 +20,9 @@ package org.openlvc.disco.pdu.emissions;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -74,6 +76,29 @@ public class EmitterSystem implements IPduComponent, Cloneable
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 	@Override
+	public boolean equals( Object other )
+	{
+		if( other == null )
+			return false;
+		
+		if( !(other instanceof EmitterSystem) )
+			return false;
+		
+		EmitterSystem otherSystem = (EmitterSystem)other;
+		return Objects.equals( this.systemType, otherSystem.systemType ) &&
+		       Objects.equals( this.location, otherSystem.location ) &&
+		       Objects.equals( this.beams, otherSystem.beams );
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash( this.systemType, 
+		                     this.location,
+		                     this.beams );
+	}
+	
+	@Override
 	public String toString()
 	{
 		return systemType.toString()+", Beams="+beams.size();
@@ -118,12 +143,8 @@ public class EmitterSystem implements IPduComponent, Cloneable
 	{
 		// ref DIS-7 spec section 7.6.2 paragraph f.1
 		// if length exceeds 255 this value is not used and should be set to 0
-		short length = (short)(getByteLength() / 4);  // 32-bit words
-		if( length > 255 )
-		{
-			length = 0;
-		}
-		dos.writeUI8( length );
+		short dataLength = getDataLength();
+		dos.writeUI8( dataLength );
 		dos.writeUI8( (short)beams.size() );
 		dos.writePadding16();
 		systemType.to( dos );
@@ -172,6 +193,31 @@ public class EmitterSystem implements IPduComponent, Cloneable
 		                     .collect( Collectors.toSet() );
 	}
 
+	/**
+	 * Returns the length of this structure in 32-bit words.
+	 * <p/>
+	 * If the 32-bit word length exceeds 255, then 0 is returned instead.
+	 * <p/>
+	 * This value is what is written to the data length field in the PDU. See DIS specification 
+	 * s7.6.2.
+	 * <p/>
+	 * For the length in bytes, please see {@link #getByteLength()}
+	 * 
+	 * @return the length of this structure in 32-bit words. If this figure would be greater than 
+	 *         255, then zero is returned
+	 */
+	public short getDataLength()
+	{
+		// ref DIS-7 spec section 7.6.2 paragraph f.5.i
+		// if length exceeds 255 this value is not used and should be set to 0
+		int byteLength = this.getByteLength();
+		int dataLength = byteLength / 4;
+		if( dataLength > 255 )
+			dataLength = 0;
+		
+		return (short)dataLength;
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,7 +248,7 @@ public class EmitterSystem implements IPduComponent, Cloneable
 	
 	public Collection<EmitterBeam> getBeams()
 	{
-		return beams.values();
+		return new HashSet<>( beams.values() );
 	}
 
 	/**

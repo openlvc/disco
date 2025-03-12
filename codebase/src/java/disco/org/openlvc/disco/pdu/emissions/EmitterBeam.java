@@ -20,8 +20,10 @@ package org.openlvc.disco.pdu.emissions;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -89,7 +91,41 @@ public class EmitterBeam implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
+	@Override
+	public boolean equals( Object other )
+	{
+		if( other == null )
+			return false;
+		
+		if( !(other instanceof EmitterBeam) )
+			return false;
+		
+		EmitterBeam otherBeam = (EmitterBeam)other;
+		return this.beamNumber == otherBeam.beamNumber &&
+		       this.parameterIndex == otherBeam.parameterIndex &&
+		       Objects.equals( this.parameterData, otherBeam.parameterData ) &&
+		       Objects.equals( this.beamData, otherBeam.beamData ) &&
+		       this.beamFunction == otherBeam.beamFunction &&
+		       this.highDensityTrackJam == otherBeam.highDensityTrackJam &&
+		       this.beamStatus == otherBeam.beamStatus &&
+		       Objects.equals( this.jammingTechnique, otherBeam.jammingTechnique ) &&
+		       Objects.equals( this.targets, otherBeam.targets );
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash( this.beamNumber, 
+		                     this.parameterIndex,
+		                     this.parameterData,
+		                     this.beamData,
+		                     this.beamFunction,
+		                     this.highDensityTrackJam,
+		                     this.beamStatus,
+		                     this.jammingTechnique,
+		                     this.targets );
+	}
+	
 	@Override
 	public String toString()
 	{
@@ -97,9 +133,14 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		if( highDensityTrackJam == HighDensityTrackJam.Selected )
 			targetString = "<High Density>";
 		
+		String parentString = "null";
+		if( parentSystem != null && parentSystem.getEmittingEntity() != null )
+			parentString = parentSystem.getEmittingEntity().toString();
+			
+		
 		//return "[1-23-45:0] (On) <Function> <Technique> <Targets>";
 		return String.format( "[%s:%d] (%3s) Function=%s, %s, Targets=%s",
-		                      parentSystem.getEmittingEntity(),
+		                      parentString,
 		                      beamNumber,
 		                      beamStatus.name(),
 		                      beamFunction.name(),
@@ -166,23 +207,17 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		this.targets.clear();
 		for( int i = 0; i < numberOfTargets; i++ )
 		{
-			TrackJamData record = new TrackJamData();
-			record.from( dis );
-			targets.put( record.getTarget(), record );
+			TrackJamData targetRecord = new TrackJamData();
+			targetRecord.from( dis );
+			targets.put( targetRecord.getTarget(), targetRecord );
 		}
     }
 
 	@Override
     public void to( DisOutputStream dos ) throws IOException
     {
-		// ref DIS-7 spec section 7.6.2 paragraph f.5.i
-		// if length exceeds 255 this value is not used and should be set to 0
-		
-		int beamLength = getByteLength() / 4;  // Count in 32-bit words
-		if( beamLength > 255 )
-			beamLength = 0;
-
-		dos.writeUI8( (short)getByteLength() );
+		short dataLength = getDataLength();
+		dos.writeUI8( dataLength );
 		dos.writeUI8( beamNumber );
 		dos.writeUI16( parameterIndex );
 		parameterData.to( dos );
@@ -227,6 +262,31 @@ public class EmitterBeam implements IPduComponent, Cloneable
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Helper Methods   ///////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Returns the length of this structure in 32-bit words.
+	 * <p/>
+	 * If the 32-bit word length exceeds 255, then 0 is returned instead.
+	 * <p/>
+	 * This value is what is written to the data length field in the PDU. See DIS specification 
+	 * s7.6.2.
+	 * <p/>
+	 * For the length in bytes, please see {@link #getByteLength()}
+	 * 
+	 * @return the length of this structure in 32-bit words. If this figure would be greater than 
+	 *         255, then zero is returned
+	 */
+	public short getDataLength()
+	{
+		// ref DIS-7 spec section 7.6.2 paragraph f.5.i
+		// if length exceeds 255 this value is not used and should be set to 0
+		int byteLength = this.getByteLength();
+		int dataLength = byteLength / 4;
+		if( dataLength > 255 )
+			dataLength = 0;
+		
+		return (short)dataLength;
+	}
+	
 	public boolean isTargeting( EntityId id )
 	{
 		return targets.containsKey(id);
@@ -342,20 +402,21 @@ public class EmitterBeam implements IPduComponent, Cloneable
 		return targets.size();
 	}
 	
-	public Collection<TrackJamData> getTargets()
+	public Set<TrackJamData> getTargets()
 	{
-		return targets.values();
+		return new HashSet<>( targets.values() );
 	}
 
-	public void setTargets( List<TrackJamData> records )
+	public void setTargets( Collection<? extends TrackJamData> targetRecords )
 	{
 		this.targets.clear();
-		records.forEach( record -> this.targets.put(record.getTarget(),record) );
+		targetRecords.forEach( targetRecord -> this.targets.put(targetRecord.getTarget(),
+		                                                        targetRecord) );
 	}
 
-	public void addTarget( TrackJamData record )
+	public void addTarget( TrackJamData targetRecord )
 	{
-		this.targets.put( record.getTarget(), record );
+		this.targets.put( targetRecord.getTarget(), targetRecord );
 	}
 
 	/**
@@ -366,12 +427,12 @@ public class EmitterBeam implements IPduComponent, Cloneable
 	 */
 	public void addTarget( EntityId id )
 	{
-		TrackJamData record = new TrackJamData(id);
-		record.setBeamNumber( beamNumber );
+		TrackJamData targetRecord = new TrackJamData(id);
+		targetRecord.setBeamNumber( beamNumber );
 		if( parentSystem != null )
-			record.setEmitterNumber( parentSystem.getEmitterNumber() );
+			targetRecord.setEmitterNumber( parentSystem.getEmitterNumber() );
 		
-		targets.put( id, record );
+		targets.put( id, targetRecord );
 	}
 	
 	public void removeTarget( TrackJamData record )
