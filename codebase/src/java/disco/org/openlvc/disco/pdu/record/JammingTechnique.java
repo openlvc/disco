@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.record;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -63,7 +64,6 @@ public class JammingTechnique implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
 	@Override
 	public boolean equals( Object object )
 	{
@@ -83,6 +83,15 @@ public class JammingTechnique implements IPduComponent, Cloneable
 		}
 
 		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash( this.kind, 
+		                     this.category,
+		                     this.subcategory,
+		                     this.specific );
 	}
 	
 	@Override
