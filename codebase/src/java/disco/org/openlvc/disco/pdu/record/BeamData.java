@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.record;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -69,7 +70,6 @@ public class BeamData implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
 	@Override
 	public boolean equals( Object object )
 	{
@@ -90,6 +90,16 @@ public class BeamData implements IPduComponent, Cloneable
 		}
 
 		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash( this.azimuthCenter, 
+		                     this.azimuthSweep,
+		                     this.elevationCenter,
+		                     this.elevationSweep,
+		                     this.sweepSync );
 	}
 	
 	@Override
