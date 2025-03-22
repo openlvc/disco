@@ -39,6 +39,8 @@ import org.openlvc.disco.pdu.simman.ActionResponsePdu;
 import org.openlvc.disco.pdu.simman.CommentPdu;
 import org.openlvc.disco.pdu.simman.DataPdu;
 import org.openlvc.disco.pdu.simman.SetDataPdu;
+import org.openlvc.disco.pdu.simman.StartResumePdu;
+import org.openlvc.disco.pdu.simman.StopFreezePdu;
 import org.openlvc.disco.pdu.warfare.DetonationPdu;
 import org.openlvc.disco.pdu.warfare.FirePdu;
 
@@ -61,8 +63,8 @@ public enum PduType
  	
 	CreateEntity         ( (short)11,  ProtocolFamily.SimMgmt ),
 	RemoveEntity         ( (short)12,  ProtocolFamily.SimMgmt ),
-	StartResume          ( (short)13,  ProtocolFamily.SimMgmt ),
-	StopFreeze           ( (short)14,  ProtocolFamily.SimMgmt ),
+	StartResume          ( (short)13,  ProtocolFamily.SimMgmt,        StartResumePdu.class ),
+	StopFreeze           ( (short)14,  ProtocolFamily.SimMgmt,        StopFreezePdu.class ),
 	Acknowledge          ( (short)15,  ProtocolFamily.SimMgmt ),
 	ActionRequest        ( (short)16,  ProtocolFamily.SimMgmt,        ActionRequestPdu.class ),
 	ActionResponse       ( (short)17,  ProtocolFamily.SimMgmt,        ActionResponsePdu.class ),

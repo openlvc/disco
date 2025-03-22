@@ -34,6 +34,8 @@ import org.openlvc.disco.connection.rpr.mappers.EmitterSystemMapper;
 import org.openlvc.disco.connection.rpr.mappers.EntityStateMapper;
 import org.openlvc.disco.connection.rpr.mappers.SetDataMapper;
 import org.openlvc.disco.connection.rpr.mappers.SignalMapper;
+import org.openlvc.disco.connection.rpr.mappers.StartResumeMapper;
+import org.openlvc.disco.connection.rpr.mappers.StopFreezeMapper;
 import org.openlvc.disco.connection.rpr.mappers.TransmitterMapper;
 import org.openlvc.disco.utils.FileUtils;
 
@@ -592,6 +594,8 @@ public class RprConfiguration
 		this.fomMappers.add( SetDataMapper.class );
 		this.fomMappers.add( ActionRequestMapper.class );
 		this.fomMappers.add( ActionResponseMapper.class );
+		this.fomMappers.add( StartResumeMapper.class );
+		this.fomMappers.add( StopFreezeMapper.class );
 	}
 	
 	
