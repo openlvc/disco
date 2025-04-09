@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
@@ -64,6 +65,7 @@ public class Configuration
 	private String configFile = "etc/disrespector.config";
 	private String[] extensionModules;
 	private Set<Class<? extends AbstractMapper>> extensionMappers;
+	private Logger customLogger;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -83,6 +85,7 @@ public class Configuration
 		this.configFile = "etc/disrespector.config";
 		this.extensionModules = new String[0];
 		this.extensionMappers = new HashSet<>();
+		this.customLogger = null;
 
 		// see if the user specified a config file on the command line before we process it
 		this.checkArgsForConfigFile( args );
@@ -120,7 +123,23 @@ public class Configuration
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-
+	public Logger getCustomLogger()
+	{
+		return this.customLogger;
+	}
+	
+	/**
+	 * Sets a user-provided logger that will be passed down to the HLA and DIS connections.
+	 * <p/>
+	 * If no custom logger is set, an application provided one will be used isntead
+	 * 
+	 * @param logger the custom application logger that the disrespector should use 
+	 */
+	public void setCustomLogger( Logger logger )
+	{
+		this.customLogger = logger;
+	}
+	
 	/////////////////////////////////
 	// DIS Settings          ////////
 	/////////////////////////////////
@@ -209,10 +228,12 @@ public class Configuration
 		dis.getUdpConfiguration().setAddress( getDisAddress() );
 		dis.getUdpConfiguration().setPort( getDisPort() );
 		dis.getDisConfiguration().setExerciseId( getDisExerciseId() );
-		
 		dis.getLoggingConfiguration().setAppName( "dis" );
 		dis.getLoggingConfiguration().setLevel( getDisLogLevel() );
 		dis.getLoggingConfiguration().setFile( getDisLogFile() );
+		
+		if( this.customLogger != null )
+			dis.setDiscoLogger( customLogger );
 		
 		return dis;
 	}
@@ -355,10 +376,13 @@ public class Configuration
 		hla.getRprConfiguration().setRandomizeFedName( isHlaRandomizeFederateName() );
 		hla.getRprConfiguration().registerExtensionModules( this.extensionModules );
 		hla.getRprConfiguration().registerExtensionMappers( this.extensionMappers );
-
+		
 		hla.getLoggingConfiguration().setAppName( "rpr" );
 		hla.getLoggingConfiguration().setLevel( getHlaLogLevel() );
 		hla.getLoggingConfiguration().setFile( getHlaLogFile() );
+		
+		if( this.customLogger != null )
+			hla.setDiscoLogger( customLogger );
 		
 		return hla;
 	}
