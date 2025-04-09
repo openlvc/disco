@@ -26,6 +26,7 @@ import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
+import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.utils.CommandList;
 
 public class Configuration
@@ -64,6 +65,7 @@ public class Configuration
 	private String configFile = "etc/disrespector.config";
 	private String[] extensionModules;
 	private Set<Class<? extends AbstractMapper>> extensionMappers;
+	private Set<Class<? extends PDU>> customPduTypes;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -83,6 +85,7 @@ public class Configuration
 		this.configFile = "etc/disrespector.config";
 		this.extensionModules = new String[0];
 		this.extensionMappers = new HashSet<>();
+		this.customPduTypes = new HashSet<>();
 
 		// see if the user specified a config file on the command line before we process it
 		this.checkArgsForConfigFile( args );
@@ -201,6 +204,11 @@ public class Configuration
 			this.properties.setProperty( KEY_DIS_LOGFILE, path.getAbsolutePath() );
 	}
 	
+	public void setDisCustomPduTypes( Set<Class<? extends PDU>> pdus )
+	{
+		this.customPduTypes = new HashSet<>( pdus );
+	}
+	
 	protected DiscoConfiguration getDisConfiguration()
 	{
 		DiscoConfiguration dis = new DiscoConfiguration();
@@ -209,6 +217,9 @@ public class Configuration
 		dis.getUdpConfiguration().setAddress( getDisAddress() );
 		dis.getUdpConfiguration().setPort( getDisPort() );
 		dis.getDisConfiguration().setExerciseId( getDisExerciseId() );
+		
+		for( Class<? extends PDU> customPduType : this.customPduTypes )
+			dis.getDisConfiguration().registerCustomPdu( customPduType );
 		
 		dis.getLoggingConfiguration().setAppName( "dis" );
 		dis.getLoggingConfiguration().setLevel( getDisLogLevel() );
