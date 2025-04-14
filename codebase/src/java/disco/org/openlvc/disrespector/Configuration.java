@@ -371,6 +371,10 @@ public class Configuration
 		hla.getLoggingConfiguration().setLevel( getHlaLogLevel() );
 		hla.getLoggingConfiguration().setFile( getHlaLogFile() );
 		
+		// 	We also have to tell the HLA side about our custom PDU types
+		for( Class<? extends PDU> customPduType : this.customPduTypes )
+			hla.getDisConfiguration().registerCustomPdu( customPduType );
+		
 		return hla;
 	}
 
