@@ -18,7 +18,6 @@
 package org.openlvc.disco.connection.rpr.types.enumerated;
 
 import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
-import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DecoderException;
@@ -94,7 +93,7 @@ public enum StopFreezeReasonEnum8 implements ExtendedDataElement<StopFreezeReaso
 	@Override
 	public StopFreezeReasonEnum8 valueOf( ByteWrapper value ) throws DecoderException
 	{
-		RPRunsignedInteger16BE temp = new RPRunsignedInteger16BE();
+		HLAoctet temp = new HLAoctet();
 		temp.decode( value );
 		return valueOf( temp.getValue() );
 	}
@@ -102,7 +101,7 @@ public enum StopFreezeReasonEnum8 implements ExtendedDataElement<StopFreezeReaso
 	@Override
 	public StopFreezeReasonEnum8 valueOf( byte[] value ) throws DecoderException
 	{
-		RPRunsignedInteger16BE temp = new RPRunsignedInteger16BE();
+		HLAoctet temp = new HLAoctet();
 		temp.decode( value );
 		return valueOf( temp.getValue() );
 	}
