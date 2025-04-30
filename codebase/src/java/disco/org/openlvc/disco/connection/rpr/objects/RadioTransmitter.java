@@ -27,6 +27,7 @@ import org.openlvc.disco.connection.rpr.types.basic.StreamTag;
 import org.openlvc.disco.connection.rpr.types.enumerated.CryptographicModeEnum32;
 import org.openlvc.disco.connection.rpr.types.enumerated.CryptographicSystemTypeEnum16;
 import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
+import org.openlvc.disco.connection.rpr.types.enumerated.MajorRFModulationTypeEnum16;
 import org.openlvc.disco.connection.rpr.types.enumerated.RFmodulationSystemTypeEnum16;
 import org.openlvc.disco.connection.rpr.types.enumerated.RPRboolean;
 import org.openlvc.disco.connection.rpr.types.enumerated.RadioInputSourceEnum8;
@@ -43,6 +44,8 @@ import org.openlvc.disco.pdu.field.MajorModulationType;
 import org.openlvc.disco.pdu.field.ModulationSystem;
 import org.openlvc.disco.pdu.field.TransmitState;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
+
+import hla.rti1516e.encoding.DataElement;
 
 /**
  *  > HLAobjectRoot.EmbeddedSystem
@@ -249,8 +252,16 @@ public class RadioTransmitter extends EmbeddedSystem
 		pdu.getModulationType().setSystem( ModulationSystem.fromValue(rfModulationSystemType.getEnum().getValue()) );
 
 		// RFModulationType
-		pdu.getModulationType().setMajorModulationType( MajorModulationType.fromValue(rfModulationType.getDiscriminant().getValue()) );
-		pdu.getModulationType().setDetail( ((RPRunsignedInteger16BE)rfModulationType.getValue()).getValue() );
+		// Note: rfModulationType's value can be null here as the RPR FOM does not provide a
+		// full set of alternative variant types for every possible value of its discriminant 
+		// enum (MajorRFModulationTypeEnum16). E.g. MajorRFModulationTypeEnum16.Other is a valid 
+		// discriminant value, but has no alternative listed under RFmodulationTypeVariantStruct
+		MajorRFModulationTypeEnum16 hlaMajorModulationType = rfModulationType.getDiscriminant();
+		MajorModulationType disMajorModulationType = MajorModulationType.fromValue( hlaMajorModulationType.getValue() );
+		pdu.getModulationType().setMajorModulationType( disMajorModulationType );
+		DataElement value = rfModulationType.getValue();
+		int rawValue = value != null ? ((RPRunsignedInteger16BE)value).getValue() : 0;
+		pdu.getModulationType().setDetail( rawValue );
 
 		// SpreadSpectrum
 		// FIXME

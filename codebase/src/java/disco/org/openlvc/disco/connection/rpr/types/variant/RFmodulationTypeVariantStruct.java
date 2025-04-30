@@ -18,7 +18,13 @@
 package org.openlvc.disco.connection.rpr.types.variant;
 
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
+import org.openlvc.disco.connection.rpr.types.enumerated.AmplitudeAngleModulationTypeEnum16;
+import org.openlvc.disco.connection.rpr.types.enumerated.AmplitudeModulationTypeEnum16;
+import org.openlvc.disco.connection.rpr.types.enumerated.AngleModulationTypeEnum16;
+import org.openlvc.disco.connection.rpr.types.enumerated.CombinationModulationTypeEnum16;
 import org.openlvc.disco.connection.rpr.types.enumerated.MajorRFModulationTypeEnum16;
+import org.openlvc.disco.connection.rpr.types.enumerated.PulseModulationTypeEnum16;
+import org.openlvc.disco.connection.rpr.types.enumerated.UnmodulatedTypeEnum16;
 import org.openlvc.disco.pdu.field.MajorModulationType;
 
 import hla.rti1516e.encoding.ByteWrapper;
@@ -39,18 +45,31 @@ public class RFmodulationTypeVariantStruct extends WrappedHlaVariantRecord<Major
 	//----------------------------------------------------------
 	public RFmodulationTypeVariantStruct()
 	{
-		super( MajorRFModulationTypeEnum16.Other );
-		
-		super.setVariant( MajorRFModulationTypeEnum16.Other,             new RPRunsignedInteger16BE(0) );
-		super.setVariant( MajorRFModulationTypeEnum16.Amplitude,         new RPRunsignedInteger16BE(1) );
-		super.setVariant( MajorRFModulationTypeEnum16.AmplitudeAndAngle, new RPRunsignedInteger16BE(2) );
-		super.setVariant( MajorRFModulationTypeEnum16.Angle,             new RPRunsignedInteger16BE(3) );
-		super.setVariant( MajorRFModulationTypeEnum16.Combination,       new RPRunsignedInteger16BE(4) );
-		super.setVariant( MajorRFModulationTypeEnum16.Pulse,             new RPRunsignedInteger16BE(5) );
-		super.setVariant( MajorRFModulationTypeEnum16.Unmodulated,       new RPRunsignedInteger16BE(6) );
-		super.setVariant( MajorRFModulationTypeEnum16.CPSM,              new RPRunsignedInteger16BE(7) );
-		super.setVariant( MajorRFModulationTypeEnum16.SATCOM,            new RPRunsignedInteger16BE(8) );
+		super( MajorRFModulationTypeEnum16.Amplitude );
 
+		// These are technically enum types (see commented block below), but to handle them 
+		// generically in RadioTransmitter#toPdu() we just shortcut to the raw representation of
+		// RPRunsignedInteger16BE
+		super.setVariant( MajorRFModulationTypeEnum16.Amplitude,
+		                  new RPRunsignedInteger16BE(AmplitudeModulationTypeEnum16.Other.getValue()) );
+		super.setVariant( MajorRFModulationTypeEnum16.AmplitudeAndAngle, 
+		                  new RPRunsignedInteger16BE(AmplitudeAngleModulationTypeEnum16.Other.getValue()) );
+		super.setVariant( MajorRFModulationTypeEnum16.Angle,
+		                  new RPRunsignedInteger16BE(AngleModulationTypeEnum16.Other.getValue()) );
+		super.setVariant( MajorRFModulationTypeEnum16.Combination,
+		                  new RPRunsignedInteger16BE(CombinationModulationTypeEnum16.Other.getValue()) );
+		super.setVariant( MajorRFModulationTypeEnum16.Pulse,
+		                  new RPRunsignedInteger16BE(PulseModulationTypeEnum16.Other.getValue()) );
+		super.setVariant( MajorRFModulationTypeEnum16.Unmodulated,
+		                  new RPRunsignedInteger16BE(UnmodulatedTypeEnum16.Other.getValue()) );
+		
+		// Non-RPR standard values (they're in the DIS standard)
+		super.setVariant( MajorRFModulationTypeEnum16.CPSM,
+		                  new RPRunsignedInteger16BE(0) );
+		super.setVariant( MajorRFModulationTypeEnum16.SATCOM,
+		                  new RPRunsignedInteger16BE(0) );
+
+		// Historical
 //		super.setVariant( MajorRFModulationTypeEnum16.Other, EnumHolder.from(MajorRFModulationTypeEnum16.Other) );
 //		super.setVariant( MajorRFModulationTypeEnum16.Amplitude, EnumHolder.from(AmplitudeModulationTypeEnum16.Other) );
 //		super.setVariant( MajorRFModulationTypeEnum16.AmplitudeAndAngle, EnumHolder.from(AmplitudeAngleModulationTypeEnum16.Other) );
