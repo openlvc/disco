@@ -31,9 +31,12 @@
 	<!--                                    -->
 	<!-- Windows 64-bit Zip File Generation -->
 	<!--                                    -->
-	<target name="zip.win64"  if="platform.windows">
+	<target name="zip.win64" if="platform.windows">
 		<!-- Verify we have a JRE we can bundle -->
-		<verifyJdk location="${jdk.home.win64}" arch="amd64"/>
+		<verifyJdk location="${jdk.home.win64}" arch="amd64" requiredVersion="${java.compiler.target}"/>
+
+		<!-- Copy the JRE into place -->
+		<copy-jre outdir="${sandbox.dir}"/>
 
 		<!-- generate the tarball with the sandbox and the JRE in it -->
 		<!-- we handle lib/bin separately so we can ensure only 64-bit stuff gets in -->
@@ -42,9 +45,6 @@
 			            includes="**/*"
 			            excludes=""
 			            prefix="${dist.name}"/>
-			<zipfileset dir="${jdk.home.win64}/jre"
-			            includes="**/*"
-			            prefix="${dist.name}/jre"/>
 		</zip>
 	</target>
 	
@@ -53,8 +53,11 @@
 	<!-- Linux (64-bit JRE) Tarball Generation -->
 	<!--                                       -->
 	<target name="zip.linux64" if="platform.linux">
-		<!-- Verify that we have access to a JRE we can package -->
-		<verifyJdk location="${jdk.home.linux64}" arch="amd64"/>
+		<!-- Verify we have a JRE we can bundle -->
+		<verifyJdk location="${jdk.home.linux64}" arch="amd64" requiredVersion="${java.compiler.target}"/>
+
+		<!-- Copy the JRE into location -->
+		<copy-jre outdir="${sandbox.dir}"/>
 
 		<!-- Generate the tarball with the sandbox and the JRE in it -->
 		<!-- We have to use exec as the result tar task gives us problems with
