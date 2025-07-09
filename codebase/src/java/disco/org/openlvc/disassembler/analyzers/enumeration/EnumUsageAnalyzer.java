@@ -23,8 +23,8 @@ import org.openlvc.disassembler.analyzers.IResults;
 import org.openlvc.disassembler.configuration.AnalyzerType;
 import org.openlvc.disassembler.configuration.Configuration;
 import org.openlvc.disco.DiscoException;
-import org.openlvc.duplicator.SessionReader;
 import org.openlvc.duplicator.Track;
+import org.openlvc.duplicator.readers.DuplicatorSessionReader;
 
 public class EnumUsageAnalyzer implements IAnalyzer
 {
@@ -56,7 +56,7 @@ public class EnumUsageAnalyzer implements IAnalyzer
 		logger.info( "Analyzing Duplicator session: "+configuration.getInFile().getAbsolutePath() );
 
 		// run the analysis
-		SessionReader session = new SessionReader( configuration.getInFile() );
+		DuplicatorSessionReader session = new DuplicatorSessionReader( configuration.getInFile() );
 		session.open();
 		
 		EnumUsageResults resultset = new EnumUsageResults( configuration );

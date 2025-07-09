@@ -15,7 +15,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package org.openlvc.duplicator;
+package org.openlvc.duplicator.readers;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -28,13 +28,14 @@ import java.util.Queue;
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.PduFactory;
 import org.openlvc.disco.pdu.PDU;
+import org.openlvc.duplicator.Track;
 
 /**
  * This class represents a window into a Duplicator session that resides on disk.
  * It takes a reference to the session file to be opened and then provides methods
  * for reading PDUs in from the session until complete.
  */
-public class SessionReader implements Iterable<Track>, Iterator<Track>
+public class DuplicatorSessionReader implements ISessionReader
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
@@ -61,7 +62,7 @@ public class SessionReader implements Iterable<Track>, Iterator<Track>
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public SessionReader( File sessionFile ) throws DiscoException
+	public DuplicatorSessionReader( File sessionFile ) throws DiscoException
 	{
 		this.sessionFile = sessionFile;
 		this.fileIn = null; // initialized in openSession()
