@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.pdu.field.appearance.enums;
 
+import org.openlvc.disco.utils.EnumLookup;
+
 /**
  * Damage appearance values (not to be confused with other values for mobility and firepower killed.
  * 
@@ -32,6 +34,12 @@ public enum DamageState
 	ModerateDamage( (byte)2 ),
 	Destroyed     ( (byte)3 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<DamageState> DISVALUE_LOOKUP = 
+		new EnumLookup<>( DamageState.class, DamageState::value );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -58,13 +66,6 @@ public enum DamageState
 	//----------------------------------------------------------
 	public static DamageState fromValue( byte value )
 	{
-		switch( value )
-		{
-			case 0: return NoDamage;
-			case 1: return SlightDamage;
-			case 2: return ModerateDamage;
-			case 3: return Destroyed;
-			default: throw new IllegalArgumentException( "Invalid Damage Code: "+value );
-		}
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum MarkingCharSet
 {
@@ -31,6 +30,12 @@ public enum MarkingCharSet
 	ArmyMarking( (short)2 ),
 	DigitChevron( (short)3 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<MarkingCharSet> DISVALUE_LOOKUP = 
+		new EnumLookup<>( MarkingCharSet.class, MarkingCharSet::value, MarkingCharSet.Unused );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -47,7 +52,7 @@ public enum MarkingCharSet
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public int getValue()
+	public int value()
 	{
 		return this.value;
 	}
@@ -62,19 +67,7 @@ public enum MarkingCharSet
 
 	public static MarkingCharSet fromValue( short value )
 	{
-		switch( value )
-		{
-			 case 0: return Unused;
-			 case 1: return ASCII;
-			 case 2: return ArmyMarking;
-			 case 3: return DigitChevron;
-			default: // drop through
-		}
-		
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" is not a valid MarkingCharSet value" );
-		else
-			return Unused;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 	
 }

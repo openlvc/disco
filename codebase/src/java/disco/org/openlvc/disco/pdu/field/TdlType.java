@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 /**
  * This field shall specify the TDL Type as a 16-bit enumeration field when the 
@@ -53,6 +52,13 @@ public enum TdlType
 	CursorOnTarget( 110 );
 
 	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<TdlType> DISVALUE_LOOKUP = new EnumLookup<>( TdlType.class, 
+	                                                                             TdlType::value, 
+	                                                                             TdlType.Other );
+	
+	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private int value;
@@ -83,15 +89,6 @@ public enum TdlType
 
 	public static TdlType fromValue( int value )
 	{
-		for( TdlType type : values() )
-		{
-			if( type.value == value )
-				return type;
-		}
-		
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid TDLType" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

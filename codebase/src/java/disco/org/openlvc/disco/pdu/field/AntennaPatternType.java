@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.field;
 
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum AntennaPatternType
 {
@@ -28,6 +29,12 @@ public enum AntennaPatternType
 	Beam             ( 1 ),
 	SphericalHarmonic( 2 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<AntennaPatternType> DISVALUE_LOOKUP = 
+		new EnumLookup<>( AntennaPatternType.class, AntennaPatternType::value );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -59,12 +66,6 @@ public enum AntennaPatternType
 
 	public static AntennaPatternType fromValue( int value )
 	{
-		for( AntennaPatternType type : values() )
-		{
-			if( type.value == value )
-				return type;
-		}
-		
-		throw new IllegalArgumentException( value+" not a valid AntennaPatternType" );
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

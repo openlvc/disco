@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum RequestStatus
 {
@@ -41,6 +40,12 @@ public enum RequestStatus
 	TaccsfLosReplyType2( 101 ),
 	JointExerciseRequestRejected( 201 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<RequestStatus> DISVALUE_LOOKUP = 
+		new EnumLookup<>( RequestStatus.class, RequestStatus::value, RequestStatus.Other );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -72,16 +77,6 @@ public enum RequestStatus
 	
 	public static RequestStatus fromValue( long value )
 	{
-		for( RequestStatus status : RequestStatus.values() )
-		{
-			if( status.value == value )
-				return status;
-		}
-
-		// Missing
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid RequestStatus" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

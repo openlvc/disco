@@ -21,6 +21,10 @@ import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 
+/**
+ * @deprecated use {@link EntityKind} instead
+ */
+@Deprecated
 public enum Kind
 {
 	//----------------------------------------------------------

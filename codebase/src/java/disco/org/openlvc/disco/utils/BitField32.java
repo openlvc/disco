@@ -73,6 +73,11 @@ public class BitField32
 		this.bits = value;
 	}
 
+	public int getBitsUI16()
+	{
+		return getBits( 0, 15 );
+	}
+	
 	public void setBits( int start, int end, int value )
 	{
 		this.bits = setSubfield( this.bits, value, start, end );

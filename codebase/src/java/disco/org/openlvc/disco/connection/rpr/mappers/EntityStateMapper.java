@@ -40,7 +40,7 @@ import org.openlvc.disco.connection.rpr.objects.Spacecraft;
 import org.openlvc.disco.connection.rpr.objects.SubmersibleVessel;
 import org.openlvc.disco.connection.rpr.objects.SurfaceVessel;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.disco.pdu.field.Kind;
+import org.openlvc.disco.pdu.field.EntityKind;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.EntityType;
 
@@ -423,8 +423,8 @@ public class EntityStateMapper extends AbstractMapper
 		// 7 = Radio
 		// 8 = Expendable
 		// 9 = SensorEmitter
-		Kind kind = type.getKindEnum();
-		if( kind == Kind.Platform || kind == Kind.Munition )
+		EntityKind kind = type.getKindEnum();
+		if( kind == EntityKind.Platform || kind == EntityKind.Munition )
 		{
 			// Domain
 			// 0 = Other
@@ -443,7 +443,7 @@ public class EntityStateMapper extends AbstractMapper
 				default: throw new UnsupportedException( "[RPR] Unsupported Platform Domain: "+type.getDomainEnum().name() );
 			}
 		}
-		else if( kind == Kind.Lifeform )
+		else if( kind == EntityKind.Lifeform )
 		{
 			return new Human();
 		}
@@ -497,8 +497,8 @@ public class EntityStateMapper extends AbstractMapper
 		//
 		// Kind & Domain Specific Appearance
 		//
-		Kind disKind = hlaObject.getEntityType().getDisKind();
-		if( disKind == Kind.Platform )
+		EntityKind disKind = hlaObject.getEntityType().getDisKind();
+		if( disKind == EntityKind.Platform )
 		{
 			switch( hlaObject.getEntityType().getDisDomain() )
 			{
@@ -510,7 +510,7 @@ public class EntityStateMapper extends AbstractMapper
 				default:   break;
 			}
 		}
-		else if( disKind == Kind.Lifeform )
+		else if( disKind == EntityKind.Lifeform )
 		{
 			toHlaLifeformAppearance( map );
 		}
@@ -797,8 +797,8 @@ public class EntityStateMapper extends AbstractMapper
 		//
 		// Kind & Domain Specific Appearance
 		//
-		Kind disKind = hlaObject.getEntityType().getDisKind();
-		if( disKind == Kind.Platform )
+		EntityKind disKind = hlaObject.getEntityType().getDisKind();
+		if( disKind == EntityKind.Platform )
 		{
 			switch( hlaObject.getEntityType().getDisDomain() )
 			{
@@ -807,7 +807,7 @@ public class EntityStateMapper extends AbstractMapper
 				default:   break;
 			}
 		}
-		else if( disKind == Kind.Lifeform )
+		else if( disKind == EntityKind.Lifeform )
 		{
 			deserializeLifeformFromHla( (Lifeform)hlaObject, map );
 		}

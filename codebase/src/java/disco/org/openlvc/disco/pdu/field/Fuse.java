@@ -17,12 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum Fuse
 {
@@ -115,10 +110,9 @@ public enum Fuse
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	// Lots of options - cache if for some speedup
-	private static final Map<Integer,Fuse> CACHE = Arrays.stream( Fuse.values() )
-	                                                     .collect( Collectors.toMap(Fuse::value, 
-	                                                                                fuse -> fuse) );
+	private static final EnumLookup<Fuse> DISVALUE_LOOKUP = new EnumLookup<>( Fuse.class, 
+	                                                                          Fuse::value, 
+	                                                                          Fuse.Other );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -146,12 +140,6 @@ public enum Fuse
 	//----------------------------------------------------------
 	public static Fuse fromValue( int value )
 	{
-		Fuse result = CACHE.get( value );
-		if( result != null )
-			return result;
-		else if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid Fuse number" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

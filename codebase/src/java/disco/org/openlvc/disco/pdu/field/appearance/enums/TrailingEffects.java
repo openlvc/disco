@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.pdu.field.appearance.enums;
 
+import org.openlvc.disco.utils.EnumLookup;
+
 /**
  * Platform trailing effects appearance values.
  * 
@@ -32,6 +34,12 @@ public enum TrailingEffects
 	Medium( (byte)2 ),
 	Large ( (byte)3 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<TrailingEffects> DISVALUE_LOOKUP = 
+		new EnumLookup<>( TrailingEffects.class, TrailingEffects::value );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -58,13 +66,6 @@ public enum TrailingEffects
 	//----------------------------------------------------------
 	public static TrailingEffects fromValue( byte value )
 	{
-		switch( value )
-		{
-			case 0: return None;
-			case 1: return Small;
-			case 2: return Medium;
-			case 3: return Large;
-			default: throw new IllegalArgumentException( "Invalid Trailing Effects Code: "+value );
-		}
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

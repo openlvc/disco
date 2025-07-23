@@ -24,7 +24,7 @@ import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.IPduComponent;
 import org.openlvc.disco.pdu.field.Domain;
-import org.openlvc.disco.pdu.field.Kind;
+import org.openlvc.disco.pdu.field.EntityKind;
 
 /**
  * The type of entity in a DIS exercise shall be specified by an Entity Type record. 
@@ -293,12 +293,12 @@ public class EntityType implements IPduComponent, Cloneable
 	//
 	// Convenience Methods
 	//
-	public Kind getKindEnum()
+	public EntityKind getKindEnum()
 	{
-		return Kind.fromValue( this.kind );
+		return EntityKind.fromValue( this.kind );
 	}
 	
-	public void setKind( Kind kind )
+	public void setKind( EntityKind kind )
 	{
 		this.kind = kind.value();
 	}

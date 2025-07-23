@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum DeadReckoningAlgorithm
 {
@@ -37,6 +36,14 @@ public enum DeadReckoningAlgorithm
 	RVB   ( (short)8 ),
 	FVB   ( (short)9 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<DeadReckoningAlgorithm> DISVALUE_LOOKUP = 
+		new EnumLookup<>( DeadReckoningAlgorithm.class, 
+		                  DeadReckoningAlgorithm::value, 
+		                  DeadReckoningAlgorithm.Other );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -68,25 +75,7 @@ public enum DeadReckoningAlgorithm
 
 	public static DeadReckoningAlgorithm fromValue( short value )
 	{
-		switch( value )
-		{
-			 case 2: return FPW;
-			 case 4: return RVW;
-			 case 1: return Static;
-			 case 8: return RVB;
-			 case 3: return RPW;
-			 case 5: return FVW;
-			 case 6: return FPB;
-			 case 7: return RPB;
-			 case 9: return FVB;
-			default: // drop through
-		}
-		
-		// Missing
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid Dead Reckoning Algorithm" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 
 }

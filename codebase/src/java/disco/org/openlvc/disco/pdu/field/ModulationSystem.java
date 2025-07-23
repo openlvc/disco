@@ -17,10 +17,9 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disco.utils.EnumLookup;
 
 /**
  * This field shall specify the interpretation of the modulation parameter field(s) in the 
@@ -48,6 +47,12 @@ public enum ModulationSystem
 	EnhancedSincgars73( 12 ),
 	NavigationAid     ( 13 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<ModulationSystem> DISVALUE_LOOKUP = 
+		new EnumLookup<>( ModulationSystem.class, ModulationSystem::value, ModulationSystem.Other );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -79,29 +84,6 @@ public enum ModulationSystem
 	
 	public static ModulationSystem fromValue( int value )
 	{
-		switch( value )
-		{
-			case 0: return Other;
-			case 1: return Generic;
-			case 2: return Hq;
-			case 3: return HqII;
-			case 4: return HqIIa;
-			case 5: return Sincgars;
-			case 6: return CcttSincgars;
-			case 7: return Eplrs;
-			case 8: return JtidsMids;
-			case 9: return Link11;
-			case 10: return Link11b;
-			case 11: return LbandSatcom;
-			case 12: return EnhancedSincgars73;
-			case 13: return NavigationAid;
-			default: // drop through
-		}
-		
-		// Missing
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid ModulationSystem" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

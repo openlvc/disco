@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.pdu.field.appearance.enums;
 
+import org.openlvc.disco.utils.EnumLookup;
+
 /**
  * Lifeform weapon appearance values
  * 
@@ -32,6 +34,12 @@ public enum WeaponState
 	WeaponDeployed         ( (byte)2 ),
 	WeaponInFiringPosition ( (byte)3 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<WeaponState> DISVALUE_LOOKUP = 
+		new EnumLookup<>( WeaponState.class, WeaponState::value );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -58,13 +66,6 @@ public enum WeaponState
 	//----------------------------------------------------------
 	public static WeaponState fromValue( byte value )
 	{
-		switch( value )
-		{
-			case 0: return NoWeapon;
-			case 1: return WeaponStowed;
-			case 2: return WeaponDeployed;
-			case 3: return WeaponInFiringPosition;
-			default: throw new IllegalArgumentException( "Invalid Weapon State Code: "+value );
-		}
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

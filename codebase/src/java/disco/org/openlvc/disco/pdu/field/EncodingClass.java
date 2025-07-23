@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 /**
  * The two most significant bits of the encoding scheme shall enumerate the 
@@ -39,6 +38,12 @@ public enum EncodingClass
 	ApplicationSpecificData( (byte)2 ),
 	DatabaseIndex( (byte)3 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<EncodingClass> DISVALUE_LOOKUP = 
+		new EnumLookup<>( EncodingClass.class, EncodingClass::value, EncodingClass.RawBinaryData );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -70,15 +75,6 @@ public enum EncodingClass
 
 	public static EncodingClass fromValue( byte value )
 	{
-		for( EncodingClass type : values() )
-		{
-			if( type.value == value )
-				return type;
-		}
-
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid EncodingClass" );
-		else
-			return RawBinaryData;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

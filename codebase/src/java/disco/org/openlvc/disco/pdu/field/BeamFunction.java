@@ -17,12 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 /**
  * 2019-SISO-REF-010-v27 [UID 78]
@@ -60,7 +56,8 @@ public enum BeamFunction
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	private static Map<Short,BeamFunction> CACHE = new HashMap<>();
+	private static final EnumLookup<BeamFunction> DISVALUE_LOOKUP = 
+		new EnumLookup<>( BeamFunction.class, BeamFunction::value, BeamFunction.Other );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -110,19 +107,6 @@ public enum BeamFunction
 	
 	public static BeamFunction fromValue( short value )
 	{
-		// lazy-load
-		if( CACHE.isEmpty() )
-		{
-			for( BeamFunction temp : BeamFunction.values() )
-				CACHE.put( temp.value(), temp );
-		}
-
-		BeamFunction found = CACHE.get( value );
-		if( found != null )
-			return found;
-		else if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" is not a valid ForceId" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

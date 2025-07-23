@@ -17,12 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum DetonationResult
 {
@@ -57,11 +52,10 @@ public enum DetonationResult
 	AirBurst                            ( (short)25 );
 
 	//----------------------------------------------------------
-	//                    STATIC VARIABLES
-	//----------------------------------------------------------
-	private static final Map<Short,DetonationResult> CACHE = Arrays.stream( DetonationResult.values() )
-	                                                               .collect( Collectors.toMap(DetonationResult::value, 
-	                                                                                          result -> result) );
+    //                    STATIC VARIABLES
+    //----------------------------------------------------------
+    private static final EnumLookup<DetonationResult> DISVALUE_LOOKUP = 
+    	new EnumLookup<>( DetonationResult.class, DetonationResult::value, DetonationResult.Other );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -89,14 +83,6 @@ public enum DetonationResult
 	//----------------------------------------------------------
 	public static DetonationResult fromValue( short value )
 	{
-		DetonationResult temp = CACHE.get( value );
-		if( temp != null )
-			return temp;
-
-		// Missing
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid Detonation Result" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

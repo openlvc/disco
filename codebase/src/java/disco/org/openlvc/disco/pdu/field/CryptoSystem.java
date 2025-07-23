@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 /**
  * This field shall identify the crypto equipment utilized if such equipment is 
@@ -51,6 +50,12 @@ public enum CryptoSystem
 	Invalid     ( Short.MAX_VALUE );
 
 	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<CryptoSystem> DISVALUE_LOOKUP = 
+		new EnumLookup<>( CryptoSystem.class, CryptoSystem::value, CryptoSystem.Invalid );
+	
+	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private int value;
@@ -81,16 +86,6 @@ public enum CryptoSystem
 
 	public static CryptoSystem fromValue( int value )
 	{
-		for( CryptoSystem system : CryptoSystem.values() )
-		{
-			if( system.value == value )
-				return system;
-		}
-
-		// Missing
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid CryptoSystem" );
-		else
-			return Invalid;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

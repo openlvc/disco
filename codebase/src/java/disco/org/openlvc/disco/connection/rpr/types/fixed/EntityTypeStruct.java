@@ -20,7 +20,7 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 import org.openlvc.disco.connection.rpr.types.basic.HLAoctet;
 import org.openlvc.disco.connection.rpr.types.basic.RPRunsignedInteger16BE;
 import org.openlvc.disco.pdu.field.Domain;
-import org.openlvc.disco.pdu.field.Kind;
+import org.openlvc.disco.pdu.field.EntityKind;
 import org.openlvc.disco.pdu.record.EntityType;
 
 public class EntityTypeStruct extends WrappedHlaFixedRecord
@@ -128,7 +128,7 @@ public class EntityTypeStruct extends WrappedHlaFixedRecord
 	public EntityType getDisValue()
 	{
 		EntityType type = new EntityType();
-		type.setKind( Kind.fromValue(kind.getUnsignedValue()) );
+		type.setKind( EntityKind.fromValue(kind.getUnsignedValue()) );
 		type.setDomain( Domain.fromValue(domain.getUnsignedValue()) );
 		type.setCountry( countryCode.getValue() );
 		type.setCategory( category.getUnsignedValue() );
@@ -138,9 +138,9 @@ public class EntityTypeStruct extends WrappedHlaFixedRecord
 		return type;
 	}
 
-	public Kind getDisKind()
+	public EntityKind getDisKind()
 	{
-		return Kind.fromValue( kind.getUnsignedValue() );
+		return EntityKind.fromValue( kind.getUnsignedValue() );
 	}
 
 	public Domain getDisDomain()

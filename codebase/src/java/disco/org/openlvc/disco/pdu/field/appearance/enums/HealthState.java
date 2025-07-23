@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.pdu.field.appearance.enums;
 
+import org.openlvc.disco.utils.EnumLookup;
+
 /**
  * Health appearance values
  * 
@@ -32,6 +34,12 @@ public enum HealthState
 	ModerateInjury( (byte)2 ),
 	FatalInjury   ( (byte)3 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<HealthState> DISVALUE_LOOKUP = 
+		new EnumLookup<>( HealthState.class, HealthState::value );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -58,13 +66,6 @@ public enum HealthState
 	//----------------------------------------------------------
 	public static HealthState fromValue( byte value )
 	{
-		switch( value )
-		{
-			case 0: return NoInjury;
-			case 1: return SlightInjury;
-			case 2: return ModerateInjury;
-			case 3: return FatalInjury;
-			default: throw new IllegalArgumentException( "Invalid Health Code: "+value );
-		}
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

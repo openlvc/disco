@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum MajorModulationType
 {
@@ -36,6 +35,14 @@ public enum MajorModulationType
 	CPSM( 7 ),
 	SATCOM( 8 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<MajorModulationType> DISVALUE_LOOKUP = 
+		new EnumLookup<>( MajorModulationType.class, 
+		                  MajorModulationType::value, 
+		                  MajorModulationType.Other );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -67,14 +74,7 @@ public enum MajorModulationType
 	
 	public static MajorModulationType fromValue( int value )
 	{
-		for( MajorModulationType type : values() )
-			if( type.value == value )
-				return type;
-
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" is not a valid value for MajorModulationType" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 
 }

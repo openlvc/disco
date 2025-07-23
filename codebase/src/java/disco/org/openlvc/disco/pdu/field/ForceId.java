@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum ForceId
 {
@@ -31,6 +30,13 @@ public enum ForceId
 	Opposing( (short)2 ),
 	Neutral ( (short)3 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<ForceId> DISVALUE_LOOKUP = new EnumLookup<>( ForceId.class, 
+	                                                                             ForceId::value, 
+	                                                                             ForceId.Other );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -62,18 +68,6 @@ public enum ForceId
 
 	public static ForceId fromValue( short value )
 	{
-		switch( value )
-		{
-			 case 1: return Friendly;
-			 case 2: return Opposing;
-			 case 3: return Neutral;
-			 case 0: return Other;
-			default: // drop through
-		}
-		
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" is not a valid ForceId" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

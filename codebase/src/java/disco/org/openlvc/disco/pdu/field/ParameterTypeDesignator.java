@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.field;
 
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum ParameterTypeDesignator
 {
@@ -28,6 +29,14 @@ public enum ParameterTypeDesignator
 	AttachedPart( (byte)1 ),
 	Invalid( Byte.MAX_VALUE );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<ParameterTypeDesignator> DISVALUE_LOOKUP = 
+		new EnumLookup<>( ParameterTypeDesignator.class, 
+		                  ParameterTypeDesignator::value, 
+		                  ParameterTypeDesignator.Invalid );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -59,13 +68,6 @@ public enum ParameterTypeDesignator
 
 	public static ParameterTypeDesignator fromValue( short value )
 	{
-		switch( value )
-		{
-			case 0: return ArticulatedPart;
-			case 1: return AttachedPart;
-			default: // drop through
-		}
-
-		return Invalid;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

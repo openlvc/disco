@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum InputSource
 {
@@ -40,6 +39,12 @@ public enum InputSource
 	DataJammer       ( (short)11 ),
 	GpsJammer        ( (short)12 ),
 	GpsMeaconer      ( (short)13 );
+	
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<InputSource> DISVALUE_LOOKUP = 
+		new EnumLookup<>( InputSource.class, InputSource::value, InputSource.Other );
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -72,13 +77,6 @@ public enum InputSource
 	
 	public static InputSource fromValue( short value )
 	{
-		for( InputSource source : values() )
-			if( source.value == value )
-				return source;
-
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" is not a valid value for InputSource" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

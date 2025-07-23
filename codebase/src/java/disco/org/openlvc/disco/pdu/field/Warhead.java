@@ -17,12 +17,7 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
+import org.openlvc.disco.utils.EnumLookup;
 
 /**
  * The warhead shall be specified by a 16-bit enumeration.
@@ -106,10 +101,8 @@ public enum Warhead
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	// fast lookup for types with lots of options
-	private static final Map<Integer,Warhead> CACHE = Arrays.stream( Warhead.values() )
-	                                                        .collect( Collectors.toMap(Warhead::value, 
-	                                                                                   warhead -> warhead) );
+	private static final EnumLookup<Warhead> DISVALUE_LOOKUP = 
+		new EnumLookup<>( Warhead.class, Warhead::value, Warhead.Other );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -137,12 +130,6 @@ public enum Warhead
 	//----------------------------------------------------------
 	public static Warhead fromValue( int value )
 	{
-		Warhead result = CACHE.get( value );
-		if( result != null )
-			return result;
-		else if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid Warhead number" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum Domain
 {
@@ -33,6 +32,13 @@ public enum Domain
 	Subsurface( (short)4 ),
 	Space     ( (short)5 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<Domain> DISVALUE_LOOKUP = new EnumLookup<>( Domain.class, 
+	                                                                            Domain::value, 
+	                                                                            Domain.Other );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -64,20 +70,6 @@ public enum Domain
 
 	public static Domain fromValue( short value )
 	{
-		switch( value )
-		{
-			 case 1: return Land;
-			 case 2: return Air;
-			 case 3: return Surface;
-			 case 4: return Subsurface;
-			 case 5: return Space;
-			 case 0: return Other;
-			default: break;
-		}
-
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid Domain" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

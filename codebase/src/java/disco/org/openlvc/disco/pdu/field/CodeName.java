@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum CodeName
 {
@@ -28,6 +27,12 @@ public enum CodeName
 	//----------------------------------------------------------
 	NotSpecified  ( 0 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<CodeName> DISVALUE_LOOKUP = 
+		new EnumLookup<>( CodeName.class, CodeName::value, CodeName.NotSpecified );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -59,15 +64,6 @@ public enum CodeName
 
 	public static CodeName fromValue( int value )
 	{
-		switch( value )
-		{
-			case 0: return NotSpecified;
-			default: // drop through
-		}
-
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid Code Name" );
-		else
-			return NotSpecified;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

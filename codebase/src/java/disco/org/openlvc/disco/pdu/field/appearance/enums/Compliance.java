@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.pdu.field.appearance.enums;
 
+import org.openlvc.disco.utils.EnumLookup;
+
 /**
  * Compliance appearance values for lifeforms
  * 
@@ -45,6 +47,12 @@ public enum Compliance
 	NonLethalWeapon6  ( (byte)(15) );
 
 	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<Compliance> DISVALUE_LOOKUP = 
+		new EnumLookup<>( Compliance.class, Compliance::value, Compliance.Other );
+	
+	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private byte value;
@@ -70,25 +78,6 @@ public enum Compliance
 	//----------------------------------------------------------
 	public static Compliance fromValue( byte value )
 	{
-		switch( value )
-		{
-			case 0:  return Other;
-			case 1:  return Detained;
-			case 2:  return Surrender;
-			case 3:  return UsingFists;
-			case 4:  return VerbalAbuse1;
-			case 5:  return VerbalAbuse2;
-			case 6:  return VerbalAbuse3;
-			case 7:  return PassiveResistance1;
-			case 8:  return PassiveResistance2;
-			case 9:  return PassiveResistance3;
-			case 10: return NonLethalWeapon1;
-			case 11: return NonLethalWeapon2;
-			case 12: return NonLethalWeapon3;
-			case 13: return NonLethalWeapon4;
-			case 14: return NonLethalWeapon5;
-			case 15: return NonLethalWeapon6;
-			default: throw new IllegalArgumentException( "Invalid Compliance Code: "+value );
-		}
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

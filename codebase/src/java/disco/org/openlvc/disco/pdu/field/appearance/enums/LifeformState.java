@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.pdu.field.appearance.enums;
 
+import org.openlvc.disco.utils.EnumLookup;
+
 /**
  * State appearance values for lifeforms
  * 
@@ -45,6 +47,12 @@ public enum LifeformState
 	Detained            ( (byte)(15) );
 
 	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<LifeformState> DISVALUE_LOOKUP = 
+		new EnumLookup<>( LifeformState.class, LifeformState::value );
+	
+	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private byte value;
@@ -70,25 +78,6 @@ public enum LifeformState
 	//----------------------------------------------------------
 	public static LifeformState fromValue( byte value )
 	{
-		switch( value )
-		{
-			case 0:  return NotApplicable;
-			case 1:  return UprightStandingStill;
-			case 2:  return UprightWalking;
-			case 3:  return UprightRunning;
-			case 4:  return Kneeling;
-			case 5:  return Prone;
-			case 6:  return Crawling;
-			case 7:  return Swimming;
-			case 8:  return Parachuting;
-			case 9:  return Jumping;
-			case 10: return Sitting;
-			case 11: return Squatting;
-			case 12: return Crouching;
-			case 13: return Wading;
-			case 14: return Surrender;
-			case 15: return Detained;
-			default: throw new IllegalArgumentException( "Invalid Lifeform State Code: "+value );
-		}
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

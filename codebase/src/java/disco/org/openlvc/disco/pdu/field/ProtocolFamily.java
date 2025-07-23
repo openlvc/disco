@@ -17,32 +17,37 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum ProtocolFamily
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	Other         ( (short)0 ),
-	Entity        ( (short)1 ),
-	Warfare       ( (short)2 ),
-	Logistics     ( (short)3 ),
-	Radio         ( (short)4 ),
-	SimMgmt       ( (short)5 ),
-	Emission      ( (short)6 ),
-	EntityMgmt    ( (short)7 ),
-	Minefield     ( (short)8 ),
-	SyntheticEnv  ( (short)9 ),
-	SimMgmt_R     ( (short)10 ),
-	LiveEntity    ( (short)11 ),
-	NonRealTime   ( (short)12 ),
-	InformationOps( (short)13 ),
+	Other         ( 0 ),
+	Entity        ( 1 ),
+	Warfare       ( 2 ),
+	Logistics     ( 3 ),
+	Radio         ( 4 ),
+	SimMgmt       ( 5 ),
+	Emission      ( 6 ),
+	EntityMgmt    ( 7 ),
+	Minefield     ( 8 ),
+	SyntheticEnv  ( 9 ),
+	SimMgmt_R     ( 10 ),
+	LiveEntity    ( 11 ),
+	NonRealTime   ( 12 ),
+	InformationOps( 13 ),
 	// Custom
-	DiscoCustom   ( (short)221 ); // 0xdd
+	DiscoCustom   ( 221 ); // 0xdd
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<ProtocolFamily> DISVALUE_LOOKUP = 
+		new EnumLookup<>( ProtocolFamily.class, ProtocolFamily::value, ProtocolFamily.Other );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -51,9 +56,9 @@ public enum ProtocolFamily
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private ProtocolFamily( short value )
+	private ProtocolFamily( int value )
 	{
-		this.value = value;
+		this.value = (short)value;
 	}
 
 	//----------------------------------------------------------
@@ -74,29 +79,7 @@ public enum ProtocolFamily
 
 	public static ProtocolFamily fromValue( short value )
 	{
-		switch( value )
-		{
-			 case  1:  return Entity;
-			 case  2:  return Warfare;
-			 case  3:  return Logistics;
-			 case  4:  return Radio;
-			 case  5:  return SimMgmt;
-			 case  6:  return Emission;
-			 case  7:  return EntityMgmt;
-			 case  8:  return Minefield;
-			 case  9:  return SyntheticEnv;
-			 case 10:  return SimMgmt_R;
-			 case 11:  return LiveEntity;
-			 case 12:  return NonRealTime;
-			 case 13:  return InformationOps;
-			 case 221: return DiscoCustom;
-			default:  break;
-		}
-
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" is not a valid value for ProtocolFamily" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 	
 }

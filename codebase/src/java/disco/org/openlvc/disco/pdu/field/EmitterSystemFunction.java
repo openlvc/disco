@@ -17,12 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 /**
  * 2019-SISO-REF-010-v27 [UID 76]
@@ -117,7 +113,10 @@ public enum EmitterSystemFunction
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	private static Map<Short,EmitterSystemFunction> CACHE = new HashMap<>();
+	private static final EnumLookup<EmitterSystemFunction> DISVALUE_LOOKUP = 
+		new EnumLookup<>( EmitterSystemFunction.class, 
+		                  EmitterSystemFunction::value, 
+		                  EmitterSystemFunction.Other );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -156,19 +155,6 @@ public enum EmitterSystemFunction
 	
 	public static EmitterSystemFunction fromValue( short value )
 	{
-		// lazy-load
-		if( CACHE.isEmpty() )
-		{
-			for( EmitterSystemFunction temp : EmitterSystemFunction.values() )
-				CACHE.put( temp.value(), temp );
-		}
-
-		EmitterSystemFunction found = CACHE.get( value );
-		if( found != null )
-			return found;
-		else if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" is not a valid EmitterSystemFunction value" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

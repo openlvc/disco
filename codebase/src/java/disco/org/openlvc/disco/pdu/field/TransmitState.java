@@ -17,19 +17,24 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum TransmitState
 {
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	Off                 ( (short)0 ),
-	OnButNotTransmitting( (short)1 ),
-	OnAndTransmitting   ( (short)2 );
+	Off                 ( 0 ),
+	OnButNotTransmitting( 1 ),
+	OnAndTransmitting   ( 2 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<TransmitState> DISVALUE_LOOKUP = 
+		new EnumLookup<>( TransmitState.class, TransmitState::value, TransmitState.Off );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -38,9 +43,9 @@ public enum TransmitState
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	private TransmitState( short value )
+	private TransmitState( int value )
 	{
-		this.value = value;
+		this.value = (short)value;
 	}
 
 	//----------------------------------------------------------
@@ -61,17 +66,6 @@ public enum TransmitState
 	
 	public static TransmitState fromValue( short value )
 	{
-		switch( value )
-		{
-			case 0: return Off;
-			case 1: return OnButNotTransmitting;
-			case 2: return OnAndTransmitting;
-			default: break;
-		}
-
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" is not a valid value for TransmitterState" );
-		else
-			return Off;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

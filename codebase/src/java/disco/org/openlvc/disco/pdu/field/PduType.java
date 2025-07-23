@@ -21,19 +21,19 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.emissions.DesignatorPdu;
 import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.minefield.MinefieldDataPdu;
+import org.openlvc.disco.pdu.minefield.MinefieldStatePdu;
 import org.openlvc.disco.pdu.radio.ReceiverPdu;
 import org.openlvc.disco.pdu.radio.SignalPdu;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
+import org.openlvc.disco.pdu.simman.AcknowledgePdu;
 import org.openlvc.disco.pdu.simman.ActionRequestPdu;
 import org.openlvc.disco.pdu.simman.ActionResponsePdu;
 import org.openlvc.disco.pdu.simman.CommentPdu;
@@ -41,8 +41,11 @@ import org.openlvc.disco.pdu.simman.DataPdu;
 import org.openlvc.disco.pdu.simman.SetDataPdu;
 import org.openlvc.disco.pdu.simman.StartResumePdu;
 import org.openlvc.disco.pdu.simman.StopFreezePdu;
+import org.openlvc.disco.pdu.synthenv.ArealObjectStatePdu;
+import org.openlvc.disco.pdu.synthenv.LinearObjectStatePdu;
 import org.openlvc.disco.pdu.warfare.DetonationPdu;
 import org.openlvc.disco.pdu.warfare.FirePdu;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum PduType
 {
@@ -65,7 +68,7 @@ public enum PduType
 	RemoveEntity         ( (short)12,  ProtocolFamily.SimMgmt ),
 	StartResume          ( (short)13,  ProtocolFamily.SimMgmt,        StartResumePdu.class ),
 	StopFreeze           ( (short)14,  ProtocolFamily.SimMgmt,        StopFreezePdu.class ),
-	Acknowledge          ( (short)15,  ProtocolFamily.SimMgmt ),
+	Acknowledge          ( (short)15,  ProtocolFamily.SimMgmt ,       AcknowledgePdu.class ),
 	ActionRequest        ( (short)16,  ProtocolFamily.SimMgmt,        ActionRequestPdu.class ),
 	ActionResponse       ( (short)17,  ProtocolFamily.SimMgmt,        ActionResponsePdu.class ),
 	DataQuery            ( (short)18,  ProtocolFamily.SimMgmt ),
@@ -92,16 +95,16 @@ public enum PduType
 	TransferOwnership    ( (short)35,  ProtocolFamily.EntityMgmt ),
 	IsPartOf             ( (short)36,  ProtocolFamily.EntityMgmt ),
 	
-	MinefieldState       ( (short)37,  ProtocolFamily.Minefield ),
+	MinefieldState       ( (short)37,  ProtocolFamily.Minefield,      MinefieldStatePdu.class ),
 	MinefieldQuery       ( (short)38,  ProtocolFamily.Minefield ),
-	MinefieldData        ( (short)39,  ProtocolFamily.Minefield ),
+	MinefieldData        ( (short)39,  ProtocolFamily.Minefield,      MinefieldDataPdu.class ),
 	MinefieldRspNACK     ( (short)40,  ProtocolFamily.Minefield ),
 	
 	EnvironmentalProc    ( (short)41,  ProtocolFamily.SyntheticEnv ),
 	GriddedData          ( (short)42,  ProtocolFamily.SyntheticEnv ),
 	PointObjectState     ( (short)43,  ProtocolFamily.SyntheticEnv ),
-	LinearObjectState    ( (short)44,  ProtocolFamily.SyntheticEnv ),
-	ArealObjectState     ( (short)45,  ProtocolFamily.SyntheticEnv ),  
+	LinearObjectState    ( (short)44,  ProtocolFamily.SyntheticEnv,   LinearObjectStatePdu.class ),
+	ArealObjectState     ( (short)45,  ProtocolFamily.SyntheticEnv,   ArealObjectStatePdu.class ),
 	
 	TSPI                 ( (short)46,  ProtocolFamily.LiveEntity ),
 	Appearance           ( (short)47,  ProtocolFamily.LiveEntity ),
@@ -340,9 +343,9 @@ public enum PduType
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	private static final Map<Short,PduType> CACHE = Arrays.stream( PduType.values() )
-	                                                      .collect( Collectors.toMap(PduType::value, 
-	                                                                                 type -> type) );
+	private static final EnumLookup<PduType> DISVALUE_LOOKUP = new EnumLookup<>( PduType.class, 
+	                                                                             PduType::value, 
+	                                                                             PduType.Other );
 	
 	private static final EnumSet<PduType> SUPPORTED_TYPES = EnumSet.copyOf( Arrays.stream( PduType.values() )
 	                                                                              .filter( type -> type.isSupported() )
@@ -412,13 +415,7 @@ public enum PduType
 
 	public static PduType fromValue( short value )
 	{
-		PduType type = CACHE.get( value );
-		if( type != null )
-			return type;
-		else if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid PDUType number" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 
 	/**

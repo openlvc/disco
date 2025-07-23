@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.pdu.field.appearance.enums;
 
+import org.openlvc.disco.utils.EnumLookup;
+
 /**
  * Hatch state appearance values.
  * 
@@ -34,6 +36,12 @@ public enum HatchState
 	Open                  ( (byte)4 ),
 	OpenAndPersonVisible  ( (byte)5 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<HatchState> DISVALUE_LOOKUP = 
+		new EnumLookup<>( HatchState.class, HatchState::value, HatchState.NotApplicable );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -60,15 +68,6 @@ public enum HatchState
 	//----------------------------------------------------------
 	public static HatchState fromValue( byte value )
 	{
-		switch( value )
-		{
-			case 0: return NotApplicable;
-			case 1: return Closed;
-			case 2: return Popped;
-			case 3: return PoppedAndPersonVisible;
-			case 4: return Open;
-			case 5: return OpenAndPersonVisible;
-			default: throw new IllegalArgumentException( "Invalid Hatch State: "+value );
-		}
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

@@ -127,11 +127,10 @@ public class CustomMapperTest extends AbstractTest
 		
 		// Compare what we got with what we expected
 		Assert.assertNotNull( after );
-		Assert.assertEquals( after.getCustomString(), before.getCustomString() );		
+		Assert.assertEquals( after.getCustomString(), before.getCustomString() );
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
-	
 }

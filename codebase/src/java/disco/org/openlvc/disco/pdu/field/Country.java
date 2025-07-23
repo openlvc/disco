@@ -17,13 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum Country
 {
@@ -297,10 +292,9 @@ public enum Country
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	// fast lookup for types with lots of options
-	private static final Map<Integer,Country> CACHE = Arrays.stream( Country.values() )
-	                                                        .collect( Collectors.toMap(Country::value, 
-	                                                                                   country -> country) );
+	private static final EnumLookup<Country> DISVALUE_LOOKUP = new EnumLookup<>( Country.class, 
+	                                                                             Country::value, 
+	                                                                             Country.Other );
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -333,12 +327,6 @@ public enum Country
 
 	public static Country fromValue( int value )
 	{
-		Country temp = CACHE.get( value );
-		if( temp != null )
-			return temp;
-		else if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid Country Code" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

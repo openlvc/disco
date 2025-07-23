@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum StopFreezeReason
 {
@@ -35,6 +34,12 @@ public enum StopFreezeReason
 	StopForReset( (short)6 ),
 	StopForRestart( (short)7 ),
 	AbortAndReturnToTacticalOperations( (short)8 );
+	
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<StopFreezeReason> DISVALUE_LOOKUP = 
+		new EnumLookup<>( StopFreezeReason.class, StopFreezeReason::value, StopFreezeReason.Other );
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -67,15 +72,6 @@ public enum StopFreezeReason
 	
 	public static StopFreezeReason fromValue( short value )
 	{
-		for( StopFreezeReason reason : values() )
-		{
-			if( reason.value == value )
-				return reason;
-		}
-
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" is not a valid value for StopFreezeReason" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

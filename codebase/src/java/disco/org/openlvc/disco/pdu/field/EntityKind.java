@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum EntityKind
 {
@@ -37,6 +36,12 @@ public enum EntityKind
 	Expandable       ( (short)8 ),
 	SensorEmitter    ( (short)9 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<EntityKind> DISVALUE_LOOKUP = 
+		new EnumLookup<>( EntityKind.class, EntityKind::value, EntityKind.Other );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -68,24 +73,6 @@ public enum EntityKind
 
 	public static EntityKind fromValue( short value )
 	{
-		switch( value )
-		{
-			 case 1: return Platform;
-			 case 2: return Munition;
-			 case 3: return Lifeform;
-			 case 4: return Environmental;
-			 case 5: return CulturalFeature;
-			 case 6: return Supply;
-			 case 7: return Radio;
-			 case 8: return Expandable;
-			 case 9: return SensorEmitter;
-			 case 0: return Other;
-			default: // drop through
-		}
-		
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid EntityKind" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

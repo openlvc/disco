@@ -26,8 +26,8 @@ import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.Domain;
+import org.openlvc.disco.pdu.field.EntityKind;
 import org.openlvc.disco.pdu.field.ForceId;
-import org.openlvc.disco.pdu.field.Kind;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.record.ArticulationParameter;
 import org.openlvc.disco.pdu.record.DeadReckoningParameter;
@@ -176,7 +176,7 @@ public class EntityStatePdu extends PDU
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Convenience Methods   //////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////
-	public Kind getKind()
+	public EntityKind getKind()
 	{
 		return entityType.getKindEnum();
 	}

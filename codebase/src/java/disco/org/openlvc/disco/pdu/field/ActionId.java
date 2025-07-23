@@ -17,13 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 public enum ActionId
 {
@@ -83,10 +78,9 @@ public enum ActionId
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	// fast lookup for types with lots of options
-	private static final Map<Long,ActionId> CACHE = Arrays.stream( ActionId.values() )
-	                                                      .collect( Collectors.toMap(ActionId::value, 
-	                                                                                 value -> value) );
+	private static final EnumLookup<ActionId> DISVALUE_LOOKUP = new EnumLookup<>( ActionId.class, 
+	                                                                              ActionId::value, 
+	                                                                              ActionId.Other );
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -123,12 +117,6 @@ public enum ActionId
 
 	public static ActionId fromValue( long value )
 	{
-		ActionId temp = CACHE.get( value );
-		if( temp != null )
-			return temp;
-		else if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid ActionId" );
-		else
-			return Other;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

@@ -17,9 +17,8 @@
  */
 package org.openlvc.disco.pdu.field;
 
-import org.openlvc.disco.configuration.DiscoConfiguration;
-import org.openlvc.disco.configuration.Flag;
 import org.openlvc.disco.pdu.DisSizes;
+import org.openlvc.disco.utils.EnumLookup;
 
 /**
  * The fourteen least significant bits of the encoding scheme shall represent 
@@ -42,6 +41,12 @@ public enum EncodingType
 	PCM8  ( (short)5 ),
 	VQ    ( (short)6 );
 
+	//----------------------------------------------------------
+	//                    STATIC VARIABLES
+	//----------------------------------------------------------
+	private static final EnumLookup<EncodingType> DISVALUE_LOOKUP = 
+		new EnumLookup<>( EncodingType.class, EncodingType::value, EncodingType.Unknown );
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -73,15 +78,6 @@ public enum EncodingType
 
 	public static EncodingType fromValue( short value )
 	{
-		for( EncodingType type : values() )
-		{
-			if( type.value == value )
-				return type;
-		}
-
-		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new IllegalArgumentException( value+" not a valid EncodingType" );
-		else
-			return Unknown;
+		return DISVALUE_LOOKUP.fromValue( value );
 	}
 }

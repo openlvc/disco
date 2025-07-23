@@ -64,6 +64,7 @@ public class ActionResponsePdu extends PDU
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	@Override
 	public void from( DisInputStream dis ) throws IOException
 	{
 		this.originatingEntity.from( dis );
@@ -91,6 +92,7 @@ public class ActionResponsePdu extends PDU
 		}
 	}
 	
+	@Override
 	public void to( DisOutputStream dos ) throws IOException
 	{
 		originatingEntity.to( dos );
