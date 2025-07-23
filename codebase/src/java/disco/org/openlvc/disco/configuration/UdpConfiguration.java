@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.configuration;
 
+import java.io.EOFException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -24,6 +25,7 @@ import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.utils.NetworkUtils;
 import org.openlvc.disco.utils.StringUtils;
 
@@ -39,7 +41,8 @@ public class UdpConfiguration
 	private static final String PROP_SEND_BUFFER  = "disco.udp.sendBuffer";
 	private static final String PROP_RECV_BUFFER  = "disco.udp.recvBuffer";
 	private static final String PROP_TTL          = "disco.udp.ttl";
-	private static final String PROP_TRAFFIC_CLASS= "disco.udp.trafficClass"; 
+	private static final String PROP_TRAFFIC_CLASS= "disco.udp.trafficClass";
+	private static final String PROP_MAX_PDU_SIZE = "disco.udp.maxPduSize";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -257,7 +260,7 @@ public class UdpConfiguration
 	
 	public void setSendBufferSize( int bytes )
 	{
-		parent.setProperty(PROP_SEND_BUFFER,""+bytes );
+		parent.setProperty(PROP_SEND_BUFFER,bytes+"B" );
 	}
 
 	public int getRecvBufferSize()
@@ -267,7 +270,7 @@ public class UdpConfiguration
 
 	public void setRecvBufferSize( int bytes )
 	{
-		parent.setProperty(PROP_RECV_BUFFER,""+bytes );
+		parent.setProperty(PROP_RECV_BUFFER,bytes+"B" );
 	}
 	
 	public int getTimeToLive()
@@ -290,6 +293,33 @@ public class UdpConfiguration
 		parent.setProperty( PROP_TRAFFIC_CLASS, String.valueOf(clasz) );
 	}
 
+	/**
+	 * Returns the buffer size that will be allocated for reading a PDU from a UDP Datagram
+	 * <p/>
+	 * Some systems may take advantage of IP4 Fragmentation and send Datagrams that are beyond the 
+	 * size of the UDP Maximum Transmission Unit (1500 bytes). In this case the IP layer will 
+	 * fragment the Datagram over several UDP packets and reassemble the Datagram on the other side 
+	 * before handing it to the application layer.
+	 * <p/>
+	 * This value represents the size of the buffer that DISCO will use when reading the complete
+	 * Datagram from the application layer. 
+	 * <p/>
+	 * If you are constantly receiving {@link EOFException}s when receiving PDUs then consider
+	 * increasing the size of the buffer by calling {@link #setMaxPduSize(int)}
+	 * 
+	 * @return the buffer size that will be allocated for reading a PDU from a UDP Datagram, 
+	 *         specified in bytes
+	 */
+	public int getMaxPduSize()
+	{
+		return Integer.parseInt( parent.getProperty(PROP_MAX_PDU_SIZE, Integer.toString(DisSizes.PDU_MAX_SIZE)) );
+	}
+	
+	public void setMaxPduSize( int bytes )
+	{
+		parent.setProperty( PROP_MAX_PDU_SIZE, Integer.toString(bytes) );
+	}
+	
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
