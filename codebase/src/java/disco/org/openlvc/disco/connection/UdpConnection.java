@@ -33,7 +33,6 @@ import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.UdpConfiguration;
 import org.openlvc.disco.pdu.DisOutputStream;
-import org.openlvc.disco.pdu.DisSizes;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.utils.NetworkUtils;
@@ -278,7 +277,7 @@ public class UdpConnection implements IConnection
 				try
 				{
 					// 1. Receive the packet
-					byte[] buffer = new byte[DisSizes.PDU_MAX_SIZE];
+					byte[] buffer = new byte[configuration.getMaxPduSize()];
 					DatagramPacket packet = new DatagramPacket( buffer, buffer.length );
 					recvSocket.receive( packet );
 				
