@@ -29,6 +29,7 @@ import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.utils.StringUtils;
 import org.openlvc.disco.utils.ThreadUtils;
+import org.openlvc.duplicator.readers.ISessionReader;
 
 /**
  * The {@link Replayer} is a class that reads a session file and replays it, feeding PDUs to
@@ -70,7 +71,7 @@ public class Replayer
 	private Thread replayThread;
 
 	// Session Reading
-	private SessionReader sessionReader;
+	private ISessionReader sessionReader;
 
 	// Metrics
 	private long pdusWritten;
@@ -104,7 +105,7 @@ public class Replayer
 		this.replayThread = null;         // set in startReplay()
 		
 		// Session Reading
-		this.sessionReader = new SessionReader( sessionFile );
+		this.sessionReader = ISessionReader.getReaderForFile( sessionFile );
 		
 		// Metrics
 		// These are all set in startReplay
@@ -141,6 +142,7 @@ public class Replayer
 		// open the session
 		this.sessionReader.open();
 		logger.debug( "Session file is open and ready for reading" );
+		logger.info( "Session file reader is "+this.sessionReader.getClass().getSimpleName() );
 
 		// reset metrics
 		this.pdusWritten = 0;
@@ -183,8 +185,11 @@ public class Replayer
 			return;
 		
 		// stop the replay thread
-		this.replayThread.interrupt();
-		ThreadUtils.exceptionlessThreadJoin( this.replayThread );
+		if( this.replayThread != null )
+		{
+    		this.replayThread.interrupt();
+    		ThreadUtils.exceptionlessThreadJoin( this.replayThread );
+		}
 		
 		// close the session and timers
 		this.endReplay();
@@ -224,6 +229,8 @@ public class Replayer
 			
 			ThreadUtils.exceptionlessSleep( 1000 );
 		}
+		
+		logger.info( "Session replay has finished" );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
