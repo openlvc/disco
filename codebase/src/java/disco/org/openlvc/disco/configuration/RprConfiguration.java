@@ -18,10 +18,12 @@
 package org.openlvc.disco.configuration;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.connection.rpr.mappers.AbstractMapper;
@@ -93,6 +95,7 @@ public class RprConfiguration
 	private static final String PROP_RANDOMIZE_FED_NAME = "disco.rpr.randomizeFedName";
 	private static final String PROP_LOCAL_SETTINGS     = "disco.rpr.localSettings";
 	private static final String PROP_RPR_HEARTBEAT_TIME = "disco.rpr.heartbeatPeriod";
+	private static final String PROP_FOM_OVERRIDE_PATH  = "disco.rpr.fom.overridePath";
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -398,6 +401,44 @@ public class RprConfiguration
 		parent.setProperty( PROP_RPR_HEARTBEAT_TIME, ""+period );
 	}
 
+	/**
+	 * @return True if the user has specified an override path, false otherwise.
+	 */
+	public boolean isFomOverridePathSet()
+	{
+		return parent.properties.containsKey( PROP_FOM_OVERRIDE_PATH );
+	}
+
+	/**
+	 * Set the directory from which Disco will seek to load FOM modules. This directory will
+	 * REPLACE any existing path, so it must provide <i>all</i> required RPR FOM modules, but
+	 * it can also contain additional modules that the user wants loaded. If supplied, all 
+	 * <code>.xml</code> files in this directory will be loaded as FOM modules and passed to
+	 * any federation creation or join methods.
+	 * 
+	 * @param path The path to a directory that all FOM modules should be loaded from
+	 * @throws DiscoException If the provided path does not exist
+	 */
+	public void setFomOverridePath( String path ) throws DiscoException
+	{
+		File file = new File( path );
+		if( file.exists() == false )
+			throw new DiscoException( "Provided FOM module override path does not exist: "+path );
+		else
+			parent.setProperty( PROP_FOM_OVERRIDE_PATH, path );
+	}
+	
+	/**
+	 * @return The FOM module override path that has been specified by a user, or null if one has
+	 *         not been set.
+	 */
+	public File getFomOverridePath()
+	{
+		if( isFomOverridePathSet() == false )
+			return null;
+		else
+			return new File( parent.getProperty(PROP_FOM_OVERRIDE_PATH,"") );
+	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////////
 	/// FOM/Mapper Extensions   /////////////////////////////////////////////////////////////
@@ -483,6 +524,32 @@ public class RprConfiguration
 	 */
 	private void loadDefaultModules()
 	{
+		//
+		// If override configuration is specified, use it instead of default location
+		//
+		if( this.isFomOverridePathSet() )
+		{
+			File fomDirectory = this.getFomOverridePath();
+			File[] modules = fomDirectory.listFiles( (directory,name) -> name.endsWith(".xml") );
+			
+			try
+			{
+    			for( File module : modules )
+					fomModules.add( module.toURI().toURL() );
+			}
+			catch( Exception e )
+			{
+				throw new DiscoException( "Error loading FOM Modules [path="+
+				                          fomDirectory.getAbsolutePath()+"]: "+e.getMessage(),
+				                          e );
+			}
+			
+			return;
+		}
+
+		//
+		// Override directory not specified, fall back to modules inside the jar
+		//
 		// List of defaults
 		String[] defaultModules = new String[] {
 			"hla/rpr2/HLAstandardMIM.xml",
