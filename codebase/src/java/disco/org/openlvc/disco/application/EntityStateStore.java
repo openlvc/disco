@@ -69,16 +69,19 @@ public class EntityStateStore implements IDeleteReaperManaged
 		// if we are discovering this entity for first time, store in marking indexed store as well
 		if( existing == null )
 		{
-			EntityStatePdu existingMarking = byMarking.put( pdu.getMarking(), pdu );
-			
-			// If there is already an entity against this marking with a different id, then
-			// we assume that it has gone stale in favor of the one that we have just received.
-			//
-			// Note: This check was added for observed behavior when restarting a VR-Forces 
-			// simulation with HLA. The Entities in the scenario are removed and then re-added 
-			// with different EntityIds, however their marking are the same.
-			if( existingMarking != null )
-				byId.remove( existingMarking.getEntityID(), existingMarking );
+			if( !pdu.getMarking().isBlank() )
+			{
+				EntityStatePdu existingMarking = byMarking.put( pdu.getMarking(), pdu );
+
+				// If there is already an entity against this marking with a different id, then
+				// we assume that it has gone stale in favor of the one that we have just received.
+				//
+				// Note: This check was added for observed behavior when restarting a VR-Forces 
+				// simulation with HLA. The Entities in the scenario are removed and then re-added 
+				// with different EntityIds, however their marking are the same.
+				if( existingMarking != null )
+					byId.remove( existingMarking.getEntityID(), existingMarking );
+			}
 			
 		}
 		else if( existing.getMarking().equals(pdu.getMarking()) == false )
@@ -197,9 +200,13 @@ public class EntityStateStore implements IDeleteReaperManaged
 		                 String entityMarking = espdu.getMarking();
 		                 
 		                 byId.remove( entityId );
-		                 EntityStatePdu markingEntry = byMarking.get( entityMarking );
-		                 if( markingEntry.getEntityID().equals(entityId) )
-		                     byMarking.remove( espdu.getMarking() );
+		                 
+		                 if( !entityMarking.isBlank() )
+		                 {
+		                	 EntityStatePdu markingEntry = byMarking.get( entityMarking );
+		                	 if( markingEntry != null && markingEntry.getEntityID().equals(entityId) )
+		                		 byMarking.remove( espdu.getMarking() );
+		                 }
 		                 
 		                 removed.incrementAndGet();
 		              });
@@ -213,12 +220,13 @@ public class EntityStateStore implements IDeleteReaperManaged
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void clear()
 	{
+		this.byId.clear();
 		this.byMarking.clear();
 	}
 	
 	public int size()
 	{
-		return byMarking.size();
+		return byId.size();
 	}
 
 	//----------------------------------------------------------
