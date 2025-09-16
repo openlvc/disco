@@ -213,6 +213,7 @@ public class EntityStateStore implements IDeleteReaperManaged
 	////////////////////////////////////////////////////////////////////////////////////////////
 	public void clear()
 	{
+		this.byId.clear();
 		this.byMarking.clear();
 	}
 	
