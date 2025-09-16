@@ -319,8 +319,17 @@ public class EntityStatePdu extends PDU
 		this.deadReckoningParams = deadReckoningParams;
 	}
 
+	/**
+	 * Return the marking for the entity. If the entity marking is null, or empty, a fake
+	 * marking will be generated in the form of "appId-entityId" (max length 11 characters).
+	 * 
+	 * @return The marking for the entity. Will be synthesized if the marking is null or empty  
+	 */
 	public String getMarking()
 	{
+		if( marking == null || marking.isEmpty() )
+			return entityID.getAppId()+"-"+entityID.getEntityId();
+
 		return marking;
 	}
 
