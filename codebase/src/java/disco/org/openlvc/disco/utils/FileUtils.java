@@ -18,6 +18,7 @@
 package org.openlvc.disco.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -25,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.openlvc.disco.DiscoException;
 
@@ -141,5 +143,34 @@ public class FileUtils
 		}
 		
 		return extractedFiles;
+	}
+
+	/**
+	 * Load a {@link Properties} object with the contents from the specified file.
+	 * If the file is null, doesn't exist or can't be read, an exception will be
+	 * thrown. Otherwise, the contents of the file will be returned as a properties
+	 * instance.
+	 * 
+	 * @param file The file to load from 
+	 * @return The properties inside the file
+	 * @throws DiscoException If the file doesn't exist, can't be read or parsed (not a properties
+	 *                        file) or there is any other IOException
+	 */
+	public static Properties loadProperties( File file ) throws DiscoException
+	{
+		if( file == null || file.exists() == false )
+			throw new DiscoException( "Properties file does not exist: "+file );
+
+		try( FileInputStream inputStream = new FileInputStream(file) )
+		{
+			Properties properties = new Properties();
+			properties.load( inputStream );
+			return properties;
+		}
+		catch( IOException e )
+		{
+			throw new DiscoException( e, "Error loading properties file [%s]: %s",
+			                          file.getAbsolutePath(), e.getMessage() );
+		}
 	}
 }

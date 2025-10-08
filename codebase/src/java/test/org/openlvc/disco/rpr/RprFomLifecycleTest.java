@@ -78,9 +78,9 @@ public class RprFomLifecycleTest extends AbstractTest
 	{
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// RPR FOM Testing Methods   /////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
+	//=================================================================================
+	// RPR FOM Testing Methods  ///////////////////////////////////////////////////////
+	//=================================================================================
 	@Test
 	public void testRprLoadFomOverrideDirectory()
 	{
@@ -99,19 +99,59 @@ public class RprFomLifecycleTest extends AbstractTest
 		
 		// Check that the FOM modules are loaded
 		URL[] modules = config.getRprConfiguration().getRegisteredFomModules();
-		Assert.assertEquals( modules.length, 5 );
+		Assert.assertEquals( modules.length, 6 );
 		
 		// Check the names of the modules
+		// The file "RPR-Logistics_v2.0.xml" exists, but should be ignored because it is
+		// not referenced in the load-order.properties file.
 		Set<String> expectedNames = new HashSet<>();
 		expectedNames.add( "HLAstandardMIM.xml" );
 		expectedNames.add( "RPR-Base_v2.0.xml" );
 		expectedNames.add( "RPR-Physical_v2.0.xml" );
 		expectedNames.add( "RPR-Switches_v2.0.xml" );
+		expectedNames.add( "RPR-Warfare_v2.0.xml" ); // in subdir
 		expectedNames.add( "Custom-FOM-Module.xml" );
 		Set<String> actualNames = new HashSet<>();
 		for( URL module : modules )
 			actualNames.add( new File(module.getPath()).getName() );
 		Assert.assertEquals( actualNames, expectedNames );
+	}
+
+	//=================================================================================
+	// testRprLoadFomOverrideDirectoryOrdered /////////////////////////////////////////
+	//=================================================================================
+	@Test
+	public void testRprLoadFomOverrideDirectoryOrdered()
+	{
+		DiscoConfiguration config = new DiscoConfiguration();
+		config.setConnection( "rpr" );
+		config.getRprConfiguration().setFomOverridePath( "resources/testdata/hla/fomOverride" );
+		
+		// Create Opscenter with configuration
+		// We probably don't need to do this, but should we? It will help confirm that the
+		// modules flow through to the actualy running Disco
+		//OpsCenter opsCenter = new OpsCenter( config );
+		//opsCenter.open();
+		//opsCenter.close();
+		
+		// Ensure FOM modules are loaded in the order specified in the load-order.properties file
+		// Expected: HLAstandardMIM.xml
+		//           RPR-Base_v2.0.xml
+		//           RPR-Switches_v2.0.xml
+		//           RPR-Physical_v2.0.xml
+		URL[] modules = config.getRprConfiguration().getRegisteredFomModules();
+		Assert.assertEquals( modules.length, 5 );
+		// The order specified 
+		Assert.assertTrue( modules[0].toString().endsWith("HLAstandardMIM.xml"),
+		                   "Expected [0]=HLAstandardMIM.xml" );
+		Assert.assertTrue( modules[1].toString().endsWith("RPR-Base_v2.0.xml"),
+		                   "Expected [1]=RPR-Base_v2.0.xml" );
+		Assert.assertTrue( modules[2].toString().endsWith("RPR-Switches_v2.0.xml"),
+		                   "Expected [2]=RPR-Switches_v2.0.xml" );
+		Assert.assertTrue( modules[3].toString().endsWith("RPR-Physical_v2.0.xml"),
+		                   "Expected [3]=RPR-Physical_v2.0.xml" );
+		Assert.assertTrue( modules[4].toString().endsWith("subdir/RPR-Warfare_v2.0.xml"),
+		                   "Expected [4]=RPR-Warfare_v2.0.xml" );
 	}
 
 	//----------------------------------------------------------
