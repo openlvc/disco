@@ -278,6 +278,13 @@
 		</jar>
 	</target>
 
+	<!-- build the source code jar file (only under release conditions) -->
+	<target name="jar.src" extensionOf="jars" if="build.release">
+		<jar destfile="${dist.dir}/${dist.name}.src.jar">
+			<fileset dir="${disco.src.dir}" includes="**/*.java"/>
+		</jar>
+	</target>
+
 	<!-- ================================================================================= -->
 	<!--                             Release Generation Targets                            -->
 	<!-- ================================================================================= -->
