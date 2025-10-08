@@ -524,19 +524,29 @@ public class RprConfiguration
 	 */
 	private void loadDefaultModules()
 	{
-		//
-		// If override configuration is specified, use it instead of default location
-		//
+		// load the default modules
+		URL[] modules = this.findDefaultModules();
+
+		// check for overrides, _REPLACING_ the default modules if we have any overrides
 		if( this.isFomOverridePathSet() )
 		{
-			this.loadOverrideModules();
-			return;
+			URL[] overrides = this.findOverrideModules();
+			if( overrides.length != 0 )
+				modules = overrides;
 		}
+		
+		// add the modules to the set we will use to load
+		for( URL url : modules )
+			this.fomModules.add( url );
+	}
 
-		//
-		// Override directory not specified, fall back to modules inside the jar
-		//
-		// List of defaults
+	/**
+	 * @return An array of all the 
+	 * @throws DiscoException
+	 */
+	private URL[] findDefaultModules() throws DiscoException
+	{
+		// List of default modules
 		String[] defaultModules = new String[] {
 			"hla/rpr2/HLAstandardMIM.xml",
 			"hla/rpr2/RPR-Foundation_v2.0.xml",
@@ -548,10 +558,11 @@ public class RprConfiguration
 			"hla/rpr2/RPR-SIMAN_v2.0.xml",
 			"hla/rpr2/RPR-Warfare_v2.0.xml"
 		};
-		
+
+		List<URL> modules = new ArrayList<>();
 		if( getRtiProvider() == RtiProvider.Mak )
 		{
-			createMakFomFiles( defaultModules, new File("hla/rpr2") );
+			modules.addAll( createMakFomFiles(defaultModules,new File("hla/rpr2")) );
 		}
 		else
 		{
@@ -563,50 +574,77 @@ public class RprConfiguration
 				if( url == null  )
 					throw new DiscoException( "Could not find FOM module: "+url );
 				else
-					fomModules.add( url );
+					modules.add( url );
 			}
 		}
+
+		return modules.toArray( new URL[modules.size()] );
 	}
 
 	/**
-	 * Load modules from the override directory that is specified by the configuration
-	 * (in {@link #getFomOverridePath()}). This will load all the XML files in the specified
-	 * directory. This method will skip loading override modules if the settings doesn't exist
-	 * or is an empty string.
-	 * 
-	 * If the folder is specified, but doesn't exist, an exception will be thrown.
-	 * 
-	 * Optionally, if the directory contains a {@code load-order.properties} file, it will
-	 * be loaded to check for a {@code load.order} property, looking for the value to be a
-	 * comma-separated list of XML files to load as modules. This let's a user specify the
-	 * module load order, allowing for dependent modules to be parsed properly. Only the files
-	 * mentioned in that property will be loaded.
-	 * 
-	 * If there is no load order file, the properties will be loaded in an unspecified order.
-	 * 
-	 * @throws DiscoException If the override path points to a folder that doesn't exist or
-	 *                        cannot be read, of if the {@code load-order.properties} file
-	 *                        exists but can't be read or doesn't contain the {@code load.order}
-	 *                        property.
+	 * Mak refuses to load anything from a jar file, as such need to copy any
+	 * module files in the jar outside into a folder where Mak can load them.
+	 * This method does that, creating a folder for the modules in the destDir
+	 * copying in the given module files, and adding them to the list of module URLs
 	 */
-	private void loadOverrideModules()
-		throws DiscoException
+	private List<URL> createMakFomFiles( String[] modules, File destDir )
+	{
+		ArrayList<String> modulesList = new ArrayList<>();
+		for( String module : modules )
+		{
+			// Mak doesn't like this module being included
+			if( module.contains("HLAstandardMIM") )
+				continue;
+				
+			modulesList.add(module);
+		}
+		
+		// add the URLs of the unjar'd files
+		ArrayList<URL> finalModules = new ArrayList<>();
+		finalModules.addAll( FileUtils.extractFilesFromJar(modulesList,
+		                                                   destDir,
+		                                                   getClass().getClassLoader()) );
+		
+		return finalModules;
+	}
+
+	/**
+	 * Return a list pointing to the FOM modules that should be loaded in preference to the
+	 * default FOM modules inside the jar file.
+	 * 
+	 * The array will be populated with a list of all XML files in the directory specified by
+	 * {@link #getFomOverridePath()}. If that value is not specified, or the folder does not
+	 * exist, this check will return an empty array.
+	 * 
+	 * The folder can optionally contain a file called {@code load-order.properties}. This should
+	 * be a properties file with a {@code load.order} property inside. This property should contain
+	 * a comma-separately list of modules to load.
+	 * 
+	 * If the file exists, the array will contain the FOM module files it references, in the order
+	 * they are specified in the property (allowing control over load order to ensure modules with
+	 * dependencies can be satisfied).
+	 * 
+	 * If there is no load order file, all XML files in the folder will be used and the returned
+	 * order is unspecified.
+	 *
+	 * @return A list of discovered override files to load, optionally controlled by the load
+	 *         order properties file. An empty array if the override path doesn't exist, or
+	 *         the folder contains no XML files, or the {@code load-order.properties} file doesn't
+	 *         specify any modules to load.
+	 * @throws DiscoException If the {@code load-order.properties} file exists, but doesn't contain
+	 *                        the required property, or any of the referenced modules in the file
+	 *                        don't exist.
+	 */
+	private URL[] findOverrideModules() throws DiscoException
 	{
 		// get the path to load FOM override modules from
 		File fomDirectory = this.getFomOverridePath();
 		if( fomDirectory == null )
-			return;
-
-		// does the folder exist?
-		if( fomDirectory.exists() == false )
-		{
-			throw new DiscoException( "Error loading FOM Modules [path=%s]: Folder doesn't exist",
-			                          fomDirectory.getAbsolutePath() );
-		}
+			return new URL[0];
 
 		// just enumerate over all the modules in the directory - our default load order
 		// will be whatever listFiles() gives us
-		File[] modules = fomDirectory.listFiles( (directory,name) -> name.endsWith(".xml") );
+		File[] files = fomDirectory.listFiles( (directory,name) -> name.endsWith(".xml") );
 
 		// check for a load order file to override the default and specify a module load order
 		// Should be in a properties file called "load-order.properties", with a "load.order"
@@ -626,7 +664,7 @@ public class RprConfiguration
 			// replace the modules array with the order specified in the file
 			String loadOrder = properties.getProperty( "load.order" );
 			String[] paths = loadOrder.split( "," );
-			modules = new File[paths.length];
+			files = new File[paths.length];
 			for( int i = 0; i < paths.length; i++ )
 			{
 				// if it is empty, skip it (can happen if there is stray "," on the end of list
@@ -634,57 +672,25 @@ public class RprConfiguration
 				if( path.isBlank() )
 					continue;
 				
-				File temp = new File( fomDirectory, path );
-				if( temp.exists() == false )
+				File file = new File( fomDirectory, path );
+				if( file.exists() == false )
 				{
 					throw new DiscoException( "Error loading FOM Modules [path=%s]: %s (%s)",
 					                          fomDirectory.getAbsolutePath(),
 					                          "load-order.properties file referenced missing module",
-					                          paths[i] );
+					                          path );
 				}
 				
-				// modules file exists, put the file into the modules set
-				modules[i] = temp;
+				files[i] = file;
 			}
 		}
 
-		// loop through all modules and convert them to URLs (which is what the RTI wants), storing
-		// the results in the configuration's fom module set
-		try
-		{
-			for( File module : modules )
-				fomModules.add( module.toURI().toURL() );
-		}
-		catch( Exception e )
-		{
-			throw new DiscoException( "Error loading FOM Modules [path="+
-			                          fomDirectory.getAbsolutePath()+"]: "+e.getMessage(),
-			                          e );
-		}
-		
-		return;
-	}
-	
-	/**
-	 * Mak refuses to load anything from a jar file, as such need to copy any
-	 * module files in the jar outside into a folder where Mak can load them.
-	 * This method does that, creating a folder for the modules in the destDir
-	 * copying in the given module files, and adding them to the list of module URLs
-	 */
-	private void createMakFomFiles( String[] modules, File destDir )
-	{
-		ArrayList<String> modulesList = new ArrayList<>();
-		for( String module : modules )
-		{
-			// Mak doesn't like this module being included
-			if( module.contains("HLAstandardMIM") )
-				continue;
-				
-			modulesList.add(module);
-		}
-		
-		// add the URLs of the unjar'd files
-		fomModules.addAll( FileUtils.extractFilesFromJar(modulesList, destDir, getClass().getClassLoader()) );
+		// return the discovered modules
+		URL[] urls = new URL[files.length];
+		for( int i = 0; i < files.length; i++ )
+			urls[i] = FileUtils.toURL( files[i] );
+
+		return urls;
 	}
 	
 	///////////////////////////////////////////////////////////////////

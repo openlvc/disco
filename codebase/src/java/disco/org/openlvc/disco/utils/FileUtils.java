@@ -173,4 +173,24 @@ public class FileUtils
 			                          file.getAbsolutePath(), e.getMessage() );
 		}
 	}
+
+	/**
+	 * Convert the given file to a URL and return it, catching any exception and re-throwing
+	 * as a runtime {@link DiscoException}.
+	 * 
+	 * @param file The file to turn into a URL
+	 * @return The file URL for the given file
+	 * @throws DiscoException If there is an IO/Malformed URL exception thrown (wrapped as Disco)
+	 */
+	public static URL toURL( File file ) throws DiscoException
+	{
+		try
+		{
+			return file.toURI().toURL();
+		}
+		catch( IOException e )
+		{
+			throw new DiscoException( e );
+		}
+	}
 }
