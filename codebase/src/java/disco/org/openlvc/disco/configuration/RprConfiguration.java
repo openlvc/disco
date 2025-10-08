@@ -412,9 +412,12 @@ public class RprConfiguration
 	/**
 	 * Set the directory from which Disco will seek to load FOM modules. This directory will
 	 * REPLACE any existing path, so it must provide <i>all</i> required RPR FOM modules, but
-	 * it can also contain additional modules that the user wants loaded. If supplied, all 
-	 * <code>.xml</code> files in this directory will be loaded as FOM modules and passed to
-	 * any federation creation or join methods.
+	 * it can also contain additional modules that the user wants loaded.
+	 * 
+	 * An optional load-order.properties file can be included, carrying a single load.order
+	 * property. If this property is set, it is assumed to be a comma separated list of module
+	 * names to load (relative to the override directory). If the file is not present, then all
+	 * {@code .xml} files in the directory will be used in an unspecified order.
 	 * 
 	 * @param path The path to a directory that all FOM modules should be loaded from
 	 * @throws DiscoException If the provided path does not exist
@@ -426,6 +429,14 @@ public class RprConfiguration
 			throw new DiscoException( "Provided FOM module override path does not exist: "+path );
 		else
 			parent.setProperty( PROP_FOM_OVERRIDE_PATH, path );
+	}
+
+	/**
+	 * @see #setFomOverridePath(String)
+	 */
+	public void setFomOverridePath( File file ) throws DiscoException
+	{
+		this.setFomOverridePath( file.getAbsolutePath() );
 	}
 	
 	/**

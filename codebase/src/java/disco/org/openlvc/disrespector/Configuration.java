@@ -285,6 +285,14 @@ public class Configuration
 		this.properties.put( KEY_HLA_FOM_OVERRIDE, path );
 	}
 
+	/**
+	 * @see #setHlaFomOverridePath(String)}
+	 */
+	public void setHlaFomOverridePath( File path )
+	{
+		this.setHlaFomOverridePath( path.getAbsolutePath() );
+	}
+	
 	public String getHlaFederationName()
 	{
 		return this.properties.getProperty( KEY_HLA_FEDERATION, "disrespector" );
