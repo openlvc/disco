@@ -49,6 +49,7 @@ public class Configuration
 	public static final String KEY_HLA_RTI_PROVIDER = "disrespector.hla.rti.provider";
 	public static final String KEY_HLA_RTI_DIR      = "disrespector.hla.rti.installdir";
 	public static final String KEY_HLA_RTI_LOCAL    = "disrespector.hla.rti.localSettings";
+	public static final String KEY_HLA_FOM_OVERRIDE = "disrespector.hla.fom.override";
 	public static final String KEY_HLA_FEDERATION   = "disrespector.hla.federationName";
 	public static final String KEY_HLA_FEDERATE     = "disrespector.hla.federateName";
 	public static final String KEY_HLA_FEDERATE_RND = "disrespector.hla.randomizeFederateName";
@@ -264,7 +265,26 @@ public class Configuration
 	{
 		this.properties.setProperty( KEY_HLA_RTI_LOCAL, settings );
 	}
-	
+
+	public String getHlaFomOverridePath()
+	{
+		return this.properties.getProperty( KEY_HLA_FOM_OVERRIDE, "" );
+	}
+
+	/**
+	 * Specify the directory to load FOM modules from, overriding the default set of modules
+	 * that exist in the Disco jar file. A blank path is equivalent to no override directory.
+	 * 
+	 * @param path The path for the override directory
+	 */
+	public void setHlaFomOverridePath( String path )
+	{
+		if( path == null || path.trim().isBlank() )
+			return;
+		
+		this.properties.put( KEY_HLA_FOM_OVERRIDE, path );
+	}
+
 	public String getHlaFederationName()
 	{
 		return this.properties.getProperty( KEY_HLA_FEDERATION, "disrespector" );
