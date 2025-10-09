@@ -566,7 +566,9 @@ public class RprConfiguration
 			"hla/rpr2/RPR-Enumerations_v2.0.xml",
 			"hla/rpr2/RPR-Physical_v2.0.xml",
 			"hla/rpr2/RPR-SIMAN_v2.0.xml",
-			"hla/rpr2/RPR-Warfare_v2.0.xml"
+			"hla/rpr2/RPR-Warfare_v2.0.xml",
+			"hla/rpr2/RPR-Aggregate_v2.0.xml",
+			"hla/rpr2/RPR-SE_v2.0.xml",
 		};
 
 		List<URL> modules = new ArrayList<>();
