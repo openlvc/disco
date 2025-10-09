@@ -387,6 +387,7 @@ public class Configuration
 		hla.getRprConfiguration().setRtiProvider( getHlaRtiProvider() );
 		hla.getRprConfiguration().setRtiInstallDir( getHlaRtiInstallDir() );
 		hla.getRprConfiguration().setLocalSettings( getHlaRtiLocalSettings() );
+		hla.getRprConfiguration().setFomOverridePath( getHlaFomOverridePath() );
 
 		hla.getRprConfiguration().setFederationName( getHlaFederationName() );
 		hla.getRprConfiguration().setFederateName( getHlaFederateName() );

@@ -19,6 +19,7 @@ package org.openlvc.disco.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -191,6 +192,24 @@ public class FileUtils
 		catch( IOException e )
 		{
 			throw new DiscoException( e );
+		}
+	}
+
+	//==========================================================================================
+	// File Reading Methods   //////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	public static InputStream openFile( File file )	throws DiscoException
+	{
+		if( file == null )
+			throw new DiscoException( "Cannot open file [null]: File is null" );
+		
+		try
+		{
+			return new FileInputStream( file );
+		}
+		catch( FileNotFoundException fnfe )
+		{
+			throw new DiscoException( "Cannot open file [%s]: Does not exist", file.getPath() );
 		}
 	}
 }

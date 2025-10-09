@@ -48,8 +48,9 @@ import org.openlvc.disco.connection.rpr.model.ObjectModel;
 import org.openlvc.disco.connection.rpr.objects.ObjectInstance;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.field.PduType;
-import org.openlvc.disco.utils.ReflectionUtils;
 import org.openlvc.disco.utils.FileUtils;
+import org.openlvc.disco.utils.ReflectionUtils;
+import org.openlvc.disco.utils.XmlUtils;
 
 import hla.rti1516e.AttributeHandleValueMap;
 import hla.rti1516e.CallbackModel;
@@ -375,7 +376,9 @@ public class RprConnection implements IConnection
 			try
 			{
 				logger.debug( "Creating Federation ["+federation+"]" );
-				this.rtiamb.createFederationExecution( federation, getRprCreateModules() );
+				URL[] fomModules = getRprCreateModules();
+				logger.debug( "FOM Modules: "+Arrays.toString(fomModules) );
+				this.rtiamb.createFederationExecution( federation, fomModules );
 			}
 			catch( FederationExecutionAlreadyExists feae )
 			{
@@ -476,7 +479,7 @@ public class RprConnection implements IConnection
 		}
 		catch( RTIexception rtie )
 		{
-			logger.warn( "Error while resigning from HLA federatoin: "+rtie.getMessage() );
+			logger.warn( "Error while resigning from HLA federation: "+rtie.getMessage() );
 		}
 		
 		// Delete the federation, to be a good citizen. Will get told off if people are
@@ -633,7 +636,24 @@ public class RprConnection implements IConnection
 		// Get the join modules
 		URL[] joinModules = rprConfiguration.getRegisteredFomModules();
 
-		// Get the create-only modules
+		// Check to see if any of the join modules have the switches defined inside them
+		// If they do have switches, we don't need to add defaults
+		for( URL url : joinModules )
+		{			
+			XmlUtils utils = new XmlUtils( XmlUtils.parseXml(url) );
+			boolean foundSwitches = utils.getElement("/objectModel/switches") != null;
+			logger.trace( "Checking for switches in [%s]: Found=%s", foundSwitches );
+			if( foundSwitches )
+			{
+				// this module has switches
+				logger.debug( "Found switches in module [%s]. Skip adding defaults to createModules",
+				              url.toExternalForm() );
+				return joinModules;
+			}
+		}
+		
+		// None of the modules have switches in them, so we need to load our defaults
+		logger.debug( "No modules contained switches, adding in our defaults" );
 		ClassLoader loader = getClass().getClassLoader();
 		String fomPath = "hla/rpr2/RPR-Switches_v2.0.xml";
 		URL url = loader.getResource( fomPath );
@@ -641,7 +661,9 @@ public class RprConnection implements IConnection
 		// using mak rti, so can't load modules from jar
 		if( rprConfiguration.getRtiProvider() == RtiProvider.Mak )
 		{
-			List<URL> urls = FileUtils.extractFilesFromJar( Arrays.asList(fomPath), new File("hla/rpr2"), loader );
+			List<URL> urls = FileUtils.extractFilesFromJar( Arrays.asList(fomPath),
+			                                                new File("hla/rpr2"),
+			                                                loader );
 			url = urls.get(0);
 		}
 		
@@ -652,7 +674,6 @@ public class RprConnection implements IConnection
 		
 		// Slam the arrays together and return
 		return Stream.concat( Arrays.stream(createModules), Arrays.stream(joinModules) )
-		//return Stream.concat( Arrays.stream(joinModules), Arrays.stream(createModules) )
 		             .toArray( URL[]::new );
 	}
 		

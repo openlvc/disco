@@ -410,24 +410,23 @@ public class RprConfiguration
 	}
 
 	/**
-	 * Set the directory from which Disco will seek to load FOM modules. This directory will
-	 * REPLACE any existing path, so it must provide <i>all</i> required RPR FOM modules, but
-	 * it can also contain additional modules that the user wants loaded.
+	 * Set the directory from which Disco will seek to load FOM modules, overriding the 
+	 * defaults that are shipped with CNR. To be effective, this directory should contain
+	 * a {@code load-order.properties} file that specifies the modules to load and the order
+	 * to load them.
 	 * 
-	 * An optional load-order.properties file can be included, carrying a single load.order
-	 * property. If this property is set, it is assumed to be a comma separated list of module
-	 * names to load (relative to the override directory). If the file is not present, then all
-	 * {@code .xml} files in the directory will be used in an unspecified order.
+	 * Should the folder not exist, or not contain a {@code load-order.properties} file, or the
+	 * {@code load.order} property in that file be an empty list, the overrides will not be used
+	 * at all. 
 	 * 
 	 * @param path The path to a directory that all FOM modules should be loaded from
 	 * @throws DiscoException If the provided path does not exist
 	 */
 	public void setFomOverridePath( String path ) throws DiscoException
 	{
-		File file = new File( path );
-		if( file.exists() == false )
-			throw new DiscoException( "Provided FOM module override path does not exist: "+path );
-		else
+		// we don't check to see if the folder exists - it might not exist at configuration
+		// time, which is OK, it just needs to be there at run time.
+		if( path != null )
 			parent.setProperty( PROP_FOM_OVERRIDE_PATH, path );
 	}
 
@@ -623,28 +622,24 @@ public class RprConfiguration
 	 * Return a list pointing to the FOM modules that should be loaded in preference to the
 	 * default FOM modules inside the jar file.
 	 * 
-	 * The array will be populated with a list of all XML files in the directory specified by
-	 * {@link #getFomOverridePath()}. If that value is not specified, or the folder does not
-	 * exist, this check will return an empty array.
+	 * Method will look in the folder identified in {@link #getFomOverridePath()} and try to find
+	 * a {@code load-order.properties} file within it. That file is expected to contain a property
+	 * called {@code load-order} which is a comma-separated list of paths (relative to the override
+	 * directory) to load, and in the order to load them.
 	 * 
-	 * The folder can optionally contain a file called {@code load-order.properties}. This should
-	 * be a properties file with a {@code load.order} property inside. This property should contain
-	 * a comma-separately list of modules to load.
+	 * This method will return an empty array if:
+	 * <ul>
+	 *   <li>The folder doesn't exist</li>
+	 *   <li>The folder exists, but doesn't contain a {@code load-order.properties} file</li>
+	 *   <li>The {@code load.order} property in the file contains an empty list</li>
+	 * </ul>
 	 * 
-	 * If the file exists, the array will contain the FOM module files it references, in the order
-	 * they are specified in the property (allowing control over load order to ensure modules with
-	 * dependencies can be satisfied).
-	 * 
-	 * If there is no load order file, all XML files in the folder will be used and the returned
-	 * order is unspecified.
-	 *
-	 * @return A list of discovered override files to load, optionally controlled by the load
-	 *         order properties file. An empty array if the override path doesn't exist, or
-	 *         the folder contains no XML files, or the {@code load-order.properties} file doesn't
-	 *         specify any modules to load.
-	 * @throws DiscoException If the {@code load-order.properties} file exists, but doesn't contain
-	 *                        the required property, or any of the referenced modules in the file
-	 *                        don't exist.
+	 * @return The list of override modules to load in the order defined in the properties file.
+	 * @throws DiscoException If the {@code load-order.properties} file exists, but is missing the
+	 *                        {@code load.order} property. Or if a module referenced in the list
+	 *                        cannot be found on the filesystem. Or if there is an IO exception.
+	 *                        NO EXCEPTION IS THROWN if the override folder doesn't exist, or
+	 *                        the properties file is missing.
 	 */
 	private URL[] findOverrideModules() throws DiscoException
 	{
@@ -653,55 +648,49 @@ public class RprConfiguration
 		if( fomDirectory == null )
 			return new URL[0];
 
-		// just enumerate over all the modules in the directory - our default load order
-		// will be whatever listFiles() gives us
-		File[] files = fomDirectory.listFiles( (directory,name) -> name.endsWith(".xml") );
-
 		// check for a load order file to override the default and specify a module load order
 		// Should be in a properties file called "load-order.properties", with a "load.order"
 		// property inside of it
 		File loadOrderFile = new File( fomDirectory, "load-order.properties" );
-		if( loadOrderFile.exists() )
+		if( loadOrderFile.exists() == false )
+			return new URL[0];
+		
+		// check for the load.order property, which must exist if the file exists
+		Properties properties = FileUtils.loadProperties( loadOrderFile );
+		if( properties.containsKey("load.order") == false )
 		{
-			// check for the load.order property, which must exist if the file exists
-			Properties properties = FileUtils.loadProperties( loadOrderFile );
-			if( properties.containsKey("load.order") == false )
-			{
-				throw new DiscoException( "Error loading FOM Modules [path=%s]: %s",
-				                          fomDirectory.getAbsolutePath(),
-				                          "load-order.properties missing load.order property" );
-			}
+			throw new DiscoException( "Error loading FOM Modules [path=%s]: %s",
+			                          fomDirectory.getAbsolutePath(),
+			                          "load-order.properties missing load.order property" );
+		}
 
-			// replace the modules array with the order specified in the file
-			String loadOrder = properties.getProperty( "load.order" );
-			String[] paths = loadOrder.split( "," );
-			files = new File[paths.length];
-			for( int i = 0; i < paths.length; i++ )
+		// find all the modules to load
+		String loadOrder = properties.getProperty( "load.order" );
+		String[] paths = loadOrder.split( "," );
+		List<URL> urls = new ArrayList<>();
+		for( String path : paths )
+		{
+			// if it is empty, skip it (can happen if there is stray "," on the end of list
+			path = path.trim();
+			if( path.isBlank() )
+				continue;
+			
+			// try to find the FOM module
+			File file = new File( fomDirectory, path );
+			if( file.exists() )
 			{
-				// if it is empty, skip it (can happen if there is stray "," on the end of list
-				String path = paths[i].trim();
-				if( path.isBlank() )
-					continue;
-				
-				File file = new File( fomDirectory, path );
-				if( file.exists() == false )
-				{
-					throw new DiscoException( "Error loading FOM Modules [path=%s]: %s (%s)",
-					                          fomDirectory.getAbsolutePath(),
-					                          "load-order.properties file referenced missing module",
-					                          path );
-				}
-				
-				files[i] = file;
+				urls.add( FileUtils.toURL(file) );
+			}
+			else
+			{
+				throw new DiscoException( "Error loading FOM Modules [path=%s]: %s (%s)",
+				                          fomDirectory.getAbsolutePath(),
+				                          "load-order.properties file referenced missing module",
+				                          path );
 			}
 		}
 
-		// return the discovered modules
-		URL[] urls = new URL[files.length];
-		for( int i = 0; i < files.length; i++ )
-			urls[i] = FileUtils.toURL( files[i] );
-
-		return urls;
+		return urls.toArray( new URL[0] );
 	}
 	
 	///////////////////////////////////////////////////////////////////

@@ -2923,7 +2923,7 @@
 
    <!--
     <switches>
-        <autoProvide isEnabled="true"/>
+        <autoProvide isEnabled="false"/>
         <conveyRegionDesignatorSets isEnabled="false"/>
         <conveyProducingFederate isEnabled="false"/>
         <attributeScopeAdvisory isEnabled="false"/>
