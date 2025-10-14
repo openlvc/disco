@@ -25,6 +25,7 @@ import org.openlvc.disco.bus.EventHandler;
 import org.openlvc.disco.connection.rpr.model.AttributeClass;
 import org.openlvc.disco.connection.rpr.model.ObjectClass;
 import org.openlvc.disco.connection.rpr.objects.RadioTransmitter;
+import org.openlvc.disco.connection.rpr.types.enumerated.MajorRFModulationTypeEnum16;
 import org.openlvc.disco.pdu.field.PduType;
 import org.openlvc.disco.pdu.radio.TransmitterPdu;
 import org.openlvc.disco.pdu.record.EntityId;
@@ -403,7 +404,25 @@ public class TransmitterMapper extends AbstractMapper
 		hlaDecode( hlaObject.getRfModulationSystemType(), rfModulationSystemType, map );
 
 		// RFModulationType
-		hlaDecode( hlaObject.getRfModulationType(), rfModulationType, map );
+		try
+		{
+			hlaDecode( hlaObject.getRfModulationType(), rfModulationType, map );
+		}
+		catch( Exception e )
+		{
+			// Sigh. In RPR the key to the RFmodulationTypeVariantStruct is a value from
+			// MajorRFModulationTypeEnum16. This comes from the RFModulationSystemType.
+			// However, not all values in the enum are valid as keys inside the variant struct,
+			// so this can cause an exception. We're going to catch that here and use a fallback
+			// if it happens (which is seems to a lot!).
+			//
+			// We might catch some false positives, but I'll take a fallback that isn't quite
+			// if it has a chance of keeping things moving over the exceptions we get now.
+			//
+			// See Github #87 for more information
+			hlaObject.getRfModulationType().setUnmodulatedType();
+		}
+		
 	
 		// SpreadSpectrum
 		hlaDecode( hlaObject.getSpreadSpectrum(), spreadSpectrum, map );
