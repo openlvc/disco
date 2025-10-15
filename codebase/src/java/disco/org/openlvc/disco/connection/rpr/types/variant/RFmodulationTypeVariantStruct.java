@@ -141,7 +141,8 @@ public class RFmodulationTypeVariantStruct extends WrappedHlaVariantRecord<Major
 	
 	public void setUnmodulatedType()
 	{
-		// FIXME
+		super.setVariant( MajorRFModulationTypeEnum16.Unmodulated,
+		                  new RPRunsignedInteger16BE(0) );
 	}
 
 	//----------------------------------------------------------
