@@ -114,8 +114,8 @@ public class Replayer
 		this.statusLogging = true;
 		this.statusInterval = 10000;
 		this.timer = null;                // set in startReplay() 
-		this.statusLogger = new StatusLogger();
-		this.pduRateLogger = new PduRateLogger();
+		this.statusLogger = null;         // set in startReplay()
+		this.pduRateLogger = null;        // set in startReplay()
 	}
 
 	//----------------------------------------------------------
@@ -156,6 +156,9 @@ public class Replayer
 		if( this.isStatusLogging() )
 		{
     		this.timer = new Timer( "duplicator", true );
+    		// TimerTasks cannot be reused - recreate them each time we try to replay
+    		this.statusLogger = new StatusLogger();
+    		this.pduRateLogger = new PduRateLogger();
     		this.timer.scheduleAtFixedRate( this.statusLogger, statusInterval, statusInterval );
     		this.timer.scheduleAtFixedRate( this.pduRateLogger, 1000, 1000 );
 		}
