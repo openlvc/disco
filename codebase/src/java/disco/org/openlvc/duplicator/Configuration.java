@@ -484,6 +484,7 @@ public class Configuration
 		builder.append( "   --record                        Make a recording (default)\n" );
 		builder.append( "   --replay                        Replay from a previous recording\n" );
 		builder.append( "   --file                (string)  File name to read from/write to\n" );
+		builder.append( "                                   For replay, also supports pcap/pcapng or zipped session files\n" );
 		builder.append( "   --dis-interface       (string)  NIC to use. LOOPBACK, LINK_LOCAL, SITE_LOCAL*, GLOBAL\n" );
 		builder.append( "   --dis-address         (string)  Multicast address to use or BROADCAST (default)\n" );
 		builder.append( "   --dis-port            (number)  DIS port to listen/send on. Default: 3000\n" );

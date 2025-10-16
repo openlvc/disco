@@ -118,6 +118,10 @@ public interface ISessionReader extends Iterable<Track>, Iterator<Track>
 		{
 			return new PcapSessionReader( sessionFile );
 		}
+		else if( sessionFile.getName().endsWith(".zip") )
+		{
+			return new ZipFileSessionReader( sessionFile );
+		}
 		else
 		{
 			return new DuplicatorSessionReader( sessionFile );
