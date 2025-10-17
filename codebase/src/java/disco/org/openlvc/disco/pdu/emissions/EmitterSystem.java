@@ -251,6 +251,11 @@ public class EmitterSystem implements IPduComponent, Cloneable
 		return new HashSet<>( beams.values() );
 	}
 
+	public void clearBeams()
+	{
+		beams.values().clear();
+	}
+
 	/**
 	 * Put the given Beam into this system, returning the object that is already stored
 	 * for the beam number, or null if we don't have one for this number yet.
