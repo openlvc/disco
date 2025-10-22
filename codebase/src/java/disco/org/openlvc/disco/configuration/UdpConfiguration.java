@@ -249,7 +249,11 @@ public class UdpConfiguration
 	
 	public void setNetworkInterface( String name )
 	{
-		this.networkInterface = NetworkUtils.getNetworkInterface( name );
+		NetworkInterface temp = NetworkUtils.getNetworkInterface( name );
+		if( temp == null )
+			throw new DiscoException( "Invalid network interface [%s]: Not Found", name );
+
+		this.networkInterface = temp;
 		parent.setProperty( PROP_INTERFACE, name );
 	}
 
