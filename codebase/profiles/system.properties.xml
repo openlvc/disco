@@ -108,4 +108,22 @@
 	<property name="java.compiler.source"   value="17"/> <!-- override in local/build.properties -->
 	<property name="java.compiler.target"   value="17"/> <!-- override in local/build.properties -->
 
+	<!-- =========================================================== -->
+	<!--                   TestNG Library Settings                   -->
+	<!-- =========================================================== -->
+	<!-- This is mainly for TestNG, because we need it system.macros.xml, which is loaded
+	     very early, so we can't wait to declare them in java.xml. -->
+	<property name="testng-ant.dir"        location="${lib.dir}/testng-ant/1.0.0"/>
+	<property name="testng.dir"            location="${lib.dir}/testng/testng-7.10.2"/>
+
+	<!-- Classpaths for individual libraries -->
+	<path id="sys.testng.classpath">
+		<fileset dir="${testng-ant.dir}" includes="**/*.jar"/>
+		<fileset dir="${testng.dir}" includes="**/*.jar"/>
+	</path>
+
+	<!-- Load up the Ant task for TestNG -->
+	<taskdef resource="testngtasks" classpathref="sys.testng.classpath"/>
+
+
 </project>
