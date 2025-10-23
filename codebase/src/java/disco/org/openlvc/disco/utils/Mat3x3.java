@@ -38,6 +38,7 @@ public class Mat3x3
 		this( new Vec3(), new Vec3(), new Vec3() );
 	}
 
+	// vectors appear to be the columns of the matrix
 	public Mat3x3( Vec3 a, Vec3 b, Vec3 c )
 	{
 		this.a = a;
