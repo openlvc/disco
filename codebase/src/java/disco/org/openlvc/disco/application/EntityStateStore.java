@@ -127,6 +127,10 @@ public class EntityStateStore implements IDeleteReaperManaged
 		return byMarking.get( marking );
 	}
 	
+	/**
+	 * @param id
+	 * @return the last {@link EntityStatePdu} for the entity, or `null` if not stored
+	 */
 	public EntityStatePdu getEntityState( EntityId id )
 	{
 		return byId.get( id );
@@ -149,7 +153,9 @@ public class EntityStateStore implements IDeleteReaperManaged
 	 */
 	public Set<EntityStatePdu> getEntityStatesUpdatedSince( long time )
 	{
-		return null;
+		return this.byId.values().parallelStream()
+		                         .filter( espdu -> espdu.getLocalTimestamp() >= time )
+		                         .collect( Collectors.toSet() );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -159,7 +165,7 @@ public class EntityStateStore implements IDeleteReaperManaged
 	 * Get the set of Entity States whose location is within the radius of the specified entity's
 	 * location. If none are close, an empty set is returned.
 	 * 
-	 * @param location     The entity we want to find other entities in proximity to
+	 * @param entity       The entity we want to find other entities in proximity to
 	 * @param radiusMeters Limit of how far a entity can be from the given entity
 	 * @return             Set of all entities within the given radius of the given entity
 	 */
