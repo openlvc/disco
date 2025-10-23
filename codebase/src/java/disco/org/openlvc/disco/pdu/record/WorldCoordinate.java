@@ -101,6 +101,12 @@ public class WorldCoordinate implements IPduComponent, Cloneable
 		
 		return false;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "WorldCoordinate[x=%f, y=%f, z=%f]".formatted( this.x, this.y, this.z );
+	}
 	
 	/**
 	 * {@inheritDoc}

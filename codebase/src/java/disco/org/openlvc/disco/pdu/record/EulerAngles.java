@@ -99,7 +99,7 @@ public class EulerAngles implements IPduComponent, Cloneable
 	@Override
 	public String toString()
 	{
-		return "psi=%f, theta=%f, phi=%f".formatted( this.psi, this.theta, this.phi );
+		return "EulerAngles[psi=%f, theta=%f, phi=%f]".formatted( this.psi, this.theta, this.phi );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////

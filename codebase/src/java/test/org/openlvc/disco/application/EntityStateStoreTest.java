@@ -21,11 +21,17 @@ import java.util.Set;
 
 import org.openlvc.disco.AbstractTest;
 import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.application.pdu.DrEntityStatePdu;
+import org.openlvc.disco.application.utils.DrmState;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.DeadReckoningAlgorithm;
+import org.openlvc.disco.pdu.record.AngularVelocityVector;
+import org.openlvc.disco.pdu.record.DeadReckoningParameter;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.EntityType;
 import org.openlvc.disco.pdu.record.EulerAngles;
+import org.openlvc.disco.pdu.record.VectorRecord;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -34,7 +40,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups={"application"})
+@Test(groups={"application","entityStateStore"})
 public class EntityStateStoreTest extends AbstractTest
 {
 	//----------------------------------------------------------
@@ -122,7 +128,8 @@ public class EntityStateStoreTest extends AbstractTest
 		Assert.assertEquals( entityStore.size(), 1 );
 
 		// Check the entity values
-		EntityStatePdu received = entityStore.getEntityState("PhatEntity");
+		DrEntityStatePdu received = entityStore.getEntityState("PhatEntity");
+		Assert.assertTrue( received instanceof EntityStatePdu );
 		Assert.assertEquals( received.getEntityID(), entityId );
 		Assert.assertEquals( received.getEntityType(), entityType );
 		Assert.assertEquals( received.getLocation(), location );
@@ -155,6 +162,88 @@ public class EntityStateStoreTest extends AbstractTest
 		Assert.assertEquals( markings.size(), 1 );
 		Assert.assertFalse( markings.contains("PhatEntity") );
 		Assert.assertTrue( markings.contains("Ph@tEntity") );
+	}
+
+	@Test(dependsOnMethods={"testEntityStatePduStore"})
+	public void testDrDisabled()
+	{
+		// create the "local" (dead-reckoning disabled) DisApplication we'll be testing
+		DiscoConfiguration drDisabledConfig = new DiscoConfiguration(); // need to also apply any changes that are made to localConfig
+		drDisabledConfig.setDeadReckoningEnabled( false );
+		DisApplication drDisabledApp = new DisApplication( drDisabledConfig );
+		drDisabledApp.start();
+
+		try
+		{
+			// setup the model
+			EntityStatePdu source = new EntityStatePdu();
+			DeadReckoningParameter deadReckoningParams = new DeadReckoningParameter();
+			
+			EntityId entityId = new EntityId( 12, 13, 14 );
+			long localTimestamp = 10;
+			DeadReckoningAlgorithm deadReckoningAlgorithm = DeadReckoningAlgorithm.RVW;
+
+			WorldCoordinate location = new WorldCoordinate( 41.0, 43.0, 47.0 );
+			VectorRecord velocity = new VectorRecord( 10, 20, 30 );
+			VectorRecord acceleration = new VectorRecord( 3, 5, 7 );
+
+			EulerAngles orientation = new EulerAngles( 0.0f, 0.1f, 0.0f );
+			AngularVelocityVector angularVelocity = new AngularVelocityVector( 0.00f, 0.3f, 0.00f );
+
+			DrmState expectedInitialState = new DrmState( location, velocity, acceleration, orientation, angularVelocity );
+
+			source.setEntityID( entityId );
+			source.setLocalTimestamp( localTimestamp );
+			deadReckoningParams.setDeadReckoningAlgorithm( deadReckoningAlgorithm );
+
+			source.setLocation( location );
+			source.setLinearVelocity( velocity );
+			deadReckoningParams.setEntityLinearAcceleration( acceleration );
+
+			source.setOrientation( orientation );
+			deadReckoningParams.setEntityAngularVelocity( angularVelocity );
+
+			source.setDeadReckoningParams( deadReckoningParams );
+
+			// check the stores
+			EntityStateStore drDisabledEntityStore = drDisabledApp.getPduStore().getEntityStore();
+			EntityStateStore drEnabledEntityStore = local.getPduStore().getEntityStore();
+			Assert.assertEquals( drDisabledEntityStore.size(), 0 );
+			Assert.assertEquals( drEnabledEntityStore.size(), 0 );
+
+			// send it
+			remote.send( source );
+
+			// wait for the stores to pick the change up
+			super.waitFor( () -> drDisabledEntityStore.size() > 0, 100 );
+			super.waitFor( () -> drEnabledEntityStore.size() > 0, 100 );
+
+			// get the DrEntityStatePdus
+			DrEntityStatePdu drDisabledPdu = drDisabledEntityStore.getEntityState( entityId );
+			DrEntityStatePdu drEnabledPdu = drEnabledEntityStore.getEntityState( entityId );
+			Assert.assertNotNull( drDisabledPdu );
+			Assert.assertNotNull( drEnabledPdu );
+
+			// overwrite timestamp
+			drDisabledPdu.setLocalTimestamp( localTimestamp );
+			drEnabledPdu.setLocalTimestamp( localTimestamp );
+
+			// check the state after 3s when enabled
+			long t3s = localTimestamp + 3000;
+			Assert.assertEquals( drEnabledPdu.getDrLocation(t3s), new WorldCoordinate(84.5, 125.5, 168.5) );
+			Assert.assertEquals( drEnabledPdu.getDrLinearVelocity(t3s), new VectorRecord(19.0f, 35.0f, 51.0f) );
+			Assert.assertEquals( drEnabledPdu.getDrOrientation(t3s), new EulerAngles(0.0f, 1.0f, 0.0f) );
+
+			// check the state after 3s when disabled
+			Assert.assertEquals( drDisabledPdu.getDrLocation(t3s), expectedInitialState.getLocation() );
+			Assert.assertEquals( drDisabledPdu.getDrLinearVelocity(t3s), expectedInitialState.getLinearVelocity() );
+			Assert.assertEquals( drDisabledPdu.getDrOrientation(t3s), expectedInitialState.getOrientation() );
+		}
+		finally
+		{
+			// clean up
+			drDisabledApp.stop();
+		}
 	}
 
 	//----------------------------------------------------------

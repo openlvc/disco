@@ -22,9 +22,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.application.pdu.DrEntityStatePdu;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
@@ -42,8 +44,10 @@ public class EntityStateStore implements IDeleteReaperManaged
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private ConcurrentMap<EntityId,EntityStatePdu> byId;
-	private ConcurrentMap<String,EntityStatePdu> byMarking;
+	private ConcurrentMap<EntityId,DrEntityStatePdu> byId;
+	private ConcurrentMap<String,DrEntityStatePdu> byMarking;
+
+	private BooleanSupplier isDrEnabled;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -52,6 +56,8 @@ public class EntityStateStore implements IDeleteReaperManaged
 	{
 		this.byId = new ConcurrentHashMap<>();
 		this.byMarking = new ConcurrentHashMap<>();
+
+		this.isDrEnabled = store.app.getConfiguration()::getDeadReckoningEnabled;
 	}
 
 	//----------------------------------------------------------
@@ -63,13 +69,17 @@ public class EntityStateStore implements IDeleteReaperManaged
 	////////////////////////////////////////////////////////////////////////////////////////////
 	protected void receivePdu( EntityStatePdu pdu )
 	{
+		// wrap the PDU to provide dead-reckoning support
+		DrEntityStatePdu wrappedPdu = this.isDrEnabled.getAsBoolean() ? new DrEntityStatePdu( pdu )
+		                                                              : DrEntityStatePdu.makeWithoutDr( pdu );
+
 		// bang the entity into the ID indexed store
-		EntityStatePdu existing = byId.put( pdu.getEntityID(), pdu );
+		DrEntityStatePdu existing = byId.put( wrappedPdu.getEntityID(), wrappedPdu );
 		
 		// if we are discovering this entity for first time, store in marking indexed store as well
 		if( existing == null )
 		{
-			EntityStatePdu existingMarking = byMarking.put( pdu.getMarking(), pdu );
+			DrEntityStatePdu existingMarking = byMarking.put( wrappedPdu.getMarking(), wrappedPdu );
 			
 			// If there is already an entity against this marking with a different id, then
 			// we assume that it has gone stale in favor of the one that we have just received.
@@ -81,11 +91,11 @@ public class EntityStateStore implements IDeleteReaperManaged
 				byId.remove( existingMarking.getEntityID(), existingMarking );
 			
 		}
-		else if( existing.getMarking().equals(pdu.getMarking()) == false )
+		else if( existing.getMarking().equals(wrappedPdu.getMarking()) == false )
 		{	
 			// marking has changed, need to update the marking indexed store
 			byMarking.remove( existing.getMarking() );
-			byMarking.put( pdu.getMarking(), pdu );
+			byMarking.put( wrappedPdu.getMarking(), wrappedPdu );
 		}
 	}
 	
@@ -119,7 +129,7 @@ public class EntityStateStore implements IDeleteReaperManaged
 		return byId.containsKey( id );
 	}
 
-	public EntityStatePdu getEntityState( String marking )
+	public DrEntityStatePdu getEntityState( String marking )
 	{
 		if( marking.length() > 11 )
 			throw new DiscoException( "DIS markings limited to 11 characters: [%s] too long", marking );
@@ -129,9 +139,9 @@ public class EntityStateStore implements IDeleteReaperManaged
 	
 	/**
 	 * @param id
-	 * @return the last {@link EntityStatePdu} for the entity, or `null` if not stored
+	 * @return the last {@link DrEntityStatePdu} for the entity, or `null` if not stored
 	 */
-	public EntityStatePdu getEntityState( EntityId id )
+	public DrEntityStatePdu getEntityState( EntityId id )
 	{
 		return byId.get( id );
 	}
@@ -151,7 +161,7 @@ public class EntityStateStore implements IDeleteReaperManaged
 	 * @param time The oldest time a PDU can have been updated to be returned
 	 * @return The set of all PDUs that have been updated since the given time, which may be empty
 	 */
-	public Set<EntityStatePdu> getEntityStatesUpdatedSince( long time )
+	public Set<DrEntityStatePdu> getEntityStatesUpdatedSince( long time )
 	{
 		return this.byId.values().parallelStream()
 		                         .filter( espdu -> espdu.getLocalTimestamp() >= time )
@@ -169,7 +179,7 @@ public class EntityStateStore implements IDeleteReaperManaged
 	 * @param radiusMeters Limit of how far a entity can be from the given entity
 	 * @return             Set of all entities within the given radius of the given entity
 	 */
-	public Set<EntityStatePdu> getEntityStatesNear( EntityStatePdu entity, int radiusMeters )
+	public Set<DrEntityStatePdu> getEntityStatesNear( EntityStatePdu entity, int radiusMeters )
 	{
 		return getEntityStatesNear( entity.getLocation(), radiusMeters );
 	}
@@ -182,7 +192,7 @@ public class EntityStateStore implements IDeleteReaperManaged
 	 * @param radiusMeters Limit of how far a entity can be from the location
 	 * @return             Set of all entities within the given radius of the given location
 	 */
-	public Set<EntityStatePdu> getEntityStatesNear( WorldCoordinate location, int radiusMeters )
+	public Set<DrEntityStatePdu> getEntityStatesNear( WorldCoordinate location, int radiusMeters )
 	{
 		return byId.values().parallelStream()
 		                    .filter( other -> WorldCoordinate.getStraightLineDistanceBetween(location, other.getLocation()) < radiusMeters )
