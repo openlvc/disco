@@ -86,7 +86,37 @@ public class Vec3
 		return (this.x * this.x) + 
 			   (this.y * this.y) +
 			   (this.z * this.z);
-	}	
+	}
+
+	/**
+	 * Adds the given {@link Vec3} to this {@link Vec3}
+	 * 
+	 * WARNING: modifies this instance
+	 * 
+	 * @return this instance, after modification
+	 */
+	public Vec3 add( Vec3 rhs )
+	{
+		this.x += rhs.x;
+        this.y += rhs.y;
+		this.z += rhs.z;
+		return this;
+	}
+
+	/**
+	 * Scale this {@link Vec3} by the given value
+	 * 
+	 * WARNING: modifies this instance
+	 * 
+	 * @return this instance, which has been scaled
+	 */
+	public Vec3 multiply( double rhs )
+	{
+		this.x *= rhs;
+        this.y *= rhs;
+		this.z *= rhs;
+		return this;
+	}
 	
 	/**
 	 * Divide this {@link Vec3} by the given value
@@ -97,7 +127,7 @@ public class Vec3
 	 */
 	public Vec3 divide( double rhs )
 	{
-		this.x /= rhs; 
+		this.x /= rhs;
         this.y /= rhs;
 		this.z /= rhs;
 		return this;
@@ -109,7 +139,7 @@ public class Vec3
 	 * @param v the other {@link Vec3}
 	 * @return the cross product
 	 */
-	public Vec3 cross(Vec3 v)
+	public Vec3 cross( Vec3 v )
 	{
 		return new Vec3( this.y * v.z - v.y * this.z,
 						 this.z * v.x - v.z * this.x,
