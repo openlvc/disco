@@ -73,5 +73,23 @@ public class FloatingPointUtils
 		float absDiff = Math.abs( f1 - f2 );
 		return absDiff < FP_EQUALITY_THRESHOLD;
 	}
+
+	/**
+	 * Returns whether the two specified floating precision radian values are equal. The two
+	 * values will be considered equal if the absolute difference between the values is within a
+	 * predefined threshold, accounting for wrapping.
+	 * 
+	 * @param f1 The first float to compare
+	 * @param f2 The second float to compare
+	 * 
+	 * @return true if the two values are equal, otherwise false
+	 */
+	public static boolean floatRadEqual( float f1, float f2 )
+	{
+		float absDiff = Math.abs( f1 - f2 );
+		if( absDiff > Math.PI )
+			absDiff = Math.abs( absDiff - (float)(Math.PI * 2) );
+		return absDiff < FP_EQUALITY_THRESHOLD;
+	}
 }
 

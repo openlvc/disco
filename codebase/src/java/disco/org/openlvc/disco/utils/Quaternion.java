@@ -24,7 +24,6 @@ public class Quaternion
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	private static final float _180DEGREES = (float)Math.PI;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -49,18 +48,91 @@ public class Quaternion
 		this.y = y;
 		this.z = z;
 	}
+
+	public Quaternion( Quaternion q )
+	{
+		this( q.w, q.x, q.y, q.z );
+	}
 	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	public Quaternion multiply( Quaternion q )
+	@Override
+	public boolean equals( Object other )
 	{
-        double w = this.w * q.w - this.x * q.x - this.y * q.y - this.z * q.z;
-        double x = this.w * q.x + this.x * q.w + this.y * q.z - this.z * q.y;
-        double y = this.w * q.y - this.x * q.z + this.y * q.w + this.z * q.x;
-        double z = this.w * q.z + this.x * q.y - this.y * q.x + this.z * q.w;		
+		if( this == other )
+			return true;
+		
+		if( !(other instanceof Quaternion otherQuat) )
+			return false;
+
+		return FloatingPointUtils.doubleEqual( otherQuat.w, this.w ) &&
+		       FloatingPointUtils.doubleEqual( otherQuat.x, this.x ) &&
+		       FloatingPointUtils.doubleEqual( otherQuat.y, this.y ) &&
+		       FloatingPointUtils.doubleEqual( otherQuat.z, this.z );
+	}
+
+	/**
+	 * Indicates whether the rotation represented by some other object is "equal to" this one.
+	 * <p/>
+	 * Returns {@code true} for this quaternion {@code q} iff {@code q} or {@code -q} gives
+	 * {@code true} with {@link #equals(Object)} and the obj argument.
+	 * 
+	 * @param other the reference object with which to compare.
+	 * @return {@code true} if the rotation of this object is the same as the obj argument;
+	 *         {@code false} otherwise.
+	 * 
+	 * @see #equals(Object)
+	 */
+	public boolean equalsRotation( Object other )
+	{
+		return this.equals( other ) || this.inverseSign().equals( other );
+	}
+
+	@Override
+	public String toString()
+	{
+		return "Quaternion[w=%f, x=%f, y=%f, z=%f]".formatted( this.w, this.x, this.y, this.z );
+	}
+
+	/**
+	 * Returns the Hamilton product of this quaternion right-multiplied by the given quaternion.
+	 * 
+	 * @return {@code this * rhs}
+	 */
+	public Quaternion multiply( Quaternion rhs )
+	{
+        double w = this.w * rhs.w - this.x * rhs.x - this.y * rhs.y - this.z * rhs.z;
+        double x = this.w * rhs.x + this.x * rhs.w + this.y * rhs.z - this.z * rhs.y;
+        double y = this.w * rhs.y - this.x * rhs.z + this.y * rhs.w + this.z * rhs.x;
+        double z = this.w * rhs.z + this.x * rhs.y - this.y * rhs.x + this.z * rhs.w;		
 		return new Quaternion( w, x, y, z );
-	}	
+	}
+
+	/**
+	 * Returns a new quaternion that is the conjugate of the current quaternion. For unit
+	 * quaternions this is also the Hamilton product inverse; quaternion {@code q}, returns
+	 * {@code q* = q^-1} such that {@code q^-1 * (q * v * q^-1) * q = v} (the inverse of a unit
+	 * quaternion is both the left and right inverse).
+	 * 
+	 * @return A new unit {@link Quaternion} evaluating to {@code q*}
+	 */
+	public Quaternion conjugate()
+	{
+		return new Quaternion( w, -x, -y, -z );
+	}
+
+	/**
+	 * Returns a new quaternion with opposite sign; for quaternion {@code q}, returns {@code -q}.
+	 * For quaternions representing a rotation in 3d space, these two quaternions represent
+	 * equivalent rotations.
+	 * 
+	 * @return A new {@link Quaternion} evaluating to {@code -q}
+	 */
+	public Quaternion inverseSign()
+	{
+		return new Quaternion( -this.w, -this.x, -this.y, -this.z );
+	}
 	
 	/**
 	 * Convert this Quaternion to an Euler which follows the DIS PDU orientation conventions.
@@ -72,21 +144,49 @@ public class Quaternion
 	 * 
 	 * @return an {@link EulerAngles} instance suitable for use in a DIS PDU for setting entity
 	 *         orientation
+	 * 
+	 * @see #fromPduEulerAngles(EulerAngles)
 	 */
 	public EulerAngles toPduEulerAngles()
 	{
-		double sqw = w * w;
-		double sqx = x * x;
-		double sqy = y * y;
-		double sqz = z * z;
+		double pitchRatio = -2.0 * (x * z - y * w);
+
+		double divA = w * w - y * y;
+		double divB = x * x - z * z;
+
+		double yaw = Math.atan2( 2.0 * (x * y + z * w), divA + divB );
+		double pitch;
+		double roll = Math.atan2( 2.0 * (y * z + x * w), divA - divB );
+
+		// handle pitch singularities
+		if( Math.abs(pitchRatio) > 0.998 ) // > ~86.4 degrees
+		{
+			// yaw and roll are aligned - use only yaw
+			yaw = yaw - roll;
+			pitch = pitchRatio > 0d ? EulerAngles.THETA_MAX
+			                        : EulerAngles.THETA_MIN;
+			roll = 0;
+
+			// wrap yaw
+			if( yaw >= EulerAngles.PHI_MAX ) yaw -= EulerAngles.PHI_MAX - EulerAngles.PHI_MIN;
+			if( yaw <  EulerAngles.PHI_MIN ) yaw += EulerAngles.PHI_MAX - EulerAngles.PHI_MIN;
+		}
+		else
+		{
+			// regular pitch
+			pitch = Math.asin( pitchRatio );
+		}
 		
-		double yaw = Math.atan2( 2.0 * (x * y + z * w), (sqx - sqy - sqz + sqw) );
-		double roll = Math.atan2( 2.0 * (y * z + x * w), (-sqx - sqy + sqz + sqw) );
-		double pitch = Math.asin( -2.0 * (x * z - y * w) / (sqx + sqy + sqz + sqw) );
-		
-		return new EulerAngles( (float)yaw, (float)pitch, (float)(roll-_180DEGREES));
+		return new EulerAngles( (float)yaw, (float)pitch, (float)roll );
 	}
-	
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	//----------------------------------------------------------
+	//                     STATIC METHODS
+	//----------------------------------------------------------
 	/**
 	 * Create a Quaternion from an Euler which follows the X=PITCH, Y=ROLL, Z=YAW orientation conventions.
 	 * 
@@ -116,13 +216,30 @@ public class Quaternion
 		                       cx * sy * cz + sx * cy * sz, // y
 		                       cx * cy * sz - sx * sy * cz  // z
 		);
-	}	
+	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Create a Quaternion from an Euler which follows the DIS PDU orientation conventions.
+	 * 
+	 * @see #toPduEulerAngles()
+	 */
+	public static Quaternion fromPduEulerAngles( EulerAngles eulerAngles )
+	{
+		double halfPsiRad   = eulerAngles.getPsi()   / 2.0;
+		double halfThetaRad = eulerAngles.getTheta() / 2.0;
+		double halfPhiRad   = eulerAngles.getPhi()   / 2.0;
 
-	//----------------------------------------------------------
-	//                     STATIC METHODS
-	//----------------------------------------------------------
+		double cs = Math.cos( halfPsiRad );
+		double ct = Math.cos( halfThetaRad );
+		double cp = Math.cos( halfPhiRad );
+		double ss = Math.sin( halfPsiRad );
+		double st = Math.sin( halfThetaRad );
+		double sp = Math.sin( halfPhiRad );
+
+		return new Quaternion( cs * ct * cp + ss * st * sp, // w
+		                       cs * ct * sp - ss * st * cp, // x
+		                       cs * st * cp + ss * ct * sp, // y
+		                       ss * ct * cp - cs * st * sp  // z
+		);
+	}
 }

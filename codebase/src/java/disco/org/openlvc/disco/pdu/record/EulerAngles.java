@@ -35,7 +35,15 @@ public class EulerAngles implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
+	public static float PSI_MIN = -(float)Math.PI;
+	public static float PSI_MAX = (float)Math.PI;
 
+	public static float THETA_MIN = -(float)(Math.PI / 2);
+	public static float THETA_MAX = (float)(Math.PI / 2);
+
+	public static float PHI_MIN = -(float)Math.PI;
+	public static float PHI_MAX = (float)Math.PI;
+	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -70,9 +78,10 @@ public class EulerAngles implements IPduComponent, Cloneable
 		if( other instanceof EulerAngles )
 		{
 			EulerAngles otherAngle = (EulerAngles)other;
-			if( FloatingPointUtils.floatEqual(otherAngle.psi,this.psi) &&
+			// psi and phi are continuous (yaw, roll), but theta is discontinuous (pitch)
+			if( FloatingPointUtils.floatRadEqual(otherAngle.psi,this.psi) &&
 				FloatingPointUtils.floatEqual(otherAngle.theta,this.theta) &&
-				FloatingPointUtils.floatEqual(otherAngle.phi,this.phi) )
+				FloatingPointUtils.floatRadEqual(otherAngle.phi,this.phi) )
 			{
 				return true;
 			}
@@ -85,6 +94,12 @@ public class EulerAngles implements IPduComponent, Cloneable
 	public EulerAngles clone()
 	{
 		return new EulerAngles( psi, theta, phi );
+	}
+
+	@Override
+	public String toString()
+	{
+		return "psi=%f, theta=%f, phi=%f".formatted( this.psi, this.theta, this.phi );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
