@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.application;
 
+import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
@@ -36,33 +37,48 @@ public class PduStore
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EntityStateStore entityStore;
-	private TransmitterStore transmitterStore;
-	private EmitterStore     emitterStore;
+	protected DisApplication app;
+
+	private EntityStateStore        entityStore;
+	private TransmitterStore        transmitterStore;
+	private EmitterStore            emitterStore;
+	private DeadReckoningModelStore drmStore;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	protected PduStore( DisApplication app )
 	{
+		this.app = app;
+
 		this.entityStore = new EntityStateStore( this );
-		this.transmitterStore = new TransmitterStore( this ); // depends on EntityStore
-		this.emitterStore = new EmitterStore( this );         // depends on EntityStore
+		this.transmitterStore = new TransmitterStore( this );     // depends on EntityStore
+		this.emitterStore = new EmitterStore( this );             // depends on EntityStore
+		this.drmStore = new DeadReckoningModelStore( this ); // depends on EntityStore
 		
 		app.getDeleteReaper().registerTarget( entityStore );
 		app.getDeleteReaper().registerTarget( transmitterStore );
 		app.getDeleteReaper().registerTarget( emitterStore );
+		// app.getDeleteReaper().registerTarget( deadReckoningStore ); // data probably needs to persist for longer than the other stores
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	protected Logger getLogger()
+	{
+		return this.app.getLogger();
+	}
 
 	protected void pduReceived( PDU pdu )
 	{
 		switch( pdu.getType() )
 		{
-			case EntityState: entityStore.receivePdu( (EntityStatePdu)pdu ); break;
+			case EntityState:
+				entityStore.receivePdu( (EntityStatePdu)pdu );
+				drmStore.receivePdu( (EntityStatePdu)pdu );
+				break;
+			
 			case Transmitter: transmitterStore.receivePdu( (TransmitterPdu)pdu ); break;
 			case Emission: emitterStore.receivePdu( (EmissionPdu)pdu ); break;
 			
@@ -109,6 +125,11 @@ public class PduStore
 	public EmitterStore getEmitterStore()
 	{
 		return this.emitterStore;
+	}
+
+	public DeadReckoningModelStore getDrmStore()
+	{
+		return this.drmStore;
 	}
 
 	//----------------------------------------------------------

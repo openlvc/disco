@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openlvc.disco.application.deadreckoning.IDeadReckoningEnabled;
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
 import org.openlvc.disco.pdu.DisSizes;
@@ -39,7 +40,7 @@ import org.openlvc.disco.pdu.record.VectorRecord;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
 import org.openlvc.disco.utils.BitField32;
 
-public class EntityStatePdu extends PDU
+public class EntityStatePdu extends PDU implements IDeadReckoningEnabled
 {
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
