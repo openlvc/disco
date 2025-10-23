@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.application;
 
+import org.apache.logging.log4j.Logger;
 import org.openlvc.disco.pdu.PDU;
 import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
@@ -36,18 +37,22 @@ public class PduStore
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private EntityStateStore entityStore;
-	private TransmitterStore transmitterStore;
-	private EmitterStore     emitterStore;
+	protected DisApplication app;
+
+	private EntityStateStore        entityStore;
+	private TransmitterStore        transmitterStore;
+	private EmitterStore            emitterStore;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
 	protected PduStore( DisApplication app )
 	{
+		this.app = app;
+
 		this.entityStore = new EntityStateStore( this );
-		this.transmitterStore = new TransmitterStore( this ); // depends on EntityStore
-		this.emitterStore = new EmitterStore( this );         // depends on EntityStore
+		this.transmitterStore = new TransmitterStore( this );     // depends on EntityStore
+		this.emitterStore = new EmitterStore( this );             // depends on EntityStore
 		
 		app.getDeleteReaper().registerTarget( entityStore );
 		app.getDeleteReaper().registerTarget( transmitterStore );
@@ -57,6 +62,10 @@ public class PduStore
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	protected Logger getLogger()
+	{
+		return this.app.getLogger();
+	}
 
 	protected void pduReceived( PDU pdu )
 	{

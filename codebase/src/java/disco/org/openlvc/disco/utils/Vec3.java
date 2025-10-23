@@ -62,6 +62,26 @@ public class Vec3
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	@Override
+	public boolean equals( Object other )
+	{
+		if( this == other )
+			return true;
+		
+		if( !(other instanceof Vec3 otherVec3) )
+			return false;
+
+		return FloatingPointUtils.doubleEqual( otherVec3.x, this.x ) &&
+		       FloatingPointUtils.doubleEqual( otherVec3.y, this.y ) &&
+		       FloatingPointUtils.doubleEqual( otherVec3.z, this.z );
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "Vec3[x=%f, y=%f, z=%f]".formatted( this.x, this.y, this.z );
+	}
+
 	/**
 	 * Obtain the length of this {@link Vec3}, as measured from the origin
 	 * 

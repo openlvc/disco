@@ -57,6 +57,27 @@ public class Quaternion
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	@Override
+	public boolean equals( Object other )
+	{
+		if( this == other )
+			return true;
+		
+		if( !(other instanceof Quaternion otherQuat) )
+			return false;
+
+		return FloatingPointUtils.doubleEqual( otherQuat.w, this.w ) &&
+		       FloatingPointUtils.doubleEqual( otherQuat.x, this.x ) &&
+		       FloatingPointUtils.doubleEqual( otherQuat.y, this.y ) &&
+		       FloatingPointUtils.doubleEqual( otherQuat.z, this.z );
+	}
+
+	@Override
+	public String toString()
+	{
+		return "Quaternion[w=%f, x=%f, y=%f, z=%f]".formatted( this.w, this.x, this.y, this.z );
+	}
+
 	public Quaternion multiply( Quaternion q )
 	{
         double w = this.w * q.w - this.x * q.x - this.y * q.y - this.z * q.z;
