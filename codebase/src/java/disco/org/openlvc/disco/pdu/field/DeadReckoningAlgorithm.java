@@ -58,6 +58,30 @@ public enum DeadReckoningAlgorithm
 		return this.value;
 	}
 
+	@Override
+	public String toString()
+	{
+		switch( this.value )
+		{
+			case 1: return "Static";
+			case 2: return "FPW";
+			case 3: return "RPW";
+			case 4: return "RVW";
+			case 5: return "FVW";
+			case 6: return "FPB";
+			case 7: return "RPB";
+			case 8: return "RVB";
+			case 9: return "FVB";
+			default: // drop through
+		}
+		
+		// Missing
+		if( DiscoConfiguration.isSet(Flag.Strict) )
+			throw new IllegalArgumentException( value+" not a valid Dead Reckoning Algorithm" );
+		else
+			return "Other";
+	}
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
