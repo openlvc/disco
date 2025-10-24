@@ -94,7 +94,7 @@ public class NetworkUtils
 			if( name.equalsIgnoreCase("LINK_LOCAL") )
 			{
 				return pool.stream()
-				           .filter( address -> address.isLinkLocalAddress() )
+				           .filter( InetAddress::isLinkLocalAddress )
 				           .findFirst()
 				           .get();
 			}
@@ -102,7 +102,8 @@ public class NetworkUtils
 			if( name.equalsIgnoreCase("SITE_LOCAL") )
 			{
 				return pool.stream()
-				           .filter( address -> address.isSiteLocalAddress() )
+				           .filter( InetAddress::isSiteLocalAddress )
+				           .sorted( NetworkUtils::compareSiteLocalPriority )
 				           .findFirst()
 				           .get();
 			}
@@ -650,6 +651,26 @@ public class NetworkUtils
 		{
 			return "<exception:"+e.getMessage()+">";
 		}
+	}
+	
+	//==========================================================================================
+	// Private Helper Methods   ////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	/**
+	 * Compare two site local IPs and return whichever is the "higher priority". We preference
+	 * `192.168.x.x` before `10.x...` before `172.[16-31].x.x`.
+	 * 
+	 * @see #resolveInetAddress(String)
+	 */
+	private static int compareSiteLocalPriority( InetAddress a, InetAddress b )
+	{
+		int priorityA = a.getHostAddress().startsWith( "192." ) ? 1 :
+		                a.getHostAddress().startsWith( "10." ) ? 2 : 3;
+
+		int priorityB = b.getHostAddress().startsWith( "192." ) ? 1 :
+		                b.getHostAddress().startsWith( "10." ) ? 2 : 3;
+
+		return Integer.compare( priorityA, priorityB );
 	}
 }
 
