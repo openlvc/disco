@@ -97,8 +97,11 @@ public class InteractionClass
 		// make sure we don't already have one by this name
 		if( parameters.containsKey(parameter.getName()) )
 		{
-			throw new DiscoException( "Add Parameter Failed: Class [%s] already has parameter with name [%s]",
-			                          name, parameter.getName() );
+			// FIXME - we'll assume that this parameter has the same definition - which makes this fine
+			// but if it were defined any differently we should error out.
+			return;
+			// throw new DiscoException( "Add Parameter Failed: Class [%s] already has parameter with name [%s]",
+			                        //   name, parameter.getName() );
 		}
 		
 		// store the parameter
