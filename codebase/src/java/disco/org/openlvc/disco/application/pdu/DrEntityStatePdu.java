@@ -43,7 +43,7 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private final DrmState initialDrmState;
-	private Map<Long,DrmState> drmStateCache; // access must be synchronized
+	private Map<CacheKey,DrmState> drmStateCache; // access must be synchronized
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
@@ -58,7 +58,7 @@ public class DrEntityStatePdu extends EntityStatePdu {
 		                                     pdu.getOrientation(),
 		                                     pdu.getDeadReckoningParams().getEntityAngularVelocity() );
 
-		this.drmStateCache = new LruCache<Long,DrmState>( cacheCapacity );
+		this.drmStateCache = new LruCache<>( cacheCapacity );
 	}
 
 	/**
@@ -77,14 +77,16 @@ public class DrEntityStatePdu extends EntityStatePdu {
 		return this.initialDrmState;
 	}
 
-	protected DrmState getDrmStateAtLocalTime( long localTimestamp )
+	protected DrmState getDrmStateAtLocalTime( DeadReckoningAlgorithm algorithm, long localTimestamp )
 	{
 		if( this.isFrozen() )
 			return this.getInitialDrmState();
+		
+		CacheKey cacheKey = new CacheKey( algorithm, localTimestamp );
 
 		synchronized( this.drmStateCache )
 		{
-			DrmState state = this.drmStateCache.get( localTimestamp );
+			DrmState state = this.drmStateCache.get( cacheKey );
 			if( state != null )
 				return state;
 
@@ -92,8 +94,12 @@ public class DrEntityStatePdu extends EntityStatePdu {
 
 			double dt_ms = localTimestamp - this.getLocalTimestamp();
 			double dt = dt_ms / 1000.0;
-			state = this.getDeadReckoningAlgorithm().computeStateAfter( this.getInitialDrmState(), dt );
-			this.drmStateCache.put( localTimestamp, state );
+
+			DrmState initialState = this.getInitialDrmState();
+			// TODO handle conversion between body and world coords if the algorithms don't match coord systems
+
+			state = algorithm.computeStateAfter( initialState, dt );
+			this.drmStateCache.put( cacheKey, state );
 			return state;
 		}
 	}
@@ -107,8 +113,8 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	}
 
 	/**
-	 * Gets the position of the entity at the given local timestamp, extrapolated using
-	 * dead-reckoning. <br/>
+	 * Gets the position of the entity at the given local timestamp, extrapolated using the
+	 * dead-reckoning algorithm of this entity. <br/>
 	 * <br/>
 	 * Uses the internally cached value for the state at this timestamp, if available, rather than
 	 * recomputing the state.
@@ -119,12 +125,29 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 */
 	public WorldCoordinate getDrLocation( long localTimestamp )
 	{
-		return this.getDrmStateAtLocalTime( localTimestamp ).getLocation();
+		return this.getDrLocation( this.getDeadReckoningAlgorithm(), localTimestamp );
 	}
 
 	/**
-	 * Gets the velocity of the entity at the given local timestamp, extrapolated using
-	 * dead-reckoning. <br/>
+	 * Gets the position of the entity at the given local timestamp, extrapolated using the
+	 * specified dead-reckoning algorithm. <br/>
+	 * <br/>
+	 * Uses the internally cached value for the state at this timestamp (with this algorithm), if
+	 * available, rather than recomputing the state.
+	 * 
+	 * @param algorithm the dead-reckoning algorithm to use
+	 * @param localTimestamp target timestamp, in ms since epoch.
+	 * 
+	 * @return the position of the entity, as a {@link WorldCoordinate}
+	 */
+	public WorldCoordinate getDrLocation( DeadReckoningAlgorithm algorithm, long localTimestamp )
+	{
+		return this.getDrmStateAtLocalTime( algorithm, localTimestamp ).getLocation();
+	}
+
+	/**
+	 * Gets the velocity of the entity at the given local timestamp, extrapolated using the
+	 * dead-reckoning algorithm of this entity. <br/>
 	 * <br/>
 	 * Uses the internally cached value for the state at this timestamp, if available, rather than
 	 * recomputing the state.
@@ -133,12 +156,29 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 */
 	public VectorRecord getDrLinearVelocity( long localTimestamp )
 	{
-		return this.getDrmStateAtLocalTime( localTimestamp ).getLinearVelocity();
+		return this.getDrLinearVelocity( this.getDeadReckoningAlgorithm(), localTimestamp );
 	}
 
 	/**
-	 * Gets the orientation of the entity at the given local timestamp, extrapolated using
-	 * dead-reckoning. <br/>
+	 * Gets the velocity of the entity at the given local timestamp, extrapolated using the
+	 * specified dead-reckoning algorithm. <br/>
+	 * <br/>
+	 * Uses the internally cached value for the state at this timestamp (with this algorithm), if
+	 * available, rather than recomputing the state.
+	 * 
+	 * @param algorithm the dead-reckoning algorithm to use
+	 * @param localTimestamp target timestamp, in ms since epoch.
+	 * 
+	 * @return the velocity of the entity, as a {@link VectorRecord}
+	 */
+	public VectorRecord getDrLinearVelocity( DeadReckoningAlgorithm algorithm, long localTimestamp )
+	{
+		return this.getDrmStateAtLocalTime( algorithm, localTimestamp ).getLinearVelocity();
+	}
+
+	/**
+	 * Gets the orientation of the entity at the given local timestamp, extrapolated using the
+	 * dead-reckoning algorithm of this entity. <br/>
 	 * <br/>
 	 * Uses the internally cached value for the state at this timestamp, if available, rather than
 	 * recomputing the state.
@@ -147,10 +187,33 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 */
 	public EulerAngles getDrOrientation( long localTimestamp )
 	{
-		return this.getDrmStateAtLocalTime( localTimestamp ).getOrientation();
+		return this.getDrOrientation( this.getDeadReckoningAlgorithm(), localTimestamp );
+	}
+
+	/**
+	 * Gets the orientation of the entity at the given local timestamp, extrapolated using the
+	 * specified dead-reckoning algorithm. <br/>
+	 * <br/>
+	 * Uses the internally cached value for the state at this timestamp (with this algorithm), if
+	 * available, rather than recomputing the state.
+	 * 
+	 * @param algorithm the dead-reckoning algorithm to use
+	 * @param localTimestamp target timestamp, in ms since epoch.
+	 * 
+	 * @return the orientation of the entity, as a {@link EulerAngles}
+	 */
+	public EulerAngles getDrOrientation( DeadReckoningAlgorithm algorithm, long localTimestamp )
+	{
+		return this.getDrmStateAtLocalTime( algorithm, localTimestamp ).getOrientation();
 	}
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	/**
+	 * A record of each value that acts as a key to the dead-reckoning cache.
+	 */
+	private record CacheKey( DeadReckoningAlgorithm algorithm, long localTimestamp )
+	{
+	}
 }

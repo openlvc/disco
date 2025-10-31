@@ -21,11 +21,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import org.openlvc.disco.application.utils.DrmState;
-import org.openlvc.disco.pdu.entity.EntityStatePdu;
-import org.openlvc.disco.pdu.field.DeadReckoningAlgorithm;
 import org.openlvc.disco.pdu.record.AngularVelocityVector;
-import org.openlvc.disco.pdu.record.DeadReckoningParameter;
-import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.EulerAngles;
 import org.openlvc.disco.pdu.record.VectorRecord;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
