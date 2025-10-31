@@ -88,6 +88,33 @@ public enum DeadReckoningAlgorithm
 			return "Other";
 	}
 
+	public ReferenceFrame getReferenceFrame()
+	{
+		switch( this )
+		{
+			case Static:
+			case FPW:
+			case FVW:
+			case RPW:
+			case RVW:
+				return ReferenceFrame.WorldCoordinates;
+
+			case FPB:
+			case FVB:
+			case RPB:
+			case RVB:
+				return ReferenceFrame.BodyCoordinates;
+
+			default: // drop through
+		}
+
+		// Ill-defined or unknown
+		if( DiscoConfiguration.isSet(Flag.Strict) )
+			throw new DiscoException( "Unknown reference frame for dead-reckoning algorithm: %s (%d)".formatted(this,
+			                                                                                                    this.value()) );
+		return ReferenceFrame.Other;
+	}
+
 	/**
 	 * Returns the state of the dead-reckoning model when extrapolated for the given duration
 	 * using this dead-reckoning algorithm.
@@ -100,25 +127,21 @@ public enum DeadReckoningAlgorithm
 	 */
 	public DrmState computeStateAfter( DrmState initialState, double dt )
 	{
-		switch( this )
+		if( this == Static )
+			return initialState;
+		
+		switch( this.getReferenceFrame() )
 		{
-			case FPW:
-			case FVW:
-			case RPW:
-			case RVW:
+			case WorldCoordinates:
 				return DeadReckoningAlgorithm.computeFixedStateAfter( this, initialState, dt );
 
-			case FPB:
-			case FVB:
-			case RPB:
-			case RVB:
+			case BodyCoordinates:
 				return DeadReckoningAlgorithm.computeRotatingStateAfter( this, initialState, dt );
 
 			default:
-				// TODO warn?
 			case Other:
 				// fallback to static
-			case Static:
+				// TODO warn?
 				return initialState;
 		}
 	}
@@ -135,15 +158,15 @@ public enum DeadReckoningAlgorithm
 	{
 		switch( value )
 		{
-			 case 2: return FPW;
-			 case 4: return RVW;
-			 case 1: return Static;
-			 case 8: return RVB;
-			 case 3: return RPW;
-			 case 5: return FVW;
-			 case 6: return FPB;
-			 case 7: return RPB;
-			 case 9: return FVB;
+			case 2: return FPW;
+			case 4: return RVW;
+			case 1: return Static;
+			case 8: return RVB;
+			case 3: return RPW;
+			case 5: return FVW;
+			case 6: return FPB;
+			case 7: return RPB;
+			case 9: return FVB;
 			default: // drop through
 		}
 		
@@ -172,7 +195,7 @@ public enum DeadReckoningAlgorithm
 
 	/**
 	 * Returns the state of the dead-reckoning model when extrapolated for the given duration,
-	 * using the specified fixed reference (World Coordinate) dead-reckoning algorithm.
+	 * using the specified fixed/world reference (World Coordinate) dead-reckoning algorithm.
 	 * 
 	 * @param algorithm MUST be one of FPW, FVW, RPW, or RVW
 	 * @param initialState the initial state to apply the model to
@@ -260,7 +283,7 @@ public enum DeadReckoningAlgorithm
 
 	/**
 	 * Returns the state of the dead-reckoning model when extrapolated for the given duration,
-	 * using the specified rotating reference (Body Coordinate) dead-reckoning algorithm.
+	 * using the specified rotating/body reference (Body Coordinate) dead-reckoning algorithm.
 	 * 
 	 * @param algorithm MUST be one of FPB, FVB, RPB, or RVB
 	 * @param initialState the initial state to apply the model to
@@ -274,8 +297,20 @@ public enum DeadReckoningAlgorithm
 		if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new DiscoException( "Unimplemented dead-reckoning algorithm: %s (%d)".formatted(algorithm,
 			                                                                                      algorithm.value()) );
+
+		// ! TODO implement
 		
 		// fallback using static behavior
 		return initialState;
+	}
+
+	/**
+	 * The reference frame of a dead-reckoning algorithm - either world or body coordinates.
+	 */
+	public enum ReferenceFrame
+	{
+		Other,
+		WorldCoordinates,
+		BodyCoordinates;
 	}
 }

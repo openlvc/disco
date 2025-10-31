@@ -79,6 +79,8 @@ public class DrEntityStatePdu extends EntityStatePdu {
 
 	protected DrmState getDrmStateAtLocalTime( DeadReckoningAlgorithm algorithm, long localTimestamp )
 	{
+		// ! TODO err if timestamp in the past
+
 		if( this.isFrozen() )
 			return this.getInitialDrmState();
 		
@@ -96,7 +98,27 @@ public class DrEntityStatePdu extends EntityStatePdu {
 			double dt = dt_ms / 1000.0;
 
 			DrmState initialState = this.getInitialDrmState();
-			// TODO handle conversion between body and world coords if the algorithms don't match coord systems
+			if( algorithm.getReferenceFrame() != this.getDeadReckoningAlgorithm().getReferenceFrame() )
+			{
+				// handle conversion between body and world coords if the algorithms don't match coord systems
+				switch( algorithm.getReferenceFrame() ) // what frame are we switching _to_
+				{
+					case WorldCoordinates:
+						// Body -> World
+						initialState = initialState.asWorldCoords();
+						break;
+
+					case BodyCoordinates:
+						// World -> Body
+						initialState = initialState.asBodyCoords();
+						break;
+				
+					default:
+					case Other:
+						// TODO warn?
+						break;
+				}
+			}
 
 			state = algorithm.computeStateAfter( initialState, dt );
 			this.drmStateCache.put( cacheKey, state );

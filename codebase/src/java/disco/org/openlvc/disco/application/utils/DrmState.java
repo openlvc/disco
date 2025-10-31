@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.application.utils;
 
+import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.record.AngularVelocityVector;
 import org.openlvc.disco.pdu.record.EulerAngles;
 import org.openlvc.disco.pdu.record.VectorRecord;
@@ -58,6 +59,29 @@ public record DrmState( Vec3 position,
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	/**
+	 * Returns a {@link DrmState} with coordinate-system-sensitive fields using body coordinates.
+	 * Assumes the current coordinate system is world coordinate.
+	 * 
+	 * @return the object state, using body coordinates
+	 */
+	public DrmState asBodyCoords()
+	{
+		// ! TODO
+		throw new DiscoException( "Not Yet Implemented" );
+	}
+
+	/**
+	 * Returns a {@link DrmState} with coordinate-system-sensitive fields using world coordinates.
+	 * Assumes the current coordinate system is body coordinate.
+	 * 
+	 * @return the object state, using world coordinates
+	 */
+	public DrmState asWorldCoords()
+	{
+		// ! TODO
+		throw new DiscoException( "Not Yet Implemented" );
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////// Accessor Methods ///////////////////////////////////////////
