@@ -81,6 +81,26 @@ public class EntityStatePdu extends PDU
 		this.capabilities = new EntityCapabilities();
 		this.articulationParameters = new ArrayList<ArticulationParameter>();
 	}
+
+	protected EntityStatePdu( EntityStatePdu pdu )
+	{
+		super( PduType.EntityState );
+
+		this.localTimestamp = pdu.localTimestamp;
+
+		this.entityID = pdu.entityID;
+		this.forceID = pdu.forceID;
+		this.entityType = pdu.entityType;
+		this.alternativeEntityType = pdu.alternativeEntityType;
+		this.linearVelocity = pdu.linearVelocity;
+		this.location = pdu.location;
+		this.orientation = pdu.orientation;
+		this.appearance = pdu.appearance;
+		this.deadReckoningParams = pdu.deadReckoningParams;
+		this.marking = pdu.marking;
+		this.capabilities = pdu.capabilities;
+		this.articulationParameters = pdu.articulationParameters;
+	}
 	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS

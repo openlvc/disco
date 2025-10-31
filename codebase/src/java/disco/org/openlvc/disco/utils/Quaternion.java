@@ -24,7 +24,6 @@ public class Quaternion
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	private static final float _180DEGREES = (float)Math.PI;
 
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -49,10 +48,36 @@ public class Quaternion
 		this.y = y;
 		this.z = z;
 	}
+
+	public Quaternion( Quaternion q )
+	{
+		this( q.w, q.x, q.y, q.z );
+	}
 	
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	@Override
+	public boolean equals( Object other )
+	{
+		if( this == other )
+			return true;
+		
+		if( !(other instanceof Quaternion otherQuat) )
+			return false;
+
+		return FloatingPointUtils.doubleEqual( otherQuat.w, this.w ) &&
+		       FloatingPointUtils.doubleEqual( otherQuat.x, this.x ) &&
+		       FloatingPointUtils.doubleEqual( otherQuat.y, this.y ) &&
+		       FloatingPointUtils.doubleEqual( otherQuat.z, this.z );
+	}
+
+	@Override
+	public String toString()
+	{
+		return "Quaternion[w=%f, x=%f, y=%f, z=%f]".formatted( this.w, this.x, this.y, this.z );
+	}
+
 	public Quaternion multiply( Quaternion q )
 	{
         double w = this.w * q.w - this.x * q.x - this.y * q.y - this.z * q.z;
@@ -72,21 +97,49 @@ public class Quaternion
 	 * 
 	 * @return an {@link EulerAngles} instance suitable for use in a DIS PDU for setting entity
 	 *         orientation
+	 * 
+	 * @see #fromPduEulerAngles(EulerAngles)
 	 */
 	public EulerAngles toPduEulerAngles()
 	{
-		double sqw = w * w;
-		double sqx = x * x;
-		double sqy = y * y;
-		double sqz = z * z;
+		double pitchRatio = -2.0 * (x * z - y * w);
+
+		double divA = w * w - y * y;
+		double divB = x * x - z * z;
+
+		double yaw = Math.atan2( 2.0 * (x * y + z * w), divA + divB );
+		double pitch;
+		double roll = Math.atan2( 2.0 * (y * z + x * w), divA - divB );
+
+		// handle pitch singularities
+		if( Math.abs(pitchRatio) > 0.998 ) // > ~86.4 degrees
+		{
+			// yaw and roll are aligned - use only yaw
+			yaw = yaw - roll;
+			pitch = pitchRatio > 0d ? EulerAngles.THETA_MAX
+			                        : EulerAngles.THETA_MIN;
+			roll = 0;
+
+			// wrap yaw
+			if( yaw >= EulerAngles.PHI_MAX ) yaw -= EulerAngles.PHI_MAX - EulerAngles.PHI_MIN;
+			if( yaw <  EulerAngles.PHI_MIN ) yaw += EulerAngles.PHI_MAX - EulerAngles.PHI_MIN;
+		}
+		else
+		{
+			// regular pitch
+			pitch = Math.asin( pitchRatio );
+		}
 		
-		double yaw = Math.atan2( 2.0 * (x * y + z * w), (sqx - sqy - sqz + sqw) );
-		double roll = Math.atan2( 2.0 * (y * z + x * w), (-sqx - sqy + sqz + sqw) );
-		double pitch = Math.asin( -2.0 * (x * z - y * w) / (sqx + sqy + sqz + sqw) );
-		
-		return new EulerAngles( (float)yaw, (float)pitch, (float)(roll-_180DEGREES));
+		return new EulerAngles( (float)yaw, (float)pitch, (float)roll );
 	}
-	
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+
+	//----------------------------------------------------------
+	//                     STATIC METHODS
+	//----------------------------------------------------------
 	/**
 	 * Create a Quaternion from an Euler which follows the X=PITCH, Y=ROLL, Z=YAW orientation conventions.
 	 * 
@@ -116,13 +169,30 @@ public class Quaternion
 		                       cx * sy * cz + sx * cy * sz, // y
 		                       cx * cy * sz - sx * sy * cz  // z
 		);
-	}	
+	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Create a Quaternion from an Euler which follows the DIS PDU orientation conventions.
+	 * 
+	 * @see #toPduEulerAngles()
+	 */
+	public static Quaternion fromPduEulerAngles( EulerAngles eulerAngles )
+	{
+		double halfPsiRad   = eulerAngles.getPsi()   / 2.0;
+		double halfThetaRad = eulerAngles.getTheta() / 2.0;
+		double halfPhiRad   = eulerAngles.getPhi()   / 2.0;
 
-	//----------------------------------------------------------
-	//                     STATIC METHODS
-	//----------------------------------------------------------
+		double cs = Math.cos( halfPsiRad );
+		double ct = Math.cos( halfThetaRad );
+		double cp = Math.cos( halfPhiRad );
+		double ss = Math.sin( halfPsiRad );
+		double st = Math.sin( halfThetaRad );
+		double sp = Math.sin( halfPhiRad );
+
+		return new Quaternion( cs * ct * cp + ss * st * sp, // w
+		                       cs * ct * sp - ss * st * cp, // x
+		                       cs * st * cp + ss * ct * sp, // y
+		                       ss * ct * cp - cs * st * sp  // z
+		);
+	}
 }

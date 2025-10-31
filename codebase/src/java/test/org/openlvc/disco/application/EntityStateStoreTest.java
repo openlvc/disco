@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.openlvc.disco.AbstractTest;
 import org.openlvc.disco.OpsCenter;
+import org.openlvc.disco.application.pdu.DrEntityStatePdu;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.record.EntityId;
@@ -34,7 +35,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Test(groups={"application"})
+@Test(groups={"application","entityStateStore"})
 public class EntityStateStoreTest extends AbstractTest
 {
 	//----------------------------------------------------------
@@ -122,7 +123,8 @@ public class EntityStateStoreTest extends AbstractTest
 		Assert.assertEquals( entityStore.size(), 1 );
 
 		// Check the entity values
-		EntityStatePdu received = entityStore.getEntityState("PhatEntity");
+		DrEntityStatePdu received = entityStore.getEntityState("PhatEntity");
+		Assert.assertTrue( received instanceof EntityStatePdu );
 		Assert.assertEquals( received.getEntityID(), entityId );
 		Assert.assertEquals( received.getEntityType(), entityType );
 		Assert.assertEquals( received.getLocation(), location );
