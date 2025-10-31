@@ -92,6 +92,10 @@ public class EmitterStore implements IDeleteReaperManaged
 			EmitterSystem existing = set.systems.get( incoming.getSystemType().getNumber() );
 			if( existing == null )
 			{
+				// Don't track if the system is inactive (no active beams)
+				if( !incoming.isSystemActive() )
+					continue;
+
 				set.systems.put( incoming.getSystemType().getNumber(), incoming );
 				continue;
 			}
@@ -102,13 +106,52 @@ public class EmitterStore implements IDeleteReaperManaged
 			existing.setLocation( incoming.getLocation() );
 			existing.setSystemType( incoming.getSystemType() );
 
-			// Remove any Beams we have first.
-			// If the pdu does not contain any, they should be deleted...
-			existing.clearBeams();
-			
-			// Update the beams - either adding them or replacing them
-			for( EmitterBeam beam : incoming.getBeams() )
-				existing.addBeam( beam );
+			switch( pdu.getHeader().getVersion() )
+			{
+				// v6 and lower - beams are disabled by not being present
+				case Version1:
+				case Version2:
+				case Version3:
+				case Version4:
+				case Version5:
+				case Version6:
+					// Remove any Beams we have first.
+					// If the pdu does not contain any, the beam(s) should be deleted
+					existing.clearBeams();
+
+					// Add each beam
+					for( EmitterBeam beam : incoming.getBeams() )
+						existing.addBeam( beam );
+
+					break;
+
+				// v7 and higher - beams are disabled by 'Beam Status'
+				case Version7:
+				case Other:
+				default:
+					// Update or remove each beam
+					for( EmitterBeam beam : incoming.getBeams() )
+					{
+						switch( beam.getBeamStatus() )
+						{
+							case Deactivated:
+								// Remove the beam
+								existing.removeBeam( beam );
+								break;
+
+							case Active:
+							default:
+								// Update the beam by replacing the existing copy
+								existing.addBeam( beam );
+								break;
+						}
+					}
+					break;
+			}
+
+			// If the system is inactive (has no active beams), remove it from the store
+			if( !existing.isSystemActive() )
+				set.systems.remove( existing.getSystemType().getNumber() );
 		}
 	}
 

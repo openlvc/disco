@@ -30,6 +30,7 @@ import org.openlvc.disco.connection.rpr.types.array.RTIobjectId;
 import org.openlvc.disco.pdu.emissions.EmissionPdu;
 import org.openlvc.disco.pdu.emissions.EmitterSystem;
 import org.openlvc.disco.pdu.field.PduType;
+import org.openlvc.disco.pdu.field.ProtocolVersion;
 
 import hla.rti1516e.AttributeHandleValueMap;
 
@@ -218,6 +219,8 @@ public class EmitterSystemMapper extends AbstractEmitterMapper
 		// FIXME - We serialize it to a byte[], but it will be turned back into a PDU
 		//         on the other side. This is inefficient and distasteful. Fix me.
 		EmissionPdu pdu = super.toPdu( rprSystem, rprBeams );
+		// explicitly set the packet as v6, because we disable beams by removing them rather than using v7's 'Beam Status'
+		pdu.getHeader().setVersion( ProtocolVersion.Version6 );
 		opscenter.getPduReceiver().receive( pdu.toByteArray() );
 	}
 

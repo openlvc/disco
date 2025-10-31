@@ -217,6 +217,17 @@ public class EmitterSystem implements IPduComponent, Cloneable
 		
 		return (short)dataLength;
 	}
+
+	/**
+	 * Returns if the Complete-System emitter system represented by this PDU is active (if the
+	 * system contains any active beams).
+	 * 
+	 * @return true iff the system contains an active beam
+	 */
+	public boolean isSystemActive()
+	{
+		return this.getBeams().parallelStream().anyMatch( beam -> beam.isBeamActive() );
+	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
