@@ -77,9 +77,15 @@ public class DrEntityStatePdu extends EntityStatePdu {
 		return this.initialDrmState;
 	}
 
-	protected DrmState getDrmStateAtLocalTime( DeadReckoningAlgorithm algorithm, long localTimestamp )
+	protected DrmState getDrmStateAtLocalTime( DeadReckoningAlgorithm algorithm, long localTimestamp ) throws IllegalArgumentException
 	{
-		// ! TODO err if timestamp in the past
+		if( this.getLocalTimestamp() > localTimestamp )
+		{
+			// outdated dead-reckoning request
+			// might happen if a new EntityStatePDU comes in before another packet is finished being processed
+			throw new IllegalArgumentException( "Timestamp in dead-reckoning query too old. Expected %s or newer, got %s.".formatted(this.getLocalTimestamp(),
+			                                                                                                                         localTimestamp) );
+		}
 
 		if( this.isFrozen() )
 			return this.getInitialDrmState();
@@ -144,8 +150,9 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 * @param localTimestamp target timestamp, in ms since epoch.
 	 * 
 	 * @return the position of the entity, as a {@link WorldCoordinate}
+	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
 	 */
-	public WorldCoordinate getDrLocation( long localTimestamp )
+	public WorldCoordinate getDrLocation( long localTimestamp ) throws IllegalArgumentException
 	{
 		return this.getDrLocation( this.getDeadReckoningAlgorithm(), localTimestamp );
 	}
@@ -161,8 +168,9 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 * @param localTimestamp target timestamp, in ms since epoch.
 	 * 
 	 * @return the position of the entity, as a {@link WorldCoordinate}
+	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
 	 */
-	public WorldCoordinate getDrLocation( DeadReckoningAlgorithm algorithm, long localTimestamp )
+	public WorldCoordinate getDrLocation( DeadReckoningAlgorithm algorithm, long localTimestamp ) throws IllegalArgumentException
 	{
 		return this.getDrmStateAtLocalTime( algorithm, localTimestamp ).getLocation();
 	}
@@ -175,8 +183,9 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 * recomputing the state.
 	 * 
 	 * @return the velocity of the entity, as a {@link VectorRecord}
+	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
 	 */
-	public VectorRecord getDrLinearVelocity( long localTimestamp )
+	public VectorRecord getDrLinearVelocity( long localTimestamp ) throws IllegalArgumentException
 	{
 		return this.getDrLinearVelocity( this.getDeadReckoningAlgorithm(), localTimestamp );
 	}
@@ -192,8 +201,9 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 * @param localTimestamp target timestamp, in ms since epoch.
 	 * 
 	 * @return the velocity of the entity, as a {@link VectorRecord}
+	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
 	 */
-	public VectorRecord getDrLinearVelocity( DeadReckoningAlgorithm algorithm, long localTimestamp )
+	public VectorRecord getDrLinearVelocity( DeadReckoningAlgorithm algorithm, long localTimestamp ) throws IllegalArgumentException
 	{
 		return this.getDrmStateAtLocalTime( algorithm, localTimestamp ).getLinearVelocity();
 	}
@@ -206,8 +216,9 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 * recomputing the state.
 	 * 
 	 * @return the orientation of the entity, as {@link EulerAngles}
+	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
 	 */
-	public EulerAngles getDrOrientation( long localTimestamp )
+	public EulerAngles getDrOrientation( long localTimestamp ) throws IllegalArgumentException
 	{
 		return this.getDrOrientation( this.getDeadReckoningAlgorithm(), localTimestamp );
 	}
@@ -223,8 +234,9 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 * @param localTimestamp target timestamp, in ms since epoch.
 	 * 
 	 * @return the orientation of the entity, as a {@link EulerAngles}
+	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
 	 */
-	public EulerAngles getDrOrientation( DeadReckoningAlgorithm algorithm, long localTimestamp )
+	public EulerAngles getDrOrientation( DeadReckoningAlgorithm algorithm, long localTimestamp ) throws IllegalArgumentException
 	{
 		return this.getDrmStateAtLocalTime( algorithm, localTimestamp ).getOrientation();
 	}
