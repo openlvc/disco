@@ -75,7 +75,7 @@ public class QuaternionTest
 	///////////////////////////////////////////////////////////////////////////////////
 	/// Testing Helpers   /////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
-	public void assertEulerAngleInBounds( EulerAngles orientation )
+	private void assertEulerAngleInBounds( EulerAngles orientation )
 	{
 		Assert.assertTrue( orientation.getPsi() <= EulerAngles.PSI_MAX );
 		Assert.assertTrue( EulerAngles.PSI_MIN <= orientation.getPsi() );
@@ -87,7 +87,7 @@ public class QuaternionTest
 		Assert.assertTrue( EulerAngles.PHI_MIN <= orientation.getPhi() );
 	} 
 	
-	public void testQuaternionEulerAngleConversion( EulerAngles testOrientation, EulerAngles expectedOrientation )
+	private void testQuaternionEulerAngleConversion( EulerAngles testOrientation, EulerAngles expectedOrientation )
 	{
 		// double check our test values are in bounds
 		assertEulerAngleInBounds( testOrientation );
@@ -104,7 +104,7 @@ public class QuaternionTest
 		Assert.assertEquals( orientation, expectedOrientation );
 	}
 
-	public void testQuaternionEulerAngleConversion( EulerAngles testOrientation )
+	private void testQuaternionEulerAngleConversion( EulerAngles testOrientation )
 	{
 		testQuaternionEulerAngleConversion( testOrientation, testOrientation );
 	}
