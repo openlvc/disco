@@ -72,9 +72,9 @@ public class DisApplication
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public DisApplication()
+	public DisApplication( DiscoConfiguration configuration )
 	{
-		this.configuration = new DiscoConfiguration();
+		this.configuration = configuration;
 		this.opscenter = null; // set in start()
 		
 		// State Management Services and Helpers
@@ -88,10 +88,9 @@ public class DisApplication
 		this.pduBus.subscribe( new ApplicationBusErrorReporter() );
 	}
 
-	public DisApplication( DiscoConfiguration configuration )
+	public DisApplication()
 	{
-		this();
-		this.configuration = configuration;
+		this( new DiscoConfiguration() );
 	}
 
 	//----------------------------------------------------------
