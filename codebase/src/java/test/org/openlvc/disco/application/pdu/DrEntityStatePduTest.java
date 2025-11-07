@@ -117,7 +117,8 @@ public class DrEntityStatePduTest
 		Assert.assertEquals( drEntityPdu.getInitialDrmState(), expectedInitialState );
 
 		// check the state after 1s
-		DrmState drmState1s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(), localTimestamp + 1000 );
+		DrmState drmState1s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(),
+		                                                          localTimestamp + 1000 );
 		Assert.assertEquals( drmState1s.getLocation(), new WorldCoordinate(52.5, 65.5, 80.5) );
 		Assert.assertEquals( drmState1s.getLinearVelocity(), new VectorRecord(13, 25, 37) );
 		Assert.assertEquals( drmState1s.getLinearAcceleration(), acceleration );
@@ -125,7 +126,8 @@ public class DrEntityStatePduTest
 		Assert.assertEquals( drmState1s.getAngularVelocity(), angularVelocity );
 
 		// check the state after 3s
-		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(), localTimestamp + 3000 );
+		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(),
+		                                                          localTimestamp + 3000 );
 		Assert.assertEquals( drmState3s.getLocation(), new WorldCoordinate(84.5, 125.5, 168.5) );
 		Assert.assertEquals( drmState3s.getLinearVelocity(), new VectorRecord(19.0f, 35.0f, 51.0f) );
 		Assert.assertEquals( drmState3s.getLinearAcceleration(), acceleration );
@@ -254,11 +256,13 @@ public class DrEntityStatePduTest
 		Assert.assertEquals( drEntityPdu.getInitialDrmState(), expectedInitialState );
 
 		// check the state after 1s
-		DrmState drmState1s = drEntityPdu.getDrmStateAtLocalTime( DeadReckoningAlgorithm.Static, localTimestamp + 1000 );
+		DrmState drmState1s = drEntityPdu.getDrmStateAtLocalTime( DeadReckoningAlgorithm.Static,
+		                                                          localTimestamp + 1000 );
 		Assert.assertEquals( drmState1s, expectedInitialState );
 
 		// check the state after 3s
-		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( DeadReckoningAlgorithm.Static, localTimestamp + 3000 );
+		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( DeadReckoningAlgorithm.Static,
+		                                                          localTimestamp + 3000 );
 		Assert.assertEquals( drmState3s, expectedInitialState );
 	}
 
@@ -296,7 +300,8 @@ public class DrEntityStatePduTest
 		DrEntityStatePdu drEntityPdu = DrEntityStatePdu.makeWithoutDr( entityPdu );
 
 		// check the state after 3s
-		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(), localTimestamp + 3000 );
+		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(),
+		                                                          localTimestamp + 3000 );
 		Assert.assertEquals( drmState3s, expectedInitialState );
 	}
 
@@ -334,7 +339,8 @@ public class DrEntityStatePduTest
 		DrEntityStatePdu drEntityPdu = new DrEntityStatePdu( entityPdu );
 
 		// check the state after 3s
-		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(), localTimestamp + 3000 );
+		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(),
+		                                                          localTimestamp + 3000 );
 		Assert.assertEquals( drmState3s.getLocation(), new WorldCoordinate(84.5, 125.5, 168.5) );
 		Assert.assertEquals( drmState3s.getLinearVelocity(), new VectorRecord(19.0f, 35.0f, 51.0f) );
 		Assert.assertEquals( drmState3s.getLinearAcceleration(), acceleration );
@@ -344,7 +350,8 @@ public class DrEntityStatePduTest
 		drEntityPdu.setFrozen( true );
 
 		// check the state after 3s when frozen
-		DrmState drmState3sFrozen = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(), localTimestamp + 3000 );
+		DrmState drmState3sFrozen = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(),
+		                                                                localTimestamp + 3000 );
 		Assert.assertEquals( drmState3sFrozen, expectedInitialState );
 	}
 

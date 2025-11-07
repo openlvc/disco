@@ -19,7 +19,6 @@ package org.openlvc.disco.application.utils;
 
 import java.util.Objects;
 
-import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.pdu.record.AngularVelocityVector;
 import org.openlvc.disco.pdu.record.EulerAngles;
 import org.openlvc.disco.pdu.record.VectorRecord;
@@ -28,19 +27,18 @@ import org.openlvc.disco.utils.Quaternion;
 import org.openlvc.disco.utils.Vec3;
 
 /**
- * Represents the state of an entity at a point in time in a {@link DeadReckoningModel}. <br/>
- * <br/>
+ * Represents the state of an entity at a point in time in a {@link DeadReckoningModel}.
+ * <p/>
  * The reference frame of the {@link #velocity} and {@link #acceleration} vectors can vary, and
- * uses the coordinate system of the model that produced this state. <br/>
- * <br/>
+ * uses the coordinate system of the model that produced this state.
+ * <p/>
  * Complete list of reference frames:
  * <ul>
  * <li>{@link #position}: world coordinate system (see also: {@link WorldCoordinate})</li>
  * <li>{@link #velocity}: varies depending on DR model</li>
  * <li>{@link #acceleration}: varies depending on DR model</li>
  * <li>{@link #orientation}: world coordinate system (see also: {@link EulerAngles})</li>
- * <li>{@link #angularVelocity}: entity coordinate system (see also:
- * {@link AngularVelocityVector})</li>
+ * <li>{@link #angularVelocity}: entity coordinate system (see also: {@link AngularVelocityVector})</li>
  * </ul>
  */
 public record DrmState( Vec3 position,
