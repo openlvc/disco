@@ -171,13 +171,14 @@ public class DeadReckoningAlgorithmTest
 
 		// check the state after 1.5 laps - should be (approx) offset by diameter and rotated halfway around the axis of the circle
 		DrmState newState1_5x = DeadReckoningAlgorithm.RVB.computeStateAfter( initialState, period * 1.5 );
-		Vec3 halfLapPosition = new Vec3( location ).add( new Vec3( 0, -2 * radius, 0 ).rotate( Quaternion.fromPduEulerAngles(orientation) ) );
+		Vec3 halfLapPosition = new Vec3( location ).add( new Vec3(0, -2 * radius, 0).rotate(Quaternion.fromPduEulerAngles(orientation)) );
 		Assert.assertEquals( newState1_5x.position().distance( halfLapPosition ) / radius, // error
 		                     0,
 		                     errTolerance,
 		                     failFormat(newState1_5x.position(), halfLapPosition) );
 
-		Quaternion halfLapOrientation = Quaternion.fromPduEulerAngles( orientation ).multiply( Quaternion.fromPduEulerAngles(new EulerAngles((float)Math.PI, 0, 0)) );
+		Quaternion halfLapOrientation = Quaternion.fromPduEulerAngles( orientation )
+		                                          .multiply( Quaternion.fromPduEulerAngles(new EulerAngles((float)Math.PI, 0, 0)) );
 		Assert.assertEquals( newState1_5x.getOrientation(),  halfLapOrientation.toPduEulerAngles() );
 		Assert.assertEquals( newState1_5x.velocity(),        initialState.velocity() );
 		Assert.assertEquals( newState1_5x.acceleration(),    initialState.acceleration() );
@@ -206,7 +207,13 @@ public class DeadReckoningAlgorithmTest
 	//----------------------------------------------------------
 	private static String failFormat( Object actual, Object expected )
 	{
-		return "values: " + EclipseInterface.ASSERT_EQUAL_LEFT + expected + EclipseInterface.ASSERT_MIDDLE + actual + EclipseInterface.ASSERT_RIGHT + ", test: ";
+		return "values: " +
+		       EclipseInterface.ASSERT_EQUAL_LEFT +
+		       expected +
+			   EclipseInterface.ASSERT_MIDDLE +
+		       actual +
+			   EclipseInterface.ASSERT_RIGHT +
+			   ", test: ";
 	}
 
 	private static record RotationTestSet( EulerAngles initialOrientation,

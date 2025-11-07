@@ -245,7 +245,7 @@ public enum DeadReckoningAlgorithm
 				dv.multiply( dt );
 
 				if( velocity.isEmpty() )
-					velocity = Optional.of( new Vec3( initialState.velocity() ) );
+					velocity = Optional.of( new Vec3(initialState.velocity()) );
 				velocity.get().add( dv );
 
 				// displacement
@@ -253,7 +253,7 @@ public enum DeadReckoningAlgorithm
 				disp.multiply( dt / 2.0 );
 
 				if( position.isEmpty() )
-					position = Optional.of( new Vec3( initialState.position() ) );
+					position = Optional.of( new Vec3(initialState.position()) );
 				position.get().add( disp );
 				break;
 
@@ -370,7 +370,7 @@ public enum DeadReckoningAlgorithm
 				Vec3 disp = R_2.multiply( A_b ).rotate( initialState.orientation() );
 
 				if( position.isEmpty() )
-					position = Optional.of( new Vec3( initialState.position() ) );
+					position = Optional.of( new Vec3(initialState.position()) );
 				position.get().add( disp );
 				break;
 
