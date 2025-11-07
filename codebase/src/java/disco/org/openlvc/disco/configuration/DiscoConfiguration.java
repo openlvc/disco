@@ -44,6 +44,8 @@ public class DiscoConfiguration
 	
 	public static final String PROP_PDU_SENDER   = "disco.pdu.sender";
 	public static final String PROP_PDU_RECEIVER = "disco.pdu.receiver";
+
+	public static final String PROP_DR_ENABLED = "disco.app.deadreckoning.enabled"; // bool, default true
 	
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
@@ -209,6 +211,19 @@ public class DiscoConfiguration
 	public RprConfiguration getRprConfiguration()
 	{
 		return this.rprConfiguration;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	/// Application Properties   ///////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////
+	public boolean getDeadReckoningEnabled()
+	{
+		return this.isProperty( PROP_DR_ENABLED, true );
+	}
+	
+	public void setDeadReckoningEnabled( boolean enabled )
+	{
+		properties.setProperty( PROP_DR_ENABLED, ""+enabled );
 	}
 	
 	
