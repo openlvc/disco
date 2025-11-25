@@ -17,6 +17,7 @@
  */
 package org.openlvc.disco.application.pdu;
 
+import org.openlvc.disco.application.EntityStateStore.DisabledDrEntityStatePdu;
 import org.openlvc.disco.application.pdu.DrEntityStatePdu.OutdatedTimestampBehavior;
 import org.openlvc.disco.application.utils.DrmState;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
@@ -109,15 +110,16 @@ public class DrEntityStatePduTest
 
 		entityPdu.setDeadReckoningParams( deadReckoningParams );
 
-		DrEntityStatePdu drEntityPdu = new DrEntityStatePdu( entityPdu, 2 );
+		DrEntityStatePdu drEntityPdu = new DrEntityStatePdu( entityPdu );
+		drEntityPdu.setDrmStateCacheSize( 2 );
 
 		// check the initial values are what we set
-		Assert.assertEquals( drEntityPdu.getDeadReckoningAlgorithm(), deadReckoningAlgorithm );
+		Assert.assertEquals( drEntityPdu.getDefaultDeadReckoningAlgorithm(), deadReckoningAlgorithm );
 		Assert.assertEquals( drEntityPdu.getLocalTimestamp(), localTimestamp );
 		Assert.assertEquals( drEntityPdu.getInitialDrmState(), expectedInitialState );
 
 		// check the state after 1s
-		DrmState drmState1s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(),
+		DrmState drmState1s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(),
 		                                                          localTimestamp + 1000 );
 		Assert.assertEquals( drmState1s.getLocation(), new WorldCoordinate(52.5, 65.5, 80.5) );
 		Assert.assertEquals( drmState1s.getLinearVelocity(), new VectorRecord(13, 25, 37) );
@@ -126,7 +128,7 @@ public class DrEntityStatePduTest
 		Assert.assertEquals( drmState1s.getAngularVelocity(), angularVelocity );
 
 		// check the state after 3s
-		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(),
+		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(),
 		                                                          localTimestamp + 3000 );
 		Assert.assertEquals( drmState3s.getLocation(), new WorldCoordinate(84.5, 125.5, 168.5) );
 		Assert.assertEquals( drmState3s.getLinearVelocity(), new VectorRecord(19.0f, 35.0f, 51.0f) );
@@ -164,11 +166,12 @@ public class DrEntityStatePduTest
 
 		entityPdu.setDeadReckoningParams( deadReckoningParams );
 
-		DrEntityStatePdu drEntityPdu = new DrEntityStatePdu( entityPdu, 2 );
+		DrEntityStatePdu drEntityPdu = new DrEntityStatePdu( entityPdu );
+		drEntityPdu.setDrmStateCacheSize( 2 );
 
 		// check the state after 1s
 		long t1s = localTimestamp + 1000;
-		DrmState drmState1s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(), t1s );
+		DrmState drmState1s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(), t1s );
 		Assert.assertEquals( drmState1s.getLocation(), new WorldCoordinate(52.5, 65.5, 80.5) );
 		Assert.assertEquals( drmState1s.getLinearVelocity(), new VectorRecord(13, 25, 37) );
 		Assert.assertEquals( drmState1s.getLinearAcceleration(), acceleration );
@@ -177,7 +180,7 @@ public class DrEntityStatePduTest
 
 		// check the state after 3s
 		long t3s = localTimestamp + 3000;
-		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(), t3s );
+		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(), t3s );
 		Assert.assertEquals( drmState3s.getLocation(), new WorldCoordinate(84.5, 125.5, 168.5) );
 		Assert.assertEquals( drmState3s.getLinearVelocity(), new VectorRecord(19.0f, 35.0f, 51.0f) );
 		Assert.assertEquals( drmState3s.getLinearAcceleration(), acceleration );
@@ -185,14 +188,14 @@ public class DrEntityStatePduTest
 		Assert.assertEquals( drmState3s.getAngularVelocity(), angularVelocity );
 		
 		// check we get the same objects when fetching those times again (cache hits)
-		DrmState drmState1s_2 = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(), t1s );
+		DrmState drmState1s_2 = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(), t1s );
 		Assert.assertTrue( drmState1s_2 == drmState1s );
-		DrmState drmState3s_2 = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(), t3s );
+		DrmState drmState3s_2 = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(), t3s );
 		Assert.assertTrue( drmState3s_2 == drmState3s );
 
 		// check the state after 5s
 		long t5s = localTimestamp + 5000;
-		DrmState drmState5s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(), t5s );
+		DrmState drmState5s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(), t5s );
 		Assert.assertEquals( drmState5s.getLocation(), new WorldCoordinate(128.5, 205.5, 284.5) );
 		Assert.assertEquals( drmState5s.getLinearVelocity(), new VectorRecord(25, 45, 65) );
 		Assert.assertEquals( drmState5s.getLinearAcceleration(), acceleration );
@@ -200,7 +203,7 @@ public class DrEntityStatePduTest
 		Assert.assertEquals( drmState5s.getAngularVelocity(), angularVelocity );
 
 		// check we get a cache miss when querying at 1s
-		DrmState drmState1s_3 = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(), t1s );
+		DrmState drmState1s_3 = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(), t1s );
 		Assert.assertFalse( drmState1s_3 == drmState1s );
 		// should still have the same values though
 		Assert.assertEquals( drmState1s_3, drmState1s );
@@ -214,7 +217,7 @@ public class DrEntityStatePduTest
 		DrEntityStatePdu drEntityPdu = new DrEntityStatePdu( entityPdu );
 
 		// verify the selected DRM is a Static model
-		Assert.assertEquals( drEntityPdu.getDeadReckoningAlgorithm(), DeadReckoningAlgorithm.Static );
+		Assert.assertEquals( drEntityPdu.getDefaultDeadReckoningAlgorithm(), DeadReckoningAlgorithm.Static );
 	}
 
 	@Test(dependsOnMethods={"testDrEntityRVW"})
@@ -248,10 +251,11 @@ public class DrEntityStatePduTest
 
 		entityPdu.setDeadReckoningParams( deadReckoningParams );
 
-		DrEntityStatePdu drEntityPdu = new DrEntityStatePdu( entityPdu, 2 );
+		DrEntityStatePdu drEntityPdu = new DrEntityStatePdu( entityPdu );
+		drEntityPdu.setDrmStateCacheSize( 2 );
 
 		// check the initial values are what we set
-		Assert.assertEquals( drEntityPdu.getDeadReckoningAlgorithm(), deadReckoningAlgorithm );
+		Assert.assertEquals( drEntityPdu.getDefaultDeadReckoningAlgorithm(), deadReckoningAlgorithm );
 		Assert.assertEquals( drEntityPdu.getLocalTimestamp(), localTimestamp );
 		Assert.assertEquals( drEntityPdu.getInitialDrmState(), expectedInitialState );
 
@@ -297,10 +301,10 @@ public class DrEntityStatePduTest
 
 		entityPdu.setDeadReckoningParams( deadReckoningParams );
 
-		DrEntityStatePdu drEntityPdu = DrEntityStatePdu.makeWithoutDr( entityPdu );
+		DrEntityStatePdu drEntityPdu = new DisabledDrEntityStatePdu( entityPdu );
 
 		// check the state after 3s
-		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(),
+		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(),
 		                                                          localTimestamp + 3000 );
 		Assert.assertEquals( drmState3s, expectedInitialState );
 	}
@@ -339,7 +343,7 @@ public class DrEntityStatePduTest
 		DrEntityStatePdu drEntityPdu = new DrEntityStatePdu( entityPdu );
 
 		// check the state after 3s
-		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(),
+		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(),
 		                                                          localTimestamp + 3000 );
 		Assert.assertEquals( drmState3s.getLocation(), new WorldCoordinate(84.5, 125.5, 168.5) );
 		Assert.assertEquals( drmState3s.getLinearVelocity(), new VectorRecord(19.0f, 35.0f, 51.0f) );
@@ -350,7 +354,7 @@ public class DrEntityStatePduTest
 		drEntityPdu.setFrozen( true );
 
 		// check the state after 3s when frozen
-		DrmState drmState3sFrozen = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDeadReckoningAlgorithm(),
+		DrmState drmState3sFrozen = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(),
 		                                                                localTimestamp + 3000 );
 		Assert.assertEquals( drmState3sFrozen, expectedInitialState );
 	}

@@ -22,12 +22,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import org.openlvc.disco.DiscoException;
 import org.openlvc.disco.application.pdu.DrEntityStatePdu;
+import org.openlvc.disco.application.utils.DrmState;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
+import org.openlvc.disco.pdu.field.DeadReckoningAlgorithm;
 import org.openlvc.disco.pdu.record.EntityId;
 import org.openlvc.disco.pdu.record.WorldCoordinate;
 
@@ -47,22 +48,26 @@ public class EntityStateStore implements IDeleteReaperManaged
 	private ConcurrentMap<EntityId,DrEntityStatePdu> byId;
 	private ConcurrentMap<String,DrEntityStatePdu> byMarking;
 
-	private BooleanSupplier isDrEnabled;
+	private PduStore parentStore;
 
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	protected EntityStateStore( PduStore store )
+	protected EntityStateStore( PduStore parentStore )
 	{
 		this.byId = new ConcurrentHashMap<>();
 		this.byMarking = new ConcurrentHashMap<>();
 
-		this.isDrEnabled = store.app.getConfiguration()::getDeadReckoningEnabled;
+		this.parentStore = parentStore;
 	}
 
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
+	private boolean isDrEnabled()
+	{
+		return this.parentStore.app.getConfiguration().getDeadReckoningEnabled();
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	/// PDU Processing   ///////////////////////////////////////////////////////////////////////
@@ -70,8 +75,8 @@ public class EntityStateStore implements IDeleteReaperManaged
 	protected void receivePdu( EntityStatePdu pdu )
 	{
 		// wrap the PDU to provide dead-reckoning support
-		DrEntityStatePdu wrappedPdu = this.isDrEnabled.getAsBoolean() ? new DrEntityStatePdu( pdu )
-		                                                              : DrEntityStatePdu.makeWithoutDr( pdu );
+		DrEntityStatePdu wrappedPdu = this.isDrEnabled() ? new DrEntityStatePdu( pdu )
+		                                                 : new DisabledDrEntityStatePdu( pdu );
 
 		// bang the entity into the ID indexed store
 		DrEntityStatePdu existing = byId.put( wrappedPdu.getEntityID(), wrappedPdu );
@@ -241,4 +246,47 @@ public class EntityStateStore implements IDeleteReaperManaged
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
+	/**
+	 * A version of {@link DrEntityStatePdu} with dead-reckoning overwritten to behave as though
+	 * the algorithm was static. Used to disable dead-reckoning without actually changing the
+	 * PDU's algorithm.
+	 */
+	public static class DisabledDrEntityStatePdu extends DrEntityStatePdu
+	{
+		//----------------------------------------------------------
+		//                    STATIC VARIABLES
+		//----------------------------------------------------------
+		
+		//----------------------------------------------------------
+		//                   INSTANCE VARIABLES
+		//----------------------------------------------------------
+		
+		//----------------------------------------------------------
+		//                      CONSTRUCTORS
+		//----------------------------------------------------------
+		public DisabledDrEntityStatePdu( EntityStatePdu pdu )
+		{
+			super( pdu );
+		}
+		
+		//----------------------------------------------------------
+		//                    INSTANCE METHODS
+		//----------------------------------------------------------
+		@Override
+		protected DrmState getDrmStateAtLocalTime( DeadReckoningAlgorithm algorithm,
+		                                           long localTimestamp )
+		    throws IllegalArgumentException
+		{
+			// skip calculations and always return the current state
+			return this.getInitialDrmState();
+		}
+		
+		////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////// Accessor and Mutator Methods ///////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////
+		
+		//----------------------------------------------------------
+		//                     STATIC METHODS
+		//----------------------------------------------------------
+	}
 }
