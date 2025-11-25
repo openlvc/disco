@@ -17,8 +17,6 @@
  */
 package org.openlvc.disco.application.pdu;
 
-import java.util.Map;
-
 import org.openlvc.disco.application.utils.DrmState;
 import org.openlvc.disco.pdu.entity.EntityStatePdu;
 import org.openlvc.disco.pdu.field.DeadReckoningAlgorithm;
@@ -34,7 +32,8 @@ import org.openlvc.disco.utils.LruCache;
  * When queries are made for dead-reckoned information at a particular timestamp, stores the
  * computed state in an internal LRU Cache.
  */
-public class DrEntityStatePdu extends EntityStatePdu {
+public class DrEntityStatePdu extends EntityStatePdu
+{
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
@@ -42,19 +41,16 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
-	private boolean drEnabled;
 	private final DrmState initialDrmState;
-	private Map<CacheKey,DrmState> drmStateCache; // access must be synchronized
+	private LruCache<CacheKey,DrmState> drmStateCache; // access must be synchronized
 	private OutdatedTimestampBehavior outdatedTimestampBehavior;
 	
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public DrEntityStatePdu( EntityStatePdu pdu, int cacheCapacity )
+	public DrEntityStatePdu( EntityStatePdu pdu )
 	{
 		super( pdu );
-
-		this.drEnabled = true;
 
 		this.initialDrmState = new DrmState( pdu.getLocation(),
 		                                     pdu.getLinearVelocity(),
@@ -62,17 +58,8 @@ public class DrEntityStatePdu extends EntityStatePdu {
 		                                     pdu.getOrientation(),
 		                                     pdu.getDeadReckoningParams().getEntityAngularVelocity() );
 
-		this.drmStateCache = new LruCache<>( cacheCapacity );
-
-		this.outdatedTimestampBehavior = OutdatedTimestampBehavior.ERROR;
-	}
-
-	/**
-	 * Uses a capacity of 3 as the default for the DRM State LRU Cache.
-	 */
-	public DrEntityStatePdu( EntityStatePdu pdu )
-	{
-		this( pdu, 3 );
+		this.setDrmStateCacheSize( 3 );
+		this.setOutdatedTimestampBehavior( OutdatedTimestampBehavior.ERROR );
 	}
 
 	//----------------------------------------------------------
@@ -83,12 +70,14 @@ public class DrEntityStatePdu extends EntityStatePdu {
 		return this.initialDrmState;
 	}
 
-	protected DrmState getDrmStateAtLocalTime( DeadReckoningAlgorithm algorithm, long localTimestamp ) throws IllegalArgumentException
+	protected DrmState getDrmStateAtLocalTime( DeadReckoningAlgorithm algorithm,
+	                                           long localTimestamp )
+	    throws IllegalArgumentException
 	{
 		if( this.getLocalTimestamp() > localTimestamp )
 		{
-			// outdated dead-reckoning request
-			// might happen if a new EntityStatePDU comes in before another packet is finished being processed
+			// outdated dead-reckoning request - might happen if a new EntityStatePDU comes in
+			// before another packet has finished being processed
 			switch( outdatedTimestampBehavior )
 			{
 				case USE_CURRENT_STATE:
@@ -97,12 +86,11 @@ public class DrEntityStatePdu extends EntityStatePdu {
 
 				default:
 				case ERROR:
-					throw new IllegalArgumentException( "Timestamp in dead-reckoning query too old. Expected %s or newer, got %s.".formatted( this.getLocalTimestamp(),
-					                                                                                                                          localTimestamp ) );
+					throw new IllegalArgumentException( "Timestamp in dead-reckoning query too old. Expected %s or newer, got %s.".formatted( this.getLocalTimestamp(), localTimestamp ) );
 			}
 		}
 
-		if( !this.drEnabled || this.isFrozen() || this.getLocalTimestamp() == localTimestamp )
+		if( this.isFrozen() || this.getLocalTimestamp() == localTimestamp )
 			return this.getInitialDrmState();
 		
 		CacheKey cacheKey = new CacheKey( algorithm, localTimestamp );
@@ -113,15 +101,17 @@ public class DrEntityStatePdu extends EntityStatePdu {
 			if( state != null )
 				return state;
 
-			// hold access to the cache until we have written to it to prevent calculating the same state twice
+			// hold access to the cache until we have written to it to prevent calculating the
+			// same state twice
 
 			double dt_ms = localTimestamp - this.getLocalTimestamp();
 			double dt = dt_ms / 1000.0;
 
 			DrmState initialState = this.getInitialDrmState();
-			if( algorithm.getReferenceFrame() != this.getDeadReckoningAlgorithm().getReferenceFrame() )
+			if( algorithm.getReferenceFrame() != this.getDefaultDeadReckoningAlgorithm().getReferenceFrame() )
 			{
-				// handle conversion between body and world coords if the algorithms don't match coord systems
+				// handle conversion between body and world coords if the algorithms don't match
+				// coord systems
 				switch( algorithm.getReferenceFrame() ) // what frame are we switching _to_
 				{
 					case WorldCoordinates:
@@ -157,14 +147,14 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 * @param behavior the new {@link OutdatedTimestampBehavior} to use when processing a
 	 *            dead-reckoning request with an outdated timestamp
 	 */
-	public void setOutdatedTimestampBehavior( OutdatedTimestampBehavior behavior )
+	public synchronized void setOutdatedTimestampBehavior( OutdatedTimestampBehavior behavior )
 	{
 		this.outdatedTimestampBehavior = behavior;
 	}
 	
 	/**
 	 * Gets the current {@link OutdatedTimestampBehavior} used when processing a dead-reckoning
-	 * request with an outdated timestamp
+	 * request with an outdated timestamp.
 	 * 
 	 * @return the current {@link OutdatedTimestampBehavior}
 	 */
@@ -174,11 +164,28 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	}
 
 	/**
+	 * Updates the capacity for the internal LRU cache used for dead-reckoning request results
+	 * from the default capacity of 3.
+	 */
+	public synchronized void setDrmStateCacheSize( int capacity )
+	{
+		this.drmStateCache = new LruCache<>( capacity );
+	}
+
+	/**
+	 * Gets the current capacity for the internal LRU cache used for dead-reckoning request results.
+	 */
+	public synchronized int getDrmStateCacheSize()
+	{
+		return this.drmStateCache.getCapacity();
+	}
+
+	/**
 	 * Returns the dead-reckoning algorithm specified for use by the {@link EntityStatePdu}.
 	 * 
 	 * @return the {@link DeadReckoningAlgorithm} for this {@link DrEntityStatePdu}
 	 */
-	public DeadReckoningAlgorithm getDeadReckoningAlgorithm()
+	public DeadReckoningAlgorithm getDefaultDeadReckoningAlgorithm()
 	{
 		return this.getDeadReckoningParams().getDeadReckoningAlgorithm();
 	}
@@ -193,17 +200,18 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 * @param localTimestamp target timestamp, in ms since epoch.
 	 * 
 	 * @return the position of the entity, as a {@link WorldCoordinate}
-	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
+	 * @throws IllegalArgumentException if the given timestamp is older than the
+	 *             {@link EntityStatePdu}
 	 * @see #setOutdatedTimestampBehavior(OutdatedTimestampBehavior)
 	 */
 	public WorldCoordinate getDrLocation( long localTimestamp ) throws IllegalArgumentException
 	{
-		return this.getDrLocation( this.getDeadReckoningAlgorithm(), localTimestamp );
+		return this.getDrLocation( this.getDefaultDeadReckoningAlgorithm(), localTimestamp );
 	}
 
 	/**
 	 * Gets the position of the entity at the given local timestamp, extrapolated using the
-	 * specified dead-reckoning algorithm. 
+	 * specified dead-reckoning algorithm.
 	 * <p/>
 	 * Uses the internally cached value for the state at this timestamp (with this algorithm), if
 	 * available, rather than recomputing the state.
@@ -212,33 +220,36 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 * @param localTimestamp target timestamp, in ms since epoch.
 	 * 
 	 * @return the position of the entity, as a {@link WorldCoordinate}
-	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
+	 * @throws IllegalArgumentException if the given timestamp is older than the
+	 *             {@link EntityStatePdu}
 	 * @see #setOutdatedTimestampBehavior(OutdatedTimestampBehavior)
 	 */
-	public WorldCoordinate getDrLocation( DeadReckoningAlgorithm algorithm, long localTimestamp ) throws IllegalArgumentException
+	public WorldCoordinate getDrLocation( DeadReckoningAlgorithm algorithm, long localTimestamp )
+	    throws IllegalArgumentException
 	{
 		return this.getDrmStateAtLocalTime( algorithm, localTimestamp ).getLocation();
 	}
 
 	/**
 	 * Gets the velocity of the entity at the given local timestamp, extrapolated using the
-	 * dead-reckoning algorithm of this entity. 
+	 * dead-reckoning algorithm of this entity.
 	 * <p/>
 	 * Uses the internally cached value for the state at this timestamp, if available, rather than
 	 * recomputing the state.
 	 * 
 	 * @return the velocity of the entity, as a {@link VectorRecord}
-	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
+	 * @throws IllegalArgumentException if the given timestamp is older than the
+	 *             {@link EntityStatePdu}
 	 * @see #setOutdatedTimestampBehavior(OutdatedTimestampBehavior)
 	 */
 	public VectorRecord getDrLinearVelocity( long localTimestamp ) throws IllegalArgumentException
 	{
-		return this.getDrLinearVelocity( this.getDeadReckoningAlgorithm(), localTimestamp );
+		return this.getDrLinearVelocity( this.getDefaultDeadReckoningAlgorithm(), localTimestamp );
 	}
 
 	/**
 	 * Gets the velocity of the entity at the given local timestamp, extrapolated using the
-	 * specified dead-reckoning algorithm. 
+	 * specified dead-reckoning algorithm.
 	 * <p/>
 	 * Uses the internally cached value for the state at this timestamp (with this algorithm), if
 	 * available, rather than recomputing the state.
@@ -247,33 +258,37 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 * @param localTimestamp target timestamp, in ms since epoch.
 	 * 
 	 * @return the velocity of the entity, as a {@link VectorRecord}
-	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
+	 * @throws IllegalArgumentException if the given timestamp is older than the
+	 *             {@link EntityStatePdu}
 	 * @see #setOutdatedTimestampBehavior(OutdatedTimestampBehavior)
 	 */
-	public VectorRecord getDrLinearVelocity( DeadReckoningAlgorithm algorithm, long localTimestamp ) throws IllegalArgumentException
+	public VectorRecord getDrLinearVelocity( DeadReckoningAlgorithm algorithm,
+	                                         long localTimestamp )
+	    throws IllegalArgumentException
 	{
 		return this.getDrmStateAtLocalTime( algorithm, localTimestamp ).getLinearVelocity();
 	}
 
 	/**
 	 * Gets the orientation of the entity at the given local timestamp, extrapolated using the
-	 * dead-reckoning algorithm of this entity. 
+	 * dead-reckoning algorithm of this entity.
 	 * <p/>
 	 * Uses the internally cached value for the state at this timestamp, if available, rather than
 	 * recomputing the state.
 	 * 
 	 * @return the orientation of the entity, as {@link EulerAngles}
-	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
+	 * @throws IllegalArgumentException if the given timestamp is older than the
+	 *             {@link EntityStatePdu}
 	 * @see #setOutdatedTimestampBehavior(OutdatedTimestampBehavior)
 	 */
 	public EulerAngles getDrOrientation( long localTimestamp ) throws IllegalArgumentException
 	{
-		return this.getDrOrientation( this.getDeadReckoningAlgorithm(), localTimestamp );
+		return this.getDrOrientation( this.getDefaultDeadReckoningAlgorithm(), localTimestamp );
 	}
 
 	/**
 	 * Gets the orientation of the entity at the given local timestamp, extrapolated using the
-	 * specified dead-reckoning algorithm. 
+	 * specified dead-reckoning algorithm.
 	 * <p/>
 	 * Uses the internally cached value for the state at this timestamp (with this algorithm), if
 	 * available, rather than recomputing the state.
@@ -282,10 +297,12 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 * @param localTimestamp target timestamp, in ms since epoch.
 	 * 
 	 * @return the orientation of the entity, as a {@link EulerAngles}
-	 * @throws IllegalArgumentException if the given timestamp is older than the {@link EntityStatePdu}
+	 * @throws IllegalArgumentException if the given timestamp is older than the
+	 *             {@link EntityStatePdu}
 	 * @see #setOutdatedTimestampBehavior(OutdatedTimestampBehavior)
 	 */
-	public EulerAngles getDrOrientation( DeadReckoningAlgorithm algorithm, long localTimestamp ) throws IllegalArgumentException
+	public EulerAngles getDrOrientation( DeadReckoningAlgorithm algorithm, long localTimestamp )
+	    throws IllegalArgumentException
 	{
 		return this.getDrmStateAtLocalTime( algorithm, localTimestamp ).getOrientation();
 	}
@@ -298,18 +315,6 @@ public class DrEntityStatePdu extends EntityStatePdu {
 	 */
 	private record CacheKey( DeadReckoningAlgorithm algorithm, long localTimestamp )
 	{
-	}
-
-	/**
-	 * Creates an {@link DrEntityStatePdu} instance with dead-reckoning calculations disabled
-	 * (behaves as if the dead-reckoning algorithm is {@link DeadReckoningAlgorithm#Static}).
-	 */
-	public static DrEntityStatePdu makeWithoutDr( EntityStatePdu pdu )
-	{
-		DrEntityStatePdu wrappedPdu = new DrEntityStatePdu( pdu, -1 );
-		wrappedPdu.drEnabled = false;
-		wrappedPdu.drmStateCache = null;
-		return wrappedPdu;
 	}
 
 	/**

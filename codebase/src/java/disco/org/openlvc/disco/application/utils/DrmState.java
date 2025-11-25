@@ -38,7 +38,8 @@ import org.openlvc.disco.utils.Vec3;
  * <li>{@link #velocity}: varies depending on DR model</li>
  * <li>{@link #acceleration}: varies depending on DR model</li>
  * <li>{@link #orientation}: world coordinate system (see also: {@link EulerAngles})</li>
- * <li>{@link #angularVelocity}: entity coordinate system (see also: {@link AngularVelocityVector})</li>
+ * <li>{@link #angularVelocity}: entity coordinate system (see also:
+ * {@link AngularVelocityVector})</li>
  * </ul>
  */
 public record DrmState( Vec3 position,
@@ -54,7 +55,11 @@ public record DrmState( Vec3 position,
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
-	public DrmState( WorldCoordinate location, VectorRecord linearVelocity, VectorRecord linearAcceleration, EulerAngles orientation, AngularVelocityVector angularVelocity )
+	public DrmState( WorldCoordinate location,
+	                 VectorRecord linearVelocity,
+	                 VectorRecord linearAcceleration,
+	                 EulerAngles orientation,
+	                 AngularVelocityVector angularVelocity )
 	{
 		this( new Vec3(location),
 		      new Vec3(linearVelocity.getFirstComponent(),
@@ -133,25 +138,29 @@ public record DrmState( Vec3 position,
 	}
 	
 	/**
-	 * Gets the velocity of the represented entity in DIS PDU format.
-	 * Uses the coordinate system of the model that produced this state.
+	 * Gets the velocity of the represented entity in DIS PDU format. Uses the coordinate system
+	 * of the model that produced this state.
 	 * 
 	 * @return the velocity of the entity, as a {@link VectorRecord}
 	 */
 	public VectorRecord getLinearVelocity()
 	{
-		return new VectorRecord( (float)this.velocity().x, (float)this.velocity().y, (float)this.velocity().z );
+		return new VectorRecord( (float)this.velocity().x,
+		                         (float)this.velocity().y,
+		                         (float)this.velocity().z );
 	}
 
 	/**
-	 * Gets the acceleration of the represented entity in DIS PDU format.
-	 * Uses the coordinate system of the model that produced this state.
+	 * Gets the acceleration of the represented entity in DIS PDU format. Uses the coordinate
+	 * system of the model that produced this state.
 	 * 
 	 * @return the acceleration of the entity, as a {@link VectorRecord}
 	 */
 	public VectorRecord getLinearAcceleration()
 	{
-		return new VectorRecord( (float)this.acceleration().x, (float)this.acceleration().y, (float)this.acceleration().z );
+		return new VectorRecord( (float)this.acceleration().x,
+		                         (float)this.acceleration().y,
+		                         (float)this.acceleration().z );
 	}
 
 	/**
@@ -172,7 +181,9 @@ public record DrmState( Vec3 position,
 	 */
 	public AngularVelocityVector getAngularVelocity()
 	{
-		return new AngularVelocityVector( (float)this.angularVelocity().x, (float)this.angularVelocity().y, (float)this.angularVelocity().z );
+		return new AngularVelocityVector( (float)this.angularVelocity().x,
+		                                  (float)this.angularVelocity().y,
+		                                  (float)this.angularVelocity().z );
 	}
 	
 	//----------------------------------------------------------
