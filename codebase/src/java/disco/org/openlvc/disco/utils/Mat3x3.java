@@ -17,8 +17,6 @@
  */
 package org.openlvc.disco.utils;
 
-import org.openlvc.disco.DiscoException;
-
 public class Mat3x3
 {
 	//----------------------------------------------------------

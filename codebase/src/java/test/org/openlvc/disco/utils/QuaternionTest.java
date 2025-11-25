@@ -87,7 +87,8 @@ public class QuaternionTest
 		Assert.assertTrue( EulerAngles.PHI_MIN <= orientation.getPhi() );
 	} 
 	
-	private void testQuaternionEulerAngleConversion( EulerAngles testOrientation, EulerAngles expectedOrientation )
+	private void testQuaternionEulerAngleConversion( EulerAngles testOrientation,
+	                                                 EulerAngles expectedOrientation )
 	{
 		// double check our test values are in bounds
 		assertEulerAngleInBounds( testOrientation );
@@ -191,7 +192,8 @@ public class QuaternionTest
 		for( float psi : new float[]{ EulerAngles.PSI_MIN, EulerAngles.PSI_MIN + 0.01f, -1.3f, 0,
 		                              1.1f, EulerAngles.PSI_MAX - 0.01f, EulerAngles.PSI_MAX } )
 		{
-			for( float theta : new float[]{ EulerAngles.THETA_MIN, EulerAngles.THETA_MAX } ) // only test singularities
+			// only test singularities
+			for( float theta : new float[]{ EulerAngles.THETA_MIN, EulerAngles.THETA_MAX } )
 			{
 				for( float phi : new float[]{ EulerAngles.PHI_MIN, EulerAngles.PHI_MIN + 0.01f,
 				                              -1.3f, 0, 1.1f, EulerAngles.PHI_MAX - 0.01f,
@@ -224,8 +226,9 @@ public class QuaternionTest
 				i++;
 
 				float psi = rand.nextFloat( EulerAngles.PSI_MIN, EulerAngles.PSI_MAX );
+				// prevent singularities by using a maximum theta magnitude of 86.3 degrees
 				float theta = rand.nextFloat( EulerAngles.THETA_MIN * (86.3f / 90),
-				                              EulerAngles.THETA_MAX * (86.3f / 90) ); // prevent singularities
+				                              EulerAngles.THETA_MAX * (86.3f / 90) );
 				float phi = rand.nextFloat( EulerAngles.PHI_MIN, EulerAngles.PHI_MAX );
 
 				return new EulerAngles( psi, theta, phi );
