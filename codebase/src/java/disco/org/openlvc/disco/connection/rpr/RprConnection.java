@@ -642,7 +642,7 @@ public class RprConnection implements IConnection
 		{			
 			XmlUtils utils = new XmlUtils( XmlUtils.parseXml(url) );
 			boolean foundSwitches = utils.getElement("/objectModel/switches") != null;
-			logger.trace( "Checking for switches in [%s]: Found=%s", foundSwitches );
+			logger.trace( "Checking for switches in [%s]: Found=%s", url, foundSwitches );
 			if( foundSwitches )
 			{
 				// this module has switches
