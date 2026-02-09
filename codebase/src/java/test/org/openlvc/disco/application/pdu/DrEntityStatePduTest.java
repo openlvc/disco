@@ -53,9 +53,9 @@ public class DrEntityStatePduTest
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Test Class Setup/Tear Down   //////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------- Test Class Setup/Teat Down -------------------------------
+	//==========================================================================================
 	@BeforeClass(alwaysRun = true)
 	public void beforeClass()
 	{
@@ -76,16 +76,16 @@ public class DrEntityStatePduTest
 	{
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Testing Methods   /////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------------ Testing Methods -------------------------------------
+	//==========================================================================================
 	@Test
 	public void testDrEntityRVW()
 	{
 		// setup the model
 		EntityStatePdu entityPdu = new EntityStatePdu();
 		DeadReckoningParameter deadReckoningParams = new DeadReckoningParameter();
-		
+
 		long localTimestamp = 10;
 		DeadReckoningAlgorithm deadReckoningAlgorithm = DeadReckoningAlgorithm.RVW;
 
@@ -143,7 +143,7 @@ public class DrEntityStatePduTest
 		// setup the model
 		EntityStatePdu entityPdu = new EntityStatePdu();
 		DeadReckoningParameter deadReckoningParams = new DeadReckoningParameter();
-		
+
 		long localTimestamp = 10;
 		DeadReckoningAlgorithm deadReckoningAlgorithm = DeadReckoningAlgorithm.RVW;
 
@@ -186,7 +186,7 @@ public class DrEntityStatePduTest
 		Assert.assertEquals( drmState3s.getLinearAcceleration(), acceleration );
 		Assert.assertEquals( drmState3s.getOrientation(), new EulerAngles(0.0f, 0.6f, 0.0f) );
 		Assert.assertEquals( drmState3s.getAngularVelocity(), angularVelocity );
-		
+
 		// check we get the same objects when fetching those times again (cache hits)
 		DrmState drmState1s_2 = drEntityPdu.getDrmStateAtLocalTime( drEntityPdu.getDefaultDeadReckoningAlgorithm(), t1s );
 		Assert.assertTrue( drmState1s_2 == drmState1s );
@@ -217,7 +217,7 @@ public class DrEntityStatePduTest
 		DrEntityStatePdu drEntityPdu = new DrEntityStatePdu( entityPdu );
 
 		// verify the selected DRM is a Static model
-		Assert.assertEquals( drEntityPdu.getDefaultDeadReckoningAlgorithm(), DeadReckoningAlgorithm.Static );
+		Assert.assertEquals( drEntityPdu.getDefaultDeadReckoningAlgorithm(), DeadReckoningAlgorithm.STATIC );
 	}
 
 	@Test(dependsOnMethods={"testDrEntityRVW"})
@@ -226,7 +226,7 @@ public class DrEntityStatePduTest
 		// setup the model
 		EntityStatePdu entityPdu = new EntityStatePdu();
 		DeadReckoningParameter deadReckoningParams = new DeadReckoningParameter();
-		
+
 		long localTimestamp = 10;
 		DeadReckoningAlgorithm deadReckoningAlgorithm = DeadReckoningAlgorithm.RVW;
 
@@ -260,12 +260,12 @@ public class DrEntityStatePduTest
 		Assert.assertEquals( drEntityPdu.getInitialDrmState(), expectedInitialState );
 
 		// check the state after 1s
-		DrmState drmState1s = drEntityPdu.getDrmStateAtLocalTime( DeadReckoningAlgorithm.Static,
+		DrmState drmState1s = drEntityPdu.getDrmStateAtLocalTime( DeadReckoningAlgorithm.STATIC,
 		                                                          localTimestamp + 1000 );
 		Assert.assertEquals( drmState1s, expectedInitialState );
 
 		// check the state after 3s
-		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( DeadReckoningAlgorithm.Static,
+		DrmState drmState3s = drEntityPdu.getDrmStateAtLocalTime( DeadReckoningAlgorithm.STATIC,
 		                                                          localTimestamp + 3000 );
 		Assert.assertEquals( drmState3s, expectedInitialState );
 	}
@@ -276,7 +276,7 @@ public class DrEntityStatePduTest
 		// setup the model
 		EntityStatePdu entityPdu = new EntityStatePdu();
 		DeadReckoningParameter deadReckoningParams = new DeadReckoningParameter();
-		
+
 		long localTimestamp = 10;
 		DeadReckoningAlgorithm deadReckoningAlgorithm = DeadReckoningAlgorithm.RVW;
 
@@ -315,7 +315,7 @@ public class DrEntityStatePduTest
 		// setup the model
 		EntityStatePdu entityPdu = new EntityStatePdu();
 		DeadReckoningParameter deadReckoningParams = new DeadReckoningParameter();
-		
+
 		long localTimestamp = 10;
 		DeadReckoningAlgorithm deadReckoningAlgorithm = DeadReckoningAlgorithm.RVW;
 
@@ -387,7 +387,7 @@ public class DrEntityStatePduTest
 		long oldTimestamp = localTimestamp - 5;
 		Assert.assertEquals( drEntityPdu.getOutdatedTimestampBehavior(), OutdatedTimestampBehavior.ERROR );
 		Assert.assertThrows( IllegalArgumentException.class, () -> drEntityPdu.getDrLocation(oldTimestamp) );
-		
+
 		// we should be able to make it use the latest instead
 		drEntityPdu.setOutdatedTimestampBehavior( OutdatedTimestampBehavior.USE_CURRENT_STATE );
 		Assert.assertEquals( drEntityPdu.getOutdatedTimestampBehavior(), OutdatedTimestampBehavior.USE_CURRENT_STATE );

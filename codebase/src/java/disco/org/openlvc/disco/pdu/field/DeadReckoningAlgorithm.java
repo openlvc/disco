@@ -34,8 +34,8 @@ public enum DeadReckoningAlgorithm
 	//----------------------------------------------------------
 	//                        VALUES
 	//----------------------------------------------------------
-	Other ( (short)0 ),
-	Static( (short)1 ),
+	OTHER ( (short)0 ),
+	STATIC( (short)1 ),
 	FPW   ( (short)2 ),
 	RPW   ( (short)3 ),
 	RVW   ( (short)4 ),
@@ -69,20 +69,23 @@ public enum DeadReckoningAlgorithm
 	@Override
 	public String toString()
 	{
-		switch( this.value )
+		switch( this )
 		{
-			case 1: return "Static";
-			case 2: return "FPW";
-			case 3: return "RPW";
-			case 4: return "RVW";
-			case 5: return "FVW";
-			case 6: return "FPB";
-			case 7: return "RPB";
-			case 8: return "RVB";
-			case 9: return "FVB";
-			default: // drop through
+			case STATIC: return "Static";
+
+			case FPW: return "FPW";
+			case FVW: return "FVW";
+			case RPW: return "RPW";
+			case RVW: return "RVW";
+
+			case FPB: return "FPB";
+			case FVB: return "FVB";
+			case RPB: return "RPB";
+			case RVB: return "RVB";
+
+			default: // fall through
 		}
-		
+
 		// Missing
 		if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" not a valid Dead Reckoning Algorithm" );
@@ -94,27 +97,21 @@ public enum DeadReckoningAlgorithm
 	{
 		switch( this )
 		{
-			case Static:
-			case FPW:
-			case FVW:
-			case RPW:
-			case RVW:
-				return ReferenceFrame.WorldCoordinates;
+			case STATIC, FPW, FVW, RPW, RVW:
+				return ReferenceFrame.WORLD_COORDINATES;
 
-			case FPB:
-			case FVB:
-			case RPB:
-			case RVB:
-				return ReferenceFrame.BodyCoordinates;
+			case FPB, FVB, RPB, RVB:
+				return ReferenceFrame.BODY_COORDINATES;
 
-			default: // drop through
+			case OTHER: // fall through
 		}
 
 		// Ill-defined or unknown
 		if( DiscoConfiguration.isSet(Flag.Strict) )
-			throw new DiscoException( "Unknown reference frame for dead-reckoning algorithm: %s (%d)".formatted(this,
-			                                                                                                    this.value()) );
-		return ReferenceFrame.Other;
+			throw new DiscoException( String.format("Unknown reference frame for dead-reckoning algorithm: %s (%d)",
+			                                        this,
+			                                        this.value()) );
+		return ReferenceFrame.OTHER;
 	}
 
 	/**
@@ -129,23 +126,23 @@ public enum DeadReckoningAlgorithm
 	 */
 	public DrmState computeStateAfter( DrmState initialState, double dt )
 	{
-		if( this == Static )
+		if( this == STATIC )
 			return initialState;
-		
+
 		switch( this.getReferenceFrame() )
 		{
-			case WorldCoordinates:
+			case WORLD_COORDINATES:
 				return DeadReckoningAlgorithm.computeFixedStateAfter( this, initialState, dt );
 
-			case BodyCoordinates:
+			case BODY_COORDINATES:
 				return DeadReckoningAlgorithm.computeRotatingStateAfter( this, initialState, dt );
 
-			default:
-			case Other:
-				// fallback to static
-				// TODO warn?
-				return initialState;
+			case OTHER: // fall through
 		}
+
+		// fallback to static
+		// TODO warn?
+		return initialState;
 	}
 
 	//----------------------------------------------------------
@@ -160,23 +157,26 @@ public enum DeadReckoningAlgorithm
 	{
 		switch( value )
 		{
+			case 1: return STATIC;
+
 			case 2: return FPW;
-			case 4: return RVW;
-			case 1: return Static;
-			case 8: return RVB;
-			case 3: return RPW;
 			case 5: return FVW;
+			case 3: return RPW;
+			case 4: return RVW;
+
 			case 6: return FPB;
-			case 7: return RPB;
 			case 9: return FVB;
-			default: // drop through
+			case 7: return RPB;
+			case 8: return RVB;
+
+			default: // fall through
 		}
-		
+
 		// Missing
 		if( DiscoConfiguration.isSet(Flag.Strict) )
 			throw new IllegalArgumentException( value+" not a valid Dead Reckoning Algorithm" );
 		else
-			return Other;
+			return OTHER;
 	}
 
 	// q_DR in the spec
@@ -193,7 +193,7 @@ public enum DeadReckoningAlgorithm
 		double z = rotAxis.z * sinHalfBeta;
 
 		return new Quaternion( w, x, y, z );
-	}	
+	}
 
 	/**
 	 * Returns the state of the dead-reckoning model when extrapolated for the given duration,
@@ -208,6 +208,17 @@ public enum DeadReckoningAlgorithm
 	 */
 	private static DrmState computeFixedStateAfter( DeadReckoningAlgorithm algorithm, DrmState initialState, double dt )
 	{
+		// * If updating this to add additional algorithms, make
+		// * sure to update the switch statements below as well
+		switch( algorithm )
+		{
+			case FPW, FVW, RPW, RVW:
+				break;
+
+			case STATIC, FPB, FVB, RPB, RVB, OTHER:
+				throw new IllegalArgumentException( "Invalid Dead Reckoning Algorithm for this computation type" );
+		}
+
 		// use the old copies if we don't make any changes
 		Optional<Vec3> position = Optional.empty();
 		Optional<Vec3> velocity = Optional.empty();
@@ -217,10 +228,7 @@ public enum DeadReckoningAlgorithm
 		switch( algorithm )
 		{
 			// currently all models
-			case FPW:
-			case FVW:
-			case RPW:
-			case RVW:
+			case FPW, FVW, RPW, RVW:
 				// displacement
 				Vec3 disp = new Vec3( initialState.velocity() );
 				disp.multiply( dt );
@@ -238,8 +246,7 @@ public enum DeadReckoningAlgorithm
 		switch( algorithm )
 		{
 			// 'V'-type models
-			case FVW:
-			case RVW:
+			case FVW, RVW:
 				// change in velocity
 				Vec3 dv = new Vec3( initialState.acceleration() );
 				dv.multiply( dt );
@@ -265,8 +272,7 @@ public enum DeadReckoningAlgorithm
 		switch( algorithm )
 		{
 			// 'R'-type models
-			case RPW:
-			case RVW:
+			case RPW, RVW:
 				// rotation
 				Quaternion rotationQuaternion = DeadReckoningAlgorithm.makeRotationQuaternion( initialState.angularVelocity(), dt );
 				orientation = Optional.of( orientation.orElseGet(initialState::orientation).multiply(rotationQuaternion) );
@@ -296,6 +302,17 @@ public enum DeadReckoningAlgorithm
 	 */
 	private static DrmState computeRotatingStateAfter( DeadReckoningAlgorithm algorithm, DrmState initialState, double dt )
 	{
+		// * If updating this to add additional algorithms, make
+		// * sure to update the switch statements below as well
+		switch( algorithm )
+		{
+			case FPB, FVB, RPB, RVB:
+				break;
+
+			case STATIC, FPW, FVW, RPW, RVW, OTHER:
+				throw new IllegalArgumentException( "Invalid Dead Reckoning Algorithm for this computation type" );
+		}
+
 		Optional<Vec3> position = Optional.empty();
 		Optional<Quaternion> orientation = Optional.empty();
 
@@ -325,13 +342,10 @@ public enum DeadReckoningAlgorithm
 		switch( algorithm )
 		{
 			// currently all models
-			case FPB:
-			case FVB:
-			case RPB:
-			case RVB:
+			case FPB, FVB, RPB, RVB:
 				// R_1
 				Mat3x3 R_1 = new Mat3x3( wwT ).multiply( (wdt - sin_wdt) / w_mag3 );
-				R_1.add( Mat3x3.Identity().multiply(sin_wdt / w_mag) );
+				R_1.add( Mat3x3.identity().multiply(sin_wdt / w_mag) );
 				R_1.add( new Mat3x3(skew).multiply((1 - cos_wdt) / w_mag2) );
 
 				// displacement
@@ -350,21 +364,20 @@ public enum DeadReckoningAlgorithm
 		switch( algorithm )
 		{
 			// 'V'-type models
-			case FVB:
-			case RVB:
+			case FVB, RVB:
 				double w_mag4 = w_mag2 * w_mag2;
 
 				// R_2
 				double cpwdtsm1 = cos_wdt + wdt*sin_wdt - 1;
 				Mat3x3 R_2 = new Mat3x3( wwT ).multiply( (0.5*w_mag2*dt*dt - cpwdtsm1) / w_mag4 );
-				R_2.add( Mat3x3.Identity().multiply(cpwdtsm1 / w_mag2) );
+				R_2.add( Mat3x3.identity().multiply(cpwdtsm1 / w_mag2) );
 				R_2.add( new Mat3x3(skew).multiply((sin_wdt - wdt*cos_wdt) / w_mag3) );
 
 				// A_b; time derivative of V_b, computed as a_b - skew * V_b
 				Vec3 A_b = new Vec3( initialState.acceleration() );
 				A_b.subtract( new Mat3x3(skew).multiply(V_b) );
-				
-				// TODO compute new velocity if needed
+
+				// compute the new velocity here if needed
 
 				// displacement
 				Vec3 disp = R_2.multiply( A_b ).rotate( initialState.orientation() );
@@ -382,8 +395,7 @@ public enum DeadReckoningAlgorithm
 		switch( algorithm )
 		{
 			// 'R'-type models
-			case RPB:
-			case RVB:
+			case RPB, RVB:
 				// rotation
 				Quaternion rotationQuaternion = DeadReckoningAlgorithm.makeRotationQuaternion( initialState.angularVelocity(), dt );
 				orientation = Optional.of( orientation.orElseGet(initialState::orientation).multiply(rotationQuaternion) );
@@ -392,7 +404,7 @@ public enum DeadReckoningAlgorithm
 			default:
 				break;
 		}
-		
+
 		return new DrmState( position.orElse(initialState.position()),
 		                     new Vec3(initialState.velocity()),
 		                     new Vec3(initialState.acceleration()),
@@ -405,15 +417,15 @@ public enum DeadReckoningAlgorithm
 	 */
 	public enum ReferenceFrame
 	{
-		Other,
-		
+		OTHER,
+
 		/**
 		 * The 'World coordinate system' as defined in the DIS spec (1.6.3.1, IEEE 1278.1-2012), a
 		 * NIMA TR 8350.2 and WGS 84 based right-handed geocentric Cartesian coordinate system.
 		 * 
 		 * See {@link WorldCoordinate} for more information.
 		 */
-		WorldCoordinates,
+		WORLD_COORDINATES,
 
 		/**
 		 * The 'Entity coordinate system' as defined in the DIS spec (1.6.3.2, IEEE 1278.1-2012),
@@ -427,6 +439,6 @@ public enum DeadReckoningAlgorithm
 		 * <li>{@code z}: positive is below the entity</li>
 		 * </ul>
 		 */
-		BodyCoordinates;
+		BODY_COORDINATES;
 	}
 }

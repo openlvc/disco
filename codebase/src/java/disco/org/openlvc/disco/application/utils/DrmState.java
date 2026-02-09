@@ -73,7 +73,7 @@ public record DrmState( Vec3 position,
 		               angularVelocity.getRateAboutYAxis(),
 		               angularVelocity.getRateAboutZAxis()) );
 	}
-	
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -82,16 +82,20 @@ public record DrmState( Vec3 position,
 	{
 		if( this == other )
 			return true;
-		
-		if( !(other instanceof DrmState otherDrmState) )
+
+		if( !(other instanceof DrmState(Vec3 otherPosition,
+		                                Vec3 otherVelocity,
+		                                Vec3 otherAcceleration,
+		                                Quaternion otherOrientation,
+		                                Vec3 otherAngularVelocity)) )
 			return false;
 
-		return Objects.equals( otherDrmState.position(), this.position() ) &&
-		       Objects.equals( otherDrmState.velocity(), this.velocity() ) &&
-		       Objects.equals( otherDrmState.acceleration(), this.acceleration() ) &&
-		       this.orientation() != null &&
-		       this.orientation().equalsRotation( otherDrmState.orientation() ) &&
-		       Objects.equals( otherDrmState.angularVelocity(), this.angularVelocity() );
+		return Objects.equals( otherPosition, this.position() ) &&
+		       Objects.equals( otherVelocity, this.velocity() ) &&
+		       Objects.equals( otherAcceleration, this.acceleration() ) &&
+		       otherOrientation != null &&
+		       otherOrientation.equalsRotation( this.orientation() ) &&
+		       Objects.equals( otherAngularVelocity, this.angularVelocity() );
 	}
 
 	/**
@@ -124,9 +128,9 @@ public record DrmState( Vec3 position,
 		                     this.angularVelocity() );
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////// Accessor Methods ///////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------------ Accessor Methods ------------------------------------
+	//==========================================================================================
 	/**
 	 * Gets the position of the represented entity in DIS PDU format.
 	 * 
@@ -136,7 +140,7 @@ public record DrmState( Vec3 position,
 	{
 		return new WorldCoordinate( this.position().x, this.position().y, this.position().z );
 	}
-	
+
 	/**
 	 * Gets the velocity of the represented entity in DIS PDU format. Uses the coordinate system
 	 * of the model that produced this state.
@@ -185,7 +189,7 @@ public record DrmState( Vec3 position,
 		                                  (float)this.angularVelocity().y,
 		                                  (float)this.angularVelocity().z );
 	}
-	
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

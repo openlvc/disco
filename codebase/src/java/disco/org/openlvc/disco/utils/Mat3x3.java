@@ -52,7 +52,7 @@ public class Mat3x3
 		      new Vec3( original.b ), 
 		      new Vec3( original.c ) );
 	}
-	
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -122,9 +122,9 @@ public class Mat3x3
 		return result;
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////// Accessor and Mutator Methods ///////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------ Accessor and Mutator Methods ------------------------------
+	//==========================================================================================
 	/**
 	 * Computes the transpose of this matrix.
 	 * 
@@ -136,7 +136,7 @@ public class Mat3x3
 		                   new Vec3(this.a.y, this.b.y, this.c.y),
 						   new Vec3(this.a.z, this.b.z, this.c.z) );
 	}
-	
+
 	/**
 	 * Scales this {@link Mat3x3} by the given value.
 	 * 
@@ -203,7 +203,7 @@ public class Mat3x3
 	 * 
 	 * @return an 3x3 identity matrix
 	 */
-	public static Mat3x3 Identity()
+	public static Mat3x3 identity()
 	{
 		return new Mat3x3( new Vec3(1, 0, 0),
 		                   new Vec3(0, 1, 0),

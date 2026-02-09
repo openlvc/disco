@@ -18,6 +18,7 @@
 package org.openlvc.disco.pdu.record;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import org.openlvc.disco.pdu.DisInputStream;
 import org.openlvc.disco.pdu.DisOutputStream;
@@ -35,15 +36,15 @@ public class EulerAngles implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	public static float PSI_MIN = -(float)Math.PI;
-	public static float PSI_MAX = (float)Math.PI;
+	public static final float PSI_MIN = -(float)Math.PI;
+	public static final float PSI_MAX = (float)Math.PI;
 
-	public static float THETA_MIN = -(float)(Math.PI / 2);
-	public static float THETA_MAX = (float)(Math.PI / 2);
+	public static final float THETA_MIN = -(float)(Math.PI / 2);
+	public static final float THETA_MAX = (float)(Math.PI / 2);
 
-	public static float PHI_MIN = -(float)Math.PI;
-	public static float PHI_MAX = (float)Math.PI;
-	
+	public static final float PHI_MIN = -(float)Math.PI;
+	public static final float PHI_MAX = (float)Math.PI;
+
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -58,7 +59,7 @@ public class EulerAngles implements IPduComponent, Cloneable
 	{
 		this( 0f, 0f, 0f );
 	}
-	
+
 	public EulerAngles( float psi, float theta, float phi )
 	{
 		this.psi = psi;
@@ -75,19 +76,19 @@ public class EulerAngles implements IPduComponent, Cloneable
 		if( this == other )
 			return true;
 
-		if( other instanceof EulerAngles )
-		{
-			EulerAngles otherAngle = (EulerAngles)other;
-			// psi and phi are continuous (yaw, roll), but theta is discontinuous (pitch)
-			if( FloatingPointUtils.floatRadEqual(otherAngle.psi,this.psi) &&
-				FloatingPointUtils.floatEqual(otherAngle.theta,this.theta) &&
-				FloatingPointUtils.floatRadEqual(otherAngle.phi,this.phi) )
-			{
-				return true;
-			}
-		}
+		if( !(other instanceof EulerAngles otherAngle) )
+			return false;
 
-		return false;
+		// psi and phi are continuous (yaw, roll), but theta is discontinuous (pitch)
+		return FloatingPointUtils.floatRadEqual( otherAngle.psi, this.psi ) &&
+		       FloatingPointUtils.floatEqual( otherAngle.theta, this.theta ) &&
+		       FloatingPointUtils.floatRadEqual( otherAngle.phi, this.phi );
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash( this.psi, this.theta, this.phi );
 	}
 
 	@Override
@@ -102,9 +103,9 @@ public class EulerAngles implements IPduComponent, Cloneable
 		return "EulerAngles[psi=%f, theta=%f, phi=%f]".formatted( this.psi, this.theta, this.phi );
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// IPduComponent Methods   ////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//--------------------------------- IPduComponent Methods ----------------------------------
+	//==========================================================================================
 	@Override
     public void from( DisInputStream dis ) throws IOException
     {
@@ -120,16 +121,16 @@ public class EulerAngles implements IPduComponent, Cloneable
 		dos.writeFloat( theta );
 		dos.writeFloat( phi );
     }
-	
+
 	@Override
     public int getByteLength()
 	{
 		return DisSizes.FLOAT32_SIZE * 3;
 	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+
+	//==========================================================================================
+	//------------------------------ Accessor and Mutator Methods ------------------------------
+	//==========================================================================================
 	public float getPsi()
     {
     	return psi;

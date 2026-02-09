@@ -69,9 +69,9 @@ public class EntityStateStore implements IDeleteReaperManaged
 		return this.parentStore.app.getConfiguration().getDeadReckoningEnabled();
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// PDU Processing   ///////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------------- PDU Processing -------------------------------------
+	//==========================================================================================
 	protected void receivePdu( EntityStatePdu pdu )
 	{
 		// wrap the PDU to provide dead-reckoning support
@@ -80,12 +80,12 @@ public class EntityStateStore implements IDeleteReaperManaged
 
 		// bang the entity into the ID indexed store
 		DrEntityStatePdu existing = byId.put( wrappedPdu.getEntityID(), wrappedPdu );
-		
+
 		// if we are discovering this entity for first time, store in marking indexed store as well
 		if( existing == null )
 		{
 			DrEntityStatePdu existingMarking = byMarking.put( wrappedPdu.getMarking(), wrappedPdu );
-			
+
 			// If there is already an entity against this marking with a different id, then
 			// we assume that it has gone stale in favor of the one that we have just received.
 			//
@@ -94,41 +94,40 @@ public class EntityStateStore implements IDeleteReaperManaged
 			// with different EntityIds, however their marking are the same.
 			if( existingMarking != null )
 				byId.remove( existingMarking.getEntityID(), existingMarking );
-			
 		}
-		else if( existing.getMarking().equals(wrappedPdu.getMarking()) == false )
-		{	
+		else if( !existing.getMarking().equals(wrappedPdu.getMarking()) )
+		{
 			// marking has changed, need to update the marking indexed store
 			byMarking.remove( existing.getMarking() );
 			byMarking.put( wrappedPdu.getMarking(), wrappedPdu );
 		}
 	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Locally Created PDU Tracking Methods   /////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+
+	//==========================================================================================
+	//-------------------------- Locally Created PDU Tracking Methods --------------------------
+	//==========================================================================================
 	//public void addEntityState( EntityStatePdu pdu )
 	//{
 	//}
-	
+
 	//public EntityStatePdu removeEntityState( String marking )
 	//{
 	//	return null;
 	//}
-	
+
 	//public EntityStatePdu removeEntityState( EntityId id )
 	//{
 	//	return null;
 	//}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Entity State Query Methods   ///////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+
+	//==========================================================================================
+	//------------------------------- Entity State Query Methods -------------------------------
+	//==========================================================================================
 	public boolean hasEntityState( String marking )
 	{
 		return byMarking.containsKey( marking );
 	}
-	
+
 	public boolean hasEntityState( EntityId id )
 	{
 		return byId.containsKey( id );
@@ -138,10 +137,10 @@ public class EntityStateStore implements IDeleteReaperManaged
 	{
 		if( marking.length() > 11 )
 			throw new DiscoException( "DIS markings limited to 11 characters: [%s] too long", marking );
-		
+
 		return byMarking.get( marking );
 	}
-	
+
 	/**
 	 * @param id
 	 * @return the last {@link DrEntityStatePdu} for the entity, or `null` if not stored
@@ -150,15 +149,15 @@ public class EntityStateStore implements IDeleteReaperManaged
 	{
 		return byId.get( id );
 	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Property Based Query Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+
+	//==========================================================================================
+	//------------------------------ Property Based Query Methods ------------------------------
+	//==========================================================================================
 	public Set<String> getAllMarkings()
 	{
 		return new HashSet<>( byMarking.keySet() );
 	}
-	
+
 	/**
 	 * Return all the entities that have been updated only AFTER the given timestamp (millis
 	 * since the epoch). Note that we use Disco's local timestamp, NOT the DIS timestamp.
@@ -172,10 +171,10 @@ public class EntityStateStore implements IDeleteReaperManaged
 		                         .filter( espdu -> espdu.getLocalTimestamp() >= time )
 		                         .collect( Collectors.toSet() );
 	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Location Based Query Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+
+	//==========================================================================================
+	//------------------------------ Location Based Query Methods ------------------------------
+	//==========================================================================================
 	/**
 	 * Get the set of Entity States whose location is within the radius of the specified entity's
 	 * location. If none are close, an empty set is returned.
@@ -188,7 +187,7 @@ public class EntityStateStore implements IDeleteReaperManaged
 	{
 		return getEntityStatesNear( entity.getLocation(), radiusMeters );
 	}
-	
+
 	/**
 	 * Get the set of Entity States whose location is within the specified radius of the specified
 	 * location. If none are close, an empty set is returned.
@@ -204,9 +203,9 @@ public class EntityStateStore implements IDeleteReaperManaged
 		                    .collect( Collectors.toSet() );
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Delete Timeout Support Methods   ///////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//----------------------------- Delete Timeout Support Methods -----------------------------
+	//==========================================================================================
 	@Override
 	public int removeStaleData( long oldestTimestamp )
 	{
@@ -223,21 +222,20 @@ public class EntityStateStore implements IDeleteReaperManaged
 		                     byMarking.remove( espdu.getMarking() );
 		                 
 		                 removed.incrementAndGet();
-		              });
-		
+		             });
+
 		return removed.intValue();
 	}
 
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------ Accessor and Mutator Methods ------------------------------
+	//==========================================================================================
 	public void clear()
 	{
 		this.byId.clear();
 		this.byMarking.clear();
 	}
-	
+
 	public int size()
 	{
 		return byMarking.size();
@@ -256,11 +254,11 @@ public class EntityStateStore implements IDeleteReaperManaged
 		//----------------------------------------------------------
 		//                    STATIC VARIABLES
 		//----------------------------------------------------------
-		
+
 		//----------------------------------------------------------
 		//                   INSTANCE VARIABLES
 		//----------------------------------------------------------
-		
+
 		//----------------------------------------------------------
 		//                      CONSTRUCTORS
 		//----------------------------------------------------------
@@ -268,7 +266,7 @@ public class EntityStateStore implements IDeleteReaperManaged
 		{
 			super( pdu );
 		}
-		
+
 		//----------------------------------------------------------
 		//                    INSTANCE METHODS
 		//----------------------------------------------------------
@@ -280,11 +278,11 @@ public class EntityStateStore implements IDeleteReaperManaged
 			// skip calculations and always return the current state
 			return this.getInitialDrmState();
 		}
-		
-		////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////// Accessor and Mutator Methods ///////////////////////////////
-		////////////////////////////////////////////////////////////////////////////////////////////
-		
+
+		//==========================================================================================
+		//------------------------------ Accessor and Mutator Methods ------------------------------
+		//==========================================================================================
+
 		//----------------------------------------------------------
 		//                     STATIC METHODS
 		//----------------------------------------------------------

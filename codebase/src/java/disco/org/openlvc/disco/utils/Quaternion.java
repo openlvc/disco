@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.utils;
 
+import java.util.Objects;
+
 import org.openlvc.disco.pdu.record.EulerAngles;
 
 public class Quaternion
@@ -53,7 +55,7 @@ public class Quaternion
 	{
 		this( q.w, q.x, q.y, q.z );
 	}
-	
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -62,7 +64,7 @@ public class Quaternion
 	{
 		if( this == other )
 			return true;
-		
+
 		if( !(other instanceof Quaternion otherQuat) )
 			return false;
 
@@ -70,6 +72,12 @@ public class Quaternion
 		       FloatingPointUtils.doubleEqual( otherQuat.x, this.x ) &&
 		       FloatingPointUtils.doubleEqual( otherQuat.y, this.y ) &&
 		       FloatingPointUtils.doubleEqual( otherQuat.z, this.z );
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash( this.w, this.x, this.y, this.z );
 	}
 
 	/**
@@ -102,11 +110,10 @@ public class Quaternion
 	 */
 	public Quaternion multiply( Quaternion rhs )
 	{
-        double w = this.w * rhs.w - this.x * rhs.x - this.y * rhs.y - this.z * rhs.z;
-        double x = this.w * rhs.x + this.x * rhs.w + this.y * rhs.z - this.z * rhs.y;
-        double y = this.w * rhs.y - this.x * rhs.z + this.y * rhs.w + this.z * rhs.x;
-        double z = this.w * rhs.z + this.x * rhs.y - this.y * rhs.x + this.z * rhs.w;		
-		return new Quaternion( w, x, y, z );
+		return new Quaternion( this.w * rhs.w - this.x * rhs.x - this.y * rhs.y - this.z * rhs.z,
+		                       this.w * rhs.x + this.x * rhs.w + this.y * rhs.z - this.z * rhs.y,
+		                       this.w * rhs.y - this.x * rhs.z + this.y * rhs.w + this.z * rhs.x,
+		                       this.w * rhs.z + this.x * rhs.y - this.y * rhs.x + this.z * rhs.w );
 	}
 
 	/**
@@ -133,7 +140,7 @@ public class Quaternion
 	{
 		return new Quaternion( -this.w, -this.x, -this.y, -this.z );
 	}
-	
+
 	/**
 	 * Convert this Quaternion to an Euler which follows the DIS PDU orientation conventions.
 	 * 
@@ -176,13 +183,13 @@ public class Quaternion
 			// regular pitch
 			pitch = Math.asin( pitchRatio );
 		}
-		
+
 		return new EulerAngles( (float)yaw, (float)pitch, (float)roll );
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------ Accessor and Mutator Methods ------------------------------
+	//==========================================================================================
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

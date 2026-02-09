@@ -19,6 +19,7 @@ package org.openlvc.disco.utils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Random;
 
 import org.openlvc.disco.pdu.record.EulerAngles;
@@ -49,14 +50,14 @@ public class QuaternionTest
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Test Class Setup/Tear Down   //////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------- Test Class Setup/Tear Down -------------------------------
+	//==========================================================================================
 	@BeforeClass(alwaysRun=true)
 	public void beforeClass()
 	{
 	}
-	
+
 	@BeforeMethod(alwaysRun=true)
 	public void beforeMethod()
 	{
@@ -66,15 +67,15 @@ public class QuaternionTest
 	public void afterMethod()
 	{
 	}
-	
+
 	@AfterClass(alwaysRun=true)
 	public void afterClass()
 	{
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Testing Helpers   /////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------------ Testing Helpers -------------------------------------
+	//==========================================================================================
 	private void assertEulerAngleInBounds( EulerAngles orientation )
 	{
 		Assert.assertTrue( orientation.getPsi() <= EulerAngles.PSI_MAX );
@@ -86,7 +87,7 @@ public class QuaternionTest
 		Assert.assertTrue( orientation.getPhi() <= EulerAngles.PHI_MAX );
 		Assert.assertTrue( EulerAngles.PHI_MIN <= orientation.getPhi() );
 	} 
-	
+
 	private void testQuaternionEulerAngleConversion( EulerAngles testOrientation,
 	                                                 EulerAngles expectedOrientation )
 	{
@@ -110,11 +111,9 @@ public class QuaternionTest
 		testQuaternionEulerAngleConversion( testOrientation, testOrientation );
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Testing Methods   /////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
-	// TODO test with known quaternion output?
-
+	//==========================================================================================
+	//------------------------------------ Testing Methods -------------------------------------
+	//==========================================================================================
 	@Test(dataProvider="eulerAngleBounds")
 	public void testQuaternionEulerAnglesBounds( EulerAngles testOrientation )
 	{
@@ -151,13 +150,15 @@ public class QuaternionTest
 		testQuaternionEulerAnglesSingularityBounds( testOrientation );
 	}
 
+	// TODO test with known quaternion output?
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Data Providers   //////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------------- Data Providers -------------------------------------
+	//==========================================================================================
 	@DataProvider(name="eulerAngleBounds",parallel=true)
 	public static Iterator<EulerAngles> bounds()
 	{
@@ -221,8 +222,11 @@ public class QuaternionTest
 			}
 
 			@Override
-			public EulerAngles next()
+			public EulerAngles next() throws NoSuchElementException
 			{
+				if( !this.hasNext() )
+					throw new NoSuchElementException();
+
 				i++;
 
 				float psi = rand.nextFloat( EulerAngles.PSI_MIN, EulerAngles.PSI_MAX );

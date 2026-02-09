@@ -37,14 +37,14 @@ public class DrEntityStatePdu extends EntityStatePdu
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	
+
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private final DrmState initialDrmState;
 	private LruCache<CacheKey,DrmState> drmStateCache; // access must be synchronized
 	private OutdatedTimestampBehavior outdatedTimestampBehavior;
-	
+
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -76,23 +76,24 @@ public class DrEntityStatePdu extends EntityStatePdu
 	{
 		if( this.getLocalTimestamp() > localTimestamp )
 		{
-			// outdated dead-reckoning request - might happen if a new EntityStatePDU comes in
+			// Outdated dead-reckoning request - might happen if a new EntityStatePDU comes in
 			// before another packet has finished being processed
-			switch( outdatedTimestampBehavior )
+			switch( this.getOutdatedTimestampBehavior() )
 			{
 				case USE_CURRENT_STATE:
 					localTimestamp = this.getLocalTimestamp();
 					break;
 
-				default:
 				case ERROR:
-					throw new IllegalArgumentException( "Timestamp in dead-reckoning query too old. Expected %s or newer, got %s.".formatted( this.getLocalTimestamp(), localTimestamp ) );
+					throw new IllegalArgumentException( String.format("Timestamp in dead-reckoning query too old. Expected %s or newer, got %s.",
+					                                                  this.getLocalTimestamp(),
+					                                                  localTimestamp) );
 			}
 		}
 
 		if( this.isFrozen() || this.getLocalTimestamp() == localTimestamp )
 			return this.getInitialDrmState();
-		
+
 		CacheKey cacheKey = new CacheKey( algorithm, localTimestamp );
 
 		synchronized( this.drmStateCache )
@@ -101,34 +102,28 @@ public class DrEntityStatePdu extends EntityStatePdu
 			if( state != null )
 				return state;
 
-			// hold access to the cache until we have written to it to prevent calculating the
+			// Hold access to the cache until we have written to it to prevent calculating the
 			// same state twice
 
-			double dt_ms = localTimestamp - this.getLocalTimestamp();
-			double dt = dt_ms / 1000.0;
+			double dt = (localTimestamp - this.getLocalTimestamp()) / 1000d; // seconds
 
 			DrmState initialState = this.getInitialDrmState();
 			if( algorithm.getReferenceFrame() != this.getDefaultDeadReckoningAlgorithm().getReferenceFrame() )
 			{
-				// handle conversion between body and world coords if the algorithms don't match
+				// Handle conversion between body and world coords if the algorithms don't match
 				// coord systems
-				switch( algorithm.getReferenceFrame() ) // what frame are we switching _to_
+				initialState = switch( algorithm.getReferenceFrame() ) // what frame are we switching _to_
 				{
-					case WorldCoordinates:
-						// Body -> World
-						initialState = initialState.asWorldCoords();
-						break;
+					// Body -> World
+					case WORLD_COORDINATES -> initialState.asWorldCoords();
 
-					case BodyCoordinates:
-						// World -> Body
-						initialState = initialState.asBodyCoords();
-						break;
-				
-					default:
-					case Other:
-						// TODO warn?
-						break;
-				}
+					// World -> Body
+					case BODY_COORDINATES -> initialState.asBodyCoords();
+
+					// Unknown
+					// TODO warn?
+					case OTHER -> initialState;
+				};
 			}
 
 			state = algorithm.computeStateAfter( initialState, dt );
@@ -137,9 +132,9 @@ public class DrEntityStatePdu extends EntityStatePdu
 		}
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////// Accessor and Mutator Methods ///////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------ Accessor and Mutator Methods ------------------------------
+	//==========================================================================================
 	/**
 	 * Sets the behavior when performing a dead-reckoning request with a timestamp older than the
 	 * {@link EntityStatePdu}.
@@ -151,14 +146,14 @@ public class DrEntityStatePdu extends EntityStatePdu
 	{
 		this.outdatedTimestampBehavior = behavior;
 	}
-	
+
 	/**
 	 * Gets the current {@link OutdatedTimestampBehavior} used when processing a dead-reckoning
 	 * request with an outdated timestamp.
 	 * 
 	 * @return the current {@link OutdatedTimestampBehavior}
 	 */
-	public OutdatedTimestampBehavior getOutdatedTimestampBehavior()
+	public synchronized OutdatedTimestampBehavior getOutdatedTimestampBehavior()
 	{
 		return this.outdatedTimestampBehavior;
 	}

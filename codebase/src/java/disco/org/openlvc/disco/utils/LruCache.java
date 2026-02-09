@@ -19,6 +19,7 @@ package org.openlvc.disco.utils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 // based on (not thread safe) implementation in https://stackoverflow.com/questions/40239485/concurrent-lru-cache-implementation
 
@@ -33,12 +34,12 @@ public class LruCache<K,V> extends LinkedHashMap<K,V>
 	//----------------------------------------------------------
 	@java.io.Serial
 	private static final long serialVersionUID = 6228500846571341824L;
-	
+
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
 	private final int capacity;
-	
+
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -48,14 +49,32 @@ public class LruCache<K,V> extends LinkedHashMap<K,V>
 		super( capacity + 1, 1.0f, true );
 		this.capacity = capacity;
 	}
-	
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////// Accessor and Mutator Methods ///////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+
+	@Override
+	public boolean equals( Object other )
+	{
+		if( this == other )
+			return true;
+
+		if( !(other instanceof LruCache<?,?> otherLruCache) )
+			return false;
+
+		return super.equals( otherLruCache );
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash( super.hashCode(), this.capacity );
+	}
+
+	//==========================================================================================
+	//------------------------------ Accessor and Mutator Methods ------------------------------
+	//==========================================================================================
 	public int getCapacity()
 	{
 		return this.capacity;
@@ -66,7 +85,7 @@ public class LruCache<K,V> extends LinkedHashMap<K,V>
 	{
         return super.size() > capacity;
     }
-	
+
 	//----------------------------------------------------------
 	//                     STATIC METHODS
 	//----------------------------------------------------------

@@ -17,6 +17,8 @@
  */
 package org.openlvc.disco.utils;
 
+import java.util.Objects;
+
 import org.openlvc.disco.pdu.record.WorldCoordinate;
 
 public class Vec3
@@ -24,7 +26,7 @@ public class Vec3
 	//----------------------------------------------------------
 	//                    STATIC VARIABLES
 	//----------------------------------------------------------
-	
+
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
@@ -44,21 +46,21 @@ public class Vec3
 	{
 		this( other.x, other.y, other.z );
 	}
-	
+
 	public Vec3( double x, double y, double z )
 	{
 		this.x = x;
 		this.y = y;
 		this.z = z;
 	}
-	
+
 	public Vec3( WorldCoordinate ecef )
 	{
 		this.x = ecef.getX();
 		this.y = ecef.getY();
 		this.z = ecef.getZ();
 	}
-	
+
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
@@ -67,7 +69,7 @@ public class Vec3
 	{
 		if( this == other )
 			return true;
-		
+
 		if( !(other instanceof Vec3 otherVec3) )
 			return false;
 
@@ -75,7 +77,13 @@ public class Vec3
 		       FloatingPointUtils.doubleEqual( otherVec3.y, this.y ) &&
 		       FloatingPointUtils.doubleEqual( otherVec3.z, this.z );
 	}
-	
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash( this.x, this.y, this.z );
+	}
+
 	@Override
 	public String toString()
 	{
@@ -163,7 +171,7 @@ public class Vec3
 		this.z *= rhs;
 		return this;
 	}
-	
+
 	/**
 	 * Divide this {@link Vec3} by the given value
 	 * 
@@ -189,7 +197,7 @@ public class Vec3
 	{
 		return this.x * v.x + this.y * v.y + this.z * v.z;
 	}
-	
+
 	/**
 	 * Obtain the cross product of this {@link Vec3} and another
 	 * 
@@ -210,7 +218,7 @@ public class Vec3
 		                   new Vec3(this).multiply(v.y),
 						   new Vec3(this).multiply(v.z) );
 	}
-	
+
 	/**
 	 * Normalizes this {@link Vec3}
 	 * 
@@ -232,15 +240,15 @@ public class Vec3
 	 */
 	public Vec3 rotate( Quaternion q )
 	{
-		Quaternion v_prime = new Quaternion( 0, this.x, this.y, this.z );
-		Quaternion conjugate_result = q.multiply( v_prime.multiply(q.conjugate()) );
-		// conjugate_result.w should be 0
-		return new Vec3( conjugate_result.x, conjugate_result.y, conjugate_result.z );
+		Quaternion vPrime = new Quaternion( 0, this.x, this.y, this.z );
+		Quaternion conjugateResult = q.multiply( vPrime.multiply(q.conjugate()) );
+		// conjugateResult.w should be 0
+		return new Vec3( conjugateResult.x, conjugateResult.y, conjugateResult.z );
 	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////
-	/// Accessor and Mutator Methods   /////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////
+
+	//==========================================================================================
+	//------------------------------ Accessor and Mutator Methods ------------------------------
+	//==========================================================================================
 
 	//----------------------------------------------------------
 	//                     STATIC METHODS

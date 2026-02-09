@@ -52,7 +52,7 @@ public class EntityStateStoreTest extends AbstractTest
 	//----------------------------------------------------------
 	private DisApplication local;
 	private OpsCenter remote;
-	
+
 	//----------------------------------------------------------
 	//                      CONSTRUCTORS
 	//----------------------------------------------------------
@@ -61,14 +61,14 @@ public class EntityStateStoreTest extends AbstractTest
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Test Class Setup/Tear Down   //////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------- Test Class Setup/Tear Down -------------------------------
+	//==========================================================================================
 	@BeforeClass(alwaysRun=true)
 	public void beforeClass()
 	{
 	}
-	
+
 	@BeforeMethod(alwaysRun=true)
 	public void beforeMethod()
 	{
@@ -79,7 +79,7 @@ public class EntityStateStoreTest extends AbstractTest
 		// create the OpsCenter that will mimic a "remote" DIS application
 		DiscoConfiguration remoteConfiguration = new DiscoConfiguration();
 		this.remote = super.newOpsCenter( remoteConfiguration );
-		
+
 		// open for bizness!
 		this.local.start();
 		this.remote.open();
@@ -91,28 +91,29 @@ public class EntityStateStoreTest extends AbstractTest
 		this.local.stop();
 		this.remote.close();
 	}
-	
+
 	@AfterClass(alwaysRun=true)
 	public void afterClass()
 	{
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// PDU Testing Methods   /////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//---------------------------------- PDU Testing Methods -----------------------------------
+	//==========================================================================================
 	@Test
 	public void testEntityStatePduStore()
 	{
 		// 1. Create the entity we want to track as a remote
-		EntityStatePdu source = new EntityStatePdu();
-		EntityId entityId = new EntityId( 12, 13, 14 );
-		EntityType entityType = new EntityType( 1, 1, 225, 2, 4, 6, 8 );
-		WorldCoordinate location = new WorldCoordinate( 31.9505, 115.8605, 100 );
-		EulerAngles orientation = new EulerAngles( 1.0f, 2.0f, 3.0f );
+		final EntityStatePdu source = new EntityStatePdu();
+		final EntityId entityId = new EntityId( 12, 13, 14 );
+		final EntityType entityType = new EntityType( 1, 1, 225, 2, 4, 6, 8 );
+		final WorldCoordinate location = new WorldCoordinate( 31.9505, 115.8605, 100 );
+		final String marking = "PhatEntity";
+		final EulerAngles orientation = new EulerAngles( 1.0f, 2.0f, 3.0f );
 		source.setEntityID( entityId );
 		source.setEntityType( entityType );
 		source.setLocation( location );
-		source.setMarking( "PhatEntity" );
+		source.setMarking( marking );
 		source.setOrientation( orientation );
 
 		// 2. Send it out
@@ -122,46 +123,47 @@ public class EntityStateStoreTest extends AbstractTest
 		EntityStateStore entityStore = local.getPduStore().getEntityStore();
 
 		// wait for the store to pick the change up
-		super.waitFor( () -> {return entityStore.size() > 0;}, 100 );
+		super.waitFor( () -> entityStore.size() > 0, 100 );
 		// check to make sure the store has what we want
-		Assert.assertTrue( entityStore.hasEntityState("PhatEntity") );
+		Assert.assertTrue( entityStore.hasEntityState(marking) );
 		Assert.assertEquals( entityStore.size(), 1 );
 
 		// Check the entity values
-		DrEntityStatePdu received = entityStore.getEntityState("PhatEntity");
+		DrEntityStatePdu received = entityStore.getEntityState( marking );
 		Assert.assertTrue( received instanceof EntityStatePdu );
 		Assert.assertEquals( received.getEntityID(), entityId );
 		Assert.assertEquals( received.getEntityType(), entityType );
 		Assert.assertEquals( received.getLocation(), location );
 		Assert.assertEquals( received.getOrientation(), orientation );
-		
+
 		// Check property fetch methods
 		Set<String> markings = entityStore.getAllMarkings();
 		Assert.assertEquals( markings.size(), 1 );
-		Assert.assertTrue( markings.contains("PhatEntity") );
-		
+		Assert.assertTrue( markings.contains(marking) );
+
 		// 4. Update the PDU to change some key settings and make sure that
 		//    these are reflected accurately
-		source.setMarking( "Ph@tEntity" );
+		final String modifiedMarking = "Ph@tEntity";
+		source.setMarking( modifiedMarking );
 		remote.send( source );
-		super.waitFor( () -> entityStore.hasEntityState("Ph@tEntity") );
-		
+		super.waitFor( () -> entityStore.hasEntityState(modifiedMarking) );
+
 		// we got the update, make sure everything is still cool
 		Assert.assertEquals( entityStore.size(), 1 );
 		// Check the entity values
-		received = entityStore.getEntityState("PhatEntity");
+		received = entityStore.getEntityState( marking );
 		Assert.assertNull( received );
-		received = entityStore.getEntityState("Ph@tEntity");
+		received = entityStore.getEntityState( modifiedMarking );
 		Assert.assertEquals( received.getEntityID(), entityId );
 		Assert.assertEquals( received.getEntityType(), entityType );
 		Assert.assertEquals( received.getLocation(), location );
 		Assert.assertEquals( received.getOrientation(), orientation );
-		
+
 		// Check property fetch methods
 		markings = entityStore.getAllMarkings();
 		Assert.assertEquals( markings.size(), 1 );
-		Assert.assertFalse( markings.contains("PhatEntity") );
-		Assert.assertTrue( markings.contains("Ph@tEntity") );
+		Assert.assertFalse( markings.contains(marking) );
+		Assert.assertTrue( markings.contains(modifiedMarking) );
 	}
 
 	@Test(dependsOnMethods={"testEntityStatePduStore"})
@@ -178,7 +180,7 @@ public class EntityStateStoreTest extends AbstractTest
 			// setup the model
 			EntityStatePdu source = new EntityStatePdu();
 			DeadReckoningParameter deadReckoningParams = new DeadReckoningParameter();
-			
+
 			EntityId entityId = new EntityId( 12, 13, 14 );
 			long localTimestamp = 10;
 			DeadReckoningAlgorithm deadReckoningAlgorithm = DeadReckoningAlgorithm.RVW;

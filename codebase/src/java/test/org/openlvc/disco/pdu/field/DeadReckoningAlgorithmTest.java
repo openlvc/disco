@@ -19,6 +19,7 @@ package org.openlvc.disco.pdu.field;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Random;
 
 import org.openlvc.disco.application.utils.DrmState;
@@ -56,9 +57,9 @@ public class DeadReckoningAlgorithmTest
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Test Class Setup/Tear Down   //////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------- Test Class Setup/Tear Down -------------------------------
+	//==========================================================================================
 	@BeforeClass(alwaysRun = true)
 	public void beforeClass()
 	{
@@ -79,9 +80,9 @@ public class DeadReckoningAlgorithmTest
 	{
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Testing Methods   /////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
+	//==========================================================================================
+	//------------------------------------ Testing Methods -------------------------------------
+	//==========================================================================================
 	@Test
 	public void testRVW()
 	{
@@ -117,7 +118,7 @@ public class DeadReckoningAlgorithmTest
 		// check the state after 1s
 		DrmState dtState1s = DeadReckoningAlgorithm.RVW.computeStateAfter( initialState, 1.0 );
 		Assert.assertEquals( dtState1s, new DrmState(location, velocity, acceleration, rotTest.outOrientation1s, rotTest.angularVelocity) );
-		
+
 		// check the state after 3s
 		DrmState dtState3s = DeadReckoningAlgorithm.RVW.computeStateAfter( initialState, 3.0 );
 		Assert.assertEquals( dtState3s, new DrmState(location, velocity, acceleration, rotTest.outOrientation3s, rotTest.angularVelocity) );
@@ -139,7 +140,8 @@ public class DeadReckoningAlgorithmTest
 	private void testRVBCircular( CircularTestParams testParams )
 	{
 		// circular motion parameters
-		double period = testParams.period, radius = testParams.radius; // seconds, metres
+		double period = testParams.period; // seconds
+		double radius = testParams.radius; // metres
 
 		double w = Math.TAU / period; // angular velocity w.r.t. circle centre - also angular velocity of entity (in -z, for left-hand turn)
 		double v = w * radius; // forwards velocity (in +x)
@@ -183,7 +185,7 @@ public class DeadReckoningAlgorithmTest
 		Assert.assertEquals( newState1_5x.velocity(),        initialState.velocity() );
 		Assert.assertEquals( newState1_5x.acceleration(),    initialState.acceleration() );
 		Assert.assertEquals( newState1_5x.angularVelocity(), initialState.angularVelocity() );
-		
+
 		// check the state after 5 laps - should be (approx) back at the start
 		DrmState newState5x = DeadReckoningAlgorithm.RVB.computeStateAfter( initialState, period * 5 );
 		Assert.assertEquals( newState5x.position().distance(initialState.position()) / radius, // error
@@ -229,10 +231,10 @@ public class DeadReckoningAlgorithmTest
 	                                          EulerAngles orientation )
 	{
 	}
-	
-	///////////////////////////////////////////////////////////////////////////////////
-	/// Data Providers   //////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
+
+	//==========================================================================================
+	//------------------------------------- Data Providers -------------------------------------
+	//==========================================================================================
 	@DataProvider(name="axisRotations",parallel=true)
 	public static Iterator<RotationTestSet> bounds()
 	{
@@ -257,8 +259,8 @@ public class DeadReckoningAlgorithmTest
 	{
 		return new Iterator<CircularTestParams>() {
 			// arbitrary axis bounds
-			static final float SPATIAL_AXIS_MIN = -10 * 1000; // 10km
-			static final float SPATIAL_AXIS_MAX = 1000 * 1000; // 1000km
+			static final double SPATIAL_AXIS_MIN = -10 * 1000d; // 10km
+			static final double SPATIAL_AXIS_MAX = 1000 * 1000d; // 1000km
 
 			final Random rand = new Random();
 			int i = 0;
@@ -270,16 +272,19 @@ public class DeadReckoningAlgorithmTest
 			}
 
 			@Override
-			public CircularTestParams next()
+			public CircularTestParams next() throws NoSuchElementException
 			{
+				if( !this.hasNext() )
+					throw new NoSuchElementException();
+
 				i++;
 
 				double period = rand.nextDouble( 0.1, 7200 ); // 0.1s - 2h
 				double radius = rand.nextDouble( 0.1, 100000 ); // 10cm - 100km
 
-				float x = rand.nextFloat( SPATIAL_AXIS_MIN, SPATIAL_AXIS_MAX );
-				float y = rand.nextFloat( SPATIAL_AXIS_MIN, SPATIAL_AXIS_MAX );
-				float z = rand.nextFloat( SPATIAL_AXIS_MIN, SPATIAL_AXIS_MAX );
+				double x = rand.nextDouble( SPATIAL_AXIS_MIN, SPATIAL_AXIS_MAX );
+				double y = rand.nextDouble( SPATIAL_AXIS_MIN, SPATIAL_AXIS_MAX );
+				double z = rand.nextDouble( SPATIAL_AXIS_MIN, SPATIAL_AXIS_MAX );
 
 				float psi = rand.nextFloat( EulerAngles.PSI_MIN, EulerAngles.PSI_MAX );
 				float theta = rand.nextFloat( EulerAngles.THETA_MIN * (86.3f / 90),
