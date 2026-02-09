@@ -70,7 +70,7 @@ public class SpatialVariantStruct extends WrappedHlaVariantRecord<DeadReckoningA
 		AbstractSpatialStruct value = null;
 		switch( dr )
 		{
-			case Static: value = new SpatialStaticStruct().fromPdu(pdu); break;
+			case STATIC: value = new SpatialStaticStruct().fromPdu(pdu); break;
 			case FPW: value = new SpatialFPStruct().fromPdu(pdu); break;
 			case FPB: value = new SpatialFPStruct().fromPdu(pdu); break;
 			case RPW: value = new SpatialRPStruct().fromPdu(pdu); break;

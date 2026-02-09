@@ -82,6 +82,12 @@ public class VectorRecord implements IPduComponent, Cloneable
 	}
 
 	@Override
+	public String toString()
+	{
+		return "VectorRecord[%f, %f, %f]".formatted( this.firstComponent, this.secondComponent, this.thirdComponent );
+	}
+
+	@Override
 	public int hashCode()
 	{
 		return Objects.hash( this.firstComponent, 

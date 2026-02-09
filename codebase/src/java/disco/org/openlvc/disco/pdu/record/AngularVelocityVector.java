@@ -85,6 +85,12 @@ public class AngularVelocityVector implements IPduComponent, Cloneable
 		
 		return equal;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "AngularVelocityVector[x=%f, y=%f, z=%f]".formatted( this.rateAboutXAxis, this.rateAboutYAxis, this.rateAboutZAxis );
+	}
 	
 	@Override
 	public AngularVelocityVector clone()

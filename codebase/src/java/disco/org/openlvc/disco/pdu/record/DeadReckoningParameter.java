@@ -51,7 +51,7 @@ public class DeadReckoningParameter implements IPduComponent, Cloneable
 	//----------------------------------------------------------
 	public DeadReckoningParameter()
 	{
-		this( DeadReckoningAlgorithm.Static, 
+		this( DeadReckoningAlgorithm.STATIC, 
 		      new byte[OTHER_PARAMETERS_ARRAY_SIZE], 
 		      new VectorRecord(),
 		      new AngularVelocityVector() );
