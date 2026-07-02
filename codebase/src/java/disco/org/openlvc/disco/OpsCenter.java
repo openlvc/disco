@@ -188,8 +188,17 @@ public class OpsCenter
 			// Mak is too cool for the classpath, it needs to be put on the library path
 			if( configuration.getRprConfiguration().getRtiProvider() == RtiProvider.Mak )
 			{
-				ClassLoaderUtils.extendLibraryPath( found );
-				logger.debug( "Extended Java library path to include HLA libraries; added: "+found );
+				try
+				{
+					ClassLoaderUtils.extendLibraryPath( found );
+					logger.debug( "Extended Java library path to include HLA libraries; added: "+found );
+				}
+				catch( DiscoException e )
+				{
+					logger.warn( "Could not extend Java library path - must have MaK libraries "+
+					             "on the system path before launch (error follows)" );
+					logger.warn( e.getMessage(), e );
+				}
 			}
 		}
 		else

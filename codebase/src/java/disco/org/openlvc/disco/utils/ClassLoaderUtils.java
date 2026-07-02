@@ -119,8 +119,10 @@ public class ClassLoaderUtils
 		}
 		catch( Throwable throwable )
 		{
-			throw new DiscoException( "Error extending Java library path: "+
-			                          throwable.getMessage(), throwable );
+			throw new DiscoException( "Error extending Java library path ("+
+			                          throwable.getClass().getSimpleName()+"): "+
+			                          throwable.getMessage(),
+			                          throwable );
 		}
 	}
 	
