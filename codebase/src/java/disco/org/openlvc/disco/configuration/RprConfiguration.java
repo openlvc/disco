@@ -509,7 +509,7 @@ public class RprConfiguration
 			else if( getRtiProvider() == RtiProvider.Mak )
 			{
 				// if we're using Mak and it's not an external module, copy stuff out
-				createMakFomFiles( new String[]{path}, new File("hla/mak") );
+				fomModules.addAll( createMakFomFiles(new String[]{path}, new File("hla/mak")) );
 			}
 			else
 			{
