@@ -65,7 +65,7 @@ public class DesignatorPdu extends PDU
 		this.wavelength = 0.0f;
 		this.spotRelativeToDesignatedEntity = new VectorRecord();
 		this.spotLocation = new WorldCoordinate();
-		this.spotDRA = DeadReckoningAlgorithm.Static;
+		this.spotDRA = DeadReckoningAlgorithm.STATIC;
 		// padding 24-bit
 		this.spotLinearAcceleration = new VectorRecord();
 	}

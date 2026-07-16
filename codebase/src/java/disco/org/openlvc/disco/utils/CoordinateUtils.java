@@ -119,7 +119,7 @@ public class CoordinateUtils
 		Vec3 orthogonal = northVec.cross( worldUpVec ).normalize(); // eastward/rightward vector
 
 		Mat3x3 mat3x3 = new Mat3x3( orthogonal, northVec, worldUpVec );
-		return mat3x3.toQuaterion();
+		return mat3x3.toQuaternion();
 	}
 	
 	public static Vec3 getDirectionToNorth( Vec3 ecef )

@@ -36,6 +36,8 @@ public class PduStore
 	//----------------------------------------------------------
 	//                   INSTANCE VARIABLES
 	//----------------------------------------------------------
+	protected DisApplication app;
+
 	private EntityStateStore entityStore;
 	private TransmitterStore transmitterStore;
 	private EmitterStore     emitterStore;
@@ -45,6 +47,8 @@ public class PduStore
 	//----------------------------------------------------------
 	protected PduStore( DisApplication app )
 	{
+		this.app = app;
+
 		this.entityStore = new EntityStateStore( this );
 		this.transmitterStore = new TransmitterStore( this ); // depends on EntityStore
 		this.emitterStore = new EmitterStore( this );         // depends on EntityStore
@@ -57,7 +61,6 @@ public class PduStore
 	//----------------------------------------------------------
 	//                    INSTANCE METHODS
 	//----------------------------------------------------------
-
 	protected void pduReceived( PDU pdu )
 	{
 		switch( pdu.getType() )
