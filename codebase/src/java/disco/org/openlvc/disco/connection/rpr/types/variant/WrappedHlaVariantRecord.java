@@ -18,10 +18,10 @@
 package org.openlvc.disco.connection.rpr.types.variant;
 
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.connection.rpr.RprRtiFactoryFactory;
 import org.openlvc.disco.connection.rpr.types.enumerated.EnumHolder;
 import org.openlvc.disco.connection.rpr.types.enumerated.ExtendedDataElement;
 
-import hla.rti1516e.RtiFactoryFactory;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
@@ -50,9 +50,9 @@ public class WrappedHlaVariantRecord<T extends ExtendedDataElement<T>> implement
 
 		try
 		{
-			this.internal = RtiFactoryFactory.getRtiFactory()
-			                                 .getEncoderFactory()
-			                                 .createHLAvariantRecord( new EnumHolder<>(discriminant) );
+			this.internal = RprRtiFactoryFactory.getRtiFactory()
+			                                    .getEncoderFactory()
+			                                    .createHLAvariantRecord( new EnumHolder<>(discriminant) );
 		}
 		catch( RTIinternalError e )
 		{
