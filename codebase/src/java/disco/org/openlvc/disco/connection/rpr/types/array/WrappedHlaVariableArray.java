@@ -20,8 +20,8 @@ package org.openlvc.disco.connection.rpr.types.array;
 import java.util.Iterator;
 
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.connection.rpr.RprRtiFactoryFactory;
 
-import hla.rti1516e.RtiFactoryFactory;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DataElementFactory;
@@ -52,9 +52,9 @@ public class WrappedHlaVariableArray<T extends DataElement> implements HLAvariab
 
 		try
 		{
-			this.internal = RtiFactoryFactory.getRtiFactory()
-			                                 .getEncoderFactory()
-			                                 .createHLAvariableArray( factory, values );
+			this.internal = RprRtiFactoryFactory.getRtiFactory()
+			                                    .getEncoderFactory()
+			                                    .createHLAvariableArray( factory, values );
 		}
 		catch( RTIinternalError e )
 		{

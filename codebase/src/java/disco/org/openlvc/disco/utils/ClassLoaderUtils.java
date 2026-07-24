@@ -55,6 +55,10 @@ public class ClassLoaderUtils
 	/**
 	 * Add a given path or set of paths to a custom classloader, and sets that as the ClassLoader
 	 * for the current Thread
+	 * <p>
+	 * <b>Note:</b> because we're altering the current thread's classloader, this is only useful
+	 * if performed on the same thread as the first call to a method of
+	 * {@link org.openlvc.disco.connection.rpr.RprRtiFactoryFactory}.
 	 * 
 	 * @param paths The paths to add to the lookup set
 	 * @throws DiscoException If there any invalid files are provided
