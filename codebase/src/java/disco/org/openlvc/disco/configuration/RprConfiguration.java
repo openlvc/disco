@@ -193,6 +193,8 @@ public class RprConfiguration
 			loadDefaultModules();
 			
 			// re-add extension modules
+			// Doing this last means that extension modules don't
+			// respect overrides, which is intentional.
 			registerExtensionModules( this.extensionModules.toArray(new String[0]) );
 		}
 	}
@@ -455,7 +457,7 @@ public class RprConfiguration
 	/////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Get the list of all registered FOM modules. This is the union of the set of default
-	 * modules plus any added through {@link #registerExtensionModules(File...)}.
+	 * modules plus any added through {@link #registerExtensionModules}.
 	 * <p/>
 	 * If you have a custom FOM Mapper, remember to make sure any required FOM Module is also
 	 * getting loaded.

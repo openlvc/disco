@@ -27,8 +27,8 @@ import org.openlvc.disco.configuration.RprConfiguration.RtiProvider;
 import org.openlvc.disco.connection.ConnectionFactory;
 import org.openlvc.disco.connection.IConnection;
 import org.openlvc.disco.connection.Metrics;
+import org.openlvc.disco.connection.rpr.RprRtiPathHelper;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.disco.utils.ClassLoaderUtils;
 
 public class OpsCenter
 {
@@ -171,6 +171,7 @@ public class OpsCenter
 	 */
 	private void applyRprClasspathHack()
 	{
+		RtiProvider provider = configuration.getRprConfiguration().getRtiProvider();
 		List<File> paths = configuration.getRprConfiguration().getRtiPathExtension();
 		ArrayList<File> found = new ArrayList<File>();
 		
@@ -182,15 +183,15 @@ public class OpsCenter
 		
 		if ( found.size() > 0 )
 		{
-			ClassLoaderUtils.extendClasspath( found );
-			logger.debug( "Extended classpath to include HLA libraries; added: "+found );
+			RprRtiPathHelper.extendClassPath( provider, found );
+			logger.info( "Extended classpath to include HLA libraries; added: "+found );
 			
 			// Mak is too cool for the classpath, it needs to be put on the library path
-			if( configuration.getRprConfiguration().getRtiProvider() == RtiProvider.Mak )
+			if( provider == RtiProvider.Mak )
 			{
 				try
 				{
-					ClassLoaderUtils.extendLibraryPath( found );
+					RprRtiPathHelper.extendLibraryPath( found );
 					logger.debug( "Extended Java library path to include HLA libraries; added: "+found );
 				}
 				catch( DiscoException e )

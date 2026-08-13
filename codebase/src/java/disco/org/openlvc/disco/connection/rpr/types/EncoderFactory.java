@@ -18,8 +18,8 @@
 package org.openlvc.disco.connection.rpr.types;
 
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.connection.rpr.RprRtiFactoryFactory;
 
-import hla.rti1516e.RtiFactoryFactory;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DataElementFactory;
 import hla.rti1516e.encoding.HLAASCIIchar;
@@ -305,7 +305,7 @@ public class EncoderFactory
 		{
 			try
 			{
-				RTI_FACTORY = RtiFactoryFactory.getRtiFactory().getEncoderFactory();
+				RTI_FACTORY = RprRtiFactoryFactory.getRtiFactory().getEncoderFactory();
 			}
 			catch( RTIinternalError e )
 			{

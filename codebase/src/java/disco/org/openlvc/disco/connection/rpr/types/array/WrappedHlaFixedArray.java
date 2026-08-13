@@ -20,8 +20,8 @@ package org.openlvc.disco.connection.rpr.types.array;
 import java.util.Iterator;
 
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.connection.rpr.RprRtiFactoryFactory;
 
-import hla.rti1516e.RtiFactoryFactory;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DataElementFactory;
@@ -52,9 +52,9 @@ public class WrappedHlaFixedArray<T extends DataElement> implements HLAfixedArra
 
 		try
 		{
-			this.internal = RtiFactoryFactory.getRtiFactory()
-			                                 .getEncoderFactory()
-			                                 .createHLAfixedArray( values );
+			this.internal = RprRtiFactoryFactory.getRtiFactory()
+			                                    .getEncoderFactory()
+			                                    .createHLAfixedArray( values );
 		}
 		catch( RTIinternalError e )
 		{
@@ -68,9 +68,9 @@ public class WrappedHlaFixedArray<T extends DataElement> implements HLAfixedArra
 
 		try
 		{
-			this.internal = RtiFactoryFactory.getRtiFactory()
-			                                 .getEncoderFactory()
-			                                 .createHLAfixedArray( factory, size );
+			this.internal = RprRtiFactoryFactory.getRtiFactory()
+			                                    .getEncoderFactory()
+			                                    .createHLAfixedArray( factory, size );
 		}
 		catch( RTIinternalError e )
 		{

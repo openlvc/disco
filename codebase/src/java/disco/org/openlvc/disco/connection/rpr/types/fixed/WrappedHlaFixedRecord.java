@@ -20,8 +20,8 @@ package org.openlvc.disco.connection.rpr.types.fixed;
 import java.util.Iterator;
 
 import org.openlvc.disco.DiscoException;
+import org.openlvc.disco.connection.rpr.RprRtiFactoryFactory;
 
-import hla.rti1516e.RtiFactoryFactory;
 import hla.rti1516e.encoding.ByteWrapper;
 import hla.rti1516e.encoding.DataElement;
 import hla.rti1516e.encoding.DecoderException;
@@ -50,9 +50,9 @@ public class WrappedHlaFixedRecord implements HLAfixedRecord
 
 		try
 		{
-			this.internal = RtiFactoryFactory.getRtiFactory()
-			                                 .getEncoderFactory()
-			                                 .createHLAfixedRecord();
+			this.internal = RprRtiFactoryFactory.getRtiFactory()
+			                                    .getEncoderFactory()
+			                                    .createHLAfixedRecord();
 		}
 		catch( RTIinternalError e )
 		{
