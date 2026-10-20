@@ -49,7 +49,7 @@ public class Configuration
 	public static final String KEY_HLA_RTI_PROVIDER = "disrespector.hla.rti.provider";
 	public static final String KEY_HLA_RTI_DIR      = "disrespector.hla.rti.installdir";
 	public static final String KEY_HLA_RTI_LOCAL    = "disrespector.hla.rti.localSettings";
-	public static final String KEY_HLA_FOM_OVERRIDE = "disrespector.hla.fom.override";
+	public static final String KEY_HLA_FOM_OVERRIDE = "disrespector.hla.fom.overridePath";
 	public static final String KEY_HLA_FEDERATION   = "disrespector.hla.federationName";
 	public static final String KEY_HLA_FEDERATE     = "disrespector.hla.federateName";
 	public static final String KEY_HLA_FEDERATE_RND = "disrespector.hla.randomizeFederateName";
@@ -279,9 +279,6 @@ public class Configuration
 	 */
 	public void setHlaFomOverridePath( String path )
 	{
-		if( path == null || path.trim().isBlank() )
-			return;
-		
 		this.properties.put( KEY_HLA_FOM_OVERRIDE, path );
 	}
 
@@ -456,6 +453,8 @@ public class Configuration
 				this.setHlaRtiInstallDir( new File(list.next()) );
 			else if( argument.equalsIgnoreCase("--hla-local-settings") )
 				this.setHlaRtiLocalSettings( list.next() );
+			else if( argument.equalsIgnoreCase("--hla-fom-override") )
+				this.setHlaFomOverridePath( list.next() );
 			else if( argument.equalsIgnoreCase("--hla-federation") )
 				this.setHlaFederationName( list.next() );
 			else if( argument.equalsIgnoreCase("--hla-federate") )
@@ -507,6 +506,7 @@ public class Configuration
 		System.out.println( "  --hla-rti-provider    string   (optional)  Portico, Pitch or Mak                      (default: Portico)" );
 		System.out.println( "  --hla-rti-dir         string   (optional)  Directory where RTI is installed           (default: RTI Specific)" );
 		System.out.println( "  --hla-local-settings  string   (optional)  Setting string given to RTI on connection" );
+		System.out.println( "  --hla-fom-override    string   (optional)  Directory containing FOM override modules  (default: None)" );
 		System.out.println( "  --hla-federation      string   (optional)  Name of federation to join                 (default: disrespector)" );
 		System.out.println( "  --hla-federate        string   (optional)  Name of federate to join as                (default: disrespector)" );
 		System.out.println( "  --hla-log-level       string   (optional)  Set log level for HLA side only            (default: INFO)" );

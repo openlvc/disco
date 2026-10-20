@@ -21,10 +21,10 @@ import org.openlvc.disco.IPduListener;
 import org.openlvc.disco.OpsCenter;
 import org.openlvc.disco.configuration.DiscoConfiguration;
 import org.openlvc.disco.pdu.PDU;
-import org.openlvc.distributor.Reflector;
 import org.openlvc.distributor.ILink;
 import org.openlvc.distributor.LinkBase;
 import org.openlvc.distributor.Message;
+import org.openlvc.distributor.Reflector;
 import org.openlvc.distributor.configuration.LinkConfiguration;
 
 public class HlaLink extends LinkBase implements ILink, IPduListener
@@ -181,6 +181,7 @@ public class HlaLink extends LinkBase implements ILink, IPduListener
 		disco.getRprConfiguration().setRtiProvider( link.getHlaRtiProvider() );
 		disco.getRprConfiguration().setRtiInstallDir( link.getHlaRtiInstallDir() );
 		disco.getRprConfiguration().setLocalSettings( link.getHlaRtiLocalSettings() );
+		disco.getRprConfiguration().setFomOverridePath( link.getHlaFomOverrideDir() );
 		
 		disco.getRprConfiguration().setFederationName( link.getHlaFederationName() );
 		disco.getRprConfiguration().setFederateName( link.getHlaFederateName() );

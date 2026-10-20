@@ -185,18 +185,9 @@ public class RprConfiguration
 	{
 		parent.setProperty( PROP_RTI_PROVIDER, provider.name() );
 		
-		// Mak is picky, best to clear and reload the FOMs - now that Mak is set
-		// they will be extracted out from the jar so it can load them
-		if( provider == RtiProvider.Mak )
-		{
-			this.fomModules.clear();
-			loadDefaultModules();
-			
-			// re-add extension modules
-			// Doing this last means that extension modules don't
-			// respect overrides, which is intentional.
-			registerExtensionModules( this.extensionModules.toArray(new String[0]) );
-		}
+		// Different RTI providers have different practical requirements for
+		// FOM module loading, so we force a reload to ensure compliance
+		clearFomModules();
 	}
 	
 	public void setRtiProvider( String provider )
@@ -211,7 +202,7 @@ public class RprConfiguration
 
 	public void setRtiInstallDir( String rtidir )
 	{
-		if( rtidir == null || rtidir.trim().equals("") )
+		if( rtidir == null || rtidir.isBlank() )
 			return;
 
 		if( rtidir.equalsIgnoreCase("<default>") )
@@ -408,7 +399,7 @@ public class RprConfiguration
 	public boolean isFomOverridePathSet()
 	{
 		return parent.properties.containsKey( PROP_FOM_OVERRIDE_PATH ) &&
-		       parent.properties.getProperty(PROP_FOM_OVERRIDE_PATH).trim().isBlank() == false;
+		       parent.properties.getProperty( PROP_FOM_OVERRIDE_PATH ).isBlank() == false;
 	}
 
 	/**
@@ -416,26 +407,31 @@ public class RprConfiguration
 	 * defaults that are shipped with CNR. To be effective, this directory should contain
 	 * a {@code load-order.properties} file that specifies the modules to load and the order
 	 * to load them.
-	 * 
+	 * <p/>
 	 * Should the folder not exist, or not contain a {@code load-order.properties} file, or the
 	 * {@code load.order} property in that file be an empty list, the overrides will not be used
 	 * at all. 
 	 * 
 	 * @param path The path to a directory that all FOM modules should be loaded from
-	 * @throws DiscoException If the provided path does not exist
 	 */
-	public void setFomOverridePath( String path ) throws DiscoException
+	public void setFomOverridePath( String path )
 	{
+		if( path == null || path.isBlank() )
+			return;
+		
 		// we don't check to see if the folder exists - it might not exist at configuration
 		// time, which is OK, it just needs to be there at run time.
-		if( path != null )
-			parent.setProperty( PROP_FOM_OVERRIDE_PATH, path );
+		parent.setProperty( PROP_FOM_OVERRIDE_PATH, path );
+		
+		// FOM modules may have already been loaded, so we force a reload
+		// to ensure the new overrides get applied
+		clearFomModules();
 	}
 
 	/**
 	 * @see #setFomOverridePath(String)
 	 */
-	public void setFomOverridePath( File file ) throws DiscoException
+	public void setFomOverridePath( File file )
 	{
 		this.setFomOverridePath( file.getAbsolutePath() );
 	}
@@ -456,20 +452,24 @@ public class RprConfiguration
 	/// FOM/Mapper Extensions   /////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////
 	/**
-	 * Get the list of all registered FOM modules. This is the union of the set of default
-	 * modules plus any added through {@link #registerExtensionModules}.
+	 * Get the list of all registered FOM modules. This is the union of the set of default or
+	 * override modules, plus any added through {@link #registerExtensionModules}.
 	 * <p/>
 	 * If you have a custom FOM Mapper, remember to make sure any required FOM Module is also
 	 * getting loaded.
+	 * <p/>
+	 * <b>Note:</b> this method is NOT free of side effects - if FOM modules have not been loaded
+	 * when it is called, they will be loaded before this method returns.
 	 * 
 	 * @return URL[] pointing to all FOM modules that should be loaded and provided when creating
 	 *         or joining a federation.
+	 * @throws DiscoException If FOM module loading was triggered, and any FOM module could not be
+	 *                        found.
 	 */
-	public URL[] getRegisteredFomModules()
+	public URL[] getRegisteredFomModules() throws DiscoException
 	{
-		if( fomModules.isEmpty() )
-			loadDefaultModules();
-		
+		if( !hasLoadedFomModules() )
+			loadAllFomModules();
 		return this.fomModules.toArray( new URL[]{} );
 	}
 	
@@ -477,6 +477,16 @@ public class RprConfiguration
 	 * Register the given paths as additional FOM modules that should be loaded in addition to
 	 * the default set. If you have custom FOM Mappers that want to deal with custom HLA types,
 	 * make sure you have already registered the FOM modules they need.
+	 * 
+	 * @param paths The list of paths to add as extension modules.
+	 */
+	public void registerExtensionModules( String... paths )
+	{
+		this.extensionModules.addAll( List.of(paths) );
+	}
+	
+	/**
+	 * Load the extension FOM modules registered by {@link #registerExtensionModules}.
 	 * <p/>
 	 * This method will check each path to make sure it is valid before proceeding. We first look
 	 * for the path as a file, and if it exists then we turn it into an absolute path and use that
@@ -485,16 +495,16 @@ public class RprConfiguration
 	 * <p/>
 	 * If the path does not resolve under either option, an exception is thrown.
 	 * 
-	 * @param paths The list of paths to add as extension modules.
-	 * @throws DiscoException If the path does not point to a file or a system resource
+	 * @throws DiscoException If a path does not point to a file or a system resource.
 	 */
-	public void registerExtensionModules( String... paths )
+	private void loadExtensionModules() throws DiscoException
 	{
-		if( fomModules.isEmpty() )
-			loadDefaultModules();
+		// sanity check; default modules must be loaded first
+		if( !hasLoadedFomModules() )
+			loadDefaultOrOverrideModules();
 		
 		ClassLoader loader = getClass().getClassLoader();
-		for( String path : paths )
+		for( String path : this.extensionModules )
 		{
 			File file = new File( path );
 			if( file.exists() )
@@ -522,19 +532,49 @@ public class RprConfiguration
 					// can't find it!
 					throw new DiscoException( "Cannot find extension module: "+path );
 			}
-			
-			//keeping track of these helps if at some point we switch to using Mak
-			if( !this.extensionModules.contains(path) )
-			{
-				this.extensionModules.add( path );
-			}
 		}
+	}
+	
+	/**
+	 * @return True if the FOM modules have been loaded, false otherwise.
+	 */
+	private boolean hasLoadedFomModules()
+	{
+		return !this.fomModules.isEmpty();
+	}
+	
+	/**
+	 * Clear the loaded set of FOM modules, such that the next call to
+	 * {@link #getRegisteredFomModules} will cause all modules to be loaded fresh according to the
+	 * configuration at that time.
+	 */
+	private void clearFomModules()
+	{
+		this.fomModules.clear();
+	}
+	
+	/**
+	 * @throws DiscoException If any of the FOM modules could not be found.
+	 */
+	private void loadAllFomModules() throws DiscoException
+	{
+		// sanity check; no double-loading
+		if( hasLoadedFomModules() )
+			return;
+		
+		loadDefaultOrOverrideModules();
+		// extension modules are always applied last, and don't respect overrides
+		loadExtensionModules();
 	}
 
 	/**
 	 * Load the default set of FOM Modules that should always be present.
+	 * <p/>
+	 * If any override modules are specified, only override modules will be loaded.
+	 * 
+	 * @throws DiscoException If any of the FOM modules could not be found.
 	 */
-	private void loadDefaultModules()
+	private void loadDefaultOrOverrideModules() throws DiscoException
 	{
 		// load the default modules
 		URL[] modules = this.findDefaultModules();
@@ -553,8 +593,8 @@ public class RprConfiguration
 	}
 
 	/**
-	 * @return An array of all the 
-	 * @throws DiscoException
+	 * @return An array of all the bundled default FOM modules.
+	 * @throws DiscoException If any of the FOM modules could not be found.
 	 */
 	private URL[] findDefaultModules() throws DiscoException
 	{
@@ -673,7 +713,7 @@ public class RprConfiguration
 		for( String path : paths )
 		{
 			// if it is empty, skip it (can happen if there is stray "," on the end of list
-			path = path.trim();
+			path = path.strip();
 			if( path.isBlank() )
 				continue;
 			

@@ -100,6 +100,7 @@ public class LinkConfiguration implements Serializable
 	public static final String LINK_HLA_RTI_PROVIDER    = "hla.rti.provider";
 	public static final String LINK_HLA_RTI_INSTALL_DIR = "hla.rti.installdir";
 	public static final String LINK_HLA_LOCAL_SETTINGS  = "hla.rti.localsettings";
+	public static final String LINK_HLA_FOM_OVERRIDE    = "hla.fom.overridePath";
 	public static final String LINK_HLA_FEDERATION_NAME = "hla.federationName";
 	public static final String LINK_HLA_FEDERATE_NAME   = "hla.federateName";
 	public static final String LINK_HLA_LOG_LEVEL       = "hla.loglevel";
@@ -218,6 +219,8 @@ public class LinkConfiguration implements Serializable
 				this.setHlaRtiInstallDir( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_HLA_LOCAL_SETTINGS) )
 				this.setHlaRtiLocalSettings( value );
+			else if( key.equalsIgnoreCase( prefix+LINK_HLA_FOM_OVERRIDE ) )
+				this.setHlaFomOverridePath( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_HLA_FEDERATION_NAME) )
 				this.setHlaFederationName( value );
 			else if( key.equalsIgnoreCase(prefix+LINK_HLA_FEDERATE_NAME) )
@@ -812,6 +815,16 @@ public class LinkConfiguration implements Serializable
 	public String getHlaRtiLocalSettings()
 	{
 		return getAsString( LINK_HLA_LOCAL_SETTINGS, "" );
+	}
+	
+	public void setHlaFomOverridePath( String path )
+	{
+		set( LINK_HLA_FOM_OVERRIDE, path );
+	}
+	
+	public String getHlaFomOverrideDir()
+	{
+		return getAsString( LINK_HLA_FOM_OVERRIDE, "" );
 	}
 
 	public void setHlaFederationName( String federationName )

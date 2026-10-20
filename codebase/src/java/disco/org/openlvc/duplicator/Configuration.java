@@ -58,6 +58,7 @@ public class Configuration
 	private String hlaRtiProvider;
 	private String hlaRtiInstallDir;
 	private String hlaRtiLocalSettings;
+	private String hlaFomOverridePath;
 	
 	// PDU Processing
 	private String pduSender;
@@ -97,6 +98,7 @@ public class Configuration
 		this.hlaRtiProvider = "Portico";
 		this.hlaRtiInstallDir = "";
 		this.hlaRtiLocalSettings = "";
+		this.hlaFomOverridePath = "";
 		
 		// PDU Processing
 		this.pduSender = null;
@@ -154,6 +156,8 @@ public class Configuration
 				this.setHlaCreateFederation( true );
 			else if( argument.equalsIgnoreCase("--hla-rti-settings") )
 				this.setHlaRtiLocalSettings( args[++i] );
+			else if( argument.equalsIgnoreCase("--hla-fom-override") )
+				this.setHlaFomOverridePath( args[++i] );
 			// PDU Processing flags
 			else if( argument.equalsIgnoreCase("--flag") )
 				DiscoConfiguration.set( Flag.valueOfIgnoreCase(args[++i]) );
@@ -381,6 +385,17 @@ public class Configuration
 		this.hlaRtiLocalSettings = settings;
 		this.useHla = true;
 	}
+	
+	public String getHlaFomOverridePath()
+	{
+		return this.hlaFomOverridePath;
+	}
+	
+	public void setHlaFomOverridePath( String path )
+	{
+		this.hlaFomOverridePath = path;
+		this.useHla = true;
+	}
 
 	//////////////////////////////////////////////////////////////////
 	/// Recording Settings ///////////////////////////////////////////
@@ -508,6 +523,7 @@ public class Configuration
 		builder.append( "                                   Checks RTI_HOME env-var if not set.\n" );
 		builder.append( "   --hla-create-federation         If set, try to create federation     (default:true)\n" );
 		builder.append( "   --hla-rti-settings    (string)  Local settings string given to RTI \n" );
+		builder.append( "   --hla-fom-override       (dir)  Directory containing FOM overrides   (default:none) \n" );
 		builder.append( "\n" );
 		System.out.println( builder.toString() );
 	}

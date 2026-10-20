@@ -107,6 +107,7 @@ public class NetworkReplayer
 		discoConfiguration.getRprConfiguration().setRtiInstallDir( configuration.getHlaRtiInstallDir() );
 		discoConfiguration.getRprConfiguration().setCreateFederation( configuration.isHlaCreateFederation() );
 		discoConfiguration.getRprConfiguration().setLocalSettings( configuration.getHlaRtiLocalSettings() );
+		discoConfiguration.getRprConfiguration().setFomOverridePath( configuration.getHlaFomOverridePath() );
 		if( configuration.useHla() )
 			discoConfiguration.setConnection( "rpr" );
 		

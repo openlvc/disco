@@ -128,6 +128,7 @@ public class Recorder implements IPduListener
 		discoConfiguration.getRprConfiguration().setRtiInstallDir( configuration.getHlaRtiInstallDir() );
 		discoConfiguration.getRprConfiguration().setCreateFederation( configuration.isHlaCreateFederation() );
 		discoConfiguration.getRprConfiguration().setLocalSettings( configuration.getHlaRtiLocalSettings() );
+		discoConfiguration.getRprConfiguration().setFomOverridePath( configuration.getHlaFomOverridePath() );
 		if( configuration.useHla() )
 			discoConfiguration.setConnection( "rpr" );
 		// PDU processing options
